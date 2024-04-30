@@ -7,9 +7,9 @@
 </p>
 
 --- 
-<h1>⚠️ Notice about beta !!</h1>
+<h1>⚠️ Notice</h1>
 
-CuteMusic is currently in BETA, which means: 
+CuteMusic is currently in its first versions, which means: 
 
 - You may want to keep your main music player for now, as CM lacks some features notably metadata editing and may be unstable!
 - ANY bug reports / issues will be taken into consideration
