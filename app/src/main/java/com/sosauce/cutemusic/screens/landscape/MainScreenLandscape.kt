@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
@@ -41,7 +42,6 @@ fun MainScreenLandscape(
     player: Player,
     navController: NavController
 ) {
-    val playerState = remember { viewModel.playerState }
 
     Scaffold(
         topBar = {
@@ -50,12 +50,13 @@ fun MainScreenLandscape(
                 navController = navController,
                 showBackArrow = false,
                 showMenuIcon = true,
-                showSearchIcon = true
-            ) {
-
-            }
+                showSortIcon = true,
+                viewModel = viewModel,
+                musics = musics
+            )
         }
     ){ values ->
+
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier
@@ -63,9 +64,15 @@ fun MainScreenLandscape(
                     .padding(values),
                 verticalArrangement = Arrangement.Top
             ) {
-                items(musics.size) { index ->
-                    val music = remember { musics[index] }
-                    MusicListItem(music) { viewModel.play(music.uri)  }
+                itemsIndexed(musics) {index, music ->
+                    val selectedItems = remember { mutableListOf<Int>() }
+                    val isSelected = selectedItems.contains(index)
+                    MusicListItem(
+                        music,
+                        { viewModel.play(music.uri) },
+                        { selectedItems.add(index) },
+                        isSelected = isSelected
+                    )
                 }
             }
 
@@ -78,7 +85,7 @@ fun MainScreenLandscape(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = viewModel.playerState.value.title.toString(),
+                    text = if (viewModel.title == "null") viewModel.previousTitle else viewModel.title,
                     fontFamily = GlobalFont,
                     maxLines = 1,
                     modifier = Modifier.padding(start = 10.dp)
@@ -94,17 +101,17 @@ fun MainScreenLandscape(
                     }
                      IconButton(
                         onClick = {
-                            if (playerState.value.isPlaying == true) {
+                            if (viewModel.isPlayerPlaying) {
                                 player.pause()
-                                playerState.value.isPlaying = false
+                                viewModel.isPlayerPlaying = false
                             } else {
                                 player.play()
-                                playerState.value.isPlaying = true
+                                viewModel.isPlayerPlaying = true
                             }
                         }
                     ) {
                         Icon(
-                            imageVector = if (playerState.value.isPlaying == true) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                            imageVector = if (viewModel.isPlayerPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                             contentDescription = "play/pause button"
                         )
                     }

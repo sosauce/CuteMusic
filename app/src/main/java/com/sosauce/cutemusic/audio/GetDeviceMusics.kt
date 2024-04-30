@@ -46,3 +46,44 @@ suspend fun getMusics(contentResolver: ContentResolver): List<Music> = withConte
     return@withContext musics
 }
 
+suspend fun getAlbums(contentResolver: ContentResolver): List<Album> = withContext(Dispatchers.IO) {
+    val albums = mutableListOf<Album>()
+
+    val projection = arrayOf(
+        MediaStore.Audio.Albums._ID,
+        MediaStore.Audio.Albums.ALBUM,
+        MediaStore.Audio.Albums.ARTIST,
+        MediaStore.Audio.Albums.NUMBER_OF_SONGS
+    )
+
+    contentResolver.query(
+        MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+        projection,
+        null,
+        null,
+        "${MediaStore.Audio.Albums.ALBUM} ASC"
+    )?.use { cursor ->
+        val idColumn = cursor.getColumnIndex(MediaStore.Audio.Albums._ID)
+        val albumColumn = cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)
+        val artistColumn = cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)
+        val numberOfSongsColumn = cursor.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS)
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(idColumn)
+            val album = cursor.getString(albumColumn)
+            val artist = cursor.getString(artistColumn)
+            val numberOfSongs = cursor.getInt(numberOfSongsColumn)
+            val uri = ContentUris.withAppendedId(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                id
+            )
+
+            val albumInfo = Album(id, album, artist, numberOfSongs, uri)
+            albums.add(albumInfo)
+        }
+    }
+
+    return@withContext albums
+}
+
+

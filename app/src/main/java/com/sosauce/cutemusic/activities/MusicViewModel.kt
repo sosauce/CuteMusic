@@ -1,10 +1,8 @@
 package com.sosauce.cutemusic.activities
 
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,9 +12,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import com.sosauce.cutemusic.audio.PlayerState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class MusicViewModel(
     private val player: Player
@@ -24,11 +22,12 @@ class MusicViewModel(
 
 
     var currentValue by mutableLongStateOf(0L)
-    var showMainScreen by mutableStateOf(false)
-    var isSheetOpen by mutableStateOf(false)
-    var playerState: MutableState<PlayerState> = mutableStateOf(PlayerState())
     var title by mutableStateOf(player.mediaMetadata.title.toString())
     var artist by mutableStateOf(player.mediaMetadata.artist.toString())
+    var previousTitle by mutableStateOf("")
+    var previousArtist by mutableStateOf("")
+    var art by mutableStateOf(player.mediaMetadata.artworkData)
+    var previousArt: ByteArray? by mutableStateOf(byteArrayOf())
     var isPlayerPlaying by mutableStateOf(player.isPlaying)
     var isPlayerLooping by mutableStateOf(isLooping())
     var isShuffleEnabled by mutableStateOf(player.shuffleModeEnabled)
@@ -59,8 +58,12 @@ class MusicViewModel(
 
                 override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                     super.onMediaMetadataChanged(mediaMetadata)
+                    previousTitle = title
+                    previousArtist = artist
+                    previousArt = art
                     title = player.mediaMetadata.title.toString().ifEmpty { "<unknown>" }
                     artist = player.mediaMetadata.artist.toString().ifEmpty { "<unknown>" }
+                    art = player.mediaMetadata.artworkData
                 }
             })
         }
@@ -134,6 +137,18 @@ class MusicViewModel(
             else -> false
         }
     }
+
+    fun greetings(): String {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+
+        return when {
+            hour < 12 -> "Hi !"
+            hour < 17 -> "Good afternoon!"
+            else -> "Good evening!"
+        }
+    }
+
 
 
 

@@ -21,14 +21,14 @@ class PlayerService: MediaSessionService() { // Thanks to that one StackOverflow
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        player.release()
+        session.release()
         stopSelf()
     }
 
     override fun onDestroy() {
-        session.run {
-            player.release()
-            release()
-        }
+        player.release()
+        session.release()
         super.onDestroy()
     }
 }
