@@ -32,6 +32,8 @@ I'm not perfect, I have school, a personnal life, hard times etc... I may not be
 CuteMusic was officialy tested on :
 - HyperOS v1.0.4 / Android 14 (sosauce)
 - MikuUI TDA / Android 13 (AOSP with Miku Hatsune painted on it basically) (sosauce)
+- PixelExperience / Android 13 (sosauce)
+- Realme UI Go / Android 11 Go Edition (sosauce)
 
 Open an issue if you want to be an "official tester" and get your ROM/device on this list 
 
