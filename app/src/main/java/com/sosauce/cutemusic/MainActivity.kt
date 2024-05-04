@@ -127,6 +127,12 @@ class MainActivity : ComponentActivity() {
     }
 
 
+
+    override fun onRestart() {
+        preparePlaylist()
+        super.onRestart()
+    }
+
     override fun onDestroy() {
         player.release()
         super.onDestroy()

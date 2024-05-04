@@ -82,7 +82,7 @@ fun NowPlayingScreen(
             },
             onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
             onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
-            onNavigateUp = { navController.navigateUp() },
+            onNavigateUp = { navController.navigate(navController.graph.startDestinationId) },
             onLoop = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) },
             onShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
             state = state

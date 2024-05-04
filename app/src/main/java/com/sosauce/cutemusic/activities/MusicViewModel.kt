@@ -39,7 +39,7 @@ class MusicViewModel(private val player: Player) : ViewModel() {
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
-                handleIsPlayingChange(isPlaying)
+                setState { copy(isPlaying = isPlaying) }
             }
 
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
@@ -60,7 +60,7 @@ class MusicViewModel(private val player: Player) : ViewModel() {
                     viewModelScope.launch {
                         while (player.isPlaying) {
                             val currentPosition = player.currentPosition
-                            handleDurationChange(player.duration, currentPosition)
+                            setState { copy(currentMusicDuration = player.duration, currentPosition = currentPosition) }
                             delay(1.seconds)
                         }
                     }
@@ -71,32 +71,16 @@ class MusicViewModel(private val player: Player) : ViewModel() {
                 super.onMediaMetadataChanged(mediaMetadata)
                 previousTitle = state.value.currentlyPlaying
                 previousArtist = state.value.currentlyArtist
-                // previousArt = art
-                handleMetadataChanges(
-                    newTitle = mediaMetadata.title.toString().ifEmpty { "<unknown>" },
-                    newArtist = mediaMetadata.artist.toString().ifEmpty { "<unknown>" },
-                    newArtwork = mediaMetadata.artworkData,
-                )
+                setState {
+                    copy(
+                        currentlyPlaying = mediaMetadata.title.toString().ifEmpty { "<unknown>" },
+                        currentlyArtist = mediaMetadata.title.toString().ifEmpty { "<unknown>" },
+                        artwork = mediaMetadata.artworkData
+                    )
+                }
             }
         })
     }
-
-//    @Composable
-//    fun iconTint(): Color {
-//        return when(isPlayerLooping) {
-//            true -> MaterialTheme.colorScheme.primary
-//            false -> MaterialTheme.colorScheme.onBackground
-//        }
-//    }
-//
-//    @Composable
-//    fun shuffleIconTint(): Color {
-//        return when(isShuffleEnabled) {
-//            true -> MaterialTheme.colorScheme.primary
-//            false -> MaterialTheme.colorScheme.onBackground
-//        }
-//    }
-
 
     fun play(uri: Uri) {
         val index = findIndexOfSong(uri)
@@ -125,30 +109,11 @@ class MusicViewModel(private val player: Player) : ViewModel() {
             is PlayerActions.Pause -> player.pause()
             is PlayerActions.SeekToNextMusic -> player.seekToNextMediaItem()
             is PlayerActions.SeekToPreviousMusic -> player.seekToPrevious()
-            is PlayerActions.ApplyLoop -> if (player.repeatMode == Player.REPEAT_MODE_ONE) player.repeatMode =
-                Player.REPEAT_MODE_OFF else player.repeatMode = Player.REPEAT_MODE_ONE
-
+            is PlayerActions.ApplyLoop -> if (player.repeatMode == Player.REPEAT_MODE_ONE) player.repeatMode = Player.REPEAT_MODE_OFF else player.repeatMode = Player.REPEAT_MODE_ONE
             is PlayerActions.ApplyShuffle -> player.shuffleModeEnabled = !player.shuffleModeEnabled
         }
     }
 
-    fun handleMetadataChanges(
-        newTitle: String,
-        newArtist: String,
-        newArtwork: ByteArray?,
-    ) {
-        setState {
-            copy(
-                currentlyPlaying = newTitle,
-                currentlyArtist = newArtist,
-                artwork = newArtwork
-            )
-        }
-    }
-
-    fun handleIsPlayingChange(newIsPlaying: Boolean) = setState { copy(isPlaying = newIsPlaying) }
-    fun handleDurationChange(newDuration: Long, newCurrentPos: Long) =
-        setState { copy(currentMusicDuration = newDuration, currentPosition = newCurrentPos) }
 }
 
 

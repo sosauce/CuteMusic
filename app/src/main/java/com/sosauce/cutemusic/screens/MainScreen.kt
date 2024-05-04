@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.sosauce.cutemusic.screens
 
@@ -9,6 +11,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +38,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -62,10 +68,13 @@ import com.sosauce.cutemusic.logic.MusicState
 import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.logic.PreferencesKeys
 import com.sosauce.cutemusic.logic.dataStore
+import com.sosauce.cutemusic.logic.getSwipeSetting
 import com.sosauce.cutemusic.logic.imageRequester
 import com.sosauce.cutemusic.screens.landscape.MainScreenLandscape
 import com.sosauce.cutemusic.ui.theme.GlobalFont
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.math.abs
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -99,6 +108,9 @@ private fun MainScreenContent(
     val dataStore = remember { context.dataStore }
     val sortState = remember { mutableStateOf<String?>(null) }
     val lazyListState = rememberLazyListState()
+    val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
+    val swipeGesturesEnabledState: State<Boolean> =
+        swipeGesturesEnabledFlow.collectAsState(initial = false)
 
 
 
@@ -170,11 +182,24 @@ private fun MainScreenContent(
 
             if (displayMusics.isNotEmpty()) {
                 Surface(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = values.calculateBottomPadding() + 5.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .clickable { navController.navigate("NowPlaying") },
+                    modifier = if (swipeGesturesEnabledState.value) {
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = values.calculateBottomPadding() + 5.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .clickable { navController.navigate("NowPlaying") }
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, _ ->
+                                    change.consume()
+                                    navController.navigate("NowPlaying")
+                                }
+                            }
+                        } else {
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = values.calculateBottomPadding() + 5.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .clickable { navController.navigate("NowPlaying") } },
                     color = MaterialTheme.colorScheme.surfaceContainerLow
                 ) {
                     MiniNowPlayingContent(
