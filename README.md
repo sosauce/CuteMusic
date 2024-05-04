@@ -2,7 +2,7 @@
 <h1 align="center">CuteMusic</h1>
 <p align="center">CuteMusic is a simple,lightweight and open-source offline music player app for Android written in Jetpack Compose & Media3</p>
 <p align=center>
-  <image src="https://i.ibb.co/cbXWF9j/1.png" height="512" />
+  <image src="https://i.ibb.co/Htt3LxT/Screenshot-20240504-125107-Cute-Music-1.png" height="512" />
   <image src="https://iili.io/Jga7d1n.png" height="512" />
 </p>
 
