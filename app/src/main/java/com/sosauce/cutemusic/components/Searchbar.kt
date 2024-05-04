@@ -47,98 +47,104 @@ fun CuteSearchbar(
 
 
     SearchBar(
-            query = query,
-            onQueryChange = { query = it },
-            onSearch = { active = false },
-            active = active,
-            onActiveChange = { active = it },
-            placeholder = { Text(text = "Search", fontFamily = GlobalFont) },
-            modifier = if (active) { Modifier.fillMaxWidth() } else { Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp) },
-            leadingIcon = {
-                if (active) {
-                    IconButton(onClick = {
-                        active = false
-                    }) {
+        query = query,
+        onQueryChange = { query = it },
+        onSearch = { active = false },
+        active = active,
+        onActiveChange = { active = it },
+        placeholder = { Text(text = "Search", fontFamily = GlobalFont) },
+        modifier = if (active) {
+            Modifier.fillMaxWidth()
+        } else {
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp)
+        },
+        leadingIcon = {
+            if (active) {
+                IconButton(onClick = {
+                    active = false
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search",
+
+                    )
+            }
+        },
+        trailingIcon = {
+            if (active) {
+                IconButton(
+                    onClick = { if (query.isNotEmpty()) query = "" }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Close"
+                    )
+                }
+            } else {
+                Row {
+                    IconButton(onClick = { expanded = true }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back"
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = "More",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-
-                        )
-                }
-            },
-            trailingIcon = {
-                if (active) {
                     IconButton(
-                        onClick = { if (query.isNotEmpty()) query = ""}
+                        onClick = { onNavigate() }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Close,
+                            imageVector = Icons.Outlined.Settings,
                             contentDescription = "Close"
                         )
                     }
-                } else {
-                    Row {
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Sort,
-                                contentDescription = "More",
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        IconButton(
-                            onClick = { onNavigate() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "Close"
-                            )
-                        }
 
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .width(180.dp)
-                                .background(color = MaterialTheme.colorScheme.surface)
-                        ) {
-                            SortRadioButtons()
-                        }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .width(180.dp)
+                            .background(color = MaterialTheme.colorScheme.surface)
+                    ) {
+                        SortRadioButtons()
                     }
                 }
-            }
-
-        ) {
-            LazyColumn {
-                fun filterMusics(musics: List<Music>, query: String): List<Music> {
-                    return musics.filter {
-                        it.title.contains(query, ignoreCase = true)
-                    }
-                }
-
-                val filteredMusics = if (query.isNotEmpty()) filterMusics(musics, query) else null
-
-
-                if (filteredMusics != null) {
-
-                    itemsIndexed(filteredMusics) {index, item ->
-                        val selectedItems = remember { mutableListOf<Int>() }
-                        val music = filteredMusics[index]
-                        val isSelected = selectedItems.contains(index)
-                        MusicListItem(
-                            music,
-                            { viewModel.play(music.uri) },
-                            { selectedItems.add(index) },
-                            isSelected = isSelected
-                        )
-                    }
-                }
-
             }
         }
+
+    ) {
+        LazyColumn {
+            fun filterMusics(musics: List<Music>, query: String): List<Music> {
+                return musics.filter {
+                    it.title.contains(query, ignoreCase = true)
+                }
+            }
+
+            val filteredMusics = if (query.isNotEmpty()) filterMusics(musics, query) else null
+
+
+            if (filteredMusics != null) {
+
+                itemsIndexed(filteredMusics) { index, item ->
+                    val selectedItems = remember { mutableListOf<Int>() }
+                    val music = filteredMusics[index]
+                    val isSelected = selectedItems.contains(index)
+                    MusicListItem(
+                        music,
+                        { viewModel.play(music.uri) },
+                        { selectedItems.add(index) },
+                        isSelected = isSelected
+                    )
+                }
+            }
+
+        }
+    }
 }

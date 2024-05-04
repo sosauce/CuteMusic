@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -47,6 +46,8 @@ import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.components.LoopButton
 import com.sosauce.cutemusic.components.MusicSlider
 import com.sosauce.cutemusic.components.ShuffleButton
+import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.logic.dataStore
 import com.sosauce.cutemusic.logic.getSwipeSetting
 import com.sosauce.cutemusic.logic.imageRequester
@@ -61,58 +62,51 @@ import kotlin.math.abs
 fun NowPlayingScreen(
     navController: NavController,
     viewModel: MusicViewModel,
-    player: Player
+    player: Player,
+    state: MusicState
 ) {
     val config = LocalConfiguration.current
 
     if (config.orientation != Configuration.ORIENTATION_PORTRAIT) {
-        NowPlayingLandscape(player, viewModel, navController)
+        NowPlayingLandscape(player, viewModel, navController, state)
     } else {
         NowPlayingContent(
-            navController,
-            player,
-            viewModel,
+            player = player,
+            viewModel = viewModel,
             onPlayOrPause = {
-                if (viewModel.isPlayerPlaying) {
-                    player.pause()
-                    viewModel.isPlayerPlaying = false
+                if (state.isPlaying) {
+                    viewModel.handlePlayerActions(PlayerActions.Pause)
                 } else {
-                    player.play()
-                    viewModel.isPlayerPlaying = true
+                    viewModel.handlePlayerActions(PlayerActions.Play)
                 }
             },
-            onSeekNext = { player.seekToNextMediaItem() },
-            onSeekPrevious = { player.seekToPreviousMediaItem() }
+            onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
+            onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+            onNavigateUp = { navController.navigateUp() },
+            onLoop = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) },
+            onShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
+            state = state
         )
     }
 
-    DisposableEffect(Unit) {
-        val listener = object : Player.Listener {
-            override fun onIsPlayingChanged(isItPlaying: Boolean) {
-                viewModel.isPlayerPlaying = isItPlaying
-            }
-        }
-        player.addListener(listener)
-        onDispose {
-            player.removeListener(listener)
-        }
-    }
 }
 
 @Composable
 private fun NowPlayingContent(
-    navController: NavController,
     player: Player,
     viewModel: MusicViewModel,
     onSeekNext: () -> Unit,
     onSeekPrevious: () -> Unit,
-    onPlayOrPause: () -> Unit
+    onPlayOrPause: () -> Unit,
+    onNavigateUp: () -> Unit,
+    onLoop: () -> Unit,
+    onShuffle: () -> Unit,
+    state: MusicState
 ) {
-
-
     val context = LocalContext.current
     val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
-    val swipeGesturesEnabledState: State<Boolean> = swipeGesturesEnabledFlow.collectAsState(initial = false)
+    val swipeGesturesEnabledState: State<Boolean> =
+        swipeGesturesEnabledFlow.collectAsState(initial = false)
 
     Scaffold { _ ->
         Box(
@@ -125,16 +119,17 @@ private fun NowPlayingContent(
                             change.consume()
                             val (x, y) = dragAmount
                             if (abs(x) > abs(y)) {
-                                if (x > 0) player.seekToPreviousMediaItem() else player.seekToNextMediaItem()
+                                if (x > 0) onSeekPrevious() else onSeekNext()
                             } else {
-                                navController.navigate("MainScreen")
+                                onNavigateUp()
                             }
                         }
                     }
             } else {
                 Modifier
                     .padding(15.dp)
-                    .fillMaxSize() }
+                    .fillMaxSize()
+            }
         ) {
             Column(
                 modifier = Modifier
@@ -145,7 +140,7 @@ private fun NowPlayingContent(
                 Spacer(modifier = Modifier.height(45.dp))
                 AsyncImage(
                     model = imageRequester(
-                        img = viewModel.art ?: viewModel.previousArt,
+                        img = state.artwork,
                         context = context
                     ),
                     contentDescription = "Artwork",
@@ -156,27 +151,30 @@ private fun NowPlayingContent(
 
 
                 Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = if (viewModel.title == "null") viewModel.previousTitle else viewModel.title,
-                        fontFamily = GlobalFont,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(
-                        text = if (viewModel.artist == "null") viewModel.previousArtist else viewModel.artist,
-                        fontFamily = GlobalFont,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp
-                    )
+                Text(
+                    text = if (state.currentlyPlaying == "null") viewModel.previousTitle else state.currentlyPlaying,
+                    fontFamily = GlobalFont,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = if (state.currentlyArtist == "null") viewModel.previousArtist else state.currentlyArtist,
+                    fontFamily = GlobalFont,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp
+                )
                 Spacer(modifier = Modifier.height(10.dp))
-                MusicSlider(viewModel, player)
+                MusicSlider(player, state)
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ShuffleButton(player, viewModel)
+                    ShuffleButton(
+                        player = player,
+                        onShuffle = { onShuffle() }
+                    )
                     IconButton(
                         onClick = { onSeekPrevious() }
                     ) {
@@ -189,7 +187,7 @@ private fun NowPlayingContent(
                         onClick = { onPlayOrPause() }
                     ) {
                         Icon(
-                            imageVector = if (viewModel.isPlayerPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                            imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                             contentDescription = "pause/play button"
                         )
                     }
@@ -203,7 +201,10 @@ private fun NowPlayingContent(
                             contentDescription = null
                         )
                     }
-                    LoopButton(player, viewModel)
+                    LoopButton(
+                        player = player,
+                        onClick = { onLoop() }
+                    )
                 }
                 if (!swipeGesturesEnabledState.value) {
                     Spacer(modifier = Modifier.height(30.dp))
@@ -212,7 +213,7 @@ private fun NowPlayingContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        IconButton(onClick = { navController.navigate("MainScreen") }) {
+                        IconButton(onClick = { onNavigateUp() }) {
                             Icon(imageVector = Icons.Outlined.Home, contentDescription = "Home")
                         }
                     }

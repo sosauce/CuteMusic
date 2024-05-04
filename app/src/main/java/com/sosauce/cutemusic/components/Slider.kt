@@ -26,39 +26,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import com.sosauce.cutemusic.activities.MusicViewModel
+import com.sosauce.cutemusic.logic.MusicState
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import kotlinx.coroutines.delay
 import me.saket.squiggles.SquigglySlider
+import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun MusicSlider(
-    viewModel: MusicViewModel,
-    player: Player
+    player: Player,
+    state: MusicState
 ) {
-
-    var sliderPosition by remember { mutableFloatStateOf(viewModel.currentValue.toFloat()) }
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
     val updatedSliderPosition = rememberUpdatedState(sliderPosition)
 
-        LaunchedEffect(Unit) {
-            while (true) {
-                val currentPosition = player.currentPosition
-                viewModel.currentValue = currentPosition
-                sliderPosition = currentPosition.toFloat()
-                delay(1.seconds / 30 )
-            }
+    LaunchedEffect(Unit) {
+        while (true) {
+            sliderPosition = state.currentPosition.toFloat()
+            delay(1.seconds)
         }
+    }
     Column {
-        if (player.duration > 0) {
+        if (state.currentMusicDuration > 0) {
             SquigglySlider(
-                value = updatedSliderPosition.value,
+                value = state.currentPosition.toFloat(),
                 onValueChange = { new ->
                     sliderPosition = new
-                    viewModel.currentValue = new.toLong()
-                    player.seekTo(viewModel.currentValue)
+                    state.currentPosition = new.toLong()
+                    player.seekTo(state.currentPosition)
                 },
-                valueRange = 0f..player.duration.toFloat()
+                valueRange = 0f..state.currentMusicDuration.toFloat()
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -69,11 +68,12 @@ fun MusicSlider(
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(16.dp))
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (viewModel.totalDuration() == "-153722867280912:-55") "" else viewModel.totalDuration(),   //lame check need to change
+                        text = if (totalDuration(state) == "-153722867280912:-55") "" else totalDuration(state),
                         fontFamily = GlobalFont
                     )
                 }
@@ -81,11 +81,12 @@ fun MusicSlider(
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(16.dp))
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (viewModel.timeLeft() == "-153722867280912:-55") "" else viewModel.timeLeft(),   //lame check need to change
+                        text = if (timeLeft(state) == "-153722867280912:-55") "" else timeLeft(state),   //lame check need to change
                         fontFamily = GlobalFont,
                     )
                 }
@@ -96,12 +97,26 @@ fun MusicSlider(
                 value = updatedSliderPosition.value,
                 onValueChange = { new ->
                     sliderPosition = new
-                    viewModel.currentValue = new.toLong()
-                    player.seekTo(viewModel.currentValue)
+                    state.currentPosition = new.toLong()
+                    player.seekTo(state.currentPosition)
                 },
                 valueRange = 0f..0f
 
             )
         }
     }
+}
+
+fun totalDuration(state: MusicState): String {
+    val totalSeconds = state.currentMusicDuration / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+}
+
+fun timeLeft(state: MusicState): String {
+    val totalSeconds = state.currentPosition / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }

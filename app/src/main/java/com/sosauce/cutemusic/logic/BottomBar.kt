@@ -13,18 +13,24 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
 fun BottomBar(
-    navController: NavController
+    navController: NavController,
+    viewModel: MusicViewModel
 ) {
 
     val items = listOf(
@@ -42,26 +48,28 @@ fun BottomBar(
         ),
         NavigationItem(
             title = "Artists",
-            navigateTo = "",
+            navigateTo = "ArtistsScreen",
             activeIcon = Icons.Default.Person,
             notActiveIcon = Icons.Outlined.Person
         )
 
     )
 
-    var selectedItem by rememberSaveable { mutableIntStateOf(0) }
 
-    NavigationBar(
-        modifier = Modifier.clickable { navController.navigate("NowPlaying") }
-    ) {
-        items.forEachIndexed{index, item ->
-            val selected = selectedItem == index
+    NavigationBar {
+        items.forEachIndexed { index, item ->
+            val selected = viewModel.selectedItem == index
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    selectedItem = index
-                    navController.navigate(item.navigateTo) { launchSingleTop = true }
-                          },
+                    navController.navigate(item.navigateTo) {
+                        viewModel.selectedItem = index
+                        launchSingleTop = true
+                        restoreState = true
+
+                    }
+
+                },
                 icon = {
                     Icon(
                         imageVector = if (selected) item.activeIcon else item.notActiveIcon,
@@ -80,6 +88,7 @@ fun BottomBar(
     }
 }
 
+@Immutable
 data class NavigationItem(
     val title: String,
     val navigateTo: String,

@@ -8,7 +8,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.components.AboutCard
 import com.sosauce.cutemusic.components.SwipeSwitch
 import com.sosauce.cutemusic.components.ThemeManagement
@@ -22,7 +24,7 @@ fun SettingsScreen(navController: NavController) {
     Scaffold(
         topBar = {
             AppBar(
-                title = "Settings",
+                title = stringResource(id = R.string.settings),
                 showBackArrow = true,
                 navController = navController,
                 showMenuIcon = false,
@@ -37,7 +39,7 @@ fun SettingsScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(values),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             AboutCard()
             ThemeManagement()
             SwipeSwitch()

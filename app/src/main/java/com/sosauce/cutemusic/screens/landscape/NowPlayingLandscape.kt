@@ -41,6 +41,8 @@ import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.components.LoopButton
 import com.sosauce.cutemusic.components.MusicSlider
 import com.sosauce.cutemusic.components.ShuffleButton
+import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.logic.dataStore
 import com.sosauce.cutemusic.logic.getSwipeSetting
 import com.sosauce.cutemusic.ui.theme.GlobalFont
@@ -51,24 +53,27 @@ import kotlin.math.abs
 fun NowPlayingLandscape(
     player: Player,
     viewModel: MusicViewModel,
-    navController: NavController
+    navController: NavController,
+    state: MusicState
 ) {
 
     NPLContent(
         player,
         viewModel,
-        navController,
         onPlayOrPause = {
-            if (viewModel.isPlayerPlaying) {
-                player.pause()
-                viewModel.isPlayerPlaying = false
+            if (state.isPlaying) {
+                viewModel.handlePlayerActions(PlayerActions.Pause)
+                state.isPlaying = false
             } else {
-                player.play()
-                viewModel.isPlayerPlaying = true
+                viewModel.handlePlayerActions(PlayerActions.Play)
+                state.isPlaying = true
             }
         },
-        onSeekNext = { player.seekToNextMediaItem() },
-        onSeekPrevious = { player.seekToPreviousMediaItem() }
+        onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
+        onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+        onNavigateUp = { navController.navigateUp() },
+        onShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
+        state = state
     )
 }
 
@@ -76,16 +81,19 @@ fun NowPlayingLandscape(
 private fun NPLContent(
     player: Player,
     viewModel: MusicViewModel,
-    navController: NavController,
     onSeekNext: () -> Unit,
     onSeekPrevious: () -> Unit,
     onPlayOrPause: () -> Unit,
+    onNavigateUp: () -> Unit,
+    onShuffle: () -> Unit,
+    state: MusicState
 ) {
 
     val context = LocalContext.current
 
     val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
-    val swipeGesturesEnabledState: State<Boolean> = swipeGesturesEnabledFlow.collectAsState(initial = false)
+    val swipeGesturesEnabledState: State<Boolean> =
+        swipeGesturesEnabledFlow.collectAsState(initial = false)
 
     Box(
         modifier = if (swipeGesturesEnabledState.value) {
@@ -97,16 +105,19 @@ private fun NPLContent(
                         change.consume()
                         val (x, y) = dragAmount
                         if (abs(x) > abs(y)) {
-                            if (x > 0) player.seekToPreviousMediaItem() else player.seekToNextMediaItem()
+                            if (x > 0) viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) else viewModel.handlePlayerActions(
+                                PlayerActions.SeekToNextMusic
+                            )
                         } else {
-                            navController.navigate("MainScreen")
+                            onNavigateUp()
                         }
                     }
                 }
         } else {
             Modifier
                 .fillMaxSize()
-                .padding(45.dp) }
+                .padding(45.dp)
+        }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -114,7 +125,7 @@ private fun NPLContent(
                 .fillMaxSize()
         ) {
             AsyncImage(
-                model = player.mediaMetadata.artworkData,
+                model = state.artwork,
                 contentDescription = "Artwork",
                 modifier = Modifier
                     .size(300.dp)
@@ -127,24 +138,27 @@ private fun NPLContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = viewModel.title,
+                    text = state.currentlyPlaying,
                     fontFamily = GlobalFont,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 30.sp
                 )
                 Text(
-                    text = viewModel.artist,
+                    text = state.currentlyArtist,
                     fontFamily = GlobalFont,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp
                 )
-                MusicSlider(viewModel, player)
+                MusicSlider(player, state)
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ShuffleButton(player, viewModel)
+                    ShuffleButton(
+                        player = player,
+                        onShuffle = { onShuffle() }
+                    )
                     IconButton(
                         onClick = { onSeekPrevious() }
                     ) {
@@ -159,7 +173,7 @@ private fun NPLContent(
                         onClick = { onPlayOrPause() }
                     ) {
                         Icon(
-                            imageVector = if (viewModel.isPlayerPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                            imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                             contentDescription = "play/pause button"
                         )
                     }
@@ -172,7 +186,10 @@ private fun NPLContent(
                             tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
-                    LoopButton(player, viewModel)
+                    LoopButton(
+                        player = player,
+                        onClick = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) }
+                    )
                 }
                 if (!swipeGesturesEnabledState.value) {
                     Spacer(modifier = Modifier.height(30.dp))
@@ -181,7 +198,7 @@ private fun NPLContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        TextButton(onClick = { navController.navigate("MainScreen") }) {
+                        TextButton(onClick = { onNavigateUp() }) {
                             Text(text = "Home Screen", fontFamily = GlobalFont)
                         }
                     }

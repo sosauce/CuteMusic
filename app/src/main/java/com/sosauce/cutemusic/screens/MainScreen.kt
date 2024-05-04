@@ -45,8 +45,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -57,6 +57,9 @@ import com.sosauce.cutemusic.audio.getMusicArt
 import com.sosauce.cutemusic.components.BottomSheetContent
 import com.sosauce.cutemusic.components.CuteSearchbar
 import com.sosauce.cutemusic.components.MiniNowPlayingContent
+import com.sosauce.cutemusic.logic.BottomBar
+import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.logic.PreferencesKeys
 import com.sosauce.cutemusic.logic.dataStore
 import com.sosauce.cutemusic.logic.imageRequester
@@ -66,18 +69,22 @@ import kotlinx.coroutines.flow.map
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(navController: NavController, player: Player, musics: List<Music>, viewModel: MusicViewModel) {
+fun MainScreen(
+    navController: NavController,
+    musics: List<Music>,
+    viewModel: MusicViewModel,
+    state: MusicState
+) {
 
     val config = LocalConfiguration.current
 
     if (config.orientation != Configuration.ORIENTATION_PORTRAIT) {
-        MainScreenLandscape(musics, viewModel, player, navController)
+        MainScreenLandscape(musics, viewModel, navController, state)
     } else {
-        MainScreenContent(navController, viewModel, musics, player)
+        MainScreenContent(navController, viewModel, musics, state.isPlaying, state.currentlyPlaying)
     }
 
 }
-
 
 
 @Composable
@@ -85,7 +92,8 @@ private fun MainScreenContent(
     navController: NavController,
     viewModel: MusicViewModel,
     musics: List<Music>,
-    player: Player
+    isPlaying: Boolean,
+    currentlyPlaying: String
 ) {
     val context = LocalContext.current
     val dataStore = remember { context.dataStore }
@@ -95,7 +103,7 @@ private fun MainScreenContent(
 
 
     LaunchedEffect(Unit) {
-        val sortFlow = dataStore.data.map {preferences ->
+        val sortFlow = dataStore.data.map { preferences ->
             preferences[PreferencesKeys.SORT_ORDER]
         }
 
@@ -111,56 +119,80 @@ private fun MainScreenContent(
         else -> musics
     }
 
-            Scaffold(
-                topBar = {
-                         CuteSearchbar(
-                             viewModel = viewModel,
-                             musics = musics,
-                             onNavigate = { navController.navigate("SettingsScreen") }
-                         )
-                },
-//                bottomBar = {
-//                    BottomBar(
-//                        navController = navController
-//                    )
-//                }
-            ) { values ->
-                val selectedItems = remember { mutableListOf<Int>() }
-                Box(modifier = Modifier.fillMaxSize()){
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(values),
-                        state = lazyListState
-                    ) {
-                        items(displayMusics) {music ->
-                            val isSelected = selectedItems.contains(music.id.toInt())
-                            MusicListItem(
-                                music,
-                                onShortClick =  { viewModel.play(music.uri) },
-                                onSelected =  { selectedItems.add(music.id.toInt()) },
-                                isSelected = isSelected
-                            )
-                        }
-                    }
+    Scaffold(
+        topBar = {
+                CuteSearchbar(
+                    viewModel = viewModel,
+                    musics = musics,
+                    onNavigate = { navController.navigate("SettingsScreen") }
+                )
+        },
+                bottomBar = {
+                    BottomBar(
+                        navController = navController,
+                        viewModel
+                    )
+                }
+    ) { values ->
+        val selectedItems = remember { mutableListOf<Int>() }
+        Box(modifier = Modifier.fillMaxSize()) {
 
-                    Surface(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = values.calculateBottomPadding() + 5.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .clickable { navController.navigate("NowPlaying") },
-                        color = MaterialTheme.colorScheme.surfaceContainerLow
-                    ) {
-                        MiniNowPlayingContent(
-                            onSeekNext = { player.seekToNextMediaItem() },
-                            onSeekPrevious = { player.seekToPreviousMediaItem() },
-                            onPlayOrPause = { if (viewModel.isPlayerPlaying) player.pause() else player.play() },
-                            viewModel = viewModel
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(values),
+                state = lazyListState
+            ) {
+                if (displayMusics.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No music found !",
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            fontFamily = GlobalFont
+                        )
+                    }
+                } else {
+                    items(displayMusics) { music ->
+                        val isSelected = selectedItems.contains(music.id.toInt())
+                        MusicListItem(
+                            music,
+                            onShortClick = { viewModel.play(music.uri) },
+                            onSelected = { selectedItems.add(music.id.toInt()) },
+                            isSelected = isSelected
                         )
                     }
                 }
             }
+
+
+            if (displayMusics.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = values.calculateBottomPadding() + 5.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .clickable { navController.navigate("NowPlaying") },
+                    color = MaterialTheme.colorScheme.surfaceContainerLow
+                ) {
+                    MiniNowPlayingContent(
+                        onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
+                        onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+                        onPlayOrPause = {
+                            if (isPlaying) viewModel.handlePlayerActions(
+                                PlayerActions.Pause
+                            ) else viewModel.handlePlayerActions(PlayerActions.Play)
+                        },
+                        isPlaying = isPlaying,
+                        currentTitle = currentlyPlaying,
+                        viewModel = viewModel
+                    )
+                }
+            }
+        }
+    }
 }
 
 
@@ -193,62 +225,63 @@ fun MusicListItem(
     }
 
 
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .combinedClickable(
-                    onClick = { onShortClick(music.uri) },
-                    onLongClick = { onSelected() }
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = { onShortClick(music.uri) },
+                onLongClick = { onSelected() }
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (!isSelected) {
-                    AsyncImage(
-                        model = imageRequester(
-                            img = art ?: R.drawable.cute_music_icon,
-                            context = context
-                        ),
-                        contentDescription = "Artwork",
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .size(45.dp)
-                            .clip(RoundedCornerShape(15)),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Image(
-                        painter = rememberAsyncImagePainter(art ?: R.drawable.cute_music_icon),
-                        contentDescription = "Artwork",
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .size(45.dp)
-                            .clip(RoundedCornerShape(15)),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.padding(15.dp)
-                ) {
-                    Text(
-                        text = if (music.title.length >= 25) music.title.take(25) + "..." else music.title,
-                        fontFamily = GlobalFont,
-                        maxLines = 1
-                    )
-                    Text(text = music.artist,
-                        fontFamily = GlobalFont
-                    )
-                }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (!isSelected) {
+                AsyncImage(
+                    model = imageRequester(
+                        img = art ,
+                        context = context
+                    ),
+                    contentDescription = "Artwork",
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                        .size(45.dp)
+                        .clip(RoundedCornerShape(15)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = rememberAsyncImagePainter(art ?: R.drawable.cute_music_icon),
+                    contentDescription = "Artwork",
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                        .size(45.dp)
+                        .clip(RoundedCornerShape(15)),
+                    contentScale = ContentScale.Crop,
+                )
             }
-            IconButton(onClick = { isSheetOpen = true }) {
-                Icon(
-                    imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = null
+
+            Column(
+                modifier = Modifier.padding(15.dp)
+            ) {
+                Text(
+                    text = if (music.title.length >= 25) music.title.take(25) + "..." else music.title,
+                    fontFamily = GlobalFont,
+                    maxLines = 1
+                )
+                Text(
+                    text = music.artist,
+                    fontFamily = GlobalFont
                 )
             }
         }
+        IconButton(onClick = { isSheetOpen = true }) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = null
+            )
+        }
+    }
 }
 

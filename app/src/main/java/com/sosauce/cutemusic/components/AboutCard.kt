@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.ui.theme.GlobalFont
@@ -55,29 +56,42 @@ fun AboutCard() {
             )
             Column {
                 Text(text = "CuteMusic by sosauce", fontFamily = GlobalFont)
-                Text(text = "Version $version", fontFamily = GlobalFont)
+                Text(
+                    text = "${stringResource(id = R.string.version)} $version",
+                    fontFamily = GlobalFont
+                )
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
 
-                Row {
-                    Button(
-                        onClick = { uriHandler.openUri("https://github.com/sosauce/CuteMusic/releases") },
-                        shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 4.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "Check Updates", fontFamily = GlobalFont)
-                    }
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Button(
-                        onClick = { uriHandler.openUri("https://bit.ly/sosaucePayPal") },
-                        shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 24.dp, bottomEnd = 24.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                            Text(text = "Support", fontFamily = GlobalFont)
-
-                    }
+            Row {
+                Button(
+                    onClick = { uriHandler.openUri("https://github.com/sosauce/CuteMusic/releases") },
+                    shape = RoundedCornerShape(
+                        topStart = 24.dp,
+                        bottomStart = 24.dp,
+                        topEnd = 4.dp,
+                        bottomEnd = 4.dp
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = stringResource(id = R.string.update), fontFamily = GlobalFont)
                 }
+                Spacer(modifier = Modifier.width(2.dp))
+                Button(
+                    onClick = { uriHandler.openUri("https://bit.ly/sosaucePayPal") },
+                    shape = RoundedCornerShape(
+                        topStart = 4.dp,
+                        bottomStart = 4.dp,
+                        topEnd = 24.dp,
+                        bottomEnd = 24.dp
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = stringResource(id = R.string.support), fontFamily = GlobalFont)
+
+                }
+            }
         }
     }
 }

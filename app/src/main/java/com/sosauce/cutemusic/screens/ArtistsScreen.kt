@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,35 +25,34 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Album
+import com.sosauce.cutemusic.audio.Artist
 import com.sosauce.cutemusic.logic.AppBar
 import com.sosauce.cutemusic.logic.BottomBar
 import com.sosauce.cutemusic.logic.imageRequester
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
-fun AlbumsScreen(
+fun ArtistsScreen(
+    artist: List<Artist>,
     navController: NavController,
-    albums: List<Album>,
     viewModel: MusicViewModel
 ) {
-    AlbumsScreenContent(
+    ArtistsScreenContent(
+        artist = artist,
         navController = navController,
-        albums = albums,
         viewModel = viewModel
     )
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-private fun AlbumsScreenContent(
+private fun ArtistsScreenContent(
+    artist: List<Artist>,
     navController: NavController,
-    albums: List<Album>,
     viewModel: MusicViewModel
 ) {
 
@@ -64,7 +62,7 @@ private fun AlbumsScreenContent(
         Scaffold(
             topBar = {
                 AppBar(
-                    title = "Albums",
+                    title = "Artists",
                     showBackArrow = false,
                     showMenuIcon = true,
                     navController = navController,
@@ -74,19 +72,22 @@ private fun AlbumsScreenContent(
                 )
 
             },
-                bottomBar = {
-                    BottomBar(navController = navController, viewModel = viewModel)
-                }
+            bottomBar = {
+                BottomBar(
+                    navController = navController,
+                    viewModel = viewModel
+                )
+            }
         ) { values ->
 
-            if (albums.isEmpty()) {
+            if (artist.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(values)
                 ) {
                     Text(
-                        text = "No album found !",
+                        text = "No artist found !",
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
@@ -102,9 +103,9 @@ private fun AlbumsScreenContent(
                         .fillMaxSize()
                         .padding(values)
                 ) {
-                    itemsIndexed(albums) { index, album ->
+                    itemsIndexed(artist) { index, album ->
                         AlbumCard(album) {
-                            navController.navigate("AlbumsDetailsScreen/$index")
+                            navController.navigate("ArtistDetailsScreen/$index")
                         }
                     }
                 }
@@ -115,7 +116,7 @@ private fun AlbumsScreenContent(
 
 @Composable
 private fun AlbumCard(
-    album: Album,
+    artist: Artist,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -134,7 +135,7 @@ private fun AlbumCard(
         ) {
             AsyncImage(
                 model = imageRequester(
-                    img = album.albumArt,
+                    img = R.drawable.artist,
                     context = context
                 ),
                 contentDescription = "Artwork",
@@ -148,13 +149,9 @@ private fun AlbumCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (album.name.length >= 25) album.name.take(25) + "..." else album.name,
+                    text = if (artist.name.length >= 25) artist.name.take(25) + "..." else artist.name,
                     fontFamily = GlobalFont,
                     maxLines = 1
-                )
-                Text(
-                    text = album.artist,
-                    fontFamily = GlobalFont
                 )
             }
         }

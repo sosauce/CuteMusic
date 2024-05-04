@@ -1,8 +1,6 @@
 package com.sosauce.cutemusic.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.activities.MusicViewModel
+import com.sosauce.cutemusic.logic.MusicState
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
@@ -27,6 +26,8 @@ fun MiniNowPlayingContent(
     onSeekNext: () -> Unit,
     onSeekPrevious: () -> Unit,
     onPlayOrPause: () -> Unit,
+    currentTitle: String,
+    isPlaying: Boolean,
     viewModel: MusicViewModel
 ) {
     Row(
@@ -37,7 +38,7 @@ fun MiniNowPlayingContent(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = if (viewModel.title.length >= 25) viewModel.title.take(25) + "..." else if (viewModel.title == "null") viewModel.previousTitle else viewModel.title,
+            text = if (currentTitle.length >= 25) currentTitle.take(25) + "..." else if (currentTitle == "null") viewModel.previousTitle else currentTitle,
             fontFamily = GlobalFont,
             // modifier = Modifier.animateContentSize()
         )
@@ -57,13 +58,8 @@ fun MiniNowPlayingContent(
                 onClick = { onPlayOrPause() }
             ) {
                 Icon(
-                    imageVector = if (viewModel.isPlayerPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                    contentDescription = "play/pause button",
-                    modifier = Modifier.animateContentSize(animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                    )
+                    imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    contentDescription = "play/pause button"
                 )
             }
             IconButton(

@@ -25,9 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.logic.dataStore
 import com.sosauce.cutemusic.logic.getAmoledModeSetting
 import com.sosauce.cutemusic.logic.getDarkModeSetting
@@ -48,15 +50,20 @@ fun SwipeSwitch() {
 
     if (showAboutDialog) {
         AboutDialog(
-            title = "Swipe Gestures",
-            contentText = "When enabled, the now playing screen will be swipeable.\n\n-Top to Bottom to exit the screen\n-Right to Left to play next music\n-Left to Right to play previous song",
+            title = stringResource(id = R.string.swipe_gestures),
+            contentText = stringResource(id = R.string.about_swipe_gestures),
             onDismiss = { showAboutDialog = false }
         )
 
     }
 
     Column {
-        Text(text = "Misc", fontFamily = GlobalFont, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp))
+        Text(
+            text = "Misc",
+            fontFamily = GlobalFont,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
+        )
 
         Card(
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
@@ -79,7 +86,7 @@ fun SwipeSwitch() {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Use swipe gestures",
+                        text = stringResource(id = R.string.use_swipe),
                         fontFamily = GlobalFont
                     )
                     IconButton(
@@ -116,7 +123,12 @@ fun ThemeManagement() {
     val coroutineScope = rememberCoroutineScope()
 
     Column {
-        Text(text = "Theme", fontFamily = GlobalFont, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp))
+        Text(
+            text = stringResource(id = R.string.theme),
+            fontFamily = GlobalFont,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
+        )
         Card(
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
             modifier = Modifier
@@ -137,7 +149,7 @@ fun ThemeManagement() {
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Dark Mode",
+                    text = stringResource(id = R.string.dark_mode),
                     fontFamily = GlobalFont
                 )
                 Switch(
@@ -173,7 +185,7 @@ fun ThemeManagement() {
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Amoled Mode",
+                text = stringResource(id = R.string.amoled_mode),
                 fontFamily = GlobalFont
             )
             Switch(

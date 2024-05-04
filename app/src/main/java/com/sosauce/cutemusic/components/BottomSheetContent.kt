@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -38,7 +39,7 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 fun BottomSheetContent(music: Music) {
     val context = LocalContext.current
     var art: ByteArray? by remember { mutableStateOf(byteArrayOf()) }
-    val fileType = getFileType(context, music.uri)
+    val fileType = context.contentResolver.getType(music.uri)
     val fileSize = getFileSize(context, music.uri).formatBinarySize()
 
 
@@ -47,87 +48,77 @@ fun BottomSheetContent(music: Music) {
     }
 
 
-        Column {
-                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "About",
-                        modifier = Modifier.padding(15.dp),
-                        fontFamily = GlobalFont,
-                        fontSize = 18.sp
-                    )
-                }
+    Column {
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(id = R.string.about),
+                modifier = Modifier.padding(15.dp),
+                fontFamily = GlobalFont,
+                fontSize = 18.sp
+            )
+        }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                shape = RoundedCornerShape(
-                    topStart = 24.dp,
-                    topEnd = 24.dp,
-                    bottomStart = 4.dp,
-                    bottomEnd = 4.dp
-                ),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AsyncImage(
-                        model = imageRequester(
-                            img = art ?: R.drawable.cute_music_icon,
-                            context = context
-                        ),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(15.dp)
-                            .clip(RoundedCornerShape(15))
-                    )
-                    Column {
-                        Text(
-                            text = music.title,
-                            fontFamily = GlobalFont
-                        )
-                        Text(
-                            text = music.artist,
-                            fontFamily = GlobalFont
-                        )
-                    }
-                }
-            }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                shape = RoundedCornerShape(
-                    topStart = 4.dp,
-                    topEnd = 4.dp,
-                    bottomStart = 24.dp,
-                    bottomEnd = 24.dp
-                ),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
-            ) {
-                Column(modifier = Modifier.padding(15.dp)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            shape = RoundedCornerShape(
+                topStart = 24.dp,
+                topEnd = 24.dp,
+                bottomStart = 4.dp,
+                bottomEnd = 4.dp
+            ),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AsyncImage(
+                    model = imageRequester(
+                        img = art,
+                        context = context
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(15.dp)
+                        .clip(RoundedCornerShape(15))
+                )
+                Column {
                     Text(
-                        text = "Size: $fileSize",
-                        fontFamily = GlobalFont,
-                        modifier = Modifier.padding(bottom = 5.dp)
+                        text = music.title,
+                        fontFamily = GlobalFont
                     )
                     Text(
-                        text = "Type: $fileType",
-                        fontFamily = GlobalFont,
-                        modifier = Modifier.padding(bottom = 5.dp)
+                        text = music.artist,
+                        fontFamily = GlobalFont
                     )
                 }
             }
         }
-    }
-
-private fun getFileType(context: Context, uri: Uri): String {
-    val type = context.contentResolver.getType(uri)
-
-    return when(type) {
-        "audio/mpeg" -> "MP3"
-        "audio/ogg" -> "OGG"
-        else -> "Unknown"
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            shape = RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 4.dp,
+                bottomStart = 24.dp,
+                bottomEnd = 24.dp
+            ),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
+        ) {
+            Column(modifier = Modifier.padding(15.dp)) {
+                Text(
+                    text = "${stringResource(id = R.string.size)}: $fileSize",
+                    fontFamily = GlobalFont,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+                Text(
+                    text = "${stringResource(id = R.string.type)}: $fileType",
+                    fontFamily = GlobalFont,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+        }
     }
 }
 

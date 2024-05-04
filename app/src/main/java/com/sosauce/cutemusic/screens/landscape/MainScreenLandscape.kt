@@ -26,11 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import androidx.navigation.NavController
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.logic.AppBar
+import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.screens.MusicListItem
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
@@ -39,8 +40,8 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 fun MainScreenLandscape(
     musics: List<Music>,
     viewModel: MusicViewModel,
-    player: Player,
-    navController: NavController
+    navController: NavController,
+    state: MusicState
 ) {
 
     Scaffold(
@@ -55,7 +56,7 @@ fun MainScreenLandscape(
                 musics = musics
             )
         }
-    ){ values ->
+    ) { values ->
 
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
@@ -64,7 +65,7 @@ fun MainScreenLandscape(
                     .padding(values),
                 verticalArrangement = Arrangement.Top
             ) {
-                itemsIndexed(musics) {index, music ->
+                itemsIndexed(musics) { index, music ->
                     val selectedItems = remember { mutableListOf<Int>() }
                     val isSelected = selectedItems.contains(index)
                     MusicListItem(
@@ -85,38 +86,36 @@ fun MainScreenLandscape(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (viewModel.title == "null") viewModel.previousTitle else viewModel.title,
+                    text = if (state.currentlyPlaying == "null") "" else state.currentlyPlaying,
                     fontFamily = GlobalFont,
                     maxLines = 1,
                     modifier = Modifier.padding(start = 10.dp)
                 )
                 Row(horizontalArrangement = Arrangement.End) {
-                     IconButton(
-                        onClick = { player.seekToPreviousMediaItem() }
+                    IconButton(
+                        onClick = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastRewind,
                             contentDescription = "previous song"
                         )
                     }
-                     IconButton(
+                    IconButton(
                         onClick = {
-                            if (viewModel.isPlayerPlaying) {
-                                player.pause()
-                                viewModel.isPlayerPlaying = false
+                            if (state.isPlaying) {
+                                viewModel.handlePlayerActions(PlayerActions.Pause)
                             } else {
-                                player.play()
-                                viewModel.isPlayerPlaying = true
+                                viewModel.handlePlayerActions(PlayerActions.Play)
                             }
                         }
                     ) {
                         Icon(
-                            imageVector = if (viewModel.isPlayerPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                            imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                             contentDescription = "play/pause button"
                         )
                     }
-                     IconButton(
-                        onClick = { player.seekToNextMediaItem() }
+                    IconButton(
+                        onClick = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastForward,

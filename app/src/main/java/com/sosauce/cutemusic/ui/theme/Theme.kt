@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.ui.theme
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -11,11 +12,19 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.core.view.WindowCompat
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.logic.PreferencesKeys
+import com.sosauce.cutemusic.logic.dataStore
+import kotlinx.coroutines.flow.map
 
 
 private val LightColors = lightColorScheme(
@@ -101,22 +110,34 @@ val DarkAmoledColorPalette = darkColorScheme(
 )
 
 
-
 @Composable
 fun CuteMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val dataStore = context.dataStore
+    val useDarkMode by dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.USE_DARK_MODE] ?: darkTheme
+    }.collectAsState(initial = false)
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val useAmoledMode by dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.USE_AMOLED_MODE] ?: false
+    }.collectAsState(initial = false)
+
+    val colorScheme = if (useAmoledMode) {
+        DarkAmoledColorPalette
+    } else {
+        when {
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+            !dynamicColor && Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
+                if (useDarkMode) DarkColors else LightColors
+            }
+            else -> DarkColors
         }
-
-        darkTheme -> DarkColors
-        else -> LightColors
     }
 
     MaterialTheme(

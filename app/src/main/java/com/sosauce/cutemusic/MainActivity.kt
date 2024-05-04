@@ -3,6 +3,7 @@ package com.sosauce.cutemusic
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Build
@@ -12,21 +13,28 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -35,10 +43,13 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Album
+import com.sosauce.cutemusic.audio.Artist
 import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.audio.getAlbums
+import com.sosauce.cutemusic.audio.getArtists
 import com.sosauce.cutemusic.audio.getMusics
 import com.sosauce.cutemusic.audio.service.PlayerService
+import com.sosauce.cutemusic.logic.BottomBar
 import com.sosauce.cutemusic.logic.Nav
 import com.sosauce.cutemusic.logic.PreferencesKeys
 import com.sosauce.cutemusic.logic.dataStore
@@ -60,11 +71,16 @@ class MainActivity : ComponentActivity() {
     private val albums: List<Album>
         get() = _albums.value
 
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
-            preparePlaylist()
+    private val _artists = mutableStateOf<List<Artist>>(emptyList())
+    private val artists: List<Artist>
+        get() = _artists.value
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                preparePlaylist()
+            }
         }
-    }
 
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
@@ -72,75 +88,44 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val showSplash = mutableStateOf(true)
 
-        installSplashScreen().setKeepOnScreenCondition{ showSplash.value }
+
+        installSplashScreen().setKeepOnScreenCondition { !::player.isInitialized }
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
         )
 
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT // delete this when landscape and state bugs are fixed
+        requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT // delete this when landscape and state bugs are fixed
 
-        val sessionToken = SessionToken(applicationContext, ComponentName(this, PlayerService::class.java))
+        val sessionToken =
+            SessionToken(applicationContext, ComponentName(this, PlayerService::class.java))
         val mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         mediaControllerFuture.addListener({
             player = mediaControllerFuture.get()
             showSplash.value = false
+            val viewModel = MusicViewModel(player)
             setContent {
                 CuteMusicTheme {
                     requestPermission()
-                    val context = LocalContext.current
-                    val isSysDark = isSystemInDarkTheme()
-                    val dataStore = context.dataStore
-                    val _useDarkMode = dataStore.data.map { preferences ->
-                        preferences[PreferencesKeys.USE_DARK_MODE] ?: isSysDark
-                    }
-
-                    val useDarkMode by _useDarkMode.collectAsState(initial = false)
-                    val _useAmoledMode = dataStore.data.map { preferences ->
-                        preferences[PreferencesKeys.USE_AMOLED_MODE]
-                    }
-
-                    val useAmoledMode by _useAmoledMode.collectAsState(initial = false)
-
-                    val colors = when {
-                        useAmoledMode == true-> DarkAmoledColorPalette
-                        useDarkMode == true  -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                dynamicDarkColorScheme(context)
-                            } else {
-                                darkColorScheme()
-                            }
-                        }
-                        else -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                dynamicLightColorScheme(context)
-                            } else {
-                                lightColorScheme()
-                            }
-                        }
-                    }
-
-
-
                     Scaffold(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background),
-                        contentColor = MaterialTheme.colorScheme.background
+                            .fillMaxSize().background(MaterialTheme.colorScheme.background)
                     ) {
                         MaterialTheme(
-                            colorScheme = colors,
                             content = {
-                                Nav(player, mediaItems, MusicViewModel(player), albums)
+                                    Nav(player, mediaItems, viewModel, albums, artists)
                             }
                         )
                     }
                 }
             }
-                                          }, MoreExecutors.directExecutor())
+        }, MoreExecutors.directExecutor())
+
 
     }
+
 
     override fun onDestroy() {
         player.release()
@@ -148,13 +133,14 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     private fun requestPermission() {
-        requestPermissionLauncher.launch(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_AUDIO
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        })
+        requestPermissionLauncher.launch(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_AUDIO
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+        )
     }
 
     private fun preparePlaylist() {
@@ -165,11 +151,11 @@ class MainActivity : ComponentActivity() {
                 player.addMediaItem(mediaItem)
             }
             _albums.value = getAlbums(contentResolver)
-            }
-            player.prepare()
+            _artists.value = getArtists(contentResolver)
         }
+        player.prepare()
     }
-
+}
 
 
 fun convertMusicToMedia(music: Music): MediaItem {
@@ -178,4 +164,5 @@ fun convertMusicToMedia(music: Music): MediaItem {
         .setMediaId(music.uri.toString())
         .build()
 }
+
 

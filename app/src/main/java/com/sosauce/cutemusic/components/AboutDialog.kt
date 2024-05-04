@@ -23,7 +23,8 @@ fun AboutDialog(
                 Text(
                     text = "Okay",
                     fontFamily = GlobalFont
-                )}
+                )
+            }
         },
         title = {
             Text(

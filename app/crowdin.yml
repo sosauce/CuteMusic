@@ -1,0 +1,12 @@
+project_id: "your_project_id"
+api_token: "your_personal_api_token"
+base_path: "your_project_base_path"
+
+files:
+  - source: "/app/src/main/res/values/strings.xml"
+      translation: "/app/src/main/res/values-%android_code%/%original_file_name%"
+      languages_mapping:
+        android_code:
+          de: "de"
+          no: "no"
+          fr: "fr"
