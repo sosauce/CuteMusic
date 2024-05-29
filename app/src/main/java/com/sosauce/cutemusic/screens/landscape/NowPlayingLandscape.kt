@@ -24,79 +24,52 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.Player
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.components.LoopButton
 import com.sosauce.cutemusic.components.MusicSlider
 import com.sosauce.cutemusic.components.ShuffleButton
-import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.NowPlayingState
 import com.sosauce.cutemusic.logic.PlayerActions
-import com.sosauce.cutemusic.logic.dataStore
-import com.sosauce.cutemusic.logic.getSwipeSetting
+import com.sosauce.cutemusic.logic.rememberIsSwipeEnabled
 import com.sosauce.cutemusic.ui.theme.GlobalFont
-import kotlinx.coroutines.flow.Flow
 import kotlin.math.abs
 
 @Composable
 fun NowPlayingLandscape(
-    player: Player,
     viewModel: MusicViewModel,
     navController: NavController,
-    state: MusicState
+    state: NowPlayingState
 ) {
 
     NPLContent(
-        player,
-        viewModel,
-        onPlayOrPause = {
-            if (state.isPlaying) {
-                viewModel.handlePlayerActions(PlayerActions.Pause)
-                state.isPlaying = false
-            } else {
-                viewModel.handlePlayerActions(PlayerActions.Play)
-                state.isPlaying = true
-            }
-        },
-        onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
-        onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+        viewModel = viewModel,
+        onEvent = viewModel::handlePlayerActions,
         onNavigateUp = { navController.navigateUp() },
-        onShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
         state = state
     )
 }
 
 @Composable
 private fun NPLContent(
-    player: Player,
     viewModel: MusicViewModel,
-    onSeekNext: () -> Unit,
-    onSeekPrevious: () -> Unit,
-    onPlayOrPause: () -> Unit,
     onNavigateUp: () -> Unit,
-    onShuffle: () -> Unit,
-    state: MusicState
+    onEvent: (PlayerActions) -> Unit,
+    state: NowPlayingState
 ) {
-
-    val context = LocalContext.current
-
-    val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
-    val swipeGesturesEnabledState: State<Boolean> =
-        swipeGesturesEnabledFlow.collectAsState(initial = false)
+    val swipeGesturesEnabled by rememberIsSwipeEnabled()
 
     Box(
-        modifier = if (swipeGesturesEnabledState.value) {
+        modifier = if (swipeGesturesEnabled) {
             Modifier
                 .fillMaxSize()
                 .padding(45.dp)
@@ -105,7 +78,7 @@ private fun NPLContent(
                         change.consume()
                         val (x, y) = dragAmount
                         if (abs(x) > abs(y)) {
-                            if (x > 0) viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) else viewModel.handlePlayerActions(
+                            if (x > 0) onEvent(PlayerActions.SeekToPreviousMusic) else onEvent(
                                 PlayerActions.SeekToNextMusic
                             )
                         } else {
@@ -149,18 +122,15 @@ private fun NPLContent(
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp
                 )
-                MusicSlider(player, state)
+                MusicSlider(state, viewModel)
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ShuffleButton(
-                        player = player,
-                        onShuffle = { onShuffle() }
-                    )
+                    ShuffleButton()
                     IconButton(
-                        onClick = { onSeekPrevious() }
+                        onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastRewind,
@@ -170,7 +140,7 @@ private fun NPLContent(
                     }
 
                     FloatingActionButton(
-                        onClick = { onPlayOrPause() }
+                        onClick = { onEvent(PlayerActions.PlayOrPause) }
                     ) {
                         Icon(
                             imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
@@ -178,7 +148,7 @@ private fun NPLContent(
                         )
                     }
                     IconButton(
-                        onClick = { onSeekNext() }
+                        onClick = { onEvent(PlayerActions.SeekToNextMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastForward,
@@ -186,12 +156,9 @@ private fun NPLContent(
                             tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
-                    LoopButton(
-                        player = player,
-                        onClick = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) }
-                    )
+                    LoopButton()
                 }
-                if (!swipeGesturesEnabledState.value) {
+                if (!swipeGesturesEnabled) {
                     Spacer(modifier = Modifier.height(30.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),

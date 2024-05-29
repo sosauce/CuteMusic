@@ -2,9 +2,9 @@
 
 package com.sosauce.cutemusic.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -12,19 +12,15 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.core.view.WindowCompat
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.logic.PreferencesKeys
-import com.sosauce.cutemusic.logic.dataStore
-import kotlinx.coroutines.flow.map
+import com.sosauce.cutemusic.logic.rememberFollowSys
+import com.sosauce.cutemusic.logic.rememberUseAmoledMode
+import com.sosauce.cutemusic.logic.rememberUseDarkMode
 
 
 private val LightColors = lightColorScheme(
@@ -92,23 +88,6 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
-val DarkAmoledColorPalette = darkColorScheme(
-    primary = Color.White,
-    onPrimary = Color.Black,
-    secondary = Color.Black,
-    onSecondary = Color.White,
-    secondaryContainer = Color.Black,
-    tertiary = Color.Black,
-    tertiaryContainer = Color.Black,
-    background = Color.Black,
-    onBackground = Color.White,
-    surface = Color.Black,
-    onSurface = Color.White,
-    outlineVariant = Color.Black,
-    error = Color(0xFFB00020),
-    onError = Color.White
-)
-
 
 @Composable
 fun CuteMusicTheme(
@@ -117,34 +96,51 @@ fun CuteMusicTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val dataStore = context.dataStore
-    val useDarkMode by dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USE_DARK_MODE] ?: darkTheme
-    }.collectAsState(initial = false)
+    val useDarkMode by rememberUseDarkMode()
+    val useAmoledMode by rememberUseAmoledMode()
+    val followSys by rememberFollowSys()
 
-    val useAmoledMode by dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USE_AMOLED_MODE] ?: false
-    }.collectAsState(initial = false)
 
-    val colorScheme = if (useAmoledMode) {
-        DarkAmoledColorPalette
-    } else {
-        when {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+
+        darkTheme -> DarkColors
+        else -> LightColors
+    }
+
+    fun whichThemeToUse(): ColorScheme {
+        return when {
+            useAmoledMode -> colorScheme.copy(
+                surface = Color.Black,
+                inverseSurface = Color.White,
+                background = Color.Black
+            )
+
+            followSys -> colorScheme
             dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+                if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+                    context
+                )
             }
-            !dynamicColor && Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
+
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
                 if (useDarkMode) DarkColors else LightColors
             }
+
             else -> DarkColors
         }
     }
 
+
+
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = whichThemeToUse(),
         typography = Typography(),
         content = content
     )
+
 }
 
 val GlobalFont = FontFamily(Font(R.font.nunito))

@@ -7,36 +7,37 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.media3.common.Player
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.sosauce.cutemusic.logic.rememberIsLoopEnabled
+import com.sosauce.cutemusic.logic.rememberIsShuffleEnabled
 
 @Composable
-fun LoopButton(
-    player: Player,
-    onClick: () -> Unit
-) {
+fun LoopButton() {
+    var shouldLoop by rememberIsLoopEnabled()
+
     IconButton(
-        onClick = { onClick() }
+        onClick = { shouldLoop = !shouldLoop }
     ) {
         Icon(
             imageVector = Icons.Outlined.Loop,
             contentDescription = "loop button",
-            tint = if (player.repeatMode == Player.REPEAT_MODE_ONE) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+            tint = if (shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
         )
     }
 }
 
 @Composable
-fun ShuffleButton(
-    onShuffle: () -> Unit,
-    player: Player
-) {
+fun ShuffleButton() {
+    var shouldShuffle by rememberIsShuffleEnabled()
+
     IconButton(
-        onClick = { onShuffle() }
+        onClick = { shouldShuffle = !shouldShuffle }
     ) {
         Icon(
             imageVector = Icons.Outlined.Shuffle,
             contentDescription = "shuffle button",
-            tint = if (player.shuffleModeEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+            tint = if (shouldShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
         )
     }
 }

@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -41,19 +40,17 @@ fun MainScreenLandscape(
     musics: List<Music>,
     viewModel: MusicViewModel,
     navController: NavController,
-    state: MusicState
+    state: MusicState,
+    onNavigate: () -> Unit
 ) {
 
     Scaffold(
         topBar = {
             AppBar(
                 title = "landscape",
-                navController = navController,
                 showBackArrow = false,
                 showMenuIcon = true,
-                showSortIcon = true,
-                viewModel = viewModel,
-                musics = musics
+                onNavigate = { onNavigate() }
             )
         }
     ) { values ->
@@ -66,14 +63,9 @@ fun MainScreenLandscape(
                 verticalArrangement = Arrangement.Top
             ) {
                 itemsIndexed(musics) { index, music ->
-                    val selectedItems = remember { mutableListOf<Int>() }
-                    val isSelected = selectedItems.contains(index)
                     MusicListItem(
-                        music,
-                        { viewModel.play(music.uri) },
-                        { selectedItems.add(index) },
-                        isSelected = isSelected
-                    )
+                        music
+                    ) { viewModel.play(music.uri) }
                 }
             }
 
@@ -101,13 +93,7 @@ fun MainScreenLandscape(
                         )
                     }
                     IconButton(
-                        onClick = {
-                            if (state.isPlaying) {
-                                viewModel.handlePlayerActions(PlayerActions.Pause)
-                            } else {
-                                viewModel.handlePlayerActions(PlayerActions.Play)
-                            }
-                        }
+                        onClick = { viewModel.handlePlayerActions(PlayerActions.PlayOrPause) }
                     ) {
                         Icon(
                             imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,

@@ -19,18 +19,19 @@ import com.sosauce.cutemusic.logic.AppBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(
+    onPopBackStack: () -> Unit,
+    onNavigate: () -> Unit
+) {
 
     Scaffold(
         topBar = {
             AppBar(
                 title = stringResource(id = R.string.settings),
                 showBackArrow = true,
-                navController = navController,
                 showMenuIcon = false,
-                showSortIcon = false,
-                viewModel = null,
-                musics = null
+                onPopBackStack = { onPopBackStack() },
+                onNavigate = { onNavigate() }
             )
         },
     ) { values ->

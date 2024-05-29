@@ -128,23 +128,12 @@ fun CuteSearchbar(
             }
 
             val filteredMusics = if (query.isNotEmpty()) filterMusics(musics, query) else null
-
-
             if (filteredMusics != null) {
-
                 itemsIndexed(filteredMusics) { index, item ->
-                    val selectedItems = remember { mutableListOf<Int>() }
                     val music = filteredMusics[index]
-                    val isSelected = selectedItems.contains(index)
-                    MusicListItem(
-                        music,
-                        { viewModel.play(music.uri) },
-                        { selectedItems.add(index) },
-                        isSelected = isSelected
-                    )
+                    MusicListItem(music) { viewModel.play(music.uri) }
                 }
             }
-
         }
     }
 }

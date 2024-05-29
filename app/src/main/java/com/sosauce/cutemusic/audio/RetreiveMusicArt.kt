@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Size
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
@@ -27,14 +28,11 @@ suspend fun getMusicArt(context: Context, music: Music): ByteArray? {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 fun getAlbumArt(contentResolver: ContentResolver, albumId: Long): Bitmap? {
     val uri = ContentUris.withAppendedId(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, albumId)
     return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            contentResolver.loadThumbnail(uri, Size(640, 640), null)
-        } else {
-            TODO("VERSION.SDK_INT < Q")
-        }
+        contentResolver.loadThumbnail(uri, Size(400, 400), null)
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
         null

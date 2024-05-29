@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterial3Api::class
-)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.sosauce.cutemusic.screens
 
@@ -38,8 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,9 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.audio.getMusicArt
@@ -65,16 +59,12 @@ import com.sosauce.cutemusic.components.CuteSearchbar
 import com.sosauce.cutemusic.components.MiniNowPlayingContent
 import com.sosauce.cutemusic.logic.BottomBar
 import com.sosauce.cutemusic.logic.MusicState
-import com.sosauce.cutemusic.logic.PlayerActions
-import com.sosauce.cutemusic.logic.PreferencesKeys
-import com.sosauce.cutemusic.logic.dataStore
-import com.sosauce.cutemusic.logic.getSwipeSetting
-import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.logic.PlayerState
+import com.sosauce.cutemusic.logic.navigation.Screen
+import com.sosauce.cutemusic.logic.rememberIsSwipeEnabled
+import com.sosauce.cutemusic.logic.rememberSortASC
 import com.sosauce.cutemusic.screens.landscape.MainScreenLandscape
 import com.sosauce.cutemusic.ui.theme.GlobalFont
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlin.math.abs
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -82,16 +72,29 @@ fun MainScreen(
     navController: NavController,
     musics: List<Music>,
     viewModel: MusicViewModel,
-    state: MusicState
+    state: MusicState,
+    onNavigate: () -> Unit
 ) {
 
     val config = LocalConfiguration.current
 
-    if (config.orientation != Configuration.ORIENTATION_PORTRAIT) {
-        MainScreenLandscape(musics, viewModel, navController, state)
+    if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        MainScreenLandscape(
+            musics = musics,
+            viewModel = viewModel,
+            navController = navController,
+            state = state,
+            onNavigate = { onNavigate() }
+        )
     } else {
-        MainScreenContent(navController, viewModel, musics, state.isPlaying, state.currentlyPlaying)
+        MainScreenContent(
+            navController = navController,
+            viewModel = viewModel,
+            musics = musics,
+            state = state
+        )
     }
+
 
 }
 
@@ -101,52 +104,31 @@ private fun MainScreenContent(
     navController: NavController,
     viewModel: MusicViewModel,
     musics: List<Music>,
-    isPlaying: Boolean,
-    currentlyPlaying: String
+    state: MusicState
 ) {
-    val context = LocalContext.current
-    val dataStore = remember { context.dataStore }
-    val sortState = remember { mutableStateOf<String?>(null) }
+    val sort by rememberSortASC()
     val lazyListState = rememberLazyListState()
-    val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
-    val swipeGesturesEnabledState: State<Boolean> =
-        swipeGesturesEnabledFlow.collectAsState(initial = false)
-
-
-
-    LaunchedEffect(Unit) {
-        val sortFlow = dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.SORT_ORDER]
-        }
-
-        sortFlow.collect { sort ->
-            sortState.value = sort
-        }
-    }
-
-
-    val displayMusics = when (sortState.value) {
-        "Ascending" -> musics
-        "Descending" -> musics.sortedByDescending { it.title }
-        else -> musics
+    val swipeGesturesEnabled by rememberIsSwipeEnabled()
+    val displayMusics = when (sort) {
+        true -> musics
+        false -> musics.sortedByDescending { it.title }
     }
 
     Scaffold(
         topBar = {
-                CuteSearchbar(
-                    viewModel = viewModel,
-                    musics = musics,
-                    onNavigate = { navController.navigate("SettingsScreen") }
-                )
+            CuteSearchbar(
+                viewModel = viewModel,
+                musics = musics,
+                onNavigate = { navController.navigate(Screen.Settings) }
+            )
         },
-                bottomBar = {
-                    BottomBar(
-                        navController = navController,
-                        viewModel
-                    )
-                }
+        bottomBar = {
+            BottomBar(
+                navController = navController,
+                viewModel
+            )
+        }
     ) { values ->
-        val selectedItems = remember { mutableListOf<Int>() }
         Box(modifier = Modifier.fillMaxSize()) {
 
             LazyColumn(
@@ -168,50 +150,41 @@ private fun MainScreenContent(
                     }
                 } else {
                     items(displayMusics) { music ->
-                        val isSelected = selectedItems.contains(music.id.toInt())
                         MusicListItem(
                             music,
-                            onShortClick = { viewModel.play(music.uri) },
-                            onSelected = { selectedItems.add(music.id.toInt()) },
-                            isSelected = isSelected
+                            onShortClick = { viewModel.play(music.uri) }
                         )
                     }
                 }
             }
 
 
-            if (displayMusics.isNotEmpty()) {
+            if (displayMusics.isNotEmpty() && viewModel.playerState.value != PlayerState.STOPPED) {
                 Surface(
-                    modifier = if (swipeGesturesEnabledState.value) {
+                    modifier = if (swipeGesturesEnabled) {
                         Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = values.calculateBottomPadding() + 5.dp)
                             .clip(RoundedCornerShape(24.dp))
-                            .clickable { navController.navigate("NowPlaying") }
+                            .clickable { navController.navigate(Screen.NowPlaying) }
                             .pointerInput(Unit) {
                                 detectDragGestures { change, _ ->
                                     change.consume()
-                                    navController.navigate("NowPlaying")
+                                    navController.navigate(Screen.NowPlaying)
                                 }
                             }
-                        } else {
+                    } else {
                         Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = values.calculateBottomPadding() + 5.dp)
                             .clip(RoundedCornerShape(24.dp))
-                            .clickable { navController.navigate("NowPlaying") } },
+                            .clickable { navController.navigate(Screen.NowPlaying) }
+                    },
                     color = MaterialTheme.colorScheme.surfaceContainerLow
                 ) {
                     MiniNowPlayingContent(
-                        onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
-                        onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
-                        onPlayOrPause = {
-                            if (isPlaying) viewModel.handlePlayerActions(
-                                PlayerActions.Pause
-                            ) else viewModel.handlePlayerActions(PlayerActions.Play)
-                        },
-                        isPlaying = isPlaying,
-                        currentTitle = currentlyPlaying,
+                        onHandlePlayerActions = viewModel::handlePlayerActions,
+                        state = state,
                         viewModel = viewModel
                     )
                 }
@@ -221,13 +194,12 @@ private fun MainScreenContent(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun MusicListItem(
     music: Music,
-    onShortClick: (Uri) -> Unit,
-    onSelected: () -> Unit,
-    isSelected: Boolean
+    onShortClick: (Uri) -> Unit
 ) {
 
     val sheetState = rememberModalBottomSheetState()
@@ -249,43 +221,26 @@ fun MusicListItem(
         }
     }
 
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
                 onClick = { onShortClick(music.uri) },
-                onLongClick = { onSelected() }
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (!isSelected) {
-                AsyncImage(
-                    model = imageRequester(
-                        img = art ,
-                        context = context
-                    ),
-                    contentDescription = "Artwork",
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .size(45.dp)
-                        .clip(RoundedCornerShape(15)),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = rememberAsyncImagePainter(art ?: R.drawable.cute_music_icon),
-                    contentDescription = "Artwork",
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .size(45.dp)
-                        .clip(RoundedCornerShape(15)),
-                    contentScale = ContentScale.Crop,
-                )
-            }
+            Image(
+                painter = rememberAsyncImagePainter(art),
+                contentDescription = "Artwork",
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .size(45.dp)
+                    .clip(RoundedCornerShape(15)),
+                contentScale = ContentScale.Crop,
+            )
 
             Column(
                 modifier = Modifier.padding(15.dp)

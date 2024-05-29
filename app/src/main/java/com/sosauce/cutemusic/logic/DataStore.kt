@@ -5,86 +5,53 @@ import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import com.sosauce.cutemusic.customs.rememberPreference
+import com.sosauce.cutemusic.logic.PreferencesKeys.FOLLOW_SYS
+import com.sosauce.cutemusic.logic.PreferencesKeys.REMEMBER_LOOP
+import com.sosauce.cutemusic.logic.PreferencesKeys.REMEMBER_SHUFFLE
+import com.sosauce.cutemusic.logic.PreferencesKeys.SORT_ORDER
+import com.sosauce.cutemusic.logic.PreferencesKeys.SWIPE_GESTURES
+import com.sosauce.cutemusic.logic.PreferencesKeys.USE_AMOLED_MODE
+import com.sosauce.cutemusic.logic.PreferencesKeys.USE_DARK_MODE
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-object PreferencesKeys {
-    val SORT_ORDER = stringPreferencesKey("sort_order")
+data object PreferencesKeys {
+    val SORT_ORDER = booleanPreferencesKey("sort_order")
     val USE_DARK_MODE = booleanPreferencesKey("use_dark_mode")
     val REMEMBER_LOOP = booleanPreferencesKey("remember_loop")
     val USE_AMOLED_MODE = booleanPreferencesKey("use_amoled_mode")
     val SWIPE_GESTURES = booleanPreferencesKey("swipe_gestures")
-    val REPEAT_MODE_ONE = booleanPreferencesKey("repeat_mode_one")
-}
-
-suspend fun saveSort(dataStore: DataStore<Preferences>, sort: String) {
-    dataStore.edit { settings ->
-        settings[PreferencesKeys.SORT_ORDER] = sort
-    }
-}
-
-suspend fun saveDarkModeSetting(dataStore: DataStore<Preferences>, enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.USE_DARK_MODE] = enabled
-    }
+    val FOLLOW_SYS = booleanPreferencesKey("follow_sys")
+    val REMEMBER_SHUFFLE = booleanPreferencesKey("remember_shuffle")
 }
 
 @Composable
-fun getDarkModeSetting(dataStore: DataStore<Preferences>): Flow<Boolean> {
-    return dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USE_DARK_MODE] ?: false
-    }
-}
+fun rememberSortASC() =
+    rememberPreference(key = SORT_ORDER, defaultValue = true)
 
-suspend fun saveLoopSetting(dataStore: DataStore<Preferences>, enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.REMEMBER_LOOP] = enabled
-    }
-}
+@Composable
+fun rememberUseDarkMode() =
+    rememberPreference(key = USE_DARK_MODE, defaultValue = false)
 
-fun getLoopSetting(dataStore: DataStore<Preferences>): Flow<Boolean> {
-    return dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.REMEMBER_LOOP] ?: false
-    }
-}
+@Composable
+fun rememberUseAmoledMode() =
+    rememberPreference(key = USE_AMOLED_MODE, defaultValue = false)
 
-suspend fun saveAmoledModeSetting(dataStore: DataStore<Preferences>, enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.USE_AMOLED_MODE] = enabled
-    }
-}
+@Composable
+fun rememberFollowSys() =
+    rememberPreference(key = FOLLOW_SYS, defaultValue = true)
 
-fun getAmoledModeSetting(dataStore: DataStore<Preferences>): Flow<Boolean> {
-    return dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USE_AMOLED_MODE] ?: false
-    }
-}
 
-suspend fun saveSwipeSetting(dataStore: DataStore<Preferences>, enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.SWIPE_GESTURES] = enabled
-    }
-}
+@Composable
+fun rememberIsSwipeEnabled() =
+    rememberPreference(key = SWIPE_GESTURES, defaultValue = false)
 
-fun getSwipeSetting(dataStore: DataStore<Preferences>): Flow<Boolean> {
-    return dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.SWIPE_GESTURES] ?: false
-    }
-}
+@Composable
+fun rememberIsLoopEnabled() =
+    rememberPreference(key = REMEMBER_LOOP, defaultValue = false)
 
-suspend fun saveRepeat(dataStore: DataStore<Preferences>, enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.REPEAT_MODE_ONE] = enabled
-    }
-}
-
-fun getRepeat(dataStore: DataStore<Preferences>): Flow<Boolean> {
-    return dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.REPEAT_MODE_ONE] ?: false
-    }
-}
+@Composable
+fun rememberIsShuffleEnabled() =
+    rememberPreference(key = REMEMBER_SHUFFLE, defaultValue = false)

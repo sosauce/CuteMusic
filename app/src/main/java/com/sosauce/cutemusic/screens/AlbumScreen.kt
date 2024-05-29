@@ -1,14 +1,20 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -26,36 +32,42 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Album
 import com.sosauce.cutemusic.logic.AppBar
 import com.sosauce.cutemusic.logic.BottomBar
 import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.logic.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
-fun AlbumsScreen(
+fun SharedTransitionScope.AlbumsScreen(
     navController: NavController,
     albums: List<Album>,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onNavigate: () -> Unit
 ) {
     AlbumsScreenContent(
         navController = navController,
         albums = albums,
-        viewModel = viewModel
+        viewModel = viewModel,
+        animatedVisibilityScope = animatedVisibilityScope,
+        onNavigate = { onNavigate() }
+
     )
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-private fun AlbumsScreenContent(
+private fun SharedTransitionScope.AlbumsScreenContent(
     navController: NavController,
     albums: List<Album>,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onNavigate: () -> Unit
 ) {
 
     Box(
@@ -67,16 +79,13 @@ private fun AlbumsScreenContent(
                     title = "Albums",
                     showBackArrow = false,
                     showMenuIcon = true,
-                    navController = navController,
-                    showSortIcon = false,
-                    viewModel = null,
-                    musics = null
+                    onNavigate = { onNavigate() }
                 )
 
             },
-                bottomBar = {
-                    BottomBar(navController = navController, viewModel = viewModel)
-                }
+            bottomBar = {
+                BottomBar(navController = navController, viewModel = viewModel)
+            }
         ) { values ->
 
             if (albums.isEmpty()) {
@@ -103,9 +112,14 @@ private fun AlbumsScreenContent(
                         .padding(values)
                 ) {
                     itemsIndexed(albums) { index, album ->
-                        AlbumCard(album) {
-                            navController.navigate("AlbumsDetailsScreen/$index")
-                        }
+                        AlbumCard(
+                            album = album,
+                            onClick = {
+                                //navController.navigate("AlbumsDetailsScreen/$index")
+                                navController.navigate(Screen.AlbumsDetails(id = index))
+                            },
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
                     }
                 }
             }
@@ -114,9 +128,10 @@ private fun AlbumsScreenContent(
 }
 
 @Composable
-private fun AlbumCard(
+private fun SharedTransitionScope.AlbumCard(
     album: Album,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val context = LocalContext.current
     Card(
@@ -130,7 +145,6 @@ private fun AlbumCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
         ) {
             AsyncImage(
                 model = imageRequester(
@@ -139,8 +153,16 @@ private fun AlbumCard(
                 ),
                 contentDescription = "Artwork",
                 modifier = Modifier
-                    .size(145.dp)
-                    .clip(RoundedCornerShape(15)),
+                    .aspectRatio(1 / 1f)
+                    .padding(7.dp)
+                    .clip(RoundedCornerShape(15))
+                    .sharedElement(
+                        state = rememberSharedContentState(key = album.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        boundsTransform = { _, _ ->
+                            tween(durationMillis = 1000)
+                        }
+                    ),
                 contentScale = ContentScale.Crop
             )
             Column(
@@ -148,7 +170,7 @@ private fun AlbumCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (album.name.length >= 25) album.name.take(25) + "..." else album.name,
+                    text = if (album.name.length >= 15) album.name.take(15) + "..." else album.name,
                     fontFamily = GlobalFont,
                     maxLines = 1
                 )

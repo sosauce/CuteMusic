@@ -16,9 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
-import com.sosauce.cutemusic.activities.MusicViewModel
-import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.components.SortRadioButtons
+import com.sosauce.cutemusic.logic.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 
@@ -26,16 +25,12 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 @Composable
 fun AppBar(
     title: String,
-    navController: NavController,
     showBackArrow: Boolean,
     showMenuIcon: Boolean,
-    showSortIcon: Boolean,
-    viewModel: MusicViewModel?,
-    musics: List<Music>?
+    onPopBackStack: (() -> Unit)? = null,
+    onNavigate: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-
-
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -46,7 +41,7 @@ fun AppBar(
         },
         navigationIcon = {
             if (showBackArrow) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = { onPopBackStack?.invoke() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back arrow"
@@ -56,7 +51,7 @@ fun AppBar(
         },
         actions = {
             if (showMenuIcon) {
-                IconButton(onClick = { navController.navigate("SettingsScreen") }) {
+                IconButton(onClick = { onNavigate() }) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
                         contentDescription = "More",

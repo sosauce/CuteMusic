@@ -40,7 +40,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,7 +48,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -63,6 +61,7 @@ import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.audio.getMusicArt
 import com.sosauce.cutemusic.components.BottomSheetContent
 import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.logic.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
@@ -75,7 +74,6 @@ fun ArtistDetails(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        val context = LocalContext.current
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -113,8 +111,14 @@ fun ArtistDetails(
             ) {
                 Column {
                     LazyRow {
-                        itemsIndexed(artist.albums) {index, album ->
-                                AlbumsCard(album = album) { navController.navigate("AlbumsDetailsScreen/$index") }
+                        itemsIndexed(artist.albums) { index, album ->
+                            AlbumsCard(album = album) {
+                                navController.navigate(
+                                    Screen.AlbumsDetails(
+                                        index
+                                    )
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(10.dp))
@@ -142,35 +146,41 @@ private fun AlbumsCard(
     album: Album,
     onClick: () -> Unit
 ) {
-        val context = LocalContext.current
+    val context = LocalContext.current
 
-        Card(
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .clickable { onClick() },
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 5.dp)
-                .clickable { onClick() },
+                .fillMaxWidth()
+                .padding(12.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            AsyncImage(
+                model = imageRequester(
+                    img = album.albumArt,
+                    context = context
+                ),
+                contentDescription = "Album Art",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-            ) {
-                AsyncImage(
-                    model = imageRequester(
-                        img = album.albumArt,
-                        context = context
-                    ),
-                    contentDescription = "Album Art",
-                    modifier = Modifier
-                        .size(160.dp)
-                        .clip(RoundedCornerShape(15)),
-                    contentScale = ContentScale.Crop
-                )
-                Text(text = album.name, fontFamily = GlobalFont)
-                Text(text = "${album.numberOfSongs} ${if (album.numberOfSongs <= 1) "song" else "songs"}", fontFamily = GlobalFont)
-            }
+                    .size(160.dp)
+                    .clip(RoundedCornerShape(15)),
+                contentScale = ContentScale.Crop
+            )
+            Text(
+                text = if (album.name.length >= 15) album.name.take(15) + "..." else album.name,
+                fontFamily = GlobalFont
+            )
+            Text(
+                text = "${album.numberOfSongs} ${if (album.numberOfSongs <= 1) "song" else "songs"}",
+                fontFamily = GlobalFont
+            )
         }
+    }
 }
 
 @Composable

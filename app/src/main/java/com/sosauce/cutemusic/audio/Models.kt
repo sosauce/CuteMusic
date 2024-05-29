@@ -1,34 +1,33 @@
 package com.sosauce.cutemusic.audio
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 
 @Immutable
 data class Music(
     val id: Long,
     val title: String,
     val artist: String,
-    val album: String,
     val uri: Uri
 )
 
-@Immutable
+@Stable
 data class Album(
     val id: Long,
     val name: String,
     val artist: String,
     val numberOfSongs: Int,
-    var albumArt: Bitmap?,
+    var albumArt: Any?,
     var songs: List<Music>
 )
 
-@Immutable
+@Stable
 data class Artist(
     val id: Long,
     val name: String,
     val numberOfSongs: Int,
-    val numberOfAlbums: String,
+    val numberOfAlbums: Int,
     var songs: List<Music>,
     var albums: List<Album>
 )

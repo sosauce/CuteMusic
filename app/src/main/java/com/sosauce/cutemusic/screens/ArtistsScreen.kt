@@ -29,23 +29,25 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.activities.MusicViewModel
-import com.sosauce.cutemusic.audio.Album
 import com.sosauce.cutemusic.audio.Artist
 import com.sosauce.cutemusic.logic.AppBar
 import com.sosauce.cutemusic.logic.BottomBar
 import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.logic.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
 fun ArtistsScreen(
     artist: List<Artist>,
     navController: NavController,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    onNavigate: () -> Unit
 ) {
     ArtistsScreenContent(
         artist = artist,
         navController = navController,
-        viewModel = viewModel
+        viewModel = viewModel,
+        onNavigate = { onNavigate() }
     )
 }
 
@@ -53,7 +55,8 @@ fun ArtistsScreen(
 private fun ArtistsScreenContent(
     artist: List<Artist>,
     navController: NavController,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    onNavigate: () -> Unit
 ) {
 
     Box(
@@ -65,10 +68,7 @@ private fun ArtistsScreenContent(
                     title = "Artists",
                     showBackArrow = false,
                     showMenuIcon = true,
-                    navController = navController,
-                    showSortIcon = false,
-                    viewModel = null,
-                    musics = null
+                    onNavigate = { onNavigate() }
                 )
 
             },
@@ -105,7 +105,7 @@ private fun ArtistsScreenContent(
                 ) {
                     itemsIndexed(artist) { index, album ->
                         AlbumCard(album) {
-                            navController.navigate("ArtistDetailsScreen/$index")
+                            navController.navigate(Screen.ArtistsDetails(index))
                         }
                     }
                 }

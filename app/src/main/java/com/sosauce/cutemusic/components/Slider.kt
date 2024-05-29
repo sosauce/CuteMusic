@@ -24,9 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import com.sosauce.cutemusic.activities.MusicViewModel
-import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.NowPlayingState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import kotlinx.coroutines.delay
 import me.saket.squiggles.SquigglySlider
@@ -36,8 +36,8 @@ import kotlin.time.Duration.Companion.seconds
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun MusicSlider(
-    player: Player,
-    state: MusicState
+    state: NowPlayingState,
+    viewModel: MusicViewModel
 ) {
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     val updatedSliderPosition = rememberUpdatedState(sliderPosition)
@@ -55,7 +55,7 @@ fun MusicSlider(
                 onValueChange = { new ->
                     sliderPosition = new
                     state.currentPosition = new.toLong()
-                    player.seekTo(state.currentPosition)
+                    viewModel.handlePlayerActions(PlayerActions.SeekTo(state.currentPosition))
                 },
                 valueRange = 0f..state.currentMusicDuration.toFloat()
             )
@@ -73,7 +73,9 @@ fun MusicSlider(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (totalDuration(state) == "-153722867280912:-55") "" else totalDuration(state),
+                        text = if (totalDuration(state) == "-153722867280912:-55") "" else totalDuration(
+                            state
+                        ),
                         fontFamily = GlobalFont
                     )
                 }
@@ -98,7 +100,7 @@ fun MusicSlider(
                 onValueChange = { new ->
                     sliderPosition = new
                     state.currentPosition = new.toLong()
-                    player.seekTo(state.currentPosition)
+                    viewModel.handlePlayerActions(PlayerActions.SeekTo(state.currentPosition))
                 },
                 valueRange = 0f..0f
 
@@ -107,14 +109,14 @@ fun MusicSlider(
     }
 }
 
-fun totalDuration(state: MusicState): String {
+fun totalDuration(state: NowPlayingState): String {
     val totalSeconds = state.currentMusicDuration / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }
 
-fun timeLeft(state: MusicState): String {
+fun timeLeft(state: NowPlayingState): String {
     val totalSeconds = state.currentPosition / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60

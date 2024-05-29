@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,15 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
 fun MiniNowPlayingContent(
-    onSeekNext: () -> Unit,
-    onSeekPrevious: () -> Unit,
-    onPlayOrPause: () -> Unit,
-    currentTitle: String,
-    isPlaying: Boolean,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    state: MusicState,
     viewModel: MusicViewModel
 ) {
     Row(
@@ -38,7 +35,7 @@ fun MiniNowPlayingContent(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = if (currentTitle.length >= 25) currentTitle.take(25) + "..." else if (currentTitle == "null") viewModel.previousTitle else currentTitle,
+            text = if (state.currentlyPlaying.length >= 18) state.currentlyPlaying.take(18) + "..." else state.currentlyPlaying,
             fontFamily = GlobalFont,
             // modifier = Modifier.animateContentSize()
         )
@@ -47,7 +44,7 @@ fun MiniNowPlayingContent(
             modifier = Modifier.padding(horizontal = 5.dp, vertical = 4.dp)
         ) {
             IconButton(
-                onClick = { onSeekPrevious() }
+                onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.FastRewind,
@@ -55,15 +52,15 @@ fun MiniNowPlayingContent(
                 )
             }
             IconButton(
-                onClick = { onPlayOrPause() }
+                onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }
             ) {
                 Icon(
-                    imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                     contentDescription = "play/pause button"
                 )
             }
             IconButton(
-                onClick = { onSeekNext() }
+                onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.FastForward,

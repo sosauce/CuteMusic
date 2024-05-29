@@ -1,20 +1,24 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 
 package com.sosauce.cutemusic.screens
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,10 +43,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.audio.Album
@@ -53,10 +57,11 @@ import com.sosauce.cutemusic.logic.imageRequester
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
-fun AlbumDetailsScreen(
-    navController: NavController,
+fun SharedTransitionScope.AlbumDetailsScreen(
     album: Album,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onPopBackStack: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -65,9 +70,14 @@ fun AlbumDetailsScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { null },
+                    title = {
+                        Text(
+                            text = album.name,
+                            fontFamily = GlobalFont
+                        )
+                    },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { onPopBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back arrow"
@@ -94,18 +104,26 @@ fun AlbumDetailsScreen(
                             ),
                             contentDescription = "Album Art",
                             modifier = Modifier
-                                .size(340.dp)
+                                .aspectRatio(1 / 1f)
+                                .padding(17.dp)
                                 .clip(RoundedCornerShape(24.dp))
+                                .sharedElement(
+                                    state = rememberSharedContentState(key = album.id),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    boundsTransform = { _, _ ->
+                                        tween(durationMillis = 1000)
+                                    }
+                                ),
+                            contentScale = ContentScale.Crop
                         )
                     }
-                    Spacer(modifier = Modifier.height(15.dp))
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = album.name + " · ",
+                                text = if (album.artist.length >= 18) album.artist.take(18) + "..." + " · " else album.artist + " · ",
                                 fontFamily = GlobalFont,
                                 fontSize = 22.sp
                             )
@@ -115,21 +133,12 @@ fun AlbumDetailsScreen(
                                 fontSize = 22.sp
                             )
                         }
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = album.artist, fontFamily = GlobalFont, fontSize = 18.sp)
-                        }
                     }
                     Spacer(modifier = Modifier.height(5.dp))
                     HorizontalDivider()
                     LazyColumn {
-                        itemsIndexed(album.songs) { index, music ->
-                            AlbumSong(music = music) {
-                                viewModel.play(music.uri)
-                            }
+                        itemsIndexed(album.songs) { _, music ->
+                            AlbumSong(music = music, onShortClick = { viewModel.play(music.uri) })
                         }
                     }
                 }
@@ -138,14 +147,14 @@ fun AlbumDetailsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumSong(
     music: Music,
-    onShortClick: (Uri) -> Unit,
-
+    onShortClick: (Uri) -> Unit
 ) {
 
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(false)
     val context = LocalContext.current
     var isSheetOpen by remember { mutableStateOf(false) }
     var art: ByteArray? by remember { mutableStateOf(byteArrayOf()) }
@@ -163,7 +172,6 @@ fun AlbumSong(
             BottomSheetContent(music)
         }
     }
-
 
     Row(
         modifier = Modifier

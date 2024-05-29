@@ -28,17 +28,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -46,14 +45,12 @@ import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.components.LoopButton
 import com.sosauce.cutemusic.components.MusicSlider
 import com.sosauce.cutemusic.components.ShuffleButton
-import com.sosauce.cutemusic.logic.MusicState
+import com.sosauce.cutemusic.logic.NowPlayingState
 import com.sosauce.cutemusic.logic.PlayerActions
-import com.sosauce.cutemusic.logic.dataStore
-import com.sosauce.cutemusic.logic.getSwipeSetting
 import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.logic.rememberIsSwipeEnabled
 import com.sosauce.cutemusic.screens.landscape.NowPlayingLandscape
 import com.sosauce.cutemusic.ui.theme.GlobalFont
-import kotlinx.coroutines.flow.Flow
 import kotlin.math.abs
 
 
@@ -62,29 +59,16 @@ import kotlin.math.abs
 fun NowPlayingScreen(
     navController: NavController,
     viewModel: MusicViewModel,
-    player: Player,
-    state: MusicState
+    state: NowPlayingState
 ) {
     val config = LocalConfiguration.current
-
     if (config.orientation != Configuration.ORIENTATION_PORTRAIT) {
-        NowPlayingLandscape(player, viewModel, navController, state)
+        NowPlayingLandscape(viewModel, navController, state)
     } else {
         NowPlayingContent(
-            player = player,
             viewModel = viewModel,
-            onPlayOrPause = {
-                if (state.isPlaying) {
-                    viewModel.handlePlayerActions(PlayerActions.Pause)
-                } else {
-                    viewModel.handlePlayerActions(PlayerActions.Play)
-                }
-            },
-            onSeekNext = { viewModel.handlePlayerActions(PlayerActions.SeekToNextMusic) },
-            onSeekPrevious = { viewModel.handlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+            onEvent = viewModel::handlePlayerActions,
             onNavigateUp = { navController.navigate(navController.graph.startDestinationId) },
-            onLoop = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) },
-            onShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
             state = state
         )
     }
@@ -93,24 +77,17 @@ fun NowPlayingScreen(
 
 @Composable
 private fun NowPlayingContent(
-    player: Player,
     viewModel: MusicViewModel,
-    onSeekNext: () -> Unit,
-    onSeekPrevious: () -> Unit,
-    onPlayOrPause: () -> Unit,
+    onEvent: (PlayerActions) -> Unit,
     onNavigateUp: () -> Unit,
-    onLoop: () -> Unit,
-    onShuffle: () -> Unit,
-    state: MusicState
+    state: NowPlayingState
 ) {
     val context = LocalContext.current
-    val swipeGesturesEnabledFlow: Flow<Boolean> = getSwipeSetting(context.dataStore)
-    val swipeGesturesEnabledState: State<Boolean> =
-        swipeGesturesEnabledFlow.collectAsState(initial = false)
+    val swipeGesturesEnabled by rememberIsSwipeEnabled()
 
     Scaffold { _ ->
         Box(
-            modifier = if (swipeGesturesEnabledState.value) {
+            modifier = if (swipeGesturesEnabled) {
                 Modifier
                     .padding(15.dp)
                     .fillMaxSize()
@@ -119,7 +96,9 @@ private fun NowPlayingContent(
                             change.consume()
                             val (x, y) = dragAmount
                             if (abs(x) > abs(y)) {
-                                if (x > 0) onSeekPrevious() else onSeekNext()
+                                if (x > 0) onEvent(PlayerActions.SeekToPreviousMusic) else onEvent(
+                                    PlayerActions.SeekToNextMusic
+                                )
                             } else {
                                 onNavigateUp()
                             }
@@ -146,37 +125,35 @@ private fun NowPlayingContent(
                     contentDescription = "Artwork",
                     modifier = Modifier
                         .size(340.dp)
-                        .clip(RoundedCornerShape(5))
+                        .clip(RoundedCornerShape(5)),
+                    contentScale = ContentScale.Crop
                 )
 
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = if (state.currentlyPlaying == "null") viewModel.previousTitle else state.currentlyPlaying,
+                    text = if (state.currentlyPlaying.length >= 35) state.currentlyPlaying.take(35) + "..." else state.currentlyPlaying,
                     fontFamily = GlobalFont,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(
-                    text = if (state.currentlyArtist == "null") viewModel.previousArtist else state.currentlyArtist,
+                    text = if (state.currentlyArtist.length >= 35) state.currentlyPlaying.take(35) + "..." else state.currentlyArtist,
                     fontFamily = GlobalFont,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                MusicSlider(player, state)
+                MusicSlider(state, viewModel)
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ShuffleButton(
-                        player = player,
-                        onShuffle = { onShuffle() }
-                    )
+                    ShuffleButton()
                     IconButton(
-                        onClick = { onSeekPrevious() }
+                        onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastRewind,
@@ -184,7 +161,7 @@ private fun NowPlayingContent(
                         )
                     }
                     FloatingActionButton(
-                        onClick = { onPlayOrPause() }
+                        onClick = { onEvent(PlayerActions.PlayOrPause) }
                     ) {
                         Icon(
                             imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
@@ -194,19 +171,16 @@ private fun NowPlayingContent(
 
 
                     IconButton(
-                        onClick = { onSeekNext() }
+                        onClick = { onEvent(PlayerActions.SeekToNextMusic) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastForward,
                             contentDescription = null
                         )
                     }
-                    LoopButton(
-                        player = player,
-                        onClick = { onLoop() }
-                    )
+                    LoopButton()
                 }
-                if (!swipeGesturesEnabledState.value) {
+                if (!swipeGesturesEnabled) {
                     Spacer(modifier = Modifier.height(30.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
