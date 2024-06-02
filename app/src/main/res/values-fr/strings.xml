@@ -14,4 +14,5 @@
     <string name="about">A Propos</string>
     <string name="size">Taille</string>
     <string name="type">Type</string>
+    <string name="bitrate">Bitrate</string>
 </resources>

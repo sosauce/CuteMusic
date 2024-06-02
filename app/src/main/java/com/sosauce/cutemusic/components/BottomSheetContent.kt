@@ -2,6 +2,7 @@ package com.sosauce.cutemusic.components
 
 import android.content.ContentValues
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -56,6 +57,7 @@ fun BottomSheetContent(music: Music) {
     var art: ByteArray? by remember { mutableStateOf(byteArrayOf()) }
     val fileType = context.contentResolver.getType(music.uri)
     val fileSize = getFileSize(context, music.uri).formatBinarySize()
+    val fileBitrate = getFileBitrate(context, music.uri)
 
 
     LaunchedEffect(music.uri) {
@@ -136,6 +138,11 @@ fun BottomSheetContent(music: Music) {
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 Text(
+                    text = "${stringResource(id = R.string.bitrate)}: $fileBitrate",
+                    fontFamily = GlobalFont,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+                Text(
                     text = "${stringResource(id = R.string.type)}: $fileType",
                     fontFamily = GlobalFont,
                     modifier = Modifier.padding(bottom = 5.dp)
@@ -156,6 +163,18 @@ private fun getFileSize(context: Context, uri: Uri): Long {
 
     }
     return size
+}
+
+private fun getFileBitrate(context: Context, uri: Uri): String {
+    val retriever = MediaMetadataRetriever()
+    return try {
+        retriever.setDataSource(context, uri)
+        val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+        retriever.release()
+        bitrate?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
+    } catch (e: Exception) {
+        "Unknown"
+    }
 }
 
 private fun createDeleteRequest(
