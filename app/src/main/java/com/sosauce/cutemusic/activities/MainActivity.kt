@@ -1,36 +1,25 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.sosauce.cutemusic.activities
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.pm.ActivityInfo
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.audio.MediaStoreHelper
 import com.sosauce.cutemusic.audio.Music
@@ -38,131 +27,132 @@ import com.sosauce.cutemusic.audio.service.PlaybackService
 import com.sosauce.cutemusic.logic.navigation.Nav
 import com.sosauce.cutemusic.logic.rememberIsLoopEnabled
 import com.sosauce.cutemusic.logic.rememberIsShuffleEnabled
+import com.sosauce.cutemusic.screens.utils.rememberHasReadAudioPermissions
 import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+	private lateinit var player: Player
+	private lateinit var controllerFuture: ListenableFuture<MediaController>
 
-    private lateinit var player: Player
+	private val _mediaItems = MutableStateFlow<List<Music>>(emptyList())
+	private val mediaItems = _mediaItems.map { it.toImmutableList() }
+		.stateIn(
+			scope = lifecycleScope,
+			started = SharingStarted.Eagerly,
+			initialValue = persistentListOf()
+		)
 
-    private val _mediaItems = mutableStateOf<List<Music>>(emptyList())
-    private val mediaItems: List<Music>
-        get() = _mediaItems.value
+	private var _isPlaylistLoaded = MutableStateFlow(false)
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                preparePlaylist()
-            }
-        }
+	@SuppressLint("SourceLockedOrientationActivity")
+	override fun onCreate(savedInstanceState: Bundle?) {
 
+		installSplashScreen()
+			.setKeepOnScreenCondition { !::player.isInitialized }
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+		super.onCreate(savedInstanceState)
 
-        installSplashScreen().setKeepOnScreenCondition { !::player.isInitialized }
+		enableEdgeToEdge(
+			statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+			navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+		)
 
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
-        )
+		requestedOrientation =
+			ActivityInfo.SCREEN_ORIENTATION_PORTRAIT // delete this when landscape and state bugs are fixed
 
-        requestedOrientation =
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT // delete this when landscape and state bugs are fixed
+		val sessionToken = SessionToken(
+			applicationContext,
+			ComponentName(this, PlaybackService::class.java)
+		)
 
-        val sessionToken =
-            SessionToken(applicationContext, ComponentName(this, PlaybackService::class.java))
-        val mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        mediaControllerFuture.addListener({
-            player = mediaControllerFuture.get()
-            setContent {
-                CuteMusicTheme {
-                    val viewModel = viewModel<MusicViewModel>(
-                        factory = object : ViewModelProvider.Factory {
-                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                return MusicViewModel(player, contentResolver) as T
-                            }
-                        }
-                    )
-                    requestPermission()
+		controllerFuture = MediaController.Builder(this, sessionToken)
+			.buildAsync()
 
-                    Scaffold(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
-                    ) {
-                        val shouldLoop by rememberIsLoopEnabled()
-                        val shouldShuffle by rememberIsShuffleEnabled()
+		controllerFuture.addListener({
+			player = controllerFuture.get()
+			setContent {
+				CuteMusicTheme {
+					val viewModel = viewModel<MusicViewModel>(
+						factory = MusicViewModel.create(player, contentResolver)
+					)
 
-                        LaunchedEffect(shouldLoop) {
-                            player.repeatMode =
-                                if (shouldLoop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-                        }
-                        LaunchedEffect(shouldShuffle) {
-                            player.shuffleModeEnabled = shouldShuffle
-                        }
+					val isLoaded by _isPlaylistLoaded.collectAsStateWithLifecycle()
+					val hasAudioPermission = rememberHasReadAudioPermissions()
 
-                        MaterialTheme(
-                            content = {
-                                Nav(
-                                    musics = mediaItems,
-                                    viewModel = viewModel
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-        }, MoreExecutors.directExecutor())
-    }
+					LaunchedEffect(hasAudioPermission, isLoaded) {
+						if (!hasAudioPermission || isLoaded) return@LaunchedEffect
+						if (!isLoaded) {
+							preparePlaylist()
+							_isPlaylistLoaded.update { true }
+						}
+					}
 
+					val shouldLoop by rememberIsLoopEnabled()
+					val shouldShuffle by rememberIsShuffleEnabled()
 
-    override fun onDestroy() {
-        player.release()
-        super.onDestroy()
-    }
+					LaunchedEffect(shouldLoop) {
+						player.repeatMode = if (shouldLoop) Player.REPEAT_MODE_ONE
+						else Player.REPEAT_MODE_OFF
+					}
+					LaunchedEffect(shouldShuffle) {
+						player.shuffleModeEnabled = shouldShuffle
+					}
+
+					val musics by mediaItems.collectAsStateWithLifecycle()
+
+					Nav(
+						musics = musics,
+						viewModel = viewModel
+					)
+				}
+			}
+		}, MoreExecutors.directExecutor())
+	}
 
 
-    private fun requestPermission() {
-        requestPermissionLauncher.launch(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Manifest.permission.READ_MEDIA_AUDIO
-            } else {
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            }
-        )
-    }
+	override fun onDestroy() {
+		player.release()
+		MediaController.releaseFuture(controllerFuture)
+		super.onDestroy()
+	}
 
-    private fun preparePlaylist() {
-        lifecycleScope.launch {
-            val musics = MediaStoreHelper.getMusics(contentResolver)
-            loadSongsInBatches(musics, batchSize = 10, delayMillis = 10)
-        }
-    }
+	private fun preparePlaylist() {
+		lifecycleScope.launch {
+			val musics = MediaStoreHelper.getMusics(contentResolver)
+			_mediaItems.update { (it + musics).distinctBy { it.id } }
+			loadSongsInBatchesToPlayer(musics, batchSize = 10, delayMillis = 10)
+		}
+	}
 
 
-    private suspend fun loadSongsInBatches(musics: List<Music>, batchSize: Int, delayMillis: Long) {
-        for (i in musics.indices step batchSize) {
-            val batch = musics.subList(i, minOf(i + batchSize, musics.size))
-            _mediaItems.value += batch
-            batch.forEach { music ->
-                val mediaItem = convertMusicToMedia(music)
-                player.addMediaItem(mediaItem)
-            }
-            player.prepare()
-            delay(delayMillis)
-        }
-    }
+	private suspend fun loadSongsInBatchesToPlayer(
+		musics: List<Music>,
+		batchSize: Int,
+		delayMillis: Long
+	) {
+		for (i in musics.indices step batchSize) {
+			val batch = musics.subList(i, minOf(i + batchSize, musics.size))
+			val mediaItems = batch.map(Music::toMediaItem)
+			player.addMediaItems(mediaItems)
+			player.prepare()
+			delay(delayMillis)
+		}
+	}
 }
 
+fun Music.toMediaItem(): MediaItem = MediaItem.Builder()
+	.setUri(uri)
+	.setMediaId(uri.toString())
+	.build()
 
-fun convertMusicToMedia(music: Music): MediaItem {
-    return MediaItem.Builder()
-        .setUri(music.uri)
-        .setMediaId(music.uri.toString())
-        .build()
-}
 
