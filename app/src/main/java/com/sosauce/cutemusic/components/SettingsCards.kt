@@ -80,42 +80,43 @@ fun SettingsCards(
 
 @Composable
 fun TextSettingsCards(
-    text: String,
-    tipText: String,
-    onClick: () -> Unit
+	text: String,
+	tipText: String,
+	onClick: () -> Unit,
+	shape: RoundedCornerShape = RoundedCornerShape(
+		topStart = 4.dp,
+		topEnd = 4.dp,
+		bottomStart = 24.dp,
+		bottomEnd = 24.dp
+	)
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 2.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(
-            topStart = 4.dp,
-            topEnd = 4.dp,
-            bottomStart = 24.dp,
-            bottomEnd = 24.dp
-        )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(15.dp)
-                .fillMaxWidth()
-        ) {
-            Column(verticalArrangement = Arrangement.Center) {
-                Text(
-                    text = text,
-                    fontFamily = GlobalFont
-                )
-                Text(
-                    text = tipText,
-                    fontFamily = GlobalFont,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-        }
-    }
+	Card(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(horizontal = 16.dp, vertical = 2.dp)
+			.clickable(onClick = onClick),
+		colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+		shape = shape
+	) {
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.SpaceBetween,
+			modifier = Modifier
+				.padding(15.dp)
+				.fillMaxWidth()
+		) {
+			Column(verticalArrangement = Arrangement.Center) {
+				Text(
+					text = text,
+					fontFamily = GlobalFont
+				)
+				Text(
+					text = tipText,
+					fontFamily = GlobalFont,
+					fontSize = 12.sp,
+					color = Color.Gray
+				)
+			}
+		}
+	}
 }

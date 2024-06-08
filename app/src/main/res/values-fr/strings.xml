@@ -8,11 +8,11 @@
     <string name="use_swipe">Utiliser les swipes</string>
     <string name="swipe_gestures">Swipes</string>
     <string name="about_swipe_gestures">Quand activé, vous pourrez swiper l\'écran \"en cours de lecture\".\n\n-Haut vers le Bas pour quitter l\'écran\n-Droite à Gauche pour jouer la prochaine musique\n-Gauche à Droite pour jouer la précédente musique</string>
-    <string name="version">Version</string>
+    <string name="version">Version: %s</string>
     <string name="support">Soutenir</string>
     <string name="update">Mettre à Jour</string>
     <string name="about">A Propos</string>
-    <string name="size">Taille</string>
+    <string name="size">Taille %s</string>
     <string name="type">Type</string>
-    <string name="bitrate">Bitrate</string>
+    <string name="bitrate">Bitrate %s</string>
 </resources>

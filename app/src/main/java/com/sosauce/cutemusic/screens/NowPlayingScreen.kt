@@ -1,8 +1,6 @@
 package com.sosauce.cutemusic.screens
 
 
-import android.content.res.Configuration
-import androidx.annotation.OptIn
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,173 +27,188 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.util.UnstableApi
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.components.LoopButton
 import com.sosauce.cutemusic.components.MusicSlider
 import com.sosauce.cutemusic.components.ShuffleButton
 import com.sosauce.cutemusic.logic.NowPlayingState
 import com.sosauce.cutemusic.logic.PlayerActions
-import com.sosauce.cutemusic.logic.imageRequester
 import com.sosauce.cutemusic.logic.rememberIsSwipeEnabled
 import com.sosauce.cutemusic.screens.landscape.NowPlayingLandscape
+import com.sosauce.cutemusic.screens.utils.PreviewSamples
+import com.sosauce.cutemusic.screens.utils.currentArtisitReadableName
+import com.sosauce.cutemusic.screens.utils.currentPlayingReadable
+import com.sosauce.cutemusic.screens.utils.rememberIsLandscape
+import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import kotlin.math.abs
 
 
-@OptIn(UnstableApi::class)
 @Composable
 fun NowPlayingScreen(
-    navController: NavController,
-    viewModel: MusicViewModel,
-    state: NowPlayingState
+	navController: NavController,
+	viewModel: MusicViewModel,
+	state: NowPlayingState
 ) {
-    val config = LocalConfiguration.current
-    if (config.orientation != Configuration.ORIENTATION_PORTRAIT) {
-        NowPlayingLandscape(viewModel, navController, state)
-    } else {
-        NowPlayingContent(
-            viewModel = viewModel,
-            onEvent = viewModel::handlePlayerActions,
-            onNavigateUp = { navController.navigate(navController.graph.startDestinationId) },
-            state = state
-        )
-    }
+	val isLandscape = rememberIsLandscape()
+
+	if (isLandscape) {
+		NowPlayingLandscape(
+			state = state,
+			onPlayerActions = viewModel::handlePlayerActions,
+			onNavigateUp = dropUnlessResumed { navController.navigateUp() },
+		)
+	} else {
+		NowPlayingContent(
+			state = state,
+			onEvent = viewModel::handlePlayerActions,
+			onNavigateUp = dropUnlessResumed { navController.navigate(navController.graph.startDestinationId) },
+		)
+	}
 
 }
 
 @Composable
 private fun NowPlayingContent(
-    viewModel: MusicViewModel,
-    onEvent: (PlayerActions) -> Unit,
-    onNavigateUp: () -> Unit,
-    state: NowPlayingState
+	state: NowPlayingState,
+	onEvent: (PlayerActions) -> Unit,
+	onNavigateUp: () -> Unit,
+	modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val swipeGesturesEnabled by rememberIsSwipeEnabled()
 
-    Scaffold { _ ->
-        Box(
-            modifier = if (swipeGesturesEnabled) {
-                Modifier
-                    .padding(15.dp)
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
-                            val (x, y) = dragAmount
-                            if (abs(x) > abs(y)) {
-                                if (x > 0) onEvent(PlayerActions.SeekToPreviousMusic) else onEvent(
-                                    PlayerActions.SeekToNextMusic
-                                )
-                            } else {
-                                onNavigateUp()
-                            }
-                        }
-                    }
-            } else {
-                Modifier
-                    .padding(15.dp)
-                    .fillMaxSize()
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Spacer(modifier = Modifier.height(45.dp))
-                AsyncImage(
-                    model = imageRequester(
-                        img = state.artwork,
-                        context = context
-                    ),
-                    contentDescription = "Artwork",
-                    modifier = Modifier
-                        .size(340.dp)
-                        .clip(RoundedCornerShape(5)),
-                    contentScale = ContentScale.Crop
-                )
+	val swipeGesturesEnabled by rememberIsSwipeEnabled()
 
+	val secondaryModifier = remember(swipeGesturesEnabled) {
+		if (swipeGesturesEnabled) Modifier.pointerInput(Unit) {
+			detectDragGestures { change, dragAmount ->
+				change.consume()
+				val (x, y) = dragAmount
+				if (abs(x) > abs(y)) {
+					if (x > 0) onEvent(PlayerActions.SeekToPreviousMusic)
+					else onEvent(PlayerActions.SeekToNextMusic)
+				} else {
+					onNavigateUp()
+				}
+			}
+		}
+		else Modifier
+	}
 
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = if (state.currentlyPlaying.length >= 35) state.currentlyPlaying.take(35) + "..." else state.currentlyPlaying,
-                    fontFamily = GlobalFont,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 20.sp
-                )
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    text = if (state.currentlyArtist.length >= 35) state.currentlyPlaying.take(35) + "..." else state.currentlyArtist,
-                    fontFamily = GlobalFont,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                MusicSlider(state, viewModel)
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ShuffleButton()
-                    IconButton(
-                        onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FastRewind,
-                            contentDescription = null
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = { onEvent(PlayerActions.PlayOrPause) }
-                    ) {
-                        Icon(
-                            imageVector = if (state.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                            contentDescription = "pause/play button"
-                        )
-                    }
+	Scaffold(modifier = modifier) { value ->
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(value)
+				.padding(15.dp)
+				.then(secondaryModifier)
+		) {
+			Column(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.Center
+			) {
+				Spacer(modifier = Modifier.height(45.dp))
+				CommonArtwork(
+					bitmap = state.artwork,
+					contentDescription = "Artwork",
+					modifier = Modifier
+						.size(340.dp)
+						.clip(RoundedCornerShape(5)),
+				)
+				Spacer(modifier = Modifier.height(20.dp))
+				Text(
+					text = state.currentPlayingReadable,
+					fontFamily = GlobalFont,
+					color = MaterialTheme.colorScheme.onBackground,
+					fontSize = 20.sp,
+				)
+				Spacer(modifier = Modifier.height(5.dp))
+				Text(
+					text = state.currentArtisitReadableName,
+					fontFamily = GlobalFont,
+					color = MaterialTheme.colorScheme.onBackground,
+					fontSize = 14.sp,
+					overflow = TextOverflow.Ellipsis
+				)
+				Spacer(modifier = Modifier.height(10.dp))
+				MusicSlider(
+					state = state,
+					onSeekSlider = { amount -> onEvent(PlayerActions.SeekTo(amount)) },
+				)
+				Row(
+					horizontalArrangement = Arrangement.Center,
+					verticalAlignment = Alignment.CenterVertically,
+					modifier = Modifier.fillMaxWidth()
+				) {
+					ShuffleButton()
+					IconButton(
+						onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
+					) {
+						Icon(
+							imageVector = Icons.Outlined.FastRewind,
+							contentDescription = "previous"
+						)
+					}
 
+					FloatingActionButton(
+						onClick = { onEvent(PlayerActions.PlayOrPause) },
+						modifier = Modifier.padding(horizontal = 12.dp)
+					) {
+						Icon(
+							imageVector = if (state.isPlaying) Icons.Outlined.Pause
+							else Icons.Outlined.PlayArrow,
+							contentDescription = "pause/play button"
+						)
+					}
+					IconButton(
+						onClick = { onEvent(PlayerActions.SeekToNextMusic) }
+					) {
+						Icon(
+							imageVector = Icons.Outlined.FastForward,
+							contentDescription = "next"
+						)
+					}
+					LoopButton()
+				}
+				if (!swipeGesturesEnabled) {
+					Spacer(modifier = Modifier.height(30.dp))
+					Row(
+						modifier = Modifier.fillMaxWidth(),
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.Center
+					) {
+						IconButton(onClick = onNavigateUp) {
+							Icon(
+								imageVector = Icons.Outlined.Home,
+								contentDescription = "Home"
+							)
+						}
+					}
+				}
+			}
+		}
+	}
+}
 
-                    IconButton(
-                        onClick = { onEvent(PlayerActions.SeekToNextMusic) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FastForward,
-                            contentDescription = null
-                        )
-                    }
-                    LoopButton()
-                }
-                if (!swipeGesturesEnabled) {
-                    Spacer(modifier = Modifier.height(30.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconButton(onClick = { onNavigateUp() }) {
-                            Icon(imageVector = Icons.Outlined.Home, contentDescription = "Home")
-                        }
-                    }
-                }
-            }
-        }
-
-    }
+@Preview
+@Composable
+private fun NowPlayingScreenPreviews() = CuteMusicTheme {
+	NowPlayingContent(
+		state = PreviewSamples.FAKE_NOW_PLAYING_STATE,
+		onEvent = {},
+		onNavigateUp = {},
+	)
 }
 
 

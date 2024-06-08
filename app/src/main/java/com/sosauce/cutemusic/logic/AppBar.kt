@@ -15,57 +15,54 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavController
 import com.sosauce.cutemusic.components.SortRadioButtons
-import com.sosauce.cutemusic.logic.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
-    title: String,
-    showBackArrow: Boolean,
-    showMenuIcon: Boolean,
-    onPopBackStack: (() -> Unit)? = null,
-    onNavigate: () -> Unit
+	title: String,
+	showBackArrow: Boolean,
+	showMenuIcon: Boolean,
+	onPopBackStack: (() -> Unit)? = null,
+	onNavigate: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = title,
-                fontFamily = GlobalFont,
-                maxLines = 1
-            )
-        },
-        navigationIcon = {
-            if (showBackArrow) {
-                IconButton(onClick = { onPopBackStack?.invoke() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back arrow"
-                    )
-                }
-            }
-        },
-        actions = {
-            if (showMenuIcon) {
-                IconButton(onClick = { onNavigate() }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = "More",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
+	var expanded by remember { mutableStateOf(false) }
+	CenterAlignedTopAppBar(
+		title = {
+			Text(
+				text = title,
+				fontFamily = GlobalFont,
+				maxLines = 1
+			)
+		},
+		navigationIcon = {
+			if (showBackArrow) {
+				IconButton(onClick = { onPopBackStack?.invoke() }) {
+					Icon(
+						imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+						contentDescription = "Back arrow"
+					)
+				}
+			}
+		},
+		actions = {
+			if (showMenuIcon) {
+				IconButton(onClick = onNavigate) {
+					Icon(
+						imageVector = Icons.Outlined.Settings,
+						contentDescription = "More",
+						tint = MaterialTheme.colorScheme.onBackground
+					)
+				}
+			}
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                SortRadioButtons()
-            }
-        }
-    )
+			DropdownMenu(
+				expanded = expanded,
+				onDismissRequest = { expanded = false },
+			) {
+				SortRadioButtons()
+			}
+		}
+	)
 }

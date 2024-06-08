@@ -2,7 +2,6 @@
 
 package com.sosauce.cutemusic.components
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,101 +23,99 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.sosauce.cutemusic.activities.MusicViewModel
 import com.sosauce.cutemusic.logic.NowPlayingState
-import com.sosauce.cutemusic.logic.PlayerActions
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import kotlinx.coroutines.delay
 import me.saket.squiggles.SquigglySlider
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
-@SuppressLint("SuspiciousIndentation")
 @Composable
 fun MusicSlider(
-    state: NowPlayingState,
-    viewModel: MusicViewModel
+	state: NowPlayingState,
+	onSeekSlider: (Long) -> Unit,
+	modifier: Modifier = Modifier,
 ) {
-    var sliderPosition by remember { mutableFloatStateOf(0f) }
-    val updatedSliderPosition = rememberUpdatedState(sliderPosition)
+	var sliderPosition by remember { mutableFloatStateOf(0f) }
+	val updatedSliderPosition = rememberUpdatedState(sliderPosition)
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            sliderPosition = state.currentPosition.toFloat()
-            delay(1.seconds)
-        }
-    }
-    Column {
-        if (state.currentMusicDuration > 0) {
-            SquigglySlider(
-                value = state.currentPosition.toFloat(),
-                onValueChange = { new ->
-                    sliderPosition = new
-                    state.currentPosition = new.toLong()
-                    viewModel.handlePlayerActions(PlayerActions.SeekTo(state.currentPosition))
-                },
-                valueRange = 0f..state.currentMusicDuration.toFloat()
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = if (totalDuration(state) == "-153722867280912:-55") "" else totalDuration(
-                            state
-                        ),
-                        fontFamily = GlobalFont
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = if (timeLeft(state) == "-153722867280912:-55") "" else timeLeft(state),   //lame check need to change
-                        fontFamily = GlobalFont,
-                    )
-                }
-            }
+	LaunchedEffect(Unit) {
+		while (true) {
+			sliderPosition = state.currentPosition.toFloat()
+			delay(1.seconds)
+		}
+	}
+	Column(modifier = modifier) {
+		if (state.currentMusicDuration > 0) {
+			SquigglySlider(
+				value = state.currentPosition.toFloat(),
+				onValueChange = { new ->
+					sliderPosition = new
+					state.currentPosition = new.toLong()
+					onSeekSlider(state.currentPosition)
+				},
+				valueRange = 0f..state.currentMusicDuration.toFloat()
+			)
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.SpaceBetween,
+				modifier = Modifier.fillMaxWidth()
+			) {
+				Box(
+					modifier = Modifier
+						.background(
+							color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+							shape = RoundedCornerShape(16.dp)
+						)
+						.padding(horizontal = 8.dp, vertical = 4.dp)
+				) {
+					Text(
+						text = if (totalDuration(state) == "-153722867280912:-55") "" else totalDuration(
+							state
+						),
+						fontFamily = GlobalFont
+					)
+				}
+				Box(
+					modifier = Modifier
+						.background(
+							color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+							shape = RoundedCornerShape(16.dp)
+						)
+						.padding(horizontal = 8.dp, vertical = 4.dp)
+				) {
+					Text(
+						text = if (timeLeft(state) == "-153722867280912:-55") "" else timeLeft(state),   //lame check need to change
+						fontFamily = GlobalFont,
+					)
+				}
+			}
 
-        } else {
-            SquigglySlider(
-                value = updatedSliderPosition.value,
-                onValueChange = { new ->
-                    sliderPosition = new
-                    state.currentPosition = new.toLong()
-                    viewModel.handlePlayerActions(PlayerActions.SeekTo(state.currentPosition))
-                },
-                valueRange = 0f..0f
+		} else {
+			SquigglySlider(
+				value = updatedSliderPosition.value,
+				onValueChange = { new ->
+					sliderPosition = new
+					state.currentPosition = new.toLong()
+					onSeekSlider(state.currentPosition)
+				},
+				valueRange = 0f..0f
 
-            )
-        }
-    }
+			)
+		}
+	}
 }
 
 fun totalDuration(state: NowPlayingState): String {
-    val totalSeconds = state.currentMusicDuration / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+	val totalSeconds = state.currentMusicDuration / 1000
+	val minutes = totalSeconds / 60
+	val seconds = totalSeconds % 60
+	return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }
 
 fun timeLeft(state: NowPlayingState): String {
-    val totalSeconds = state.currentPosition / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+	val totalSeconds = state.currentPosition / 1000
+	val minutes = totalSeconds / 60
+	val seconds = totalSeconds % 60
+	return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }
