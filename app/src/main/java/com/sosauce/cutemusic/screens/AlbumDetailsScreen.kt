@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.screens
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -9,7 +10,6 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,162 +45,196 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.sosauce.cutemusic.activities.MusicViewModel
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.audio.Album
 import com.sosauce.cutemusic.audio.Music
 import com.sosauce.cutemusic.audio.getMusicArt
 import com.sosauce.cutemusic.components.BottomSheetContent
-import com.sosauce.cutemusic.logic.imageRequester
+import com.sosauce.cutemusic.screens.utils.PreviewSamples
+import com.sosauce.cutemusic.screens.utils.artistReadable
+import com.sosauce.cutemusic.screens.utils.readableTitle
+import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
 fun SharedTransitionScope.AlbumDetailsScreen(
-    album: Album,
-    viewModel: MusicViewModel,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    onPopBackStack: () -> Unit
+	scope: AnimatedVisibilityScope,
+	album: Album,
+	onSongClick: (Uri) -> Unit,
+	onPopBackStack: () -> Unit,
+	modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        val context = LocalContext.current
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = album.name,
-                            fontFamily = GlobalFont
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { onPopBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back arrow"
-                            )
-                        }
-                    }
-                )
-            }
-        ) { values ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(values)
-            ) {
-                Column {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        AsyncImage(
-                            model = imageRequester(
-                                img = album.albumArt,
-                                context = context
-                            ),
-                            contentDescription = "Album Art",
-                            modifier = Modifier
-                                .aspectRatio(1 / 1f)
-                                .padding(17.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .sharedElement(
-                                    state = rememberSharedContentState(key = album.id),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { _, _ ->
-                                        tween(durationMillis = 1000)
-                                    }
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = if (album.artist.length >= 18) album.artist.take(18) + "..." + " · " else album.artist + " · ",
-                                fontFamily = GlobalFont,
-                                fontSize = 22.sp
-                            )
-                            Text(
-                                text = "${album.numberOfSongs} ${if (album.numberOfSongs <= 1) "song" else "songs"}",
-                                fontFamily = GlobalFont,
-                                fontSize = 22.sp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
-                    HorizontalDivider()
-                    LazyColumn {
-                        itemsIndexed(album.songs) { _, music ->
-                            AlbumSong(music = music, onShortClick = { viewModel.play(music.uri) })
-                        }
-                    }
-                }
-            }
-        }
-    }
+	AlbumDetailsScreenContent(
+		album = album,
+		onSongClick = onSongClick,
+		onPopBackStack = onPopBackStack,
+		modifier = modifier,
+		sharedElementModifier = Modifier.sharedElement(
+			state = rememberSharedContentState(key = album.id),
+			animatedVisibilityScope = scope,
+			boundsTransform = { _, _ -> tween(durationMillis = 1000) },
+			clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(4.dp))
+		),
+	)
 }
+
+@Composable
+private fun AlbumDetailsScreenContent(
+	album: Album,
+	onSongClick: (Uri) -> Unit,
+	onPopBackStack: () -> Unit,
+	modifier: Modifier = Modifier,
+	sharedElementModifier: Modifier = Modifier,
+) {
+	val isInspectionMode = LocalInspectionMode.current
+
+	Scaffold(
+		topBar = {
+			TopAppBar(
+				title = {
+					Text(
+						text = album.name,
+						fontFamily = GlobalFont
+					)
+				},
+				navigationIcon = {
+					IconButton(onClick = onPopBackStack) {
+						Icon(
+							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							contentDescription = "Back arrow"
+						)
+					}
+				}
+			)
+		},
+		modifier = modifier,
+	) { values ->
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(values)
+		) {
+			CommonArtwork(
+				data = album.albumArt,
+				contentDescription = "Album Art",
+				modifier = Modifier
+					.align(Alignment.CenterHorizontally)
+					.aspectRatio(1 / 1f)
+					.padding(17.dp)
+					.clip(RoundedCornerShape(24.dp))
+					.then(sharedElementModifier),
+				contentScale = ContentScale.Crop,
+			)
+			Column {
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.Center
+				) {
+					Text(
+						text = album.artistReadable,
+						fontFamily = GlobalFont,
+						fontSize = 22.sp
+					)
+					Text(
+						text = pluralStringResource(
+							id = R.plurals.song_count,
+							count = album.numberOfSongs,
+							album.numberOfSongs
+						),
+						fontFamily = GlobalFont,
+						fontSize = 22.sp
+					)
+				}
+			}
+			Spacer(modifier = Modifier.height(5.dp))
+			HorizontalDivider()
+			LazyColumn {
+				itemsIndexed(
+					items = album.songs,
+					key = if (!isInspectionMode) { _, musics -> musics.id } else null,
+				) { _, music ->
+					AlbumSong(
+						music = music,
+						onShortClick = onSongClick,
+						modifier = Modifier
+							.fillMaxWidth()
+							.animateItem()
+					)
+				}
+			}
+		}
+	}
+}
+
+@Preview
+@Composable
+private fun AlbumDetailsScreenPreview() = CuteMusicTheme {
+	AlbumDetailsScreenContent(
+		album = PreviewSamples.FAKE_ALBUM_MODEL,
+		onSongClick = {},
+		onPopBackStack = { },
+	)
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbumSong(
-    music: Music,
-    onShortClick: (Uri) -> Unit
+private fun AlbumSong(
+	music: Music,
+	onShortClick: (Uri) -> Unit,
+	modifier: Modifier = Modifier
 ) {
+	val sheetState = rememberModalBottomSheetState(false)
+	val context = LocalContext.current
+	var isSheetOpen by remember { mutableStateOf(false) }
+	var art: Bitmap? by remember { mutableStateOf(null) }
 
-    val sheetState = rememberModalBottomSheetState(false)
-    val context = LocalContext.current
-    var isSheetOpen by remember { mutableStateOf(false) }
-    var art: ByteArray? by remember { mutableStateOf(byteArrayOf()) }
+	LaunchedEffect(music.uri) {
+		art = getMusicArt(context, music)
+	}
 
-    LaunchedEffect(music.uri) {
-        art = getMusicArt(context, music)
-    }
+	if (isSheetOpen) {
+		ModalBottomSheet(
+			modifier = Modifier.fillMaxHeight(),
+			sheetState = sheetState,
+			onDismissRequest = { isSheetOpen = false }
+		) {
+			BottomSheetContent(music = music, bitmap = art)
+		}
+	}
 
-    if (isSheetOpen) {
-        ModalBottomSheet(
-            modifier = Modifier.fillMaxHeight(),
-            sheetState = sheetState,
-            onDismissRequest = { isSheetOpen = false }
-        ) {
-            BottomSheetContent(music)
-        }
-    }
+	Row(
+		modifier = modifier
+			.clickable { onShortClick(music.uri) },
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.SpaceBetween
+	) {
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onShortClick(music.uri) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(
-                modifier = Modifier.padding(15.dp)
-            ) {
-                Text(
-                    text = if (music.title.length >= 25) music.title.take(25) + "..." else music.title,
-                    fontFamily = GlobalFont,
-                    maxLines = 1
-                )
-                Text(
-                    text = music.artist,
-                    fontFamily = GlobalFont
-                )
-            }
-        }
-        IconButton(onClick = { isSheetOpen = true }) {
-            Icon(
-                imageVector = Icons.Outlined.MoreVert,
-                contentDescription = null
-            )
-        }
-    }
+		Row(verticalAlignment = Alignment.CenterVertically) {
+			Column(
+				modifier = Modifier.padding(15.dp)
+			) {
+				Text(
+					text = music.readableTitle,
+					fontFamily = GlobalFont,
+					maxLines = 1
+				)
+				Text(
+					text = music.artist,
+					fontFamily = GlobalFont
+				)
+			}
+		}
+		IconButton(onClick = { isSheetOpen = true }) {
+			Icon(
+				imageVector = Icons.Outlined.MoreVert,
+				contentDescription = null
+			)
+		}
+	}
 }

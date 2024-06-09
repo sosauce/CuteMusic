@@ -14,4 +14,8 @@
   <string name="size">Size: %s</string>
   <string name="type">Type : %s</string>
   <string name="bitrate">Bitrate : %s</string>
+  <plurals name="song_count">
+    <item quantity="one">%d Song</item>
+    <item quantity="other">%d Songs</item>
+  </plurals>
 </resources>

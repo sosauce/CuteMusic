@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
+import coil.imageLoader
 import coil.request.ImageRequest
 import com.sosauce.cutemusic.R
 
@@ -41,6 +42,40 @@ fun CommonArtwork(
 				.data(bitmap)
 				.crossfade(true)
 				.build(),
+			contentDescription = contentDescription,
+			contentScale = contentScale,
+			alignment = alignment,
+			colorFilter = colorFilter,
+			modifier = modifier,
+		)
+	}
+}
+
+@Composable
+fun CommonArtwork(
+	data: Any?,
+	contentDescription: String?,
+	modifier: Modifier = Modifier,
+	alignment: Alignment = Alignment.Center,
+	contentScale: ContentScale = ContentScale.Crop,
+	colorFilter: ColorFilter? = null,
+) {
+	val context = LocalContext.current
+	val isLocalInsepectionMode = LocalInspectionMode.current
+
+	if (isLocalInsepectionMode) {
+		Image(
+			painter = painterResource(id = R.drawable.cute_music_icon),
+			contentDescription = contentDescription,
+			contentScale = contentScale,
+			alignment = alignment,
+			colorFilter = colorFilter,
+			modifier = modifier,
+		)
+	} else {
+		AsyncImage(
+			model = ImageRequest.Builder(context).data(data).build(),
+			imageLoader = context.imageLoader,
 			contentDescription = contentDescription,
 			contentScale = contentScale,
 			alignment = alignment,
