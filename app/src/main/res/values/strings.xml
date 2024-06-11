@@ -1,12 +1,9 @@
 <resources>
-    <string name="app_name">CuteMusic</string>
+    <string name="app_name" translatable="false">CuteMusic</string>
     <string name="theme">Theme</string>
     <string name="settings">Settings</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="amoled_mode">Amoled Mode</string>
-    <string name="use_swipe">Use swipe gestures</string>
-    <string name="swipe_gestures">Swipe Gestures</string>
-    <string name="about_swipe_gestures">When enabled, the now playing screen will be swipeable.\n\n-Top to Bottom to exit the screen\n-Right to Left to play next music\n-Left to Right to play previous song</string>
     <string name="version">Version</string>
     <string name="support">Support</string>
     <string name="update">Check Updates</string>
@@ -14,4 +11,31 @@
     <string name="size">Size</string>
     <string name="type">Type</string>
     <string name="bitrate">Bitrate</string>
+    <string name="previous_song">Previous Song</string>
+    <string name="play_pause_button">Play/Pause Button</string>
+    <string name="next_button">Next Song</string>
+    <string name="no_artists_found">No artists found !</string>
+    <string name="artwork">Artwork</string>
+    <string name="artists">Artists</string>
+    <string name="albums">Albums</string>
+    <string name="cm_by_sosauce">CuteMusic by sosauce</string>
+    <string name="app_icon">App Icon</string>
+    <string name="search">Search</string>
+    <string name="close">Close</string>
+    <string name="more">More</string>
+    <string name="hi_there">Hi there!</string>
+    <string name="permissio_needed">It seems like CuteMusic doesn\'t have the permission to access your musics! You can grant it below!</string>
+    <string name="request_perm">Request permission</string>
+    <string name="no_musics_found">No music found !</string>
+    <string name="error_deleting_song">There was an error deleting the song.</string>
+    <string name="deleting_song_OK">Successfully deleted song.</string>
+    <string name="okay">Okay</string>
+    <string name="restart_app">Restart App</string>
+    <string name="restart_app_why">If you are facing issues.</string>
+    <string name="misc">Misc</string>
+    <string name="no_albums_found">No albums found !</string>
+    <string name="follow_sys">Follow System</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="playback_speed">Set playback speed</string>
 </resources>

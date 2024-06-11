@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">CuteMusic</string>
     <string name="theme">Thème</string>
     <string name="settings">Paramètres</string>
     <string name="dark_mode">Mode Sombre</string>
     <string name="amoled_mode">Mode Amoled</string>
-    <string name="use_swipe">Utiliser les swipes</string>
-    <string name="swipe_gestures">Swipes</string>
-    <string name="about_swipe_gestures">Quand activé, vous pourrez swiper l\'écran \"en cours de lecture\".\n\n-Haut vers le Bas pour quitter l\'écran\n-Droite à Gauche pour jouer la prochaine musique\n-Gauche à Droite pour jouer la précédente musique</string>
     <string name="version">Version</string>
     <string name="support">Soutenir</string>
     <string name="update">Mettre à Jour</string>
@@ -15,4 +11,31 @@
     <string name="size">Taille</string>
     <string name="type">Type</string>
     <string name="bitrate">Bitrate</string>
+    <string name="previous_song">Musique précédent</string>
+    <string name="play_pause_button">Button jouer/pause</string>
+    <string name="next_button">Prochaine musique</string>
+    <string name="no_artists_found">Pas d\'artistes trouvés!</string>
+    <string name="artwork">Art</string>
+    <string name="artists">Artistes</string>
+    <string name="cm_by_sosauce">CuteMusic par sosauce</string>
+    <string name="app_icon">Icone de l\'app</string>
+    <string name="search">Rechercher</string>
+    <string name="close">Fermer</string>
+    <string name="more">Plus</string>
+    <string name="hi_there">Salut!</string>
+    <string name="permissio_needed">Il semble que CuteMusic n\'a pas access à vos musiques! Vous pouvez lui autoriser en dessous!</string>
+    <string name="request_perm">Autoriser les permissions</string>
+    <string name="no_musics_found">Pas de musiques trouvées !</string>
+    <string name="error_deleting_song">Il y a eu un problème en essayant de supprimer la musique.</string>
+    <string name="deleting_song_OK">Musique supprimée avec succès</string>
+    <string name="okay">OK</string>
+    <string name="restart_app">Redémarrer l\'app</string>
+    <string name="restart_app_why">Si vous encontrez des problèmes</string>
+    <string name="misc">Divers</string>
+    <string name="no_albums_found">Pas d\'albums trouvés !</string>
+    <string name="follow_sys">Suivre le système</string>
+    <string name="ascending">Ascendant</string>
+    <string name="descending">Descendant</string>
+    <string name="playback_speed">Régler la vitesse de lecture</string>
+    <string name="albums">Albums</string>
 </resources>

@@ -18,9 +18,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.logic.rememberFollowSys
-import com.sosauce.cutemusic.logic.rememberUseAmoledMode
-import com.sosauce.cutemusic.logic.rememberUseDarkMode
+import com.sosauce.cutemusic.data.datastore.rememberFollowSys
+import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
+import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 
 
 private val LightColors = lightColorScheme(
@@ -115,9 +115,8 @@ fun CuteMusicTheme(
             useAmoledMode -> colorScheme.copy(
                 surface = Color.Black,
                 inverseSurface = Color.White,
-                background = Color.Black
+                background = Color.Black,
             )
-
             followSys -> colorScheme
             dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
                 if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
@@ -132,8 +131,6 @@ fun CuteMusicTheme(
             else -> DarkColors
         }
     }
-
-
 
     MaterialTheme(
         colorScheme = whichThemeToUse(),
