@@ -17,7 +17,7 @@ I'm not perfect, I have school, a personnal life, hard times etc... I may not be
 - Lightweight (~2.3 Mb APK size, this is subject to change overtime)
 - No unnecessary permissions needed ! ()
 - Material 3/You & Monet theming !
-- Very fast and snappy !
+- Very fast and snappy!
 
 ---
 <h1>🏃‍♂️ 2024 Roadmap for CuteMusic</h1>
