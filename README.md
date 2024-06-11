@@ -9,12 +9,6 @@
 --- 
 <h1>⚠️ Notice</h1>
 
-CuteMusic is currently in its first versions, which means: 
-
-- You may want to keep your main music player for now, as CM lacks some features notably metadata editing and may be unstable!
-- ANY bug reports / issues will be taken into consideration
-- Code might messy/incomprehensible. Cleanup will be done as time goes on
-
 I'm not perfect, I have school, a personnal life, hard times etc... I may not be able to bring bug fixes & features immediately, but will do my best to do so.
 
 ---
@@ -24,17 +18,6 @@ I'm not perfect, I have school, a personnal life, hard times etc... I may not be
 - No unnecessary permissions needed ! ()
 - Material 3/You & Monet theming !
 - Very fast and snappy !
-
----
-<h1>📱 Officialy tested on</h1>
-
-CuteMusic was officialy tested on :
-- HyperOS v1.0.4 / Android 14 (sosauce)
-- MikuUI TDA / Android 13 (AOSP with Miku Hatsune painted on it basically) (sosauce)
-- PixelExperience / Android 13 (sosauce)
-- Realme UI Go / Android 11 Go Edition (sosauce)
-
-Open an issue if you want to be an "official tester" and get your ROM/device on this list 
 
 ---
 <h1>🏃‍♂️ 2024 Roadmap for CuteMusic</h1>
