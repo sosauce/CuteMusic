@@ -30,14 +30,14 @@ object ImageUtils {
         return withContext(Dispatchers.IO) {
             val retriever = MediaMetadataRetriever()
             try {
-                retriever.use {
-                    it.setDataSource(context, uri)
-                    val picture = it.embeddedPicture?: return@withContext null
-                    BitmapFactory.decodeByteArray(picture, 0, picture.size)
-                }
+                retriever.setDataSource(context, uri)
+                val picture = retriever.embeddedPicture?: return@withContext null
+                BitmapFactory.decodeByteArray(picture, 0, picture.size)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
+            } finally {
+                retriever.release()
             }
         }
     }

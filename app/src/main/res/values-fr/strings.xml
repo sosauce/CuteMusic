@@ -38,4 +38,9 @@
     <string name="descending">Descendant</string>
     <string name="playback_speed">Régler la vitesse de lecture</string>
     <string name="albums">Albums</string>
+    <string name="yes">Oui</string>
+    <string name="blacklisted_folders">Dossiers Blacklistés</string>
+    <string name="delete_folder">Supprimer le dossier</string>
+    <string name="folder_delete_u_sure">Êtes-vous sûr de vouloir supprimer ce dossier ?</string>
+    <string name="alrdy_blacklisted">Dossier déjà blacklisté!</string>
 </resources>

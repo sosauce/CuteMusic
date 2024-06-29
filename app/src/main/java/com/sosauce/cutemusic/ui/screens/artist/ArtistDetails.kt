@@ -82,7 +82,7 @@ fun ArtistDetails(
 
     if (isLandscape) {
         ArtistDetailsLandscape(
-            onNavigateUp = { navController.popBackStack() },
+            onNavigateUp = navController::navigateUp,
             artistAlbums = artistAlbums,
             artistSongs = artistSongs,
             onClickPlay = { viewModel.playAtIndex(it) },
@@ -111,7 +111,9 @@ fun ArtistDetails(
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(
+                            onClick = navController::navigateUp
+                        ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back arrow"

@@ -3,18 +3,14 @@ package com.sosauce.cutemusic.ui.shared_components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 
@@ -25,10 +21,9 @@ fun AppBar(
     showBackArrow: Boolean,
     showMenuIcon: Boolean,
     onPopBackStack: (() -> Unit)? = null,
-    onNavigate: () -> Unit
+    onNavigate: ((Screen) -> Unit)? = null
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    CenterAlignedTopAppBar(
+    TopAppBar(
         title = {
             Text(
                 text = title,
@@ -48,20 +43,13 @@ fun AppBar(
         },
         actions = {
             if (showMenuIcon) {
-                IconButton(onClick = { onNavigate() }) {
+                IconButton(onClick = { onNavigate?.invoke(Screen.Settings) }) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
                         contentDescription = "More",
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
-            }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                SortRadioButtons()
             }
         }
     )

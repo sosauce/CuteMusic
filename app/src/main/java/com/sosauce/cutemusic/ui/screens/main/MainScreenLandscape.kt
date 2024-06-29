@@ -63,9 +63,9 @@ fun MainScreenLandscape(
         topBar = {
             Row(modifier = Modifier.padding(start = 80.dp)) {
                 CuteSearchbar(
-                    viewModel = viewModel,
                     musics = musics,
-                    onNavigate = { navController.navigate(Screen.Settings) }
+                    onNavigate = { navController.navigate(Screen.Settings) },
+                    onClick = { viewModel.playAtIndex(it) }
                 )
             }
         }

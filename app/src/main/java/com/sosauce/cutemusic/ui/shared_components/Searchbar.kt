@@ -1,5 +1,6 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,14 +38,23 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuteSearchbar(
-    viewModel: MusicViewModel,
     musics: List<Music>,
-    onNavigate: () -> Unit
+    onNavigate: () -> Unit,
+    onClick: (Uri) -> Unit
 ) {
 
     var query by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+    val filteredList by remember(query) {
+        derivedStateOf {
+            if (query.isEmpty()) {
+                emptyList()
+            } else {
+                musics.filter { it.name.contains(query, ignoreCase = true) }
+            }
+        }
+    }
 
 
         SearchBar(
@@ -106,7 +117,7 @@ fun CuteSearchbar(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Settings,
-                                contentDescription = stringResource(id = R.string.close)
+                                contentDescription = stringResource(id = R.string.settings)
                             )
                         }
 
@@ -122,22 +133,15 @@ fun CuteSearchbar(
                     }
                 }
             }
-
         ) {
             LazyColumn {
-                fun filterMusics(musics: List<Music>, query: String): List<Music> {
-                    return musics.filter {
-                        it.name.contains(query, ignoreCase = true)
+                    itemsIndexed(
+                        items = filteredList,
+                        key = { _, item -> item.id }
+                    ) { index, _ ->
+                        val music = filteredList[index]
+                        MusicListItem(music) { onClick(music.uri) }
                     }
-                }
-
-                val filteredMusics = if (query.isNotEmpty()) filterMusics(musics, query) else null
-                if (filteredMusics != null) {
-                    itemsIndexed(filteredMusics) { index, item ->
-                        val music = filteredMusics[index]
-                        MusicListItem(music) { viewModel.playAtIndex(music.uri) }
-                    }
-                }
             }
         }
 }

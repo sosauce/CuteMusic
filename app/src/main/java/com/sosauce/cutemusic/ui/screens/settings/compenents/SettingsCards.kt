@@ -81,20 +81,29 @@ fun SettingsCards(
 
 @Composable
 fun TextSettingsCards(
+    modifier: Modifier = Modifier,
     text: String,
-    tipText: String,
-    onClick: () -> Unit
+    tipText: String? = null,
+    onClick: () -> Unit,
+    topDp: Dp,
+    bottomDp: Dp,
 ) {
     Card(
+        shape = RoundedCornerShape(
+            topStart = topDp,
+            topEnd = topDp,
+            bottomStart = bottomDp,
+            bottomEnd = bottomDp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 2.dp)
             .clip(
                 RoundedCornerShape(
-                    topStart = 24.dp,
-                    topEnd = 24.dp,
-                    bottomStart = 24.dp,
-                    bottomEnd = 24.dp
+                    topStart = topDp,
+                    topEnd = topDp,
+                    bottomStart = bottomDp,
+                    bottomEnd = bottomDp
                 ))
             .clickable { onClick() },
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer)
@@ -102,21 +111,21 @@ fun TextSettingsCards(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(15.dp)
-                .fillMaxWidth()
+            modifier = modifier
         ) {
             Column(verticalArrangement = Arrangement.Center) {
                 Text(
                     text = text,
                     fontFamily = GlobalFont
                 )
-                Text(
-                    text = tipText,
-                    fontFamily = GlobalFont,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
+                tipText?.let {
+                    Text(
+                        text = it,
+                        fontFamily = GlobalFont,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
             }
         }
     }

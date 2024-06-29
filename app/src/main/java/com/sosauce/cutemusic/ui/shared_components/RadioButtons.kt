@@ -14,21 +14,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.dataStore
 import com.sosauce.cutemusic.data.datastore.rememberSortASC
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
 fun SortRadioButtons() {
-    val options = listOf("Ascending", "Descending")
-    val context = LocalContext.current
-    val dataStore: DataStore<Preferences> = context.dataStore
+
     var sort by rememberSortASC()
 
     Column(

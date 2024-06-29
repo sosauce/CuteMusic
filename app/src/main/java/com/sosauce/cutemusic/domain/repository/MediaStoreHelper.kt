@@ -5,6 +5,7 @@ import android.content.Context
 import android.provider.MediaStore
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
+import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.domain.model.Music
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,7 +22,8 @@ class MediaStoreHelper(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM_ID
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.DATA
         )
 
         context.contentResolver.query(
@@ -29,18 +31,21 @@ class MediaStoreHelper(
             projection,
             null,
             null,
-            "${MediaStore.Audio.Media.TITLE} ASC"
+            null
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+            val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn)
                 val artist = cursor.getString(artistColumn)
                 val albumId = cursor.getLong(albumIdColumn)
+                val filePath = cursor.getString(folderColumn)
+                val folder = filePath.substring(0, filePath.lastIndexOf('/'))
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
@@ -51,7 +56,8 @@ class MediaStoreHelper(
                     name = title,
                     artist = artist,
                     uri = uri,
-                    albumId = albumId
+                    albumId = albumId,
+                    folder = folder
                 ))
             }
         }
@@ -126,4 +132,41 @@ class MediaStoreHelper(
 
             return@withContext artists
         }
+
+
+    // Only gets folder with musics in them
+    fun getFoldersWithMusics(): List<Folder> {
+
+        val folders = mutableListOf<Folder>()
+
+        val projection = arrayOf(
+            MediaStore.Audio.Media.DATA
+        )
+
+        context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            null,
+            null,
+            null
+        )?.use {
+            val folderPaths = mutableSetOf<String>()
+            val dataIndex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+
+            while (it.moveToNext()) {
+                val filePath = it.getString(dataIndex)
+                val folderPath = filePath.substring(0, filePath.lastIndexOf('/'))
+                folderPaths.add(folderPath)
+            }
+            folderPaths.forEach { path ->
+                val folderName = path.substring(path.lastIndexOf('/') + 1)
+                folders.add(Folder(
+                    name = folderName,
+                    path = path
+                ))
+            }
+        }
+        return folders
+    }
+
     }

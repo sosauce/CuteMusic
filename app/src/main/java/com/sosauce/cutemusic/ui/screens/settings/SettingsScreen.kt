@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.ui.screens.settings.compenents.SwipeSwitch
 import com.sosauce.cutemusic.ui.screens.settings.compenents.ThemeManagement
@@ -22,7 +23,7 @@ import com.sosauce.cutemusic.ui.shared_components.AppBar
 @Composable
 fun SettingsScreen(
     onPopBackStack: () -> Unit,
-    onNavigate: () -> Unit
+    onNavigate: (Screen) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -33,7 +34,7 @@ fun SettingsScreen(
                 showBackArrow = true,
                 showMenuIcon = false,
                 onPopBackStack = { onPopBackStack() },
-                onNavigate = { onNavigate() }
+                onNavigate = { onNavigate(it) }
             )
         },
         modifier = Modifier
@@ -48,7 +49,9 @@ fun SettingsScreen(
         ) {
             AboutCard()
             ThemeManagement()
-            SwipeSwitch()
+            SwipeSwitch(
+                onNavigateTo = { onNavigate(it) }
+            )
         }
     }
 }

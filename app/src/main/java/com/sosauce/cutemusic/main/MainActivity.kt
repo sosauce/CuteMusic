@@ -24,7 +24,6 @@ import org.koin.android.ext.android.inject
 class MainActivity : ComponentActivity() {
 
     private val app by lazy { application as App }
-    private val mediaStoreHelper by inject<MediaStoreHelper>()
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -47,20 +46,9 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                 ) {
-//                        val shouldLoop by rememberIsLoopEnabled()
-//                        val shouldShuffle by rememberIsShuffleEnabled()
-//
-//                        LaunchedEffect(shouldLoop) {
-//                            mediaController!!.repeatMode =
-//                                if (shouldLoop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-//                        }
-//                        LaunchedEffect(shouldShuffle) {
-//                            mediaController!!.shuffleModeEnabled = shouldShuffle
-//                        }
-
                     MaterialTheme(
                         content = {
-                            Nav(app = app, mediaStoreHelper = mediaStoreHelper)
+                            Nav(app = app)
                             requestPermission()
                         }
                     )

@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,10 +22,13 @@ import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.ui.customs.restart
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable
-fun SwipeSwitch() {
+fun SwipeSwitch(
+    onNavigateTo: (Screen) -> Unit
+) {
     val context = LocalContext.current
 //    var showAboutDialog by remember { mutableStateOf(false) }
 
@@ -44,9 +48,27 @@ fun SwipeSwitch() {
             modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
         )
         TextSettingsCards(
+            text = "Blacklisted Folders",
+            onClick = { onNavigateTo(Screen.Blacklisted) },
+            modifier = Modifier
+                .padding(
+                    top = 25.dp,
+                    start = 15.dp,
+                    bottom = 25.dp
+                )
+                .fillMaxWidth(),
+            topDp = 24.dp,
+            bottomDp = 4.dp
+        )
+        TextSettingsCards(
             text = stringResource(id = R.string.restart_app),
             tipText = stringResource(id = R.string.restart_app_why),
-            onClick = { context.restart() }
+            onClick = { context.restart() },
+            modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+            topDp = 4.dp,
+            bottomDp = 24.dp
         )
     }
 }

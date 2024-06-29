@@ -1,12 +1,9 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.sosauce.cutemusic.ui.navigation
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +15,7 @@ import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
 import com.sosauce.cutemusic.ui.screens.artist.ArtistDetails
 import com.sosauce.cutemusic.ui.screens.artist.ArtistsScreen
+import com.sosauce.cutemusic.ui.screens.blacklisted.BlacklistedScreen
 import com.sosauce.cutemusic.ui.screens.main.MainScreen
 import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
@@ -26,17 +24,19 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModelFactory
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import org.koin.androidx.compose.koinViewModel
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
 fun Nav(
    app: App,
-   mediaStoreHelper: MediaStoreHelper
 ) {
 
     val navController = rememberNavController()
     val postViewModel = koinViewModel<PostViewModel>()
-    val viewModel = viewModel<MusicViewModel>(factory = MusicViewModelFactory(app, mediaStoreHelper.getMusics()))
+    val state by postViewModel.state.collectAsStateWithLifecycle()
+    val musics = postViewModel.musics
+    val blacklistedFolderNames = state.blacklistedFolders.map { it.path }.toSet()
+    val viewModel = viewModel<MusicViewModel>(factory = MusicViewModelFactory(app, musics))
+
 
 
         NavHost(
@@ -46,7 +46,7 @@ fun Nav(
             composable<Screen.Main> {
                 MainScreen(
                     navController = navController,
-                    musics = postViewModel.musics,
+                    musics = musics,
                     viewModel = viewModel
                 )
 
@@ -76,8 +76,8 @@ fun Nav(
             }
             composable<Screen.Settings> {
                 SettingsScreen(
-                    onPopBackStack = { navController.popBackStack() },
-                    onNavigate = { navController.navigate(Screen.Settings) }
+                    onPopBackStack = navController::navigateUp,
+                    onNavigate = { navController.navigate(it) }
                 )
             }
             composable<Screen.AlbumsDetails> {
@@ -86,7 +86,7 @@ fun Nav(
                     AlbumDetailsScreen(
                         album = album,
                         viewModel = viewModel,
-                        onPopBackStack = { navController.popBackStack() },
+                        onPopBackStack = navController::navigateUp,
                         postViewModel = postViewModel
                     )
                 }
@@ -102,7 +102,15 @@ fun Nav(
                         postViewModel = postViewModel
                     )
                 }
-
+            }
+            composable<Screen.Blacklisted> {
+                BlacklistedScreen(
+                    navController = navController,
+                    folders = postViewModel.folders,
+                    state = state,
+                    onEvents = postViewModel::onEvent,
+                    blacklistedFolderNames = blacklistedFolderNames
+                )
             }
         }
 }

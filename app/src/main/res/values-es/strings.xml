@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme">"Tema"</string>
+    <string name="settings">"Ajustes"</string>
+    <string name="dark_mode">"Modo Oscuro"</string>
+    <string name="amoled_mode">"Modo Amoled"</string>
+    <string name="version">"Versión"</string>
+    <string name="support">"Soporte"</string>
+    <string name="update">"Buscar Actualizaciones"</string>
+    <string name="about">"Acerca de"</string>
+    <string name="size">"Tamaño"</string>
+    <string name="type">"Tipo"</string>
+    <string name="bitrate">"Tasa de bits"</string>
+    <string name="previous_song">"Canción anterior"</string>
+    <string name="play_pause_button">"Botón de reproducción/pausa"</string>
+    <string name="next_button">"Siguiente canción"</string>
+    <string name="no_artists_found">"¡No se encuentran artistas!"</string>
+    <string name="artwork">"Arte de portada"</string>
+    <string name="artists">"Artistas"</string>
+    <string name="albums">"Álbumes"</string>
+    <string name="cm_by_sosauce">"CuteMusic por sosauce"</string>
+    <string name="app_icon">"Icono de la app"</string>
+    <string name="search">"Buscar"</string>
+    <string name="close">"Cerrar"</string>
+    <string name="more">"Más"</string>
+    <string name="hi_there">"¡Hola!"</string>
+    <string name="permissio_needed">"¡Parece que CuteMusic no tiene permiso para acceder a tu música! ¡Puedes otorgarlo a continuación!"</string>
+    <string name="request_perm">"Solicitar permisos"</string>
+    <string name="no_musics_found">"¡Música no encontrada!"</string>
+    <string name="error_deleting_song">"Hubo un error al eliminar la canción"</string>
+    <string name="deleting_song_OK">"La canción ha sido eliminada exitosamente"</string>
+    <string name="okay">"De acuerdo"</string>
+    <string name="restart_app">"Reiniciar la app"</string>
+    <string name="restart_app_why">"Si enfrentas problemas"</string>
+    <string name="misc">"Miscelánea"</string>
+    <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
+    <string name="follow_sys">"Seguir sistema"</string>
+    <string name="ascending">"Ascendente"</string>
+    <string name="descending">"Descendente"</string>
+    <string name="playback_speed">"Establecer velocidad de reproducción"</string>
+</resources>

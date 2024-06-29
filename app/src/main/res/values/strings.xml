@@ -38,4 +38,9 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="playback_speed">Set playback speed</string>
+    <string name="yes">Yes</string>
+    <string name="blacklisted_folders">Blacklisted Folders</string>
+    <string name="delete_folder">Delete Folder</string>
+    <string name="folder_delete_u_sure">Are you sure you want to delete this folder ?</string>
+    <string name="alrdy_blacklisted">Folder already blacklisted!</string>
 </resources>

@@ -66,6 +66,7 @@ import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PlayerState
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import com.sosauce.cutemusic.utils.ImageUtils
+import java.util.Locale
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -86,7 +87,6 @@ fun MainScreen(
         )
     } else {
         MainScreenContent(
-            viewModel = viewModel,
             musics = musics,
             playerState = viewModel.playerState.value,
             bottomBarIndex = viewModel.selectedItem,
@@ -113,7 +113,6 @@ fun MainScreen(
 
 @Composable
 private fun MainScreenContent(
-    viewModel: MusicViewModel,
     musics: List<Music>,
     playerState: PlayerState,
     bottomBarIndex: Int,
@@ -142,9 +141,10 @@ private fun MainScreenContent(
     Scaffold(
         topBar = {
             CuteSearchbar(
-                viewModel = viewModel,
                 musics = musics,
-                onNavigate = { onNavigateTo(Screen.Settings) }
+                onNavigate = { onNavigateTo(Screen.Settings) },
+                onClick = { onShortClick(it) }
+
             )
         },
         bottomBar = {
@@ -248,7 +248,7 @@ fun MusicListItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = ImageUtils.imageRequester(
-                    img = art ,
+                    img = art,
                     context = context
                 ),
                 contentDescription = "Artwork",
@@ -268,7 +268,9 @@ fun MusicListItem(
                 )
                 Text(
                     text = music.artist,
-                    fontFamily = GlobalFont
+                    fontFamily = GlobalFont,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }
         }

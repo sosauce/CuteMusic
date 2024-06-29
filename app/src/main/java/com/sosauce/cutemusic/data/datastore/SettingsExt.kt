@@ -42,7 +42,6 @@ fun <T> rememberPreference(
                         }
                     }
                 }
-
             override fun component1() = value
             override fun component2(): (T) -> Unit = { value = it }
         }

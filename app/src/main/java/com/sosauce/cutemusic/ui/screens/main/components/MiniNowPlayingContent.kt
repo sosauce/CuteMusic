@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.customs.textCutter
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @Composable

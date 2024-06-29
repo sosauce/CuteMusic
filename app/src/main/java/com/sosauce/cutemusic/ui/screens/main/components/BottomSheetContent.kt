@@ -172,13 +172,13 @@ private fun getFileSize(context: Context, uri: Uri): Long {
 private fun getFileBitrate(context: Context, uri: Uri): String {
     val retriever = MediaMetadataRetriever()
     return try {
-        retriever.use {
             retriever.setDataSource(context, uri)
-            val bitrate = it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+            val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
             bitrate?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
-        }
     } catch (e: Exception) {
         "Unknown"
+    } finally {
+        retriever.release()
     }
 }
 
@@ -192,7 +192,6 @@ private fun createDeleteRequest(
         try {
             context.contentResolver.delete(uri, null, null)
         } catch (e: SecurityException) {
-            // This exception will only be thrown from Android 11
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val intentSender = MediaStore.createDeleteRequest(
                     context.contentResolver,

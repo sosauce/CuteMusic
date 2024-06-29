@@ -54,7 +54,7 @@ fun NowPlayingLandscape(
     NPLContent(
         viewModel = viewModel,
         onEvent = viewModel::handlePlayerActions,
-        onNavigateUp = { navController.navigateUp() },
+        onNavigateUp = navController::navigateUp,
         onClickLoop = { viewModel.setLoop(it) },
         onClickShuffle = { viewModel.setShuffle(it) }
     )

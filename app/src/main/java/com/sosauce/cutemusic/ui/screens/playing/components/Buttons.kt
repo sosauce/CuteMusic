@@ -8,28 +8,26 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.media3.common.Player
-import com.sosauce.cutemusic.data.datastore.rememberIsLoopEnabled
-import com.sosauce.cutemusic.data.datastore.rememberIsShuffleEnabled
 
 @Composable
 fun LoopButton(
     onClick: (Boolean) -> Unit
 ) {
-    var shouldLoop by rememberIsLoopEnabled()
-
+    var shouldLoop by remember { mutableStateOf(false) }
 
     IconButton(
         onClick = {
-            onClick(shouldLoop)
             shouldLoop = !shouldLoop
+            onClick(shouldLoop)
         }
     ) {
         Icon(
             imageVector = Icons.Outlined.Loop,
             contentDescription = "loop button",
-            tint = if (!shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+            tint = if (shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -38,12 +36,12 @@ fun LoopButton(
 fun ShuffleButton(
     onClick: (Boolean) -> Unit
 ) {
-    var shouldShuffle by rememberIsShuffleEnabled()
+    var shouldShuffle by remember { mutableStateOf(false) }
 
     IconButton(
         onClick = {
-            onClick(shouldShuffle)
             shouldShuffle = !shouldShuffle
+            onClick(shouldShuffle)
         }
     ) {
         Icon(

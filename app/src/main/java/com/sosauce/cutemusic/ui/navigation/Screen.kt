@@ -14,6 +14,9 @@ sealed class Screen {
     data object Settings : Screen()
 
     @Serializable
+    data object Blacklisted : Screen()
+
+    @Serializable
     data object Albums : Screen()
 
     @Serializable
