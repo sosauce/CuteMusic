@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name" translatable="false">CuteMusic</string>
+    <string name="theme">Tema</string>
+    <string name="settings">Ayarlar</string>
+    <string name="dark_mode">Koyu Mod</string>
+    <string name="amoled_mode">Amoled Mod</string>
+    <string name="version">Sürüm</string>
+    <string name="support">Destek</string>
+    <string name="update">Güncellemeleri Kontrol Et</string>
+    <string name="about">Hakkında</string>
+    <string name="size">Boyut</string>
+    <string name="type">Tür</string>
+    <string name="bitrate">Bit Hızı</string>
+    <string name="previous_song">Önceki Şarkı</string>
+    <string name="play_pause_button">Oynat/Duraklat Düğmesi</string>
+    <string name="next_button">Sonraki Şarkı</string>
+    <string name="no_artists_found">Sanatçı bulunamadı !</string>
+    <string name="artwork">Albüm Kapağı</string>
+    <string name="artists">Sanatçılar</string>
+    <string name="albums">Albümler</string>
+    <string name="cm_by_sosauce">CuteMusic, sosauce tarafından</string>
+    <string name="app_icon">Uygulama İkonu</string>
+    <string name="search">Ara</string>
+    <string name="close">Kapat</string>
+    <string name="more">Daha Fazla</string>
+    <string name="hi_there">Merhaba!</string>
+    <string name="permissio_needed">Görünüşe göre CuteMusic müziklerinize erişim iznine sahip değil! Aşağıdan izin verebilirsiniz!</string>
+    <string name="request_perm">İzin İste</string>
+    <string name="no_musics_found">Müzik bulunamadı !</string>
+    <string name="error_deleting_song">Şarkı silinirken bir hata oluştu.</string>
+    <string name="deleting_song_OK">Şarkı başarıyla silindi.</string>
+    <string name="okay">Tamam</string>
+    <string name="restart_app">Uygulamayı Yeniden Başlatın</string>
+    <string name="restart_app_why">Sorun yaşıyorsanız.</string>
+    <string name="misc">Diğer</string>
+    <string name="no_albums_found">Albüm bulunamadı !</string>
+    <string name="follow_sys">Sistemi Takip Et</string>
+    <string name="ascending">Artan</string>
+    <string name="descending">Azalan</string>
+    <string name="playback_speed">Oynatma hızını ayarla</string>
+    <string name="yes">Evet</string>
+    <string name="blacklisted_folders">Kara Listeye Alınmış Klasörler</string>
+    <string name="delete_folder">Klasörü Sil</string>
+    <string name="folder_delete_u_sure">Bu klasörü silmek istediğinize emin misiniz ?</string>
+    <string name="alrdy_blacklisted">Klasör zaten kara listede!</string>
+</resources>
