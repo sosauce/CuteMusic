@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name" translatable="false">CuteMusic</string>
+    <string name="theme">Tema</string>
+    <string name="settings">Setări</string>
+    <string name="dark_mode">Mod de întunecare</string>
+    <string name="amoled_mode">În mod Amoled</string>
+    <string name="version">Versiunea</string>
+    <string name="support">Sprijină</string>
+    <string name="update">Caută actualizări</string>
+    <string name="about">Despre</string>
+    <string name="size">Mărime</string>
+    <string name="type">Tip</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="previous_song">Înapoi Melodia</string>
+    <string name="play_pause_button">Butonul Redare/Pauză</string>
+    <string name="next_button">Înainte Melodia</string>
+    <string name="no_artists_found">Nu s-au găsit artiști !</string>
+    <string name="artwork">Artă</string>
+    <string name="artists">Artiști</string>
+    <string name="albums">Albume</string>
+    <string name="cm_by_sosauce">CuteMusic de sosauce</string>
+    <string name="app_icon">Iconiță aplicație</string>
+    <string name="search">Căutare</string>
+    <string name="close">Închide</string>
+    <string name="more">Mai Mult</string>
+    <string name="hi_there">Bună!</string>
+    <string name="permissio_needed">Se pare că CuteMusic nu are permisiunea de a-ți accesa melodiile! O poți acorda mai jos!</string>
+    <string name="request_perm">Solicită permisiunea</string>
+    <string name="no_musics_found">Nu s-a găsit muzică !</string>
+    <string name="error_deleting_song">A fost o eroare la ștergerea melodia.</string>
+    <string name="deleting_song_OK">Melodia ștearsă cu succes.</string>
+    <string name="okay">OK</string>
+    <string name="restart_app">Repornește applicația</string>
+    <string name="restart_app_why">Dacă se întâmplă probleme.</string>
+    <string name="misc">Altele</string>
+    <string name="no_albums_found">Nu s-au găsit albume !</string>
+    <string name="follow_sys">Urmărește sistemul</string>
+    <string name="ascending">Ascendent</string>
+    <string name="descending">Descendent</string>
+    <string name="playback_speed">Setarea vitezei de redare</string>
+    <string name="yes">Da</string>
+    <string name="blacklisted_folders">Foldere Excluse</string>
+    <string name="delete_folder">Șterge Folder</string>
+    <string name="folder_delete_u_sure">Ești sigur că vrei să ștergi acest folder ?</string>
+    <string name="alrdy_blacklisted">Folder deja este exclusată !</string>
+</resources>
