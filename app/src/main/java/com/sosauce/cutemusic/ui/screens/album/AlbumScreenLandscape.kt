@@ -132,7 +132,8 @@ private fun AlbumCardLandscape(
                 )
                 Text(
                     text = album.artist,
-                    fontFamily = GlobalFont
+                    fontFamily = GlobalFont,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }
         }

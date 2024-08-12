@@ -20,6 +20,8 @@ import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -150,11 +152,12 @@ private fun NowPlayingContent(
                 Text(
                     text = textCutter(viewModel.currentArtist, 35),
                     fontFamily = GlobalFont,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 MusicSlider(viewModel)
+                Spacer(modifier = Modifier.height(7.dp))
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -165,6 +168,14 @@ private fun NowPlayingContent(
                     )
                     IconButton(
                         onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.SkipPrevious,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(
+                        onClick = { onEvent(PlayerActions.RewindTo(5000)) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FastRewind,
@@ -180,12 +191,20 @@ private fun NowPlayingContent(
                         )
                     }
 
+                    IconButton(
+                        onClick = { onEvent(PlayerActions.SeekTo(5000)) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.FastForward,
+                            contentDescription = null
+                        )
+                    }
 
                     IconButton(
                         onClick = { onEvent(PlayerActions.SeekToNextMusic) }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.FastForward,
+                            imageVector = Icons.Outlined.SkipNext,
                             contentDescription = null
                         )
                     }

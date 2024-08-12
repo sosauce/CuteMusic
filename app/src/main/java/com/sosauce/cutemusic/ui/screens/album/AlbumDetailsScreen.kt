@@ -3,6 +3,7 @@
 package com.sosauce.cutemusic.ui.screens.album
 
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,12 +29,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -156,7 +161,7 @@ private fun AlbumDetailsContent(
                     HorizontalDivider()
                     LazyColumn {
                         itemsIndexed(albumSongs) { _, music ->
-                            AlbumSong(music = music, onShortClick = { viewModel.playAtIndex(music.uri) })
+                            AlbumSong(music = music, onShortClick = { viewModel.itemClicked(music.uri) })
                         }
                     }
                 }
@@ -174,6 +179,15 @@ fun AlbumSong(
 
     val sheetState = rememberModalBottomSheetState(false)
     var isSheetOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var art: Bitmap? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(music.uri) {
+        art = ImageUtils.getMusicArt(context, music.uri)
+    }
+    DisposableEffect(music.uri) {
+        onDispose { art?.recycle() }
+    }
 
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -193,8 +207,18 @@ fun AlbumSong(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
         Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = ImageUtils.imageRequester(
+                    img = art,
+                    context = context
+                ),
+                contentDescription = "Artwork",
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .size(45.dp),
+                contentScale = ContentScale.Crop,
+            )
             Column(
                 modifier = Modifier.padding(15.dp)
             ) {
@@ -205,7 +229,8 @@ fun AlbumSong(
                 )
                 Text(
                     text = music.artist,
-                    fontFamily = GlobalFont
+                    fontFamily = GlobalFont,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }
         }

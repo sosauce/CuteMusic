@@ -9,6 +9,8 @@ import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -46,7 +48,7 @@ fun MiniNowPlayingContent(
                 onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) }
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.FastRewind,
+                    imageVector = Icons.Outlined.SkipPrevious,
                     contentDescription = "previous song"
                 )
             }
@@ -62,7 +64,7 @@ fun MiniNowPlayingContent(
                 onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) }
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.FastForward,
+                    imageVector = Icons.Outlined.SkipNext,
                     contentDescription = "next song"
                 )
             }

@@ -95,8 +95,7 @@ fun MainScreen(
             isCurrentlyPlaying = viewModel.isCurrentlyPlaying,
             onHandlePlayerActions = viewModel::handlePlayerActions,
             onShortClick = {
-                viewModel.populateLists()
-                viewModel.playAtIndex(it)
+                viewModel.itemClicked(it)
             },
             onBottomBarNavigation = { index, item ->
                 navController.navigate(item.navigateTo) {

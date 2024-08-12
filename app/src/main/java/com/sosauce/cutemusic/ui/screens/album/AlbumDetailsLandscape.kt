@@ -102,7 +102,7 @@ fun AlbumDetailsLandscape(
                         Spacer(modifier = Modifier.width(5.dp))
                         LazyColumn {
                             items(albumSongs, key = { it.id }) {  music ->
-                                AlbumSong(music = music, onShortClick = { viewModel.playAtIndex(music.uri) })
+                                AlbumSong(music = music, onShortClick = { viewModel.itemClicked(music.uri) })
                             }
                         }
                     }

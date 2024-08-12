@@ -23,7 +23,10 @@ class MediaStoreHelper(
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DATA
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.BITRATE,
+            MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.MIME_TYPE,
         )
 
         context.contentResolver.query(
@@ -38,6 +41,9 @@ class MediaStoreHelper(
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val bitrateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.BITRATE)
+            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -46,6 +52,9 @@ class MediaStoreHelper(
                 val albumId = cursor.getLong(albumIdColumn)
                 val filePath = cursor.getString(folderColumn)
                 val folder = filePath.substring(0, filePath.lastIndexOf('/'))
+                val bitrate = cursor.getLong(bitrateColumn)
+                val size = cursor.getLong(sizeColumn)
+                val mimeType = cursor.getString(mimeTypeColumn)
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
@@ -57,7 +66,10 @@ class MediaStoreHelper(
                     artist = artist,
                     uri = uri,
                     albumId = albumId,
-                    folder = folder
+                    folder = folder,
+                    bitrate = bitrate,
+                    size = size,
+                    mimeType = mimeType
                 ))
             }
         }

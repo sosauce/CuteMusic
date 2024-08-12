@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -97,7 +98,7 @@ class MusicViewModel(
     fun getPlaybackSpeed() = mediaController!!.playbackParameters
 
 
-    fun playAtIndex(uri: Uri) {
+    private fun playAtIndex(uri: Uri) {
         try {
             mediaController!!.playAtIndex(
                 uri = uri,
@@ -108,12 +109,19 @@ class MusicViewModel(
         }
     }
 
-    fun populateLists() {
+    fun itemClicked(uri: Uri) {
+        if (mediaController!!.mediaItemCount == 0) {
+            populateList()
+        }
+        playAtIndex(uri)
+
+    }
+
+    private fun populateList() {
         musics.forEach {
             mediaController!!.addMediaItem(it.convertToMediaItem(it.uri))
         }
         mediaController!!.prepare()
-
     }
 
     fun setPlaybackSpeed(speed: Float) {
@@ -129,11 +137,7 @@ class MusicViewModel(
     }
 
     fun setShuffle(shouldShuffle: Boolean) {
-        if (shouldShuffle) {
-            mediaController!!.shuffleModeEnabled = true
-        } else {
-            mediaController!!.shuffleModeEnabled = false
-        }
+        mediaController!!.shuffleModeEnabled = shouldShuffle
     }
 
 
@@ -142,7 +146,8 @@ class MusicViewModel(
             is PlayerActions.PlayOrPause -> if (mediaController!!.isPlaying) mediaController!!.pause() else mediaController!!.play()
             is PlayerActions.SeekToNextMusic -> mediaController!!.seekToNextMediaItem()
             is PlayerActions.SeekToPreviousMusic -> mediaController!!.seekToPreviousMediaItem()
-            is PlayerActions.SeekTo -> mediaController!!.seekTo(action.position)
+            is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
+            is PlayerActions.RewindTo -> mediaController!!.seekTo(mediaController!!.currentPosition - action.position)
         }
     }
 

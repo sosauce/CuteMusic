@@ -33,7 +33,7 @@ fun Long.formatBinarySize(): String {
             )
         } MB"
 
-        else -> "Bigger than 1024 TB"
+        else -> "Too Big!"
     }
 }
 

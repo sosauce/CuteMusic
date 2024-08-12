@@ -85,7 +85,7 @@ fun ArtistDetails(
             onNavigateUp = navController::navigateUp,
             artistAlbums = artistAlbums,
             artistSongs = artistSongs,
-            onClickPlay = { viewModel.playAtIndex(it) },
+            onClickPlay = { viewModel.itemClicked(it) },
             onNavigate = { navController.navigate(it) },
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
             artist = artist
@@ -143,7 +143,7 @@ fun ArtistDetails(
                         items(artistSongs) {music ->
                             ArtistMusicList(
                                 music = music,
-                                onShortClick = { viewModel.playAtIndex(music.uri) },
+                                onShortClick = { viewModel.itemClicked(music.uri) },
                                 onSelected = { /*TODO*/ },
                                 isSelected = false
                             )

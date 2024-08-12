@@ -17,6 +17,8 @@ import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -138,7 +140,7 @@ private fun NPLContent(
                         Text(
                             text = viewModel.currentArtist,
                             fontFamily = GlobalFont,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                             fontSize = 16.sp
                         )
                         MusicSlider(viewModel)
@@ -154,9 +156,16 @@ private fun NPLContent(
                                 onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
                             ) {
                                 Icon(
+                                    imageVector = Icons.Outlined.SkipPrevious,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(
+                                onClick = { onEvent(PlayerActions.RewindTo(5000)) }
+                            ) {
+                                Icon(
                                     imageVector = Icons.Outlined.FastRewind,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onBackground
+                                    contentDescription = null
                                 )
                             }
 
@@ -169,12 +178,20 @@ private fun NPLContent(
                                 )
                             }
                             IconButton(
-                                onClick = { onEvent(PlayerActions.SeekToNextMusic) }
+                                onClick = { onEvent(PlayerActions.SeekTo(5000)) }
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.FastForward,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onBackground
+                                    contentDescription = null
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { onEvent(PlayerActions.SeekToNextMusic) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.SkipNext,
+                                    contentDescription = null
                                 )
                             }
                             LoopButton(

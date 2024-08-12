@@ -55,7 +55,12 @@ fun ArtistsScreen(
                     viewModel.selectedItem = index
                     launchSingleTop = true
                 }
-            }
+            },
+            chargePVMLists = {
+                postViewModel.artistSongs(it)
+                postViewModel.artistAlbums(it)
+            },
+            onNavigate = { navController.navigate(it) }
         )
     } else {
         ArtistsScreenContent(
@@ -140,7 +145,7 @@ private fun ArtistsScreenContent(
 
 
 @Composable
-private fun ArtistInfoList(
+fun ArtistInfoList(
     artist: Artist,
     onClick: () -> Unit
 ) {

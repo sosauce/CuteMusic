@@ -193,12 +193,15 @@ fun AlbumCard(
                 )
                 Text(
                     text = album.artist,
-                    fontFamily = GlobalFont
+                    fontFamily = GlobalFont,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }
         }
     }
 }
+
+// Previews are commented by default, un-comment to use them, re-comment them when finalizing your changes for a PR
 
 //@Preview
 //@Composable

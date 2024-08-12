@@ -17,6 +17,8 @@ import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,7 +67,7 @@ fun MainScreenLandscape(
                 CuteSearchbar(
                     musics = musics,
                     onNavigate = { navController.navigate(Screen.Settings) },
-                    onClick = { viewModel.playAtIndex(it) }
+                    onClick = { viewModel.itemClicked(it) }
                 )
             }
         }
@@ -80,8 +82,7 @@ fun MainScreenLandscape(
                 ) {
                     items(displayMusics) {music ->
                         MusicListItem(music) {
-                            viewModel.populateLists()
-                            viewModel.playAtIndex(music.uri)
+                            viewModel.itemClicked(it)
                         }
                     }
                 }
@@ -145,7 +146,7 @@ private fun MiniNowPlayingLandscape(
                 onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) }
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.FastRewind,
+                    imageVector = Icons.Outlined.SkipPrevious,
                     contentDescription = stringResource(id = R.string.previous_song)
                 )
             }
@@ -161,7 +162,7 @@ private fun MiniNowPlayingLandscape(
                 onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) }
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.FastForward,
+                    imageVector = Icons.Outlined.SkipNext,
                     contentDescription = stringResource(id = R.string.next_button)
                 )
             }

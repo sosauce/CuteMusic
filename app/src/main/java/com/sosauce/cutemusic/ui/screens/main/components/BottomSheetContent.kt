@@ -58,10 +58,6 @@ import kotlinx.coroutines.launch
 fun BottomSheetContent(music: Music) {
     val context = LocalContext.current
     var art: Bitmap? by remember { mutableStateOf(null) }
-    val fileType = context.contentResolver.getType(music.uri)
-    val fileSize = getFileSize(context, music.uri).formatBinarySize()
-    val fileBitrate = getFileBitrate(context, music.uri)
-
 
     LaunchedEffect(music.uri) {
         art = ImageUtils.getMusicArt(context, music.uri)
@@ -113,7 +109,8 @@ fun BottomSheetContent(music: Music) {
                     )
                     Text(
                         text = textCutter(music.artist, 20),
-                        fontFamily = GlobalFont
+                        fontFamily = GlobalFont,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -137,17 +134,17 @@ fun BottomSheetContent(music: Music) {
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp)
             ) {
                 Text(
-                    text = "${stringResource(id = R.string.size)}: $fileSize",
+                    text = "${stringResource(id = R.string.size)}: ${music.size.formatBinarySize()}",
                     fontFamily = GlobalFont,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 Text(
-                    text = "${stringResource(id = R.string.bitrate)}: $fileBitrate",
+                    text = "${stringResource(id = R.string.bitrate)}: ${music.bitrate.toInt().div(1000).toString().plus(" kbps")}",
                     fontFamily = GlobalFont,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 Text(
-                    text = "${stringResource(id = R.string.type)}: $fileType",
+                    text = "${stringResource(id = R.string.type)}: ${music.mimeType}",
                     fontFamily = GlobalFont,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -156,31 +153,6 @@ fun BottomSheetContent(music: Music) {
     }
 }
 
-private fun getFileSize(context: Context, uri: Uri): Long {
-    var size: Long = 0
-    context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-        if (cursor.moveToFirst()) {
-            size = cursor.getLong(sizeIndex)
-        }
-
-
-    }
-    return size
-}
-
-private fun getFileBitrate(context: Context, uri: Uri): String {
-    val retriever = MediaMetadataRetriever()
-    return try {
-            retriever.setDataSource(context, uri)
-            val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
-            bitrate?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
-    } catch (e: Exception) {
-        "Unknown"
-    } finally {
-        retriever.release()
-    }
-}
 
 private fun createDeleteRequest(
     uri: Uri,

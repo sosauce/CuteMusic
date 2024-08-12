@@ -12,5 +12,8 @@ data class Music(
     val folder: String,
     val uri: Uri,
     val albumId: Long,
-    var art: Bitmap? = null
+    var art: Bitmap? = null,
+    val bitrate: Long,
+    val size: Long,
+    val mimeType: String
 )

@@ -8,14 +8,14 @@ plugins {
 
 android {
     namespace = "com.sosauce.cutemusic"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 7
-        versionName = "1.4.0"
+        targetSdk = 35
+        versionCode = 8
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

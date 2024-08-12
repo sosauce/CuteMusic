@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +33,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationRail
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
@@ -44,6 +47,8 @@ fun ArtistsScreenLandscape(
     postViewModel: PostViewModel,
     bottomBarIndex: Int,
     onBottomBarNavigation: (Int, NavigationItem) -> Unit,
+    chargePVMLists: (name: String) -> Unit,
+    onNavigate: (Screen) -> Unit
 ) {
 
     Scaffold { values ->
@@ -65,22 +70,18 @@ fun ArtistsScreenLandscape(
 
             }
         } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(values)
-                    .padding(start = 80.dp)
+                    .padding(start = 80.dp),
+                verticalArrangement = Arrangement.Top
             ) {
-                items(items = artists, key = { it.id }) {artist ->
-                    ArtistCardLandscape(
-                        artist = artist,
-                        onClick = {
-                            postViewModel.artistSongs(artist.name)
-                            postViewModel.artistAlbums(artist.name)
-                            navController.navigate(Screen.ArtistsDetails(id = artist.id))
-                        },
-                    )
+                items(artists, key = { it.id }) { artist ->
+                    ArtistInfoList(artist) {
+                        chargePVMLists(artist.name)
+                        onNavigate(Screen.ArtistsDetails(artist.id))
+                    }
                 }
             }
         }
@@ -91,49 +92,4 @@ fun ArtistsScreenLandscape(
         )
     }
     
-}
-
-@Composable
-private fun ArtistCardLandscape(
-    artist: Artist,
-    onClick: () -> Unit,
-) {
-    val context = LocalContext.current
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier
-            .padding(horizontal = 5.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .clickable { onClick() },
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            AsyncImage(
-                model = ImageUtils.imageRequester(
-                    img = R.drawable.artist,
-                    context = context
-                ),
-                contentDescription = "Artwork",
-                modifier = Modifier
-                    .size(215.dp)
-                    .padding(top = 7.dp)
-                    .clip(RoundedCornerShape(15)),
-                contentScale = ContentScale.Crop
-            )
-            Column(
-                modifier = Modifier.padding(15.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = textCutter(artist.name, 15),
-                    fontFamily = GlobalFont,
-                    maxLines = 1
-                )
-            }
-        }
-    }
 }
