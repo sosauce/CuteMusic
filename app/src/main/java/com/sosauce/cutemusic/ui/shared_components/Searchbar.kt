@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.ui.shared_components
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,17 +29,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.domain.model.Music
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuteSearchbar(
-    musics: List<Music>,
-    onNavigate: () -> Unit,
-    onClick: (Uri) -> Unit
+    musics: List<MediaItem>,
+    onNavigate: (Screen) -> Unit,
+    onClick: (String) -> Unit,
+    
 ) {
 
     var query by remember { mutableStateOf("") }
@@ -51,7 +52,7 @@ fun CuteSearchbar(
             if (query.isEmpty()) {
                 emptyList()
             } else {
-                musics.filter { it.name.contains(query, ignoreCase = true) }
+                musics.filter { it.mediaMetadata.title.toString().contains(query, ignoreCase = true) }
             }
         }
     }
@@ -113,7 +114,7 @@ fun CuteSearchbar(
                             )
                         }
                         IconButton(
-                            onClick = { onNavigate() }
+                            onClick = { onNavigate(Screen.Settings) }
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Settings,
@@ -137,10 +138,15 @@ fun CuteSearchbar(
             LazyColumn {
                     itemsIndexed(
                         items = filteredList,
-                        key = { _, item -> item.id }
+                        key = { _, item -> item.mediaId }
                     ) { index, _ ->
                         val music = filteredList[index]
-                        MusicListItem(music) { onClick(music.uri) }
+                        MusicListItem(
+                            music = music,
+                            onNavigate = { onNavigate(Screen.MetadataEditor(music.mediaId)) },
+                            onShortClick = { onClick(it) },
+                            
+                        )
                     }
             }
         }

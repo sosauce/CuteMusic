@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.ui.screens.artist
 
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,9 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.album.AlbumCard
 import com.sosauce.cutemusic.ui.screens.album.AlbumSong
@@ -37,11 +36,12 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 fun ArtistDetailsLandscape(
     onNavigateUp: () -> Unit,
     artistAlbums: List<Album>,
-    artistSongs: List<Music>,
-    onClickPlay: (Uri) -> Unit,
+    artistSongs: List<MediaItem>,
+    onClickPlay: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     chargePVMAlbumSongs: (Long) -> Unit,
-    artist: Artist
+    artist: Artist,
+    
 ) {
 
     Scaffold(
@@ -93,10 +93,12 @@ fun ArtistDetailsLandscape(
                 }
                 Spacer(modifier = Modifier.width(5.dp))
                 LazyColumn {
-                    items(artistSongs, key = { it.id }) {  music ->
+                    items(artistSongs, key = { it.mediaId }) {  music ->
                         AlbumSong(
                             music = music,
-                            onShortClick = { onClickPlay(music.uri) }
+                            onShortClick = { onClickPlay(music.mediaId) },
+                            onNavigate = { onNavigate(it) },
+                            
                         )
                     }
                 }

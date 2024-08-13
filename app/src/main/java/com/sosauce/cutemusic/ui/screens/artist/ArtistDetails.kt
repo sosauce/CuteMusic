@@ -2,8 +2,6 @@
 
 package com.sosauce.cutemusic.ui.screens.artist
 
-import android.graphics.Bitmap
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -39,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
@@ -58,7 +56,6 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.BottomSheetContent
@@ -88,7 +85,8 @@ fun ArtistDetails(
             onClickPlay = { viewModel.itemClicked(it) },
             onNavigate = { navController.navigate(it) },
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
-            artist = artist
+            artist = artist,
+            
         )
     } else {
         Scaffold(
@@ -143,9 +141,11 @@ fun ArtistDetails(
                         items(artistSongs) {music ->
                             ArtistMusicList(
                                 music = music,
-                                onShortClick = { viewModel.itemClicked(music.uri) },
+                                onShortClick = { viewModel.itemClicked(music.mediaId) },
                                 onSelected = { /*TODO*/ },
-                                isSelected = false
+                                isSelected = false,
+                                onNavigate = { navController.navigate(it) },
+                                
                             )
                         }
                     }
@@ -198,20 +198,17 @@ private fun AlbumsCard(
 
 @Composable
 fun ArtistMusicList(
-    music: Music,
-    onShortClick: (Uri) -> Unit,
+    music: MediaItem,
+    onShortClick: (String) -> Unit,
     onSelected: () -> Unit,
-    isSelected: Boolean
+    isSelected: Boolean,
+    onNavigate: (Screen) -> Unit,
+    
 ) {
 
     val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
     var isSheetOpen by remember { mutableStateOf(false) }
-    var art: Bitmap? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(music.uri) {
-        art = ImageUtils.getMusicArt(context, music.uri)
-    }
 
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -219,7 +216,12 @@ fun ArtistMusicList(
             sheetState = sheetState,
             onDismissRequest = { isSheetOpen = false }
         ) {
-            BottomSheetContent(music)
+            BottomSheetContent(
+                music = music,
+                onNavigate = { onNavigate(it) },
+                onDismiss = { isSheetOpen = false },
+                
+            )
         }
     }
 
@@ -228,7 +230,7 @@ fun ArtistMusicList(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
-                onClick = { onShortClick(music.uri) },
+                onClick = { onShortClick(music.mediaId) },
                 onLongClick = { onSelected() }
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -239,7 +241,7 @@ fun ArtistMusicList(
             if (!isSelected) {
                 AsyncImage(
                     model = ImageUtils.imageRequester(
-                        img = art,
+                        img = music.mediaMetadata.artworkUri,
                         context = context
                     ),
                     contentDescription = "Artwork",
@@ -251,7 +253,7 @@ fun ArtistMusicList(
                 )
             } else {
                 Image(
-                    painter = rememberAsyncImagePainter(art ?: R.drawable.cute_music_icon),
+                    painter = rememberAsyncImagePainter(music.mediaMetadata.artworkUri ?: R.drawable.cute_music_icon),
                     contentDescription = "Artwork",
                     modifier = Modifier
                         .padding(start = 10.dp)
@@ -265,12 +267,12 @@ fun ArtistMusicList(
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = textCutter(music.name, 25),
+                    text = textCutter(music.mediaMetadata.title.toString(), 25),
                     fontFamily = GlobalFont,
                     maxLines = 1
                 )
                 Text(
-                    text = music.artist,
+                    text = music.mediaMetadata.artist.toString(),
                     fontFamily = GlobalFont
                 )
             }

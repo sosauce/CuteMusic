@@ -1,6 +1,6 @@
 package com.sosauce.cutemusic.ui.screens.playing
 
-import com.sosauce.cutemusic.domain.model.Music
+import androidx.media3.common.MediaItem
 
 data class NowPlayingState(
     var currentlyPlaying: String = "",
@@ -9,5 +9,5 @@ data class NowPlayingState(
     var currentPosition: Long = 0L,
     var isPlaying: Boolean = false,
     var artwork: ByteArray? = null,
-    val musics: List<Music>? = emptyList()
+    val musics: List<MediaItem>? = emptyList()
 )

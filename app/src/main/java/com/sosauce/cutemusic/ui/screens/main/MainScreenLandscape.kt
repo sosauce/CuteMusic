@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FastForward
-import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.SkipNext
@@ -33,11 +31,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSortASC
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationRail
@@ -49,15 +47,16 @@ import com.sosauce.cutemusic.ui.theme.GlobalFont
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreenLandscape(
-    musics: List<Music>,
+    musics: List<MediaItem>,
     viewModel: MusicViewModel,
-    navController: NavController
+    navController: NavController,
+    
 ) {
 
     val sort by rememberSortASC()
     val displayMusics = when (sort) {
         true -> musics
-        false -> musics.sortedByDescending { it.name }
+        false -> musics.sortedByDescending { it.mediaMetadata.title.toString() }
     }
 
 
@@ -66,8 +65,9 @@ fun MainScreenLandscape(
             Row(modifier = Modifier.padding(start = 80.dp)) {
                 CuteSearchbar(
                     musics = musics,
-                    onNavigate = { navController.navigate(Screen.Settings) },
-                    onClick = { viewModel.itemClicked(it) }
+                    onNavigate = { navController.navigate(it) },
+                    onClick = { viewModel.itemClicked(it) },
+
                 )
             }
         }
@@ -80,10 +80,13 @@ fun MainScreenLandscape(
                         .padding(start = 80.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    items(displayMusics) {music ->
-                        MusicListItem(music) {
-                            viewModel.itemClicked(it)
-                        }
+                    items(displayMusics) { music ->
+                        MusicListItem(
+                            music = music,
+                            onNavigate = { navController.navigate(it) },
+                            onShortClick = { viewModel.itemClicked(it) },
+                            
+                        )
                     }
                 }
 

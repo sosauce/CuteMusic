@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.domain.model.Album
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.theme.GlobalFont
@@ -39,7 +40,8 @@ fun AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
     postViewModel: PostViewModel,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    onNavigate: (Screen) -> Unit,
 ) {
 
     val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
@@ -75,11 +77,6 @@ fun AlbumDetailsLandscape(
                                     fontFamily = GlobalFont,
                                     fontSize = 22.sp
                                 )
-//                                Text(
-//                                    text = albumSongs.size.toString() + " songs",
-//                                    fontFamily = GlobalFont,
-//                                    fontSize = 22.sp
-//                                )
                             }
                             Text(
                                 text = albumSongs.size.toString() + " songs",
@@ -101,8 +98,13 @@ fun AlbumDetailsLandscape(
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         LazyColumn {
-                            items(albumSongs, key = { it.id }) {  music ->
-                                AlbumSong(music = music, onShortClick = { viewModel.itemClicked(music.uri) })
+                            items(albumSongs, key = { it.mediaId }) {  music ->
+                                AlbumSong(
+                                    music = music,
+                                    onShortClick = { viewModel.itemClicked(music.mediaId) },
+                                    onNavigate = { onNavigate(Screen.MetadataEditor(music.mediaId)) },
+                                    
+                                )
                             }
                         }
                     }

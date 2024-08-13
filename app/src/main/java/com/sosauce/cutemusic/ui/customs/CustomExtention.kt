@@ -2,13 +2,7 @@ package com.sosauce.cutemusic.ui.customs
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import com.sosauce.cutemusic.domain.model.Music
 import java.util.Locale
 
 fun Long.formatBinarySize(): String {
@@ -46,24 +40,13 @@ fun Context.restart() {
 }
 
 fun Player.playAtIndex(
-    uri: Uri,
+    mediaId: String,
     setState: () -> Unit
 ) {
-    val index = (0 until mediaItemCount).indexOfFirst { getMediaItemAt(it).mediaId == uri.toString() }
+    val index = (0 until mediaItemCount).indexOfFirst { getMediaItemAt(it).mediaId == mediaId }
     index.takeIf { it != -1 }?.let {
         seekTo(it, 0)
         play()
         setState()
     }
-}
-
-fun Music.convertToMediaItem(uri: Uri): MediaItem {
-    return MediaItem.Builder()
-        .setUri(uri)
-        .setMediaId(uri.toString())
-        .build()
-}
-
-fun MediaMetadata.artworkAsBitmap(): Bitmap? {
-    return artworkData?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
 }

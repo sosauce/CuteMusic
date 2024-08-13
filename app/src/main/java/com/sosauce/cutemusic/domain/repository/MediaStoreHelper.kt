@@ -2,11 +2,13 @@ package com.sosauce.cutemusic.domain.repository
 
 import android.content.ContentUris
 import android.content.Context
+import android.os.Bundle
 import android.provider.MediaStore
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
-import com.sosauce.cutemusic.domain.model.Music
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -14,9 +16,10 @@ class MediaStoreHelper(
     private val context: Context
 ) {
 
-    fun getMusics(): List<Music> {
 
-        val musics = mutableListOf<Music>()
+    fun getMusics(): List<MediaItem> {
+
+        val musics = mutableListOf<MediaItem>()
 
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -24,10 +27,10 @@ class MediaStoreHelper(
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.BITRATE,
             MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.MIME_TYPE,
+            //MediaStore.Audio.Media.IS_FAVORITE,
         )
+
 
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -41,9 +44,8 @@ class MediaStoreHelper(
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-            val bitrateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.BITRATE)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
-            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
+            //val isFavColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_FAVORITE)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -52,25 +54,38 @@ class MediaStoreHelper(
                 val albumId = cursor.getLong(albumIdColumn)
                 val filePath = cursor.getString(folderColumn)
                 val folder = filePath.substring(0, filePath.lastIndexOf('/'))
-                val bitrate = cursor.getLong(bitrateColumn)
                 val size = cursor.getLong(sizeColumn)
-                val mimeType = cursor.getString(mimeTypeColumn)
+                //val isFavorite = cursor.getInt(isFavColumn) // 1 = is favorite, 0 = no
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
+                val artUri = ContentUris.appendId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id)
+                    .appendPath("albumart").build()
 
-                musics.add(Music(
-                    id = id,
-                    name = title,
-                    artist = artist,
-                    uri = uri,
-                    albumId = albumId,
-                    folder = folder,
-                    bitrate = bitrate,
-                    size = size,
-                    mimeType = mimeType
-                ))
+                musics.add(
+                    MediaItem
+                        .Builder()
+                        .setUri(uri)
+                        .setMediaId(id.toString())
+                        .setMediaMetadata(
+                            MediaMetadata
+                                .Builder()
+                                .setIsBrowsable(false)
+                                .setIsPlayable(true)
+                                .setTitle(title)
+                                .setArtist(artist)
+                                .setArtworkUri(artUri)
+                                .setExtras(Bundle().apply {
+                                    putLong("albumId", albumId)
+                                    putString("folder", folder)
+                                    putLong("size", size)
+                                    putString("uri", uri.toString())
+                                   // putInt("isFavorite", isFavorite)
+                                }).build()
+                        ).build()
+                )
             }
         }
         return musics

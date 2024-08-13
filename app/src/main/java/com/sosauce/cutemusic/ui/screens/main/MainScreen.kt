@@ -3,8 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.main
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -33,8 +31,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,13 +44,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.datastore.rememberSortASC
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.BottomSheetContent
@@ -66,15 +62,15 @@ import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PlayerState
 import com.sosauce.cutemusic.ui.theme.GlobalFont
 import com.sosauce.cutemusic.utils.ImageUtils
-import java.util.Locale
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreen(
     navController: NavController,
-    musics: List<Music>,
-    viewModel: MusicViewModel
+    musics: List<MediaItem>,
+    viewModel: MusicViewModel,
+    
 ) {
 
     val isLandscape = rememberIsLandscape()
@@ -83,7 +79,8 @@ fun MainScreen(
         MainScreenLandscape(
             musics = musics,
             viewModel = viewModel,
-            navController = navController
+            navController = navController,
+            
         )
     } else {
         MainScreenContent(
@@ -102,7 +99,8 @@ fun MainScreen(
                     viewModel.selectedItem = index
                     launchSingleTop = true
                 }
-            }
+            },
+            
         )
     }
 
@@ -112,22 +110,23 @@ fun MainScreen(
 
 @Composable
 private fun MainScreenContent(
-    musics: List<Music>,
+    musics: List<MediaItem>,
     playerState: PlayerState,
     bottomBarIndex: Int,
     currentlyPlaying: String,
     isCurrentlyPlaying: Boolean,
     onBottomBarNavigation: (Int, NavigationItem) -> Unit,
     onNavigateTo: (Screen) -> Unit,
-    onShortClick: (Uri) -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit
+    onShortClick: (String) -> Unit,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    
 ) {
     val sort by rememberSortASC()
     val lazyListState = rememberLazyListState()
     val displayMusics by remember(sort, musics) {
         derivedStateOf {
             if (sort) musics
-            else musics.sortedByDescending{ it.name }
+            else musics.sortedByDescending{ it.mediaMetadata.title.toString() }
         }
     }
     val showMiniCard by remember(musics, playerState) {
@@ -141,8 +140,9 @@ private fun MainScreenContent(
         topBar = {
             CuteSearchbar(
                 musics = musics,
-                onNavigate = { onNavigateTo(Screen.Settings) },
-                onClick = { onShortClick(it) }
+                onNavigate = { onNavigateTo(it) },
+                onClick = { onShortClick(it) },
+                
 
             )
         },
@@ -175,8 +175,10 @@ private fun MainScreenContent(
                     } else {
                         items(displayMusics) { music ->
                             MusicListItem(
+                                onShortClick = { onShortClick(music.mediaId) },
                                 music = music,
-                                onShortClick = { onShortClick(music.uri) }
+                                onNavigate = { onNavigateTo(it) },
+                                
                             )
                         }
                     }
@@ -203,26 +205,19 @@ private fun MainScreenContent(
     }
 }
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun MusicListItem(
-    music: Music,
-    onShortClick: (Uri) -> Unit
+    music: MediaItem,
+    onShortClick: (String) -> Unit,
+    onNavigate: (Screen) -> Unit,
+    
 ) {
 
     val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
     var isSheetOpen by remember { mutableStateOf(false) }
-    var art: Bitmap? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(music.uri) {
-            art = ImageUtils.getMusicArt(context, music.uri)
-    }
-    DisposableEffect(music.uri) {
-        onDispose { art?.recycle() }
-    }
 
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -230,7 +225,11 @@ fun MusicListItem(
             sheetState = sheetState,
             onDismissRequest = { isSheetOpen = false }
         ) {
-            BottomSheetContent(music)
+            BottomSheetContent(
+                music = music,
+                onNavigate = { onNavigate(it) },
+                onDismiss = { isSheetOpen = false }
+            )
         }
     }
 
@@ -238,7 +237,7 @@ fun MusicListItem(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
-                onClick = { onShortClick(music.uri) }
+                onClick = { onShortClick(music.mediaId) }
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -247,7 +246,7 @@ fun MusicListItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = ImageUtils.imageRequester(
-                    img = art,
+                    img = music.mediaMetadata.artworkUri,
                     context = context
                 ),
                 contentDescription = "Artwork",
@@ -261,12 +260,12 @@ fun MusicListItem(
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = textCutter(music.name, 25),
+                    text = textCutter(music.mediaMetadata.title.toString(), 25),
                     fontFamily = GlobalFont,
                     maxLines = 1
                 )
                 Text(
-                    text = music.artist,
+                    text = music.mediaMetadata.artist.toString(),
                     fontFamily = GlobalFont,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f)

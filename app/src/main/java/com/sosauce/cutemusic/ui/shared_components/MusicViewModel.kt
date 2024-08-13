@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.ui.shared_components
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -22,16 +21,13 @@ import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.main.App
-import com.sosauce.cutemusic.ui.customs.artworkAsBitmap
-import com.sosauce.cutemusic.ui.customs.convertToMediaItem
 import com.sosauce.cutemusic.ui.customs.playAtIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MusicViewModel(
-     val musics: List<Music>,
+     val musics: List<MediaItem>,
      private val controllerFuture: ListenableFuture<MediaController>
 ) : ViewModel() {
 
@@ -44,7 +40,7 @@ class MusicViewModel(
 
     var currentlyPlaying by mutableStateOf("")
     var currentArtist by mutableStateOf("")
-    var currentArt: Bitmap? by mutableStateOf(null)
+    var currentArt: Uri? by mutableStateOf(null)
     var isCurrentlyPlaying by mutableStateOf(false)
     var currentPosition by mutableLongStateOf(0L)
     var currentMusicDuration by mutableLongStateOf(0L)
@@ -54,7 +50,7 @@ class MusicViewModel(
             super.onMediaMetadataChanged(mediaMetadata)
             currentlyPlaying = (mediaMetadata.title ?: currentlyPlaying).toString()
             currentArtist = (mediaMetadata.artist ?: currentArtist).toString()
-            currentArt = mediaMetadata.artworkAsBitmap() ?: currentArt
+            currentArt = mediaMetadata.artworkUri ?: currentArt
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -98,10 +94,10 @@ class MusicViewModel(
     fun getPlaybackSpeed() = mediaController!!.playbackParameters
 
 
-    private fun playAtIndex(uri: Uri) {
+    private fun playAtIndex(mediaId: String) {
         try {
             mediaController!!.playAtIndex(
-                uri = uri,
+                mediaId = mediaId,
                 setState = { playerState.value = PlayerState.PLAYING }
             )
         } catch (e:Exception) {
@@ -109,17 +105,17 @@ class MusicViewModel(
         }
     }
 
-    fun itemClicked(uri: Uri) {
+    fun itemClicked(mediaId: String) {
         if (mediaController!!.mediaItemCount == 0) {
             populateList()
         }
-        playAtIndex(uri)
+        playAtIndex(mediaId)
 
     }
 
     private fun populateList() {
         musics.forEach {
-            mediaController!!.addMediaItem(it.convertToMediaItem(it.uri))
+            mediaController!!.addMediaItem(it)
         }
         mediaController!!.prepare()
     }
@@ -155,7 +151,7 @@ class MusicViewModel(
 
 class MusicViewModelFactory(
     private val app: App,
-    private val musics: List<Music>
+    private val musics: List<MediaItem>
 ): ViewModelProvider.Factory{
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return MusicViewModel(

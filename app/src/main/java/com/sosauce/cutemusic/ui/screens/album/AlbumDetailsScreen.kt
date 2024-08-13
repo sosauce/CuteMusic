@@ -1,11 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.sosauce.cutemusic.ui.screens.album
 
 import android.content.res.Configuration
-import android.graphics.Bitmap
-import android.net.Uri
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,8 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,10 +45,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.domain.model.Music
 import com.sosauce.cutemusic.ui.customs.textCutter
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.BottomSheetContent
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
@@ -65,7 +61,8 @@ fun AlbumDetailsScreen(
     album: Album,
     viewModel: MusicViewModel,
     postViewModel: PostViewModel,
-    onPopBackStack: () -> Unit
+    onPopBackStack: () -> Unit,
+    onNavigate: (Screen) -> Unit
 ) {
     val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
 
@@ -76,14 +73,16 @@ fun AlbumDetailsScreen(
             album = album,
             viewModel = viewModel,
             onPopBackStack = { onPopBackStack() },
-            albumSongs = albumSongs
+            albumSongs = albumSongs,
+            onNavigate = { onNavigate(it) }
         )
     } else {
         AlbumDetailsLandscape(
             album = album,
             onNavigateUp = { onPopBackStack() },
             postViewModel = postViewModel,
-            viewModel = viewModel
+            viewModel = viewModel,
+            onNavigate = { onNavigate(it) }
         )
     }
 
@@ -94,7 +93,9 @@ private fun AlbumDetailsContent(
     album: Album,
     viewModel: MusicViewModel,
     onPopBackStack: () -> Unit,
-    albumSongs: List<Music>
+    albumSongs: List<MediaItem>,
+    onNavigate: (Screen) -> Unit,
+    
 ) {
         val context = LocalContext.current
         Scaffold(
@@ -161,7 +162,12 @@ private fun AlbumDetailsContent(
                     HorizontalDivider()
                     LazyColumn {
                         itemsIndexed(albumSongs) { _, music ->
-                            AlbumSong(music = music, onShortClick = { viewModel.itemClicked(music.uri) })
+                            AlbumSong(
+                                music = music,
+                                onShortClick = { viewModel.itemClicked(it) },
+                                onNavigate = { onNavigate(it) },
+                                
+                            )
                         }
                     }
                 }
@@ -173,21 +179,15 @@ private fun AlbumDetailsContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumSong(
-    music: Music,
-    onShortClick: (Uri) -> Unit
+    music: MediaItem,
+    onShortClick: (String) -> Unit,
+    onNavigate: (Screen) -> Unit,
+    
 ) {
 
     val sheetState = rememberModalBottomSheetState(false)
     var isSheetOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var art: Bitmap? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(music.uri) {
-        art = ImageUtils.getMusicArt(context, music.uri)
-    }
-    DisposableEffect(music.uri) {
-        onDispose { art?.recycle() }
-    }
 
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -195,7 +195,12 @@ fun AlbumSong(
             sheetState = sheetState,
             onDismissRequest = { isSheetOpen = false }
         ) {
-            BottomSheetContent(music)
+            BottomSheetContent(
+                music = music,
+                onNavigate = { onNavigate(Screen.MetadataEditor(music.mediaId)) },
+                onDismiss = { isSheetOpen = false },
+                
+            )
         }
     }
 
@@ -203,14 +208,14 @@ fun AlbumSong(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .clickable { onShortClick(music.uri) },
+            .clickable { onShortClick(music.mediaId) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = ImageUtils.imageRequester(
-                    img = art,
+                    img = music.mediaMetadata.artworkUri,
                     context = context
                 ),
                 contentDescription = "Artwork",
@@ -223,12 +228,12 @@ fun AlbumSong(
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = textCutter(music.name, 25),
+                    text = textCutter(music.mediaMetadata.title.toString(), 25),
                     fontFamily = GlobalFont,
                     maxLines = 1
                 )
                 Text(
-                    text = music.artist,
+                    text = music.mediaMetadata.artist.toString(),
                     fontFamily = GlobalFont,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )

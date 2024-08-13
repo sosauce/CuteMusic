@@ -31,4 +31,9 @@ sealed class Screen {
     data class ArtistsDetails(
         val id: Long
     ) : Screen()
+
+    @Serializable
+    data class MetadataEditor(
+        val id: String
+    ) : Screen()
 }
