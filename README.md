@@ -11,8 +11,8 @@
 
   
 <p align=center>
-  <image src="https://i.ibb.co/Htt3LxT/Screenshot-20240504-125107-Cute-Music-1.png" height="512" />
-  <image src="https://iili.io/Jga7d1n.png" height="512" />
+  <image src="https://i.ibb.co/5M8WKZh/1.png" height="512" />
+  <image src="https://i.ibb.co/Gx18z89/2.png" height="512" />
 </p>
 
 ---
