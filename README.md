@@ -1,15 +1,19 @@
 <p align=center><image src="https://i.ibb.co/SdMsJs7/cute-music-icon.png" height="200" /></p>
 <h1 align="center">CuteMusic</h1>
 <p align="center">CuteMusic is a simple,lightweight and open-source offline music player app for Android written in Jetpack Compose & Media3</p>
+ <p align="center">
+   <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=%23F9B3A9"/>
+   <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
+   <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
+ </p> 
+
+
+
+  
 <p align=center>
   <image src="https://i.ibb.co/Htt3LxT/Screenshot-20240504-125107-Cute-Music-1.png" height="512" />
   <image src="https://iili.io/Jga7d1n.png" height="512" />
 </p>
-
---- 
-<h1>⚠️ Notice</h1>
-
-I'm not perfect, I have school, a personnal life, hard times etc... I may not be able to bring bug fixes & features immediately, but will do my best to do so.
 
 ---
 <h1>👀 Overview</h1>
