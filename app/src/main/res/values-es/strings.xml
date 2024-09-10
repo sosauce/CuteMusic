@@ -32,10 +32,16 @@
     <string name="okay">"De acuerdo"</string>
     <string name="restart_app">"Reiniciar la app"</string>
     <string name="restart_app_why">"Si enfrentas problemas"</string>
-    <string name="misc">"Miscelánea"</string>
+    <string name="misc">"Varios"</string>
     <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
     <string name="follow_sys">"Seguir sistema"</string>
     <string name="ascending">"Ascendente"</string>
     <string name="descending">"Descendente"</string>
     <string name="playback_speed">"Establecer velocidad de reproducción"</string>
+    <string name="yes">Sí</string>
+    <string name="blacklisted_folders">Carpetas en la lista negra</string>
+    <string name="delete_folder">Delete Folder</string>
+    <string name="folder_delete_u_sure">¿Quieres borrar esta carpeta?</string>
+    <string name="alrdy_blacklisted">¡La carpeta ya está en la lista!</string>
+    <string name="use_sys_font">Usar fuente del sistema</string>
 </resources>
