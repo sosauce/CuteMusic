@@ -6,32 +6,32 @@
    <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
    <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
  </p> 
-
-
-
   
-<p align=center>
-  <image src="https://i.ibb.co/5M8WKZh/1.png" height="512" />
-  <image src="https://i.ibb.co/Gx18z89/2.png" height="512" />
-</p>
-
----
 <h1>👀 Overview</h1>
 
-- Lightweight (~2.3 Mb APK size, this is subject to change overtime)
-- No unnecessary permissions needed !
-- Material 3/You & Monet theming !
+- Play any song from anywhere just by sharing the audio file to the app without downloading it!
+- Easy search across all your music/albums/artists!
 - Very fast and snappy!
+- No unnecessary permissions needed!
+- Material 3/You & Monet theming (+ Amoled mode)!
+- Blacklist Folders!
+- Beautiful landscape UI!
+- Tag Editor!
+- Makes you a cutie!
 
 ---
-<h1>🏃‍♂️ 2024 Roadmap for CuteMusic</h1>
+<p align=center>
 
-No real roadmap ! Only user suggestions and features I'll want!
-
+<image src="https://i.ibb.co/XV2XXSv/1.png" height="512" />
+ <image src="https://i.ibb.co/ky22L6p/2.png" height="512" />
+ <image src="https://i.ibb.co/Hp2tg6x/3.png" height="512" />
+</p>
+   
 ---
 <h1>💬 Contact Me</h1>
-<p>Discord server: https://discord.gg/c6aCu4yjbu</p>
-<p>Email = sosauce_dev@protonmail.com</p>
+
+- Discord server: https://discord.gg/c6aCu4yjbu
+- Email = sosauce_dev@protonmail.com
 
 ---
 <h1>❤️ Support</h1>
