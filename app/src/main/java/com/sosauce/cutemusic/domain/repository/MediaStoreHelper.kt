@@ -9,14 +9,10 @@ import androidx.media3.common.MediaMetadata
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class MediaStoreHelper(
     private val context: Context
 ) {
-
-
     fun getMusics(): List<MediaItem> {
 
         val musics = mutableListOf<MediaItem>()
@@ -61,7 +57,8 @@ class MediaStoreHelper(
                     id
                 )
                 val artUri = ContentUris.appendId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id)
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
+                )
                     .appendPath("albumart").build()
 
                 musics.add(
@@ -81,8 +78,9 @@ class MediaStoreHelper(
                                     putLong("albumId", albumId)
                                     putString("folder", folder)
                                     putLong("size", size)
+                                    putString("path", filePath)
                                     putString("uri", uri.toString())
-                                   // putInt("isFavorite", isFavorite)
+                                    // putInt("isFavorite", isFavorite)
                                 }).build()
                         ).build()
                 )
@@ -92,8 +90,7 @@ class MediaStoreHelper(
     }
 
 
-
-    suspend fun getAlbums(): List<Album> = withContext(Dispatchers.IO) {
+    fun getAlbums(): List<Album> {
         val albums = mutableListOf<Album>()
 
         val projection = arrayOf(
@@ -123,42 +120,41 @@ class MediaStoreHelper(
             }
         }
 
-        return@withContext albums
-        }
+        return albums
+    }
 
-    suspend fun getArtists(): List<Artist> =
-        withContext(Dispatchers.IO) {
-            val artists = mutableListOf<Artist>()
+    fun getArtists(): List<Artist> {
+        val artists = mutableListOf<Artist>()
 
-            val projection = arrayOf(
-                MediaStore.Audio.Artists._ID,
-                MediaStore.Audio.Artists.ARTIST,
-            )
+        val projection = arrayOf(
+            MediaStore.Audio.Artists._ID,
+            MediaStore.Audio.Artists.ARTIST,
+        )
 
-            context.contentResolver.query(
-                MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                projection,
-                null,
-                null,
-                "${MediaStore.Audio.Artists.ARTIST} ASC"
-            )?.use { cursor ->
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
-                val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
+        context.contentResolver.query(
+            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+            projection,
+            null,
+            null,
+            "${MediaStore.Audio.Artists.ARTIST} ASC"
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
+            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
 
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idColumn)
-                    val artist = cursor.getString(artistColumn)
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idColumn)
+                val artist = cursor.getString(artistColumn)
 
-                    val artistInfo = Artist(
-                        id = id,
-                        name = artist
-                    )
-                    artists.add(artistInfo)
-                }
+                val artistInfo = Artist(
+                    id = id,
+                    name = artist
+                )
+                artists.add(artistInfo)
             }
-
-            return@withContext artists
         }
+
+        return artists
+    }
 
 
     // Only gets folder with musics in them
@@ -187,13 +183,15 @@ class MediaStoreHelper(
             }
             folderPaths.forEach { path ->
                 val folderName = path.substring(path.lastIndexOf('/') + 1)
-                folders.add(Folder(
-                    name = folderName,
-                    path = path
-                ))
+                folders.add(
+                    Folder(
+                        name = folderName,
+                        path = path
+                    )
+                )
             }
         }
         return folders
     }
 
-    }
+}

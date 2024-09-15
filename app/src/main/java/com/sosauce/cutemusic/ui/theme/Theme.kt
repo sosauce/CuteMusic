@@ -117,6 +117,7 @@ fun CuteMusicTheme(
                 inverseSurface = Color.White,
                 background = Color.Black,
             )
+
             followSys -> colorScheme
             dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
                 if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(

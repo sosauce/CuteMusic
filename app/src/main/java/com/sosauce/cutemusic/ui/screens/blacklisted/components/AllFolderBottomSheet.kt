@@ -1,47 +1,38 @@
 package com.sosauce.cutemusic.ui.screens.blacklisted.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.domain.model.Folder
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
 fun AllFoldersBottomSheet(
     folders: List<Folder>,
-    onClick: (name: String, path: String) -> Unit,
+    onClick: (path: String) -> Unit,
 ) {
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-    ) {
+    LazyColumn {
         items(
             items = folders,
             key = { it.path }
-            ) {
+        ) {
             FoldersLayout(
                 folder = it,
-                onClick = { name, path ->
-                    onClick(path, name)
+                onClick = { path ->
+                    onClick(path)
                 }
             )
         }
@@ -52,27 +43,31 @@ fun AllFoldersBottomSheet(
 @Composable
 private fun FoldersLayout(
     folder: Folder,
-    onClick: (name: String, path: String) -> Unit
+    onClick: (path: String) -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                alpha = 0.5f
+            )
+        ),
         modifier = Modifier
-            .clip(RoundedCornerShape(15.dp))
-            .clickable { onClick(folder.path, folder.name) }
+            .padding(5.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .clickable { onClick(folder.path) }
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)
         ) {
-            Image(
-                imageVector = Icons.Default.FolderOpen,
-                contentDescription = null,
-                modifier = Modifier.size(70.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-            )
-            Text(
+            CuteText(
                 text = folder.name
+            )
+            CuteText(
+                text = folder.path,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         }
     }

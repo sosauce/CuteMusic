@@ -8,14 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sosauce.cutemusic.ui.theme.GlobalFont
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
 fun SettingsCards(
@@ -56,16 +55,16 @@ fun SettingsCards(
                 .fillMaxWidth()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                CuteText(
                     text = text,
-                    fontFamily = GlobalFont
-                )
+
+                    )
                 if (hasInfoDialog) {
                     IconButton(
                         onClick = { onClick?.invoke() }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Info,
+                            imageVector = Icons.Rounded.Info,
                             contentDescription = "Info Button"
                         )
                     }
@@ -104,7 +103,8 @@ fun TextSettingsCards(
                     topEnd = topDp,
                     bottomStart = bottomDp,
                     bottomEnd = bottomDp
-                ))
+                )
+            )
             .clickable { onClick() },
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer)
     ) {
@@ -114,14 +114,14 @@ fun TextSettingsCards(
             modifier = modifier
         ) {
             Column(verticalArrangement = Arrangement.Center) {
-                Text(
+                CuteText(
                     text = text,
-                    fontFamily = GlobalFont
-                )
+
+                    )
                 tipText?.let {
-                    Text(
+                    CuteText(
                         text = it,
-                        fontFamily = GlobalFont,
+
                         fontSize = 12.sp,
                         color = Color.Gray
                     )

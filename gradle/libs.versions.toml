@@ -1,28 +1,24 @@
 [versions]
-agp = "8.5.2"
+agp = "8.6.0"
+jaudiotagger = "3.0.1"
 koinAndroid = "3.5.6"
 koinAndroidxCompose = "3.5.6"
-kotlin = "2.0.0"
-activityCompose = "1.9.1"
+kotlin = "2.0.20"
+activityCompose = "1.9.2"
 coilCompose = "3.0.0-alpha10"
-composeBom = "2024.06.00"
-composeAnimation = "1.7.0-beta07"
+composeBom = "2024.09.01"
+composeAnimation = "1.7.1"
 coreKtx = "1.13.1"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.1"
 kotlinxSerializationJson = "1.7.1"
-lifecycleViewmodelCompose = "2.8.4"
-media3Common = "1.4.0"
-media3Exoplayer = "1.4.0"
-media3Session = "1.4.0"
-navigationCompose = "2.8.0-beta07"
-roomCompiler = "2.6.1"
-roomKtx = "2.6.1"
+lifecycleViewmodelCompose = "2.8.5"
+media3Common = "1.4.1"
+media3Exoplayer = "1.4.1"
+media3Session = "1.4.1"
+navigationCompose = "2.8.0"
 squigglyslider = "1.0.0"
-ui = "1.6.8"
 serialization = "2.0.0"
-uiTooling = "1.6.8"
-ksp = "2.0.0-1.0.22"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -39,11 +35,10 @@ androidx-media3-common = { module = "androidx.media3:media3-common", version.ref
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Session" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
-androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
-androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
-androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
+androidx-ui = { module = "androidx.compose.ui:ui" }
+androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
@@ -54,5 +49,3 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization"}
-android-test = { id = "com.android.test", version.ref = "agp" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

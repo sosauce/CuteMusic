@@ -1,16 +1,18 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.sosauce.cutemusic.main.App
+import com.sosauce.cutemusic.data.actions.MetadataActions
+import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
 import com.sosauce.cutemusic.ui.screens.artist.ArtistDetails
@@ -18,29 +20,27 @@ import com.sosauce.cutemusic.ui.screens.artist.ArtistsScreen
 import com.sosauce.cutemusic.ui.screens.blacklisted.BlacklistedScreen
 import com.sosauce.cutemusic.ui.screens.main.MainScreen
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataEditor
+import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModelFactory
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun Nav(
-   app: App,
-) {
+fun Nav() {
 
     val navController = rememberNavController()
+    val viewModel = koinViewModel<MusicViewModel>()
     val postViewModel = koinViewModel<PostViewModel>()
-    val state by postViewModel.state.collectAsStateWithLifecycle()
-    val musics = postViewModel.musics
-    val blacklistedFolderNames = state.blacklistedFolders.map { it.path }.toSet()
-    val viewModel = viewModel<MusicViewModel>(factory = MusicViewModelFactory(app, musics))
-    Log.d("Testing", postViewModel.musics.toString())
+    val metadataViewModel = koinViewModel<MetadataViewModel>()
+    val blacklistedFolders by rememberAllBlacklistedFolders()
+    val musics =
+        postViewModel.musics.filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
 
 
-
+    SharedTransitionLayout {
         NavHost(
             navController = navController,
             startDestination = Screen.Main
@@ -50,7 +50,15 @@ fun Nav(
                     navController = navController,
                     viewModel = viewModel,
                     musics = musics,
-                    
+                    animatedVisibilityScope = this,
+                    onLoadMetadata = { uri ->
+                        metadataViewModel.onHandleMetadataActions(MetadataActions.ClearState)
+                        metadataViewModel.onHandleMetadataActions(
+                            MetadataActions.LoadSong(
+                                uri
+                            )
+                        )
+                    }
                 )
 
             }
@@ -60,6 +68,7 @@ fun Nav(
                     albums = postViewModel.albums,
                     viewModel = viewModel,
                     postViewModel = postViewModel,
+                    animatedVisibilityScope = this
                 )
             }
             composable<Screen.Artists> {
@@ -68,13 +77,15 @@ fun Nav(
                     navController = navController,
                     viewModel = viewModel,
                     postViewModel = postViewModel,
+                    animatedVisibilityScope = this
                 )
             }
 
             composable<Screen.NowPlaying> {
                 NowPlayingScreen(
                     navController = navController,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    animatedVisibilityScope = this
                 )
             }
             composable<Screen.Settings> {
@@ -90,8 +101,7 @@ fun Nav(
                         album = album,
                         viewModel = viewModel,
                         onPopBackStack = navController::navigateUp,
-                        postViewModel = postViewModel,
-                        onNavigate = { navController.navigate(it) }
+                        postViewModel = postViewModel
                     )
                 }
 
@@ -111,9 +121,6 @@ fun Nav(
                 BlacklistedScreen(
                     navController = navController,
                     folders = postViewModel.folders,
-                    state = state,
-                    onEvents = postViewModel::onEvent,
-                    blacklistedFolderNames = blacklistedFolderNames
                 )
             }
             composable<Screen.MetadataEditor> {
@@ -122,9 +129,12 @@ fun Nav(
                     MetadataEditor(
                         music = music,
                         onPopBackStack = navController::navigateUp,
-                        onNavigate = { navController.navigate(it) }
+                        onNavigate = { screen -> navController.navigate(screen) },
+                        metadataViewModel = metadataViewModel
                     )
                 }
             }
         }
+    }
+
 }

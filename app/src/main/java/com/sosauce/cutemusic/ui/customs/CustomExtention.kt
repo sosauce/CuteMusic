@@ -40,13 +40,11 @@ fun Context.restart() {
 }
 
 fun Player.playAtIndex(
-    mediaId: String,
-    setState: () -> Unit
+    mediaId: String
 ) {
     val index = (0 until mediaItemCount).indexOfFirst { getMediaItemAt(it).mediaId == mediaId }
     index.takeIf { it != -1 }?.let {
         seekTo(it, 0)
         play()
-        setState()
     }
 }

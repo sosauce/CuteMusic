@@ -5,10 +5,8 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import com.sosauce.cutemusic.R
 
 class PlaybackService : MediaLibraryService() {
 
@@ -30,13 +28,8 @@ class PlaybackService : MediaLibraryService() {
             .setHandleAudioBecomingNoisy(true)
             .build()
         mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback).build()
-        setMediaNotificationProvider(
-            DefaultMediaNotificationProvider.Builder(this).build().apply {
-                setSmallIcon(R.drawable.music_note2)
-            }
-        )
-
     }
+
 
     override fun onDestroy() {
         mediaLibrarySession?.run {

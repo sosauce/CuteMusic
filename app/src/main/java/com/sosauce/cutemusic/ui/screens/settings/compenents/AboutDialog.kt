@@ -4,12 +4,11 @@ package com.sosauce.cutemusic.ui.screens.settings.compenents
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.ui.theme.GlobalFont
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
 fun AboutDialog(
@@ -22,23 +21,23 @@ fun AboutDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
             TextButton(onClick = { onDismiss() }) {
-                Text(
+                CuteText(
                     text = stringResource(id = R.string.okay),
-                    fontFamily = GlobalFont
-                )
+
+                    )
             }
         },
         title = {
-            Text(
+            CuteText(
                 text = title,
-                fontFamily = GlobalFont
-            )
+
+                )
         },
         text = {
-            Text(
+            CuteText(
                 text = contentText,
-                fontFamily = GlobalFont
-            )
+
+                )
         },
     )
 

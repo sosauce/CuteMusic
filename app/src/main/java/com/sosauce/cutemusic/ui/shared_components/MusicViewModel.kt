@@ -4,14 +4,12 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -21,17 +19,14 @@ import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.main.App
 import com.sosauce.cutemusic.ui.customs.playAtIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MusicViewModel(
-     val musics: List<MediaItem>,
-     private val controllerFuture: ListenableFuture<MediaController>
+    private val controllerFuture: ListenableFuture<MediaController>
 ) : ViewModel() {
 
-    val playerState: MutableState<PlayerState> = mutableStateOf(PlayerState.STOPPED)
     private var mediaController: MediaController? by mutableStateOf(null)
 
 
@@ -44,6 +39,8 @@ class MusicViewModel(
     var isCurrentlyPlaying by mutableStateOf(false)
     var currentPosition by mutableLongStateOf(0L)
     var currentMusicDuration by mutableLongStateOf(0L)
+    var currentMusicUri by mutableStateOf("")
+
 
     private val playerListener = object : Player.Listener {
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -51,6 +48,7 @@ class MusicViewModel(
             currentlyPlaying = (mediaMetadata.title ?: currentlyPlaying).toString()
             currentArtist = (mediaMetadata.artist ?: currentArtist).toString()
             currentArt = mediaMetadata.artworkUri ?: currentArt
+            currentMusicUri = mediaMetadata.extras?.getString("uri") ?: currentMusicUri
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -74,15 +72,15 @@ class MusicViewModel(
 
 
     init {
-            controllerFuture.addListener(
-                {
-                    Handler(Looper.getMainLooper()).post {
-                        mediaController = controllerFuture.get()
-                        mediaController!!.addListener(playerListener)
-                    }
-                },
-                MoreExecutors.directExecutor()
-            )
+        controllerFuture.addListener(
+            {
+                Handler(Looper.getMainLooper()).post {
+                    mediaController = controllerFuture.get()
+                    mediaController!!.addListener(playerListener)
+                }
+            },
+            MoreExecutors.directExecutor()
+        )
     }
 
     override fun onCleared() {
@@ -97,32 +95,41 @@ class MusicViewModel(
     private fun playAtIndex(mediaId: String) {
         try {
             mediaController!!.playAtIndex(
-                mediaId = mediaId,
-                setState = { playerState.value = PlayerState.PLAYING }
+                mediaId = mediaId
             )
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             Log.d("CuteError", "There was a problem playing the music.")
         }
     }
 
-    fun itemClicked(mediaId: String) {
+    fun itemClicked(
+        mediaId: String,
+        musics1: List<MediaItem>
+    ) {
+
         if (mediaController!!.mediaItemCount == 0) {
-            populateList()
+            musics1.forEach {
+                mediaController!!.addMediaItem(it)
+            }
+            mediaController!!.prepare()
         }
+
         playAtIndex(mediaId)
 
     }
 
-    private fun populateList() {
-        musics.forEach {
-            mediaController!!.addMediaItem(it)
-        }
-        mediaController!!.prepare()
+    fun isPlaylistEmpty(): Boolean {
+        return if (mediaController == null) false else mediaController!!.mediaItemCount != 0
     }
 
+
     fun setPlaybackSpeed(speed: Float) {
-        mediaController!!.playbackParameters = PlaybackParameters(speed, speed) // Pitch and speed not being the same is just ugly so set both to be the same #besties
+        mediaController!!.playbackParameters = PlaybackParameters(
+            speed,
+            speed
+        ) // Pitch and speed not being the same is just ugly so set both to be the same #besties
     }
+
 
     fun setLoop(shouldLoop: Boolean) {
         if (shouldLoop) {
@@ -136,6 +143,17 @@ class MusicViewModel(
         mediaController!!.shuffleModeEnabled = shouldShuffle
     }
 
+    fun quickPlay(uri: Uri?) {
+        mediaController!!.clearMediaItems()
+        uri?.let { MediaItem.fromUri(it) }?.let {
+            mediaController!!.setMediaItem(
+                it
+            )
+        }
+        mediaController!!.prepare()
+        mediaController!!.play()
+    }
+
 
     fun handlePlayerActions(action: PlayerActions) {
         when (action) {
@@ -143,21 +161,9 @@ class MusicViewModel(
             is PlayerActions.SeekToNextMusic -> mediaController!!.seekToNextMediaItem()
             is PlayerActions.SeekToPreviousMusic -> mediaController!!.seekToPreviousMediaItem()
             is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
+            is PlayerActions.SeekToSlider -> mediaController!!.seekTo(action.position)
             is PlayerActions.RewindTo -> mediaController!!.seekTo(mediaController!!.currentPosition - action.position)
         }
-    }
-
-}
-
-class MusicViewModelFactory(
-    private val app: App,
-    private val musics: List<MediaItem>
-): ViewModelProvider.Factory{
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MusicViewModel(
-            musics = musics,
-            controllerFuture = app.container.controllerFuture
-        ) as T
     }
 }
 

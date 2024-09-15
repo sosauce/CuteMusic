@@ -2,6 +2,7 @@ package com.sosauce.cutemusic.ui.screens.blacklisted
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,23 +41,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.domain.blacklist.BlackEvent
-import com.sosauce.cutemusic.domain.blacklist.BlackState
+import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.ui.screens.blacklisted.components.AllFoldersBottomSheet
 import com.sosauce.cutemusic.ui.shared_components.AppBar
+import com.sosauce.cutemusic.ui.shared_components.CuteText
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlacklistedScreen(
-    state: BlackState,
     navController: NavController,
     folders: List<Folder>,
-    onEvents: (BlackEvent) -> Unit,
-    blacklistedFolderNames: Set<String>
 ) {
     var isSheetOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var blacklistedFolders by rememberAllBlacklistedFolders()
 
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -65,17 +65,17 @@ fun BlacklistedScreen(
         ) {
             AllFoldersBottomSheet(
                 folders = folders,
-                onClick = { name, path ->
-                    if (path in blacklistedFolderNames) {
-                        Toast.makeText(context, context.resources.getText(R.string.alrdy_blacklisted), Toast.LENGTH_SHORT).show()
+                onClick = { path ->
+                    if (path in blacklistedFolders) {
+                        Toast.makeText(
+                            context,
+                            context.resources.getText(R.string.alrdy_blacklisted),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     } else {
-                        state.name.value = name
-                        state.path.value = path
-
-                        onEvents(BlackEvent.AddBlack(
-                            name = state.name.value,
-                            path = state.path.value
-                        ))
+                        blacklistedFolders = blacklistedFolders.toMutableSet().apply {
+                            add(path)
+                        }
                         isSheetOpen = false
                     }
                 }
@@ -86,18 +86,17 @@ fun BlacklistedScreen(
     BlacklistedScreenContent(
         onAddFolder = { isSheetOpen = true },
         onPopBackStack = navController::navigateUp,
-        onEvents = onEvents,
-        state = state
-    )
+
+        )
 }
 
 @Composable
 private fun BlacklistedScreenContent(
-    state: BlackState,
     onAddFolder: () -> Unit,
     onPopBackStack: () -> Unit,
-    onEvents: (BlackEvent) -> Unit
 ) {
+    var blacklistedFolders by rememberAllBlacklistedFolders()
+
     Scaffold(
         topBar = {
             AppBar(
@@ -121,11 +120,14 @@ private fun BlacklistedScreenContent(
         LazyColumn(
             modifier = Modifier.padding(values)
         ) {
-            items(state.blacklistedFolders.size) { index ->
+            items(items = blacklistedFolders.toList()) { folder ->
                 BlackFolderItem(
-                    state = state,
-                    index = index,
-                    onEvents = onEvents
+                    folder = folder,
+                    onClick = {
+                        blacklistedFolders = blacklistedFolders.toMutableSet().apply {
+                            remove(folder)
+                        }
+                    }
                 )
             }
         }
@@ -135,9 +137,8 @@ private fun BlacklistedScreenContent(
 
 @Composable
 private fun BlackFolderItem(
-    state: BlackState,
-    index: Int,
-    onEvents: (BlackEvent) -> Unit,
+    folder: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -170,18 +171,19 @@ private fun BlackFolderItem(
                     .padding(start = 10.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text(
-                    text = state.blacklistedFolders[index].name,
+                CuteText(
+                    text = getFileName(folder),
                     fontSize = 18.sp
                 )
-                Text(
-                    text = state.blacklistedFolders[index].path,
+                CuteText(
+                    text = folder,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    modifier = Modifier.basicMarquee()
                 )
             }
             IconButton(
-                onClick = { onEvents(BlackEvent.DeleteBlack(state.blacklistedFolders[index])) }
+                onClick = { onClick() }
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -191,5 +193,9 @@ private fun BlackFolderItem(
             }
         }
     }
+}
 
+private fun getFileName(filePath: String): String {
+    val file = File(filePath)
+    return file.name
 }

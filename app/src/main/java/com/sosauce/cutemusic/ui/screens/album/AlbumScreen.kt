@@ -1,6 +1,14 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.screens.album
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,17 +16,29 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Album
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,88 +50,101 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.shared_components.AppBar
-import com.sosauce.cutemusic.ui.shared_components.BottomBar
+import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
-import com.sosauce.cutemusic.ui.theme.GlobalFont
+import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
-fun AlbumsScreen(
+fun SharedTransitionScope.AlbumsScreen(
     navController: NavController,
     albums: List<Album>,
     viewModel: MusicViewModel,
     postViewModel: PostViewModel,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val isLandscape = rememberIsLandscape()
 
     if (isLandscape) {
         AlbumScreenLandscape(
-            navController = navController,
             albums = albums,
-            postViewModel = postViewModel,
-            bottomBarIndex = viewModel.selectedItem,
-            onBottomBarNavigation = { index, item ->
+            selectedIndex = viewModel.selectedItem,
+            onNavigateTo = { navController.navigate(it) },
+            currentlyPlaying = viewModel.currentlyPlaying,
+            isCurrentlyPlaying = viewModel.isCurrentlyPlaying,
+            onNavigationItemClicked = { index, item ->
                 navController.navigate(item.navigateTo) {
                     viewModel.selectedItem = index
                     launchSingleTop = true
                 }
             },
+            viewModel = viewModel,
+            animatedVisibilityScope = animatedVisibilityScope,
+            navController = navController,
+            postViewModel = postViewModel
+
         )
     } else {
         AlbumsScreenContent(
             albums = albums,
             onNavigate = { navController.navigate(it) },
-            onBottomBarNavigation = { index, item ->
+            onNavigationItemClicked = { index, item ->
                 navController.navigate(item.navigateTo) {
                     viewModel.selectedItem = index
                     launchSingleTop = true
                 }
             },
-            bottomBarIndex = viewModel.selectedItem,
-            chargePVMAlbumSongs = { postViewModel.albumSongs(it) }
+            selectedIndex = viewModel.selectedItem,
+            chargePVMAlbumSongs = postViewModel::albumSongs,
+            currentlyPlaying = viewModel.currentlyPlaying,
+            onHandlePlayerActions = viewModel::handlePlayerActions,
+            isPlaying = viewModel.isCurrentlyPlaying,
+            animatedVisibilityScope = animatedVisibilityScope,
+            isPlaylistEmpty = viewModel.isPlaylistEmpty()
         )
     }
 
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-private fun AlbumsScreenContent(
+private fun SharedTransitionScope.AlbumsScreenContent(
     albums: List<Album>,
     onNavigate: (Screen) -> Unit,
-    bottomBarIndex: Int,
-    onBottomBarNavigation: (Int, NavigationItem) -> Unit,
-    chargePVMAlbumSongs: (Long) -> Unit
-
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
+    selectedIndex: Int,
+    chargePVMAlbumSongs: (Long) -> Unit,
+    currentlyPlaying: String,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    isPlaying: Boolean,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    isPlaylistEmpty: Boolean
 ) {
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Scaffold(
-            topBar = {
-                AppBar(
-                    title = stringResource(id = R.string.albums),
-                    showBackArrow = false,
-                    showMenuIcon = true,
-                    onNavigate = { onNavigate(Screen.Settings) }
-                )
+    var query by remember { mutableStateOf("") }
+    var screenSelectionExpanded by remember { mutableStateOf(false) }
+    val displayAlbums by remember(query) {
+        derivedStateOf {
+            if (query.isNotEmpty()) {
+                albums.filter {
+                    it.name.contains(
+                        other = query,
+                        ignoreCase = true
+                    )
+                }
+            } else albums
+        }
+    }
 
-            },
-            bottomBar = {
-                BottomBar(
-                    selectedIndex = bottomBarIndex,
-                    onNavigationItemClicked = onBottomBarNavigation
-                )
-            }
-        ) { values ->
+
+    Box {
+        Scaffold { values ->
 
             if (albums.isEmpty()) {
                 Column(
@@ -119,14 +152,14 @@ private fun AlbumsScreenContent(
                         .fillMaxSize()
                         .padding(values)
                 ) {
-                    Text(
+                    CuteText(
                         text = stringResource(id = R.string.no_albums_found),
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
                         textAlign = TextAlign.Center,
-                        fontFamily = GlobalFont
-                    )
+
+                        )
 
                 }
             } else {
@@ -136,7 +169,10 @@ private fun AlbumsScreenContent(
                         .fillMaxSize()
                         .padding(values)
                 ) {
-                    items(items = albums, key = { it.id }) {album ->
+                    items(
+                        items = displayAlbums,
+                        key = { it.id }
+                    ) { album ->
                         AlbumCard(
                             album = album,
                             modifier = Modifier
@@ -151,6 +187,74 @@ private fun AlbumsScreenContent(
                 }
             }
         }
+        CuteSearchbar(
+            query = query,
+            onQueryChange = { query = it },
+            modifier = Modifier
+                .navigationBarsPadding()
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 10.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .clip(RoundedCornerShape(24.dp))
+                .clickable { onNavigate(Screen.NowPlaying) }
+                .sharedElement(
+                    state = rememberSharedContentState(key = "searchbar"),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    boundsTransform = { _, _ ->
+                        tween(durationMillis = 500)
+                    }
+                ),
+            placeholder = {
+                CuteText(
+                    text = stringResource(id = R.string.search) + " " + stringResource(R.string.albums),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+
+                    )
+            },
+            leadingIcon = {
+                IconButton(onClick = { screenSelectionExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Album,
+                        contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = screenSelectionExpanded,
+                    onDismissRequest = { screenSelectionExpanded = false },
+                    modifier = Modifier
+                        .width(180.dp)
+                        .background(color = MaterialTheme.colorScheme.surface)
+                ) {
+                    ScreenSelection(
+                        onNavigationItemClicked = onNavigationItemClicked,
+                        selectedIndex = selectedIndex
+                    )
+                }
+            },
+            trailingIcon = {
+                IconButton(onClick = { onNavigate(Screen.Settings) }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Settings,
+                        contentDescription = null
+                    )
+                }
+            },
+            currentlyPlaying = currentlyPlaying,
+            onHandlePlayerActions = { onHandlePlayerActions(it) },
+            isPlaying = isPlaying,
+            animatedVisibilityScope = animatedVisibilityScope,
+            isPlaylistEmpty = isPlaylistEmpty
+        )
     }
 }
 
@@ -186,14 +290,18 @@ fun AlbumCard(
                 modifier = Modifier.padding(15.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = textCutter(album.name, 15),
-                    fontFamily = GlobalFont,
-                    maxLines = 1
+                CuteText(
+                    text = album.name,
+                    maxLines = 1,
+                    modifier = Modifier.then(
+                        if (album.name.length >= 15) {
+                            Modifier.basicMarquee()
+                        } else Modifier
+                    )
                 )
-                Text(
+                CuteText(
                     text = album.artist,
-                    fontFamily = GlobalFont,
+
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }

@@ -16,7 +16,9 @@
     <string name="next_button">Prochaine musique</string>
     <string name="no_artists_found">Pas d\'artistes trouvés!</string>
     <string name="artwork">Art</string>
+    <string name="use_sys_font">Utiliser la police système</string>
     <string name="artists">Artistes</string>
+    <string name="music">Musiques</string>
     <string name="cm_by_sosauce">CuteMusic par sosauce</string>
     <string name="app_icon">Icone de l\'app</string>
     <string name="search">Rechercher</string>
@@ -43,4 +45,12 @@
     <string name="delete_folder">Supprimer le dossier</string>
     <string name="folder_delete_u_sure">Êtes-vous sûr de vouloir supprimer ce dossier ?</string>
     <string name="alrdy_blacklisted">Dossier déjà blacklisté!</string>
+    <string name="title">Titre</string>
+    <string name="year">Année</string>
+    <string name="genre">Genre</string>
+    <string name="track_nb">Numéro de piste</string>
+    <string name="disc_nb">Numéro de disque</string>
+    <string name="edit">Éditer</string>
+    <string name="delete">Supprimer</string>
+    <string name="ntg_playing">Rien en cours!</string>
 </resources>

@@ -2,17 +2,11 @@ package com.sosauce.cutemusic.utils
 
 import android.content.ContentUris
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
-import android.net.Uri
 import androidx.core.net.toUri
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 
 object ImageUtils {
@@ -25,23 +19,6 @@ object ImageUtils {
             )
             .build()
     }
-
-    suspend fun getMusicArt(context: Context, uri: Uri): Bitmap? {
-        return withContext(Dispatchers.IO) {
-            val retriever = MediaMetadataRetriever()
-            try {
-                retriever.setDataSource(context, uri)
-                val picture = retriever.embeddedPicture?: return@withContext null
-                BitmapFactory.decodeByteArray(picture, 0, picture.size)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            } finally {
-                retriever.release()
-            }
-        }
-    }
-
 
     fun getAlbumArt(albumId: Long): Any? {
         val sArtworkUri = "content://media/external/audio/albumart".toUri()

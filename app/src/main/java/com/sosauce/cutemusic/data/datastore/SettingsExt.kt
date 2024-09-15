@@ -14,11 +14,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-
-/* The below code was taken from IacobIonut01's Gallery app
- * All credits to them : https://github.com/IacobIonut01/
- */
-
 @Composable
 fun <T> rememberPreference(
     key: Preferences.Key<T>,
@@ -42,6 +37,7 @@ fun <T> rememberPreference(
                         }
                     }
                 }
+
             override fun component1() = value
             override fun component2(): (T) -> Unit = { value = it }
         }

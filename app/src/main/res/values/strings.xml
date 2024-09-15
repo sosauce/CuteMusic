@@ -18,6 +18,7 @@
     <string name="artwork">Artwork</string>
     <string name="artists">Artists</string>
     <string name="albums">Albums</string>
+    <string name="music">Musics</string>
     <string name="cm_by_sosauce">CuteMusic by sosauce</string>
     <string name="app_icon">App Icon</string>
     <string name="search">Search</string>
@@ -43,4 +44,13 @@
     <string name="delete_folder">Delete Folder</string>
     <string name="folder_delete_u_sure">Are you sure you want to delete this folder ?</string>
     <string name="alrdy_blacklisted">Folder already blacklisted!</string>
+    <string name="use_sys_font">Use System Font</string>
+    <string name="title">Title</string>
+    <string name="year">Year</string>
+    <string name="genre">Genre</string>
+    <string name="track_nb">Track Number</string>
+    <string name="disc_nb">Disc Number</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="ntg_playing">Nothing Playing!</string>
 </resources>

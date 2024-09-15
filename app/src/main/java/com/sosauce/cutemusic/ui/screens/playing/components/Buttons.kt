@@ -1,8 +1,8 @@
 package com.sosauce.cutemusic.ui.screens.playing.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Loop
-import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.rounded.Loop
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +25,7 @@ fun LoopButton(
         }
     ) {
         Icon(
-            imageVector = Icons.Outlined.Loop,
+            imageVector = Icons.Rounded.Loop,
             contentDescription = "loop button",
             tint = if (shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
         )
@@ -45,7 +45,7 @@ fun ShuffleButton(
         }
     ) {
         Icon(
-            imageVector = Icons.Outlined.Shuffle,
+            imageVector = Icons.Rounded.Shuffle,
             contentDescription = "shuffle button",
             tint = if (shouldShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
         )

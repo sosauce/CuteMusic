@@ -1,6 +1,13 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.screens.main
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,23 +15,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.SkipNext
-import androidx.compose.material.icons.outlined.SkipPrevious
+import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,143 +43,164 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
-import androidx.navigation.NavController
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSortASC
-import com.sosauce.cutemusic.ui.customs.textCutter
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.shared_components.CuteNavigationRail
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PlayerState
-import com.sosauce.cutemusic.ui.theme.GlobalFont
+import com.sosauce.cutemusic.ui.shared_components.NavigationItem
+import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
+import com.sosauce.cutemusic.ui.shared_components.SortRadioButtons
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreenLandscape(
+fun SharedTransitionScope.MainScreenLandscape(
     musics: List<MediaItem>,
     viewModel: MusicViewModel,
-    navController: NavController,
-    
+    onShortClick: (String) -> Unit,
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
+    selectedIndex: Int,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onNavigateTo: (Screen) -> Unit,
+    currentlyPlaying: String,
+    isCurrentlyPlaying: Boolean,
 ) {
 
     val sort by rememberSortASC()
-    val displayMusics = when (sort) {
-        true -> musics
-        false -> musics.sortedByDescending { it.mediaMetadata.title.toString() }
-    }
-
-
-    Scaffold(
-        topBar = {
-            Row(modifier = Modifier.padding(start = 80.dp)) {
-                CuteSearchbar(
-                    musics = musics,
-                    onNavigate = { navController.navigate(it) },
-                    onClick = { viewModel.itemClicked(it) },
-
-                )
-            }
-        }
-    ) { values ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(values)
-                        .padding(start = 80.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    items(displayMusics) { music ->
-                        MusicListItem(
-                            music = music,
-                            onNavigate = { navController.navigate(it) },
-                            onShortClick = { viewModel.itemClicked(it) },
-                            
-                        )
-                    }
+    var query by remember { mutableStateOf("") }
+    var sortExpanded by remember { mutableStateOf(false) }
+    var screenSelectionExpanded by remember { mutableStateOf(false) }
+    val displayMusics by remember(sort, musics, query) {
+        derivedStateOf {
+            if (query.isNotEmpty()) {
+                musics.filter {
+                    it.mediaMetadata.title?.contains(
+                        other = query,
+                        ignoreCase = true
+                    ) == true
                 }
-
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            bottom = values.calculateBottomPadding() + 10.dp,
-                            end = values.calculateEndPadding(
-                                layoutDirection = LayoutDirection.Rtl
-                            ) + 10.dp
-                        )
-                        .clip(RoundedCornerShape(24.dp))
-                        .clickable { navController.navigate(Screen.NowPlaying) },
-                    color = MaterialTheme.colorScheme.surfaceContainerLow
-                ) {
-                    if (musics.isNotEmpty() && viewModel.playerState.value == PlayerState.PLAYING) {
-                        MiniNowPlayingLandscape(
-                            onHandlePlayerActions = viewModel::handlePlayerActions,
-                            viewModel = viewModel
-                        )
-                    }
-                }
-
-
+            } else {
+                if (sort) musics
+                else musics.sortedByDescending { it.mediaMetadata.title.toString() }
             }
-        CuteNavigationRail(
-            selectedIndex = viewModel.selectedItem,
-            onNavigationItemClicked = { index, item ->
-                navController.navigate(item.navigateTo) {
-                    viewModel.selectedItem = index
-                    launchSingleTop = true
-                }
-            }
-        )
+
         }
     }
 
-@Composable
-private fun MiniNowPlayingLandscape(
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    viewModel: MusicViewModel
-) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 15.dp, vertical = 13.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = textCutter(viewModel.currentlyPlaying, 18),
-            fontFamily = GlobalFont,
-            // modifier = Modifier.animateContentSize()
-        )
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 4.dp)
-        ) {
-            IconButton(
-                onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) }
+
+    Scaffold { values ->
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(values)
+                    .padding(start = 80.dp),
+                verticalArrangement = Arrangement.Top
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.SkipPrevious,
-                    contentDescription = stringResource(id = R.string.previous_song)
-                )
+                items(displayMusics) { music ->
+                    MusicListItem(
+                        onShortClick = { onShortClick(music.mediaId) },
+                        music = music,
+                        onNavigate = { onNavigateTo(it) },
+                        currentMusicUri = viewModel.currentMusicUri
+
+                    )
+                }
             }
-            IconButton(
-                onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }
-            ) {
-                Icon(
-                    imageVector = if (viewModel.isCurrentlyPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                    contentDescription = stringResource(id = R.string.play_pause_button)
-                )
-            }
-            IconButton(
-                onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SkipNext,
-                    contentDescription = stringResource(id = R.string.next_button)
-                )
-            }
+
+            CuteSearchbar(
+                query = query,
+                onQueryChange = { query = it },
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(0.4f)
+                    .padding(
+                        bottom = values.calculateBottomPadding() + 5.dp,
+                        end = values.calculateEndPadding(
+                            layoutDirection = LayoutDirection.Rtl
+                        ) + 10.dp
+                    )
+                    .align(Alignment.BottomEnd)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(24.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(24.dp)
+                    )
+                    .clip(RoundedCornerShape(24.dp))
+                    .clickable { onNavigateTo(Screen.NowPlaying) }
+                    .sharedElement(
+                        state = rememberSharedContentState(key = "searchbar"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        boundsTransform = { _, _ ->
+                            tween(durationMillis = 500)
+                        }
+                    ),
+                placeholder = {
+                    CuteText(
+                        text = stringResource(id = R.string.search) + " " + stringResource(id = R.string.music),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+
+                        )
+                },
+                leadingIcon = {
+                    IconButton(onClick = { screenSelectionExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Rounded.MusicNote,
+                            contentDescription = null
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = screenSelectionExpanded,
+                        onDismissRequest = { screenSelectionExpanded = false },
+                        modifier = Modifier
+                            .width(180.dp)
+                            .background(color = MaterialTheme.colorScheme.surface)
+                    ) {
+                        ScreenSelection(
+                            onNavigationItemClicked = onNavigationItemClicked,
+                            selectedIndex = selectedIndex
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = { sortExpanded = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(
+                            onClick = { onNavigateTo(Screen.Settings) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = sortExpanded,
+                            onDismissRequest = { sortExpanded = false },
+                            modifier = Modifier
+                                .width(180.dp)
+                                .background(color = MaterialTheme.colorScheme.surface)
+                        ) {
+                            SortRadioButtons()
+                        }
+                    }
+                },
+                currentlyPlaying = currentlyPlaying,
+                onHandlePlayerActions = { viewModel.handlePlayerActions(it) },
+                isPlaying = isCurrentlyPlaying,
+                animatedVisibilityScope = animatedVisibilityScope,
+                isPlaylistEmpty = viewModel.isPlaylistEmpty()
+            )
+
         }
     }
 }

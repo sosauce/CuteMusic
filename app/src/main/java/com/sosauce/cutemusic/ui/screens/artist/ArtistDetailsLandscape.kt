@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +29,7 @@ import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.album.AlbumCard
 import com.sosauce.cutemusic.ui.screens.album.AlbumSong
-import com.sosauce.cutemusic.ui.theme.GlobalFont
+import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
 fun ArtistDetailsLandscape(
@@ -41,8 +40,8 @@ fun ArtistDetailsLandscape(
     onNavigate: (Screen) -> Unit,
     chargePVMAlbumSongs: (Long) -> Unit,
     artist: Artist,
-    
-) {
+
+    ) {
 
     Scaffold(
         modifier = Modifier.padding(45.dp)
@@ -62,14 +61,14 @@ fun ArtistDetailsLandscape(
                         modifier = Modifier.size(25.dp)
                     )
                 }
-                Text(
+                CuteText(
                     text = artist.name + " · ",
-                    fontFamily = GlobalFont,
+
                     fontSize = 20.sp
                 )
-                Text(
+                CuteText(
                     text = "${artistSongs.size} ${if (artistSongs.size <= 1) "song" else "songs"}",
-                    fontFamily = GlobalFont,
+
                     fontSize = 20.sp
                 )
             }
@@ -93,13 +92,12 @@ fun ArtistDetailsLandscape(
                 }
                 Spacer(modifier = Modifier.width(5.dp))
                 LazyColumn {
-                    items(artistSongs, key = { it.mediaId }) {  music ->
+                    items(artistSongs, key = { it.mediaId }) { music ->
                         AlbumSong(
                             music = music,
                             onShortClick = { onClickPlay(music.mediaId) },
-                            onNavigate = { onNavigate(it) },
-                            
-                        )
+
+                            )
                     }
                 }
             }

@@ -5,5 +5,6 @@ sealed interface PlayerActions {
     data object SeekToNextMusic : PlayerActions
     data object SeekToPreviousMusic : PlayerActions
     data class SeekTo(val position: Long) : PlayerActions
+    data class SeekToSlider(val position: Long) : PlayerActions
     data class RewindTo(val position: Long) : PlayerActions
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/app_name"
+    android:minWidth="300dp"
+    android:minHeight="50dp"
+    android:resizeMode="none"
+    android:widgetCategory="home_screen" />
