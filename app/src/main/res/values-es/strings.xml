@@ -18,6 +18,7 @@
     <string name="artwork">"Arte de portada"</string>
     <string name="artists">"Artistas"</string>
     <string name="albums">"Álbumes"</string>
+    <string name="music">Musica</string>
     <string name="cm_by_sosauce">"CuteMusic por sosauce"</string>
     <string name="app_icon">"Icono de la app"</string>
     <string name="search">"Buscar"</string>
@@ -44,4 +45,12 @@
     <string name="folder_delete_u_sure">¿Quieres borrar esta carpeta?</string>
     <string name="alrdy_blacklisted">¡La carpeta ya está en la lista!</string>
     <string name="use_sys_font">Usar fuente del sistema</string>
+   <string name="title">Título</string>
+    <string name="year">Año</string>
+    <string name="genre">Género</string>
+    <string name="track_nb">Número de pista</string>
+    <string name="disc_nb">Número de disco</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Eliminar</string>
+    <string name="ntg_playing">¡No se está reproduciendo nada!</string>
 </resources>
