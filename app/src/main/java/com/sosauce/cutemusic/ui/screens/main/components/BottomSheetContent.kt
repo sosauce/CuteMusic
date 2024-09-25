@@ -49,7 +49,7 @@ fun BottomSheetContent(
     music: MediaItem,
     onNavigate: (Screen) -> Unit,
     onDismiss: () -> Unit,
-    onLoadMetadata: ((String) -> Unit)? = null
+    onLoadMetadata: ((String) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val fileBitrate =
@@ -69,6 +69,7 @@ fun BottomSheetContent(
                     context.resources.getText(R.string.deleting_song_OK),
                     Toast.LENGTH_SHORT
                 ).show()
+
             } else {
                 Toast.makeText(
                     context,
@@ -79,8 +80,6 @@ fun BottomSheetContent(
         }
 
     Column {
-
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,7 +94,7 @@ fun BottomSheetContent(
                 MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                     alpha = 0.5f
                 )
-            ),
+            )
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AsyncImage(

@@ -43,7 +43,9 @@ class MetadataViewModel(
                 getFirst(FieldKey.GENRE),
                 getFirst(FieldKey.TRACK),
                 getFirst(FieldKey.DISC_NO),
+                getFirst(FieldKey.LYRICS),
             )
+
 
             tagList.forEach {
                 _metadata.value.mutablePropertiesMap.add(it)
@@ -65,7 +67,8 @@ class MetadataViewModel(
                     FieldKey.YEAR to 3,
                     FieldKey.GENRE to 4,
                     FieldKey.TRACK to 5,
-                    FieldKey.DISC_NO to 6
+                    FieldKey.DISC_NO to 6,
+                    FieldKey.LYRICS to 7
                 )
                 tagList.forEach {
                     setField(it.key, _metadata.value.mutablePropertiesMap[it.value])

@@ -32,6 +32,7 @@ fun Misc(
 ) {
     val context = LocalContext.current
     var useSystemFont by rememberUseSystemFont()
+//    var killService by remember { rememberKillService(context) }
 
     Column {
         CuteText(
@@ -52,6 +53,13 @@ fun Misc(
             topDp = 24.dp,
             bottomDp = 4.dp
         )
+//        SettingsCards(
+//            checked = killService,
+//            onCheckedChange = { killService = !killService },
+//            topDp = 4.dp,
+//            bottomDp = 4.dp,
+//            text = "Kill Service"
+//        )
         SettingsCards(
             checked = useSystemFont,
             onCheckedChange = { useSystemFont = !useSystemFont },
@@ -81,7 +89,6 @@ fun ThemeManagement() {
     Column {
         CuteText(
             text = stringResource(id = R.string.theme),
-
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
         )

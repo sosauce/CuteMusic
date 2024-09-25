@@ -10,7 +10,7 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {

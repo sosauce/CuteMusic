@@ -17,6 +17,8 @@ class PlaybackService : MediaLibraryService() {
         .setUsage(C.USAGE_MEDIA)
         .build()
 
+    //private val shouldKill = rememberKillService(this)
+
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
         mediaLibrarySession
 
@@ -42,11 +44,13 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        //if (shouldKill.value) {
         mediaLibrarySession?.run {
             player.release()
             release()
             mediaLibrarySession = null
             stopSelf()
         }
+        //}
     }
 }

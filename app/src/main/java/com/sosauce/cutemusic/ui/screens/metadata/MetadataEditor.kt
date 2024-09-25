@@ -260,6 +260,17 @@ fun MetadataEditorContent(
                         metadataState.mutablePropertiesMap[6] = disc
                     }
                 }
+                EditTextField(
+                    value = metadataState.mutablePropertiesMap[7],
+                    label = {
+                        CuteText(
+                            text = "Lyrics",
+                            modifier = Modifier.basicMarquee()
+                        )
+                    }
+                ) { lyrics ->
+                    metadataState.mutablePropertiesMap[7] = lyrics
+                }
             }
         }
     }

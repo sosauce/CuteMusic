@@ -106,7 +106,7 @@ class QuickPlayActivity : ComponentActivity() {
                             ) {
                                 FloatingActionButton(
                                     onClick = {
-                                        if (!vm.isPlaylistEmpty()) vm.quickPlay(uri) else vm.handlePlayerActions(
+                                        if (!vm.isPlaylistEmptyAndDataNotNull()) vm.quickPlay(uri) else vm.handlePlayerActions(
                                             PlayerActions.PlayOrPause
                                         )
                                     }

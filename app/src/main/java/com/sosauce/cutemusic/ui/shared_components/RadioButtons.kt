@@ -21,8 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,13 +29,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.rememberSortASC
 import com.sosauce.cutemusic.ui.navigation.Screen
 
 @Composable
-fun SortRadioButtons() {
+fun SortRadioButtons(
+    sort: Boolean,
+    onChangeSort: () -> Unit
+) {
 
-    var sort by rememberSortASC()
 
     Column(
         verticalArrangement = Arrangement.Center
@@ -46,7 +45,7 @@ fun SortRadioButtons() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clickable { sort = !sort }
+                .clickable { onChangeSort() }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -64,7 +63,7 @@ fun SortRadioButtons() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clickable { sort = !sort }
+                .clickable { onChangeSort() }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

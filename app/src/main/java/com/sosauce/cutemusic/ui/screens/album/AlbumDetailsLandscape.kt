@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.domain.model.Album
+import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
@@ -97,14 +98,14 @@ fun AlbumDetailsLandscape(
                 Spacer(modifier = Modifier.width(5.dp))
                 LazyColumn {
                     items(albumSongs, key = { it.mediaId }) { music ->
-                        AlbumSong(
+                        MusicListItem(
                             music = music,
-                            onShortClick = { viewModel.itemClicked(music.mediaId, listOf()) },
+                            currentMusicUri = viewModel.currentMusicUri,
+                            onShortClick = { viewModel.itemClicked(it, listOf()) }
                         )
                     }
                 }
             }
         }
     }
-
 }

@@ -5,6 +5,7 @@ package com.sosauce.cutemusic.ui.screens.playing
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateIntAsState
@@ -22,11 +23,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Speed
@@ -54,6 +57,7 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.LoopButton
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.screens.playing.components.ShuffleButton
@@ -61,6 +65,7 @@ import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.thenIf
 
 
 @OptIn(UnstableApi::class)
@@ -70,6 +75,8 @@ fun SharedTransitionScope.NowPlayingScreen(
     viewModel: MusicViewModel,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
+    var showFullLyrics by remember { mutableStateOf(false) }
+
     if (rememberIsLandscape()) {
         NowPlayingLandscape(
             viewModel = viewModel,
@@ -77,14 +84,27 @@ fun SharedTransitionScope.NowPlayingScreen(
             animatedVisibilityScope = animatedVisibilityScope
         )
     } else {
-        NowPlayingContent(
-            viewModel = viewModel,
-            onEvent = viewModel::handlePlayerActions,
-            onNavigateUp = navController::navigateUp,
-            onClickLoop = { viewModel.setLoop(it) },
-            onClickShuffle = { viewModel.setShuffle(it) },
-            animatedVisibilityScope = animatedVisibilityScope
-        )
+        when (showFullLyrics) {
+            true -> {
+                LyricsView(
+                    viewModel = viewModel,
+                    onHideLyrics = { showFullLyrics = false },
+                    path = viewModel.currentPath
+                )
+            }
+
+            false -> {
+                NowPlayingContent(
+                    viewModel = viewModel,
+                    onEvent = viewModel::handlePlayerActions,
+                    onNavigateUp = navController::navigateUp,
+                    onClickLoop = { viewModel.setLoop(it) },
+                    onClickShuffle = { viewModel.setShuffle(it) },
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    onShowLyrics = { showFullLyrics = true }
+                )
+            }
+        }
     }
 
 }
@@ -96,12 +116,14 @@ private fun SharedTransitionScope.NowPlayingContent(
     onNavigateUp: () -> Unit,
     onClickLoop: (Boolean) -> Unit,
     onClickShuffle: (Boolean) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onShowLyrics: () -> Unit
 ) {
     val context = LocalContext.current
     var showSpeedCard by remember { mutableStateOf(false) }
     val roundedFAB by animateIntAsState(
-        targetValue = if (viewModel.isCurrentlyPlaying) 30 else 50, label = "FAB Shape"
+        targetValue = if (viewModel.isCurrentlyPlaying) 30 else 50,
+        label = "FAB Shape"
     )
 
 
@@ -184,8 +206,6 @@ private fun SharedTransitionScope.NowPlayingContent(
                                 }
                             )
                             .basicMarquee()
-
-
                     )
                     Spacer(modifier = Modifier.height(5.dp))
                     CuteText(
@@ -210,22 +230,41 @@ private fun SharedTransitionScope.NowPlayingContent(
                     .padding(8.dp)
             ) {
                 ShuffleButton(
-                    onClick = { onClickShuffle(it) }
+                    onClick = onClickShuffle,
+                    isShuffling = viewModel.isShuffling
                 )
                 IconButton(
-                    onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
+                    onClick = {
+                        if (viewModel.currentPosition >= 10000) {
+                            onEvent(PlayerActions.RestartSong)
+                        } else {
+                            onEvent(PlayerActions.SeekToPreviousMusic)
+                        }
+                    }
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = null,
-                        modifier = Modifier.sharedElement(
-                            state = rememberSharedContentState(key = "skipPreviousButton"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        )
-                    )
+                    Crossfade(
+                        targetState = viewModel.currentPosition >= 10000,
+                        label = ""
+                    ) {
+                        if (!it) {
+                            Icon(
+                                imageVector = Icons.Rounded.SkipPrevious,
+                                contentDescription = null,
+                                modifier = Modifier.sharedElement(
+                                    state = rememberSharedContentState(key = "skipPreviousButton"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    boundsTransform = { _, _ ->
+                                        tween(durationMillis = 500)
+                                    }
+                                )
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.RestartAlt,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 }
                 IconButton(
                     onClick = { onEvent(PlayerActions.RewindTo(5000)) }
@@ -277,7 +316,8 @@ private fun SharedTransitionScope.NowPlayingContent(
                     )
                 }
                 LoopButton(
-                    onClick = { onClickLoop(it) }
+                    onClick = { onClickLoop(it) },
+                    isLooping = viewModel.isLooping
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -288,6 +328,12 @@ private fun SharedTransitionScope.NowPlayingContent(
                     .fillMaxWidth()
                     .navigationBarsPadding()
             ) {
+                IconButton(onClick = { onShowLyrics() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.Article,
+                        contentDescription = "show lyrics"
+                    )
+                }
                 IconButton(onClick = { showSpeedCard = true }) {
                     Icon(
                         imageVector = Icons.Rounded.Speed,

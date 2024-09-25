@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
@@ -49,6 +50,7 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.data.datastore.rememberSortASCArtists
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
@@ -57,6 +59,7 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
+import com.sosauce.cutemusic.ui.shared_components.SortRadioButtons
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
@@ -89,7 +92,7 @@ fun SharedTransitionScope.ArtistsScreen(
                 }
             },
             onHandlePlayerActions = { viewModel.handlePlayerActions(it) },
-            isPlaylistEmpty = viewModel.isPlaylistEmpty()
+            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull()
 
         )
     } else {
@@ -111,7 +114,7 @@ fun SharedTransitionScope.ArtistsScreen(
             onHandlePlayerActions = viewModel::handlePlayerActions,
             isPlaying = viewModel.isCurrentlyPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
-            isPlaylistEmpty = viewModel.isPlaylistEmpty()
+            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull()
         )
     }
 
@@ -133,8 +136,10 @@ private fun SharedTransitionScope.ArtistsScreenContent(
 ) {
 
     var query by remember { mutableStateOf("") }
+    var sort by rememberSortASCArtists()
+    var sortExpanded by remember { mutableStateOf(false) }
     var screenSelectionExpanded by remember { mutableStateOf(false) }
-    val displayArtists by remember(query) {
+    val displayArtists by remember {
         derivedStateOf {
             if (query.isNotEmpty()) {
                 artist.filter {
@@ -143,12 +148,14 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                         ignoreCase = true
                     )
                 }
-            } else artist
+            } else {
+                if (sort) artist
+                else artist.sortedByDescending { it.name }
+            }
         }
     }
 
     Scaffold { values ->
-
         Box {
             if (artist.isEmpty()) {
                 Column(
@@ -190,17 +197,6 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                     .fillMaxWidth(0.9f)
                     .padding(bottom = 10.dp)
                     .align(Alignment.BottomCenter)
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .clip(RoundedCornerShape(24.dp))
-                    .clickable { onNavigate(Screen.NowPlaying) }
                     .sharedElement(
                         state = rememberSharedContentState(key = "searchbar"),
                         animatedVisibilityScope = animatedVisibilityScope,
@@ -211,9 +207,8 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                 placeholder = {
                     CuteText(
                         text = stringResource(id = R.string.search) + " " + stringResource(R.string.artists),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-
-                        )
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
                 },
                 leadingIcon = {
                     IconButton(onClick = { screenSelectionExpanded = true }) {
@@ -237,18 +232,41 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                     }
                 },
                 trailingIcon = {
-                    IconButton(onClick = { onNavigate(Screen.Settings) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = null
-                        )
+                    Row {
+                        IconButton(onClick = { sortExpanded = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(
+                            onClick = { onNavigate(Screen.Settings) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = sortExpanded,
+                            onDismissRequest = { sortExpanded = false },
+                            modifier = Modifier
+                                .width(180.dp)
+                                .background(color = MaterialTheme.colorScheme.surface)
+                        ) {
+                            SortRadioButtons(
+                                sort = sort,
+                                onChangeSort = { sort = !sort }
+                            )
+                        }
                     }
                 },
                 currentlyPlaying = currentlyPlaying,
                 onHandlePlayerActions = onHandlePlayerActions,
                 isPlaying = isPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
-                isPlaylistEmpty = isPlaylistEmpty
+                isPlaylistEmpty = isPlaylistEmpty,
+                onNavigate = { onNavigate(Screen.NowPlaying) }
             )
         }
     }

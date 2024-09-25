@@ -33,9 +33,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,7 +51,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -83,6 +83,7 @@ import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.ui.shared_components.SortRadioButtons
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.MainScreen(
@@ -90,7 +91,7 @@ fun SharedTransitionScope.MainScreen(
     musics: List<MediaItem>,
     viewModel: MusicViewModel,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onLoadMetadata: ((String) -> Unit)? = null
+    onLoadMetadata: ((String) -> Unit)? = null,
 ) {
 
     if (rememberIsLandscape()) {
@@ -130,11 +131,11 @@ fun SharedTransitionScope.MainScreen(
             },
             animatedVisibilityScope = animatedVisibilityScope,
             onLoadMetadata = onLoadMetadata,
-            isPlaylistEmpty = viewModel.isPlaylistEmpty(),
+            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
             currentMusicUri = viewModel.currentMusicUri,
-            onHandlePlayerAction = { viewModel.handlePlayerActions(it) }
+            onHandlePlayerAction = { viewModel.handlePlayerActions(it) },
 
-        )
+            )
     }
 }
 
@@ -152,9 +153,9 @@ private fun SharedTransitionScope.MainScreenContent(
     onLoadMetadata: ((String) -> Unit)? = null,
     isPlaylistEmpty: Boolean,
     currentMusicUri: String,
-    onHandlePlayerAction: (PlayerActions) -> Unit
+    onHandlePlayerAction: (PlayerActions) -> Unit,
 ) {
-    val sort by rememberSortASC()
+    var sort by rememberSortASC()
     var query by remember { mutableStateOf("") }
     var sortExpanded by remember { mutableStateOf(false) }
     val state = rememberLazyListState()
@@ -175,167 +176,156 @@ private fun SharedTransitionScope.MainScreenContent(
 
         }
     }
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = state
+        ) {
+            if (displayMusics.isEmpty()) {
+                item {
+                    CuteText(
+                        text = stringResource(id = R.string.no_musics_found),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center,
 
-    Scaffold { values ->
-        Box(Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier.padding(values),
-                state = state
-            ) {
-                if (displayMusics.isEmpty()) {
-                    item {
-                        CuteText(
-                            text = stringResource(id = R.string.no_musics_found),
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-
+                        )
+                }
+            } else {
+                itemsIndexed(
+                    items = displayMusics,
+                    key = { _, music -> music.mediaId }
+                ) { index, music ->
+                    Column(
+                        modifier = Modifier.padding(
+                            vertical = 2.dp,
+                            horizontal = 4.dp
+                        )
+                    ) {
+                        MusicListItem(
+                            onShortClick = { onShortClick(music.mediaId) },
+                            music = music,
+                            onNavigate = { onNavigateTo(it) },
+                            currentMusicUri = currentMusicUri,
+                            onLoadMetadata = onLoadMetadata,
+                            showBottomSheet = true,
+                            modifier = Modifier.thenIf(
+                                index == 0,
+                                Modifier.statusBarsPadding()
                             )
-                    }
-                } else {
-                    items(
-                        items = displayMusics,
-                        key = { it.mediaId }
-                    ) { music ->
-                        Column(
-                            modifier = Modifier.padding(
-                                vertical = 2.dp,
-                                horizontal = 4.dp
-                            )
-                        ) {
-                            MusicListItem(
-                                onShortClick = { onShortClick(music.mediaId) },
-                                music = music,
-                                onNavigate = { onNavigateTo(it) },
-                                currentMusicUri = currentMusicUri,
-                                onLoadMetadata = onLoadMetadata,
-                                showBottomSheet = true
-                            )
-                        }
+                        )
                     }
                 }
             }
+        }
 
-            AnimatedVisibility(
-                visible = state.canScrollForward || displayMusics.size <= 15,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                val transition = rememberInfiniteTransition(label = "Infinite Color Change")
-                val color by transition.animateColor(
-                    initialValue = LocalContentColor.current,
-                    targetValue = MaterialTheme.colorScheme.errorContainer,
-                    animationSpec = infiniteRepeatable(
-                        tween(500),
-                        repeatMode = RepeatMode.Reverse
+        AnimatedVisibility(
+            visible = state.canScrollForward || displayMusics.size <= 15,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            val transition = rememberInfiniteTransition(label = "Infinite Color Change")
+            val color by transition.animateColor(
+                initialValue = LocalContentColor.current,
+                targetValue = MaterialTheme.colorScheme.errorContainer,
+                animationSpec = infiniteRepeatable(
+                    tween(500),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = ""
+            )
+            var hasSeenTip by rememberHasSeenTip()
+
+            CuteSearchbar(
+                query = query,
+                onQueryChange = { query = it },
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(0.85f)
+                    .padding(bottom = 5.dp)
+                    .sharedElement(
+                        state = rememberSharedContentState(key = "searchbar"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        boundsTransform = { _, _ ->
+                            tween(durationMillis = 500)
+                        }
                     ),
-                    label = ""
-                )
-                var hasSeenTip by rememberHasSeenTip()
+                placeholder = {
+                    CuteText(
+                        text = stringResource(id = R.string.search) + " " + stringResource(id = R.string.music),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 
-                CuteSearchbar(
-                    query = query,
-                    onQueryChange = { query = it },
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .fillMaxWidth(0.85f)
-                        .padding(bottom = 5.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(24.dp)
                         )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        .clip(RoundedCornerShape(24.dp))
-                        .sharedElement(
-                            state = rememberSharedContentState(key = "searchbar"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
+                },
+                leadingIcon = {
+                    IconButton(
+                        onClick = {
+                            screenSelectionExpanded = true
+                            // Let's prevent writing to datastore everytime the user clicks ;)
+                            if (!hasSeenTip) {
+                                hasSeenTip = true
                             }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.MusicNote,
+                            contentDescription = null,
+                            tint = if (!hasSeenTip) color else LocalContentColor.current
                         )
-                        .then(
-                            if (isPlaylistEmpty) {
-                                Modifier.clickable {
-                                    onNavigateTo(Screen.NowPlaying)
-                                }
-                            } else Modifier
-                        ),
-                    placeholder = {
-                        CuteText(
-                            text = stringResource(id = R.string.search) + " " + stringResource(id = R.string.music),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    }
 
-                            )
-                    },
-                    leadingIcon = {
-                        IconButton(
-                            onClick = {
-                                screenSelectionExpanded = true
-                                // Let's prevent writing to datastore everytime the user clicks ;)
-                                if (!hasSeenTip) hasSeenTip = true
-                            }
-                        ) {
+
+                    DropdownMenu(
+                        expanded = screenSelectionExpanded,
+                        onDismissRequest = { screenSelectionExpanded = false },
+                        modifier = Modifier
+                            .width(180.dp)
+                            .background(color = MaterialTheme.colorScheme.surface)
+                    ) {
+                        ScreenSelection(
+                            onNavigationItemClicked = onNavigationItemClicked,
+                            selectedIndex = selectedIndex
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = { sortExpanded = true }) {
                             Icon(
-                                imageVector = Icons.Rounded.MusicNote,
-                                contentDescription = null,
-                                tint = if (!hasSeenTip) color else LocalContentColor.current
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = null
                             )
                         }
-
-
+                        IconButton(
+                            onClick = { onNavigateTo(Screen.Settings) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null
+                            )
+                        }
                         DropdownMenu(
-                            expanded = screenSelectionExpanded,
-                            onDismissRequest = { screenSelectionExpanded = false },
+                            expanded = sortExpanded,
+                            onDismissRequest = { sortExpanded = false },
                             modifier = Modifier
                                 .width(180.dp)
                                 .background(color = MaterialTheme.colorScheme.surface)
                         ) {
-                            ScreenSelection(
-                                onNavigationItemClicked = onNavigationItemClicked,
-                                selectedIndex = selectedIndex
+                            SortRadioButtons(
+                                sort = sort,
+                                onChangeSort = { sort = !sort }
                             )
                         }
-                    },
-                    trailingIcon = {
-                        Row {
-                            IconButton(onClick = { sortExpanded = true }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = { onNavigateTo(Screen.Settings) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = sortExpanded,
-                                onDismissRequest = { sortExpanded = false },
-                                modifier = Modifier
-                                    .width(180.dp)
-                                    .background(color = MaterialTheme.colorScheme.surface)
-                            ) {
-                                SortRadioButtons()
-                            }
-                        }
-                    },
-                    currentlyPlaying = currentlyPlaying,
-                    onHandlePlayerActions = { onHandlePlayerAction(it) },
-                    isPlaying = isCurrentlyPlaying,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    isPlaylistEmpty = isPlaylistEmpty
-                )
-            }
+                    }
+                },
+                currentlyPlaying = currentlyPlaying,
+                onHandlePlayerActions = { onHandlePlayerAction(it) },
+                isPlaying = isCurrentlyPlaying,
+                animatedVisibilityScope = animatedVisibilityScope,
+                isPlaylistEmpty = isPlaylistEmpty,
+                onNavigate = { onNavigateTo(Screen.NowPlaying) }
+            )
         }
     }
 }
@@ -343,9 +333,10 @@ private fun SharedTransitionScope.MainScreenContent(
 
 @Composable
 fun MusicListItem(
+    modifier: Modifier = Modifier,
     music: MediaItem,
     onShortClick: (String) -> Unit,
-    onNavigate: (Screen) -> Unit,
+    onNavigate: (Screen) -> Unit = {},
     currentMusicUri: String,
     onLoadMetadata: ((String) -> Unit)? = null,
     showBottomSheet: Boolean = false
@@ -363,19 +354,19 @@ fun MusicListItem(
         ModalBottomSheet(
             modifier = Modifier.fillMaxHeight(),
             sheetState = sheetState,
-            onDismissRequest = { isSheetOpen = false }
+            onDismissRequest = { isSheetOpen = false },
         ) {
             BottomSheetContent(
                 music = music,
                 onNavigate = { onNavigate(it) },
                 onDismiss = { isSheetOpen = false },
-                onLoadMetadata = onLoadMetadata
+                onLoadMetadata = onLoadMetadata,
             )
         }
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .combinedClickable(

@@ -6,8 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.ui.theme.GlobalFont
@@ -20,7 +22,9 @@ fun CuteText(
     fontSize: TextUnit = TextUnit.Unspecified,
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    onTextLayout: ((TextLayoutResult) -> Unit)? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val useSystemFont by rememberUseSystemFont()
     val fontFamily = if (useSystemFont) {
@@ -37,6 +41,8 @@ fun CuteText(
         textAlign = textAlign,
         maxLines = maxLines,
         fontFamily = fontFamily,
-        style = style
+        style = style,
+        onTextLayout = onTextLayout,
+        overflow = overflow
     )
 }

@@ -10,7 +10,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ALBUMS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ARTISTS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
@@ -19,17 +22,29 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 
 data object PreferencesKeys {
     val SORT_ORDER = booleanPreferencesKey("sort_order")
+    val SORT_ORDER_ARTISTS = booleanPreferencesKey("sort_order_artists")
+    val SORT_ORDER_ALBUMS = booleanPreferencesKey("sort_order_albums")
     val USE_DARK_MODE = booleanPreferencesKey("use_dark_mode")
     val USE_AMOLED_MODE = booleanPreferencesKey("use_amoled_mode")
     val FOLLOW_SYS = booleanPreferencesKey("follow_sys")
     val USE_SYSTEM_FONT = booleanPreferencesKey("use_sys_font")
     val BLACKLISTED_FOLDERS = stringSetPreferencesKey("blacklisted_folders")
     val HAS_SEEN_TIP = booleanPreferencesKey("has_seen_tip")
+    val SNAP_SPEED_N_PITCH = booleanPreferencesKey("snap_peed_n_pitch")
+    val KILL_SERVICE = booleanPreferencesKey("kill_service")
 }
 
 @Composable
 fun rememberSortASC() =
     rememberPreference(key = SORT_ORDER, defaultValue = true)
+
+@Composable
+fun rememberSortASCArtists() =
+    rememberPreference(key = SORT_ORDER_ARTISTS, defaultValue = true)
+
+@Composable
+fun rememberSortASCAlbums() =
+    rememberPreference(key = SORT_ORDER_ALBUMS, defaultValue = true)
 
 @Composable
 fun rememberUseDarkMode() =
@@ -54,4 +69,11 @@ fun rememberAllBlacklistedFolders() =
 @Composable
 fun rememberHasSeenTip() =
     rememberPreference(key = HAS_SEEN_TIP, defaultValue = false)
+
+@Composable
+fun rememberSnapSpeedAndPitch() =
+    rememberPreference(key = SNAP_SPEED_N_PITCH, defaultValue = false)
+
+//fun rememberKillService(context: Context) =
+//    rememberNonComposablePreference(key = KILL_SERVICE, defaultValue = true, context = context)
 

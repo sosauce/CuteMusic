@@ -24,7 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.datastore.rememberSortASC
+import com.sosauce.cutemusic.data.datastore.rememberSortASCArtists
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
@@ -69,7 +69,7 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
     isPlaylistEmpty: Boolean
 ) {
 
-    val sort by rememberSortASC()
+    var sort by rememberSortASCArtists()
     var query by remember { mutableStateOf("") }
     var sortExpanded by remember { mutableStateOf(false) }
     var screenSelectionExpanded by remember { mutableStateOf(false) }
@@ -90,15 +90,11 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
         }
     }
 
-
-    Scaffold { values ->
-
         Box(Modifier.fillMaxSize()) {
             if (artists.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(values)
                 ) {
                     CuteText(
                         text = stringResource(id = R.string.no_artists_found),
@@ -114,8 +110,7 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(values)
-                        .padding(start = 80.dp),
+                        .padding(start = 30.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
                     items(
@@ -137,23 +132,10 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
                     .navigationBarsPadding()
                     .fillMaxWidth(0.4f)
                     .padding(
-                        bottom = values.calculateBottomPadding() + 5.dp,
-                        end = values.calculateEndPadding(
-                            layoutDirection = LayoutDirection.Rtl
-                        ) + 10.dp
+                        bottom = 5.dp,
+                        end = 10.dp
                     )
                     .align(Alignment.BottomEnd)
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .clip(RoundedCornerShape(24.dp))
-                    .clickable { onNavigateTo(Screen.NowPlaying) }
                     .sharedElement(
                         state = rememberSharedContentState(key = "searchbar"),
                         animatedVisibilityScope = animatedVisibilityScope,
@@ -171,7 +153,7 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
                 leadingIcon = {
                     IconButton(onClick = { screenSelectionExpanded = true }) {
                         Icon(
-                            imageVector = Icons.Rounded.MusicNote,
+                            imageVector = Icons.Rounded.Person,
                             contentDescription = null
                         )
                     }
@@ -212,7 +194,10 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
                                 .width(180.dp)
                                 .background(color = MaterialTheme.colorScheme.surface)
                         ) {
-                            SortRadioButtons()
+                            SortRadioButtons(
+                                sort = sort,
+                                onChangeSort = { sort = !sort }
+                            )
                         }
                     }
                 },
@@ -220,10 +205,10 @@ fun SharedTransitionScope.ArtistsScreenLandscape(
                 onHandlePlayerActions = onHandlePlayerActions,
                 isPlaying = isCurrentlyPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
-                isPlaylistEmpty = isPlaylistEmpty
+                isPlaylistEmpty = isPlaylistEmpty,
+                onNavigate = { onNavigateTo(Screen.NowPlaying) }
             )
 
         }
-    }
 
 }

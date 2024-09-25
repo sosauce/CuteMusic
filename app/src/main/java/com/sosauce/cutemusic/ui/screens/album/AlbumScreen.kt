@@ -10,24 +10,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,6 +55,7 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.data.datastore.rememberSortASCAlbums
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
@@ -60,7 +64,9 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
+import com.sosauce.cutemusic.ui.shared_components.SortRadioButtons
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.AlbumsScreen(
@@ -107,7 +113,7 @@ fun SharedTransitionScope.AlbumsScreen(
             onHandlePlayerActions = viewModel::handlePlayerActions,
             isPlaying = viewModel.isCurrentlyPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
-            isPlaylistEmpty = viewModel.isPlaylistEmpty()
+            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull()
         )
     }
 
@@ -128,8 +134,10 @@ private fun SharedTransitionScope.AlbumsScreenContent(
 ) {
 
     var query by remember { mutableStateOf("") }
+    var sort by rememberSortASCAlbums()
+    var sortExpanded by remember { mutableStateOf(false) }
     var screenSelectionExpanded by remember { mutableStateOf(false) }
-    val displayAlbums by remember(query) {
+    val displayAlbums by remember {
         derivedStateOf {
             if (query.isNotEmpty()) {
                 albums.filter {
@@ -138,19 +146,20 @@ private fun SharedTransitionScope.AlbumsScreenContent(
                         ignoreCase = true
                     )
                 }
-            } else albums
+            } else {
+                if (sort) albums
+                else albums.sortedByDescending { it.name }
+            }
         }
     }
 
 
     Box {
-        Scaffold { values ->
 
             if (albums.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(values)
                 ) {
                     CuteText(
                         text = stringResource(id = R.string.no_albums_found),
@@ -167,26 +176,27 @@ private fun SharedTransitionScope.AlbumsScreenContent(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(values)
                 ) {
-                    items(
+                    itemsIndexed(
                         items = displayAlbums,
-                        key = { it.id }
-                    ) { album ->
+                        key = { _, album -> album.id }
+                    ) { index, album ->
                         AlbumCard(
                             album = album,
                             modifier = Modifier
-                                .padding(horizontal = 5.dp, vertical = 5.dp)
                                 .clip(RoundedCornerShape(15.dp))
                                 .clickable {
                                     chargePVMAlbumSongs(album.id)
                                     onNavigate(Screen.AlbumsDetails(album.id))
                                 }
+                                .thenIf(
+                                    index == 0 || index == 1,
+                                    Modifier.statusBarsPadding()
+                                )
                         )
                     }
                 }
             }
-        }
         CuteSearchbar(
             query = query,
             onQueryChange = { query = it },
@@ -195,17 +205,6 @@ private fun SharedTransitionScope.AlbumsScreenContent(
                 .fillMaxWidth(0.9f)
                 .padding(bottom = 10.dp)
                 .align(Alignment.BottomCenter)
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .clip(RoundedCornerShape(24.dp))
-                .clickable { onNavigate(Screen.NowPlaying) }
                 .sharedElement(
                     state = rememberSharedContentState(key = "searchbar"),
                     animatedVisibilityScope = animatedVisibilityScope,
@@ -242,18 +241,41 @@ private fun SharedTransitionScope.AlbumsScreenContent(
                 }
             },
             trailingIcon = {
-                IconButton(onClick = { onNavigate(Screen.Settings) }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Settings,
-                        contentDescription = null
-                    )
+                Row {
+                    IconButton(onClick = { sortExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.Sort,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(
+                        onClick = { onNavigate(Screen.Settings) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = null
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = sortExpanded,
+                        onDismissRequest = { sortExpanded = false },
+                        modifier = Modifier
+                            .width(180.dp)
+                            .background(color = MaterialTheme.colorScheme.surface)
+                    ) {
+                        SortRadioButtons(
+                            sort = sort,
+                            onChangeSort = { sort = !sort }
+                        )
+                    }
                 }
             },
             currentlyPlaying = currentlyPlaying,
             onHandlePlayerActions = { onHandlePlayerActions(it) },
             isPlaying = isPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
-            isPlaylistEmpty = isPlaylistEmpty
+            isPlaylistEmpty = isPlaylistEmpty,
+            onNavigate = { onNavigate(Screen.NowPlaying) }
         )
     }
 }
@@ -264,52 +286,37 @@ fun AlbumCard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            AsyncImage(
-                model = ImageUtils.imageRequester(
-                    img = ImageUtils.getAlbumArt(album.id),
-                    context = context
-                ),
-                contentDescription = stringResource(id = R.string.artwork),
-                modifier = Modifier
-                    .aspectRatio(1 / 1f)
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(15)),
-                contentScale = ContentScale.Crop
-            )
-            Column(
-                modifier = Modifier.padding(15.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CuteText(
-                    text = album.name,
-                    maxLines = 1,
-                    modifier = Modifier.then(
-                        if (album.name.length >= 15) {
-                            Modifier.basicMarquee()
-                        } else Modifier
-                    )
-                )
-                CuteText(
-                    text = album.artist,
 
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
-                )
-            }
+    Column(
+        modifier = modifier
+            .padding(20.dp)
+    ) {
+        AsyncImage(
+            model = ImageUtils.imageRequester(
+                img = ImageUtils.getAlbumArt(album.id) ?: R.drawable.ic_launcher_foreground,
+                context = context
+            ),
+            contentDescription = stringResource(id = R.string.artwork),
+            modifier = Modifier
+                .size(160.dp)
+                .clip(RoundedCornerShape(24.dp)),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(Modifier.height(10.dp))
+        Column {
+            CuteText(
+                text = album.name,
+                maxLines = 1,
+                modifier = Modifier.basicMarquee()
+            )
+            CuteText(
+                text = album.artist,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
+                modifier = Modifier.basicMarquee()
+            )
         }
     }
 }
-
-// Previews are commented by default, un-comment to use them, re-comment them when finalizing your changes for a PR
 
 //@Preview
 //@Composable

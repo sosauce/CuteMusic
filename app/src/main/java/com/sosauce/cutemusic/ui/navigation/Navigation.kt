@@ -3,10 +3,13 @@
 package com.sosauce.cutemusic.ui.navigation
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +28,7 @@ import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
+import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
@@ -36,8 +40,13 @@ fun Nav() {
     val postViewModel = koinViewModel<PostViewModel>()
     val metadataViewModel = koinViewModel<MetadataViewModel>()
     val blacklistedFolders by rememberAllBlacklistedFolders()
-    val musics =
-        postViewModel.musics.filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
+    val musics = postViewModel.musics
+        .filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
+
+    LaunchedEffect(musics) {
+        Log.d("new musics", musics.toString())
+    }
+
 
 
     SharedTransitionLayout {
@@ -113,7 +122,8 @@ fun Nav() {
                         artist = artist,
                         navController = navController,
                         viewModel = viewModel,
-                        postViewModel = postViewModel
+                        postViewModel = postViewModel,
+                        onNavigate = { screen -> navController.navigate(screen) }
                     )
                 }
             }

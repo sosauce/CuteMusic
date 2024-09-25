@@ -6,10 +6,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,12 +32,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.CuteSearchbar(
@@ -47,7 +54,8 @@ fun SharedTransitionScope.CuteSearchbar(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlaying: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlaylistEmpty: Boolean
+    isPlaylistEmpty: Boolean,
+    onNavigate: () -> Unit
 ) = CustomSearchbar(
     query = query,
     onQueryChange = onQueryChange,
@@ -59,7 +67,8 @@ fun SharedTransitionScope.CuteSearchbar(
     onHandlePlayerActions = onHandlePlayerActions,
     isPlaying = isPlaying,
     animatedVisibilityScope = animatedVisibilityScope,
-    isPlaylistEmpty = isPlaylistEmpty
+    isPlaylistEmpty = isPlaylistEmpty,
+    onNavigate = onNavigate
 )
 
 
@@ -75,17 +84,37 @@ private fun SharedTransitionScope.CustomSearchbar(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlaying: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlaylistEmpty: Boolean
+    isPlaylistEmpty: Boolean,
+    onNavigate: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    val roundedShape by animateDpAsState(
+        targetValue = if (isPlaylistEmpty) 24.dp else 50.dp,
+        label = ""
+    )
 
     Column(
         modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(roundedShape)
+            )
+            .clip(RoundedCornerShape(roundedShape))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(roundedShape)
+            )
+            .thenIf(
+                isPlaylistEmpty,
+                Modifier.clickable {
+                    onNavigate()
+                }
+            )
     ) {
         AnimatedVisibility(
             visible = isPlaylistEmpty,
             enter = fadeIn() + slideInVertically(initialOffsetY = { it })
-
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -187,7 +216,7 @@ private fun SharedTransitionScope.CustomSearchbar(
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(7.dp),
+                .padding(6.dp),
             keyboardActions = KeyboardActions(
                 onDone = { focusManager.clearFocus() }
             )

@@ -4,16 +4,20 @@ import android.content.ContentUris
 import android.content.Context
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
+import com.sosauce.cutemusic.utils.queryAsFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class MediaStoreHelper(
     private val context: Context
 ) {
-    fun getMusics(): List<MediaItem> {
+    fun getMusics():List<MediaItem> {
 
         val musics = mutableListOf<MediaItem>()
 
@@ -33,7 +37,6 @@ class MediaStoreHelper(
             projection,
             null,
             null,
-            null
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
@@ -58,8 +61,7 @@ class MediaStoreHelper(
                 )
                 val artUri = ContentUris.appendId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
-                )
-                    .appendPath("albumart").build()
+                ).appendPath("albumart").build()
 
                 musics.add(
                     MediaItem
@@ -86,6 +88,7 @@ class MediaStoreHelper(
                 )
             }
         }
+
         return musics
     }
 
@@ -104,7 +107,7 @@ class MediaStoreHelper(
             projection,
             null,
             null,
-            "${MediaStore.Audio.Albums.ALBUM} ASC"
+            null
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)
@@ -163,7 +166,7 @@ class MediaStoreHelper(
         val folders = mutableListOf<Folder>()
 
         val projection = arrayOf(
-            MediaStore.Audio.Media.DATA
+            MediaStore.Audio.Media.DATA,
         )
 
         context.contentResolver.query(
@@ -186,7 +189,7 @@ class MediaStoreHelper(
                 folders.add(
                     Folder(
                         name = folderName,
-                        path = path
+                        path = path,
                     )
                 )
             }
