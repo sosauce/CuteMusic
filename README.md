@@ -31,7 +31,7 @@
 <h1>💬 Contact Me</h1>
 
 - Discord server: https://discord.gg/c6aCu4yjbu
-- Email = sosauce_dev@protonmail.com
+- Email: sosauce_dev@protonmail.com
 
 ---
 <h1>❤️ Support</h1>
