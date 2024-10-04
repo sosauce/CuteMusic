@@ -31,7 +31,7 @@
 <h1>💬 Contact Me</h1>
 
 - Discord server: https://discord.gg/c6aCu4yjbu
-- Email = sosauce_dev@protonmail.com
+- Email: sosauce_dev@protonmail.com
 
 ---
 <h1>❤️ Support</h1>
@@ -56,4 +56,8 @@ GNU General Public License for more details.
 The above copyright notice, this permission notice, and its license shall be included in all copies or substantial portions of the Software.
 
 You can find a copy of the GNU General Public License v3 [here](https://www.gnu.org/licenses/)</p>
+
+
+---
+To get started with contributing, please check the [get started readme](https://github.com/sosauce/CuteMusic/blob/main/GET_STARTED.md)
 
