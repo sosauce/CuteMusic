@@ -18,16 +18,16 @@
     <string name="artwork">Artwork</string>
     <string name="artists">Artists</string>
     <string name="albums">Albums</string>
-    <string name="music">Musics</string>
+    <string name="music">Tracks</string>
     <string name="cm_by_sosauce">CuteMusic by sosauce</string>
     <string name="app_icon">App Icon</string>
     <string name="search">Search</string>
     <string name="close">Close</string>
     <string name="more">More</string>
     <string name="hi_there">Hi there!</string>
-    <string name="permissio_needed">It seems like CuteMusic doesn\'t have the permission to access your musics! You can grant it below!</string>
+    <string name="permissio_needed">It seems like CuteMusic doesn\'t have the permission to access your tracks! You can grant it below!</string>
     <string name="request_perm">Request permission</string>
-    <string name="no_musics_found">No music found !</string>
+    <string name="no_musics_found">No tracks found !</string>
     <string name="error_deleting_song">There was an error deleting the song.</string>
     <string name="deleting_song_OK">Successfully deleted song.</string>
     <string name="okay">Okay</string>
@@ -53,4 +53,9 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="ntg_playing">Nothing Playing!</string>
+    <string name="UI">UI</string>
+    <string name="use_art">Material Art</string>
+    <string name="success">Success</string>
+    <string name="error_saving">Error while saving changes.</string>
+    <string name="editor">Editor</string>
 </resources>

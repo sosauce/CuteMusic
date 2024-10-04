@@ -1,5 +1,6 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.app.Application
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -9,7 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -19,6 +20,7 @@ import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberKillService
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.customs.playAtIndex
 import kotlinx.coroutines.delay
@@ -27,14 +29,17 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import java.io.File
 
-class MusicViewModel(
-    private val controllerFuture: ListenableFuture<MediaController>
-) : ViewModel() {
+class MusicViewModel (
+    private val controllerFuture: ListenableFuture<MediaController>,
+    application: Application
+) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
+    private val shouldKill by rememberKillService(application)
 
 
     var selectedItem by mutableIntStateOf(0)
+
 
 
     var currentlyPlaying by mutableStateOf("")
@@ -68,18 +73,19 @@ class MusicViewModel(
             isCurrentlyPlaying = isPlaying
         }
 
+
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
-            if (player.isPlaying) {
                 viewModelScope.launch {
-                    while (player.isPlaying) {
-                        currentMusicDuration = player.duration
-                        currentPosition = player.currentPosition
-                        delay(500)
-                    }
+                    currentMusicDuration = player.duration
+                    currentPosition = player.currentPosition
+                    delay(500)
                 }
-            }
         }
+    }
+
+    companion object {
+        const val CUTE_ERROR = "CuteError"
     }
 
 
@@ -89,11 +95,29 @@ class MusicViewModel(
                 Handler(Looper.getMainLooper()).post {
                     mediaController = controllerFuture.get()
                     mediaController!!.addListener(playerListener)
+                    // only set fields if kill service is set to false, else its gonna retrieve null data
+//                    if (shouldKill) {
+//                        loadBackData()
+//                    }
                 }
             },
             MoreExecutors.directExecutor()
         )
     }
+
+//    @UnstableApi
+//    private fun loadBackData() {
+//        currentlyPlaying = mediaController!!.mediaMetadata.title.toString()
+//        currentArtist = mediaController!!.mediaMetadata.artist.toString()
+//        currentArt = mediaController!!.mediaMetadata.artworkUri
+//        isCurrentlyPlaying = mediaController!!.isPlaying
+//        currentPosition = mediaController!!.currentPosition
+//        currentMusicDuration = mediaController!!.mediaMetadata.durationMs ?: Long.MAX_VALUE
+//        currentMusicUri = mediaController!!.mediaMetadata.extras?.getString("uri") ?: ""
+//        currentPath = mediaController!!.mediaMetadata.extras?.getString("path") ?: ""
+//        currentLrcFile = loadLrcFile(currentPath)
+//        currentLyrics = parseLrcFile(currentLrcFile)
+//    }
 
     private fun loadLrcFile(path: String): File? {
         val lrcFilePath = path.replaceAfterLast('.', "lrc")
@@ -107,24 +131,26 @@ class MusicViewModel(
             return emptyList()
         }
 
-        file.bufferedReader().useLines { lines ->
-            lines.forEach { line ->
-                val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
-                val matchResult = regex.find(line)
+        viewModelScope.launch {
+                file.bufferedReader().useLines { lines ->
+                    lines.forEach { line ->
+                        val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
+                        val matchResult = regex.find(line)
 
-                if (matchResult != null) {
-                    val (minutes, seconds, hundredths) = matchResult.destructured
-                    val timeInMillis =
-                        minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                    val lyricText = line.substring(matchResult.range.last + 1).trim()
-                    lyrics.add(
-                        Lyrics(
-                            timeInMillis,
-                            lyricText
-                        )
-                    )
+                        if (matchResult != null) {
+                            val (minutes, seconds, hundredths) = matchResult.destructured
+                            val timeInMillis =
+                                minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
+                            val lyricText = line.substring(matchResult.range.last + 1).trim()
+                            lyrics.add(
+                                Lyrics(
+                                    timeInMillis,
+                                    lyricText
+                                )
+                            )
+                        }
+                    }
                 }
-            }
         }
 
         return lyrics
@@ -145,11 +171,13 @@ class MusicViewModel(
             }
         }
     }
-
     override fun onCleared() {
         super.onCleared()
         mediaController!!.removeListener(playerListener)
+        mediaController!!.release()
     }
+
+
 
 
     fun getPlaybackSpeed() = mediaController!!.playbackParameters
@@ -161,7 +189,7 @@ class MusicViewModel(
                 mediaId = mediaId
             )
         } catch (e: Exception) {
-            Log.d("CuteError", e.message.toString())
+            Log.d(CUTE_ERROR, e.message.toString())
         }
     }
 
@@ -183,11 +211,7 @@ class MusicViewModel(
 
 
     fun isPlaylistEmptyAndDataNotNull(): Boolean {
-        return if (mediaController == null || currentlyPlaying == "") {
-            false
-        } else {
-            mediaController!!.mediaItemCount != 0
-        }
+        return if (mediaController == null) false else mediaController!!.mediaItemCount != 0
     }
 
 
@@ -200,6 +224,7 @@ class MusicViewModel(
             pitch
         )
     }
+
 
 
     fun setLoop(

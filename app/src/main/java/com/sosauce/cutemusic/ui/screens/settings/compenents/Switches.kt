@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
+import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.ui.customs.restart
@@ -32,7 +34,7 @@ fun Misc(
 ) {
     val context = LocalContext.current
     var useSystemFont by rememberUseSystemFont()
-//    var killService by remember { rememberKillService(context) }
+    //var killService by remember { rememberKillService(context) }
 
     Column {
         CuteText(
@@ -122,6 +124,34 @@ fun ThemeManagement() {
             topDp = 4.dp,
             bottomDp = 24.dp,
             text = stringResource(id = R.string.amoled_mode)
+        )
+    }
+}
+
+@Composable
+fun UISettings() {
+    var useArtTheme by rememberUseArtTheme()
+
+    Column {
+        CuteText(
+            text = stringResource(id = R.string.UI),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
+        )
+        SettingsCards(
+            checked = useArtTheme,
+            onCheckedChange = { useArtTheme = !useArtTheme },
+            topDp = 24.dp,
+            bottomDp = 24.dp,
+            text = stringResource(id = R.string.use_art),
+            optionalDescription = {
+                CuteText(
+                    text = "App's theme will follow the currently playing music's art",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
+                    fontSize = 13.sp
+
+                )
+            }
         )
     }
 }

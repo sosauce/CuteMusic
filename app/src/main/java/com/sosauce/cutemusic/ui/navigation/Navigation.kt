@@ -3,13 +3,10 @@
 package com.sosauce.cutemusic.ui.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -28,10 +25,10 @@ import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
-import kotlinx.coroutines.Dispatchers
+import com.sosauce.cutemusic.utils.ListToHandle
 import org.koin.androidx.compose.koinViewModel
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun Nav() {
 
@@ -43,10 +40,6 @@ fun Nav() {
     val musics = postViewModel.musics
         .filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
 
-    LaunchedEffect(musics) {
-        Log.d("new musics", musics.toString())
-    }
-
 
 
     SharedTransitionLayout {
@@ -56,9 +49,20 @@ fun Nav() {
         ) {
             composable<Screen.Main> {
                 MainScreen(
-                    navController = navController,
-                    viewModel = viewModel,
                     musics = musics,
+                    selectedIndex = viewModel.selectedItem,
+                    onNavigateTo = { navController.navigate(it) },
+                    currentlyPlaying = viewModel.currentlyPlaying,
+                    isCurrentlyPlaying = viewModel.isCurrentlyPlaying,
+                    onShortClick = {
+                        viewModel.itemClicked(it, musics)
+                    },
+                    onNavigationItemClicked = { index, item ->
+                        navController.navigate(item.navigateTo) {
+                            viewModel.selectedItem = index
+                            launchSingleTop = true
+                        }
+                    },
                     animatedVisibilityScope = this,
                     onLoadMetadata = { uri ->
                         metadataViewModel.onHandleMetadataActions(MetadataActions.ClearState)
@@ -67,26 +71,95 @@ fun Nav() {
                                 uri
                             )
                         )
+                    },
+                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
+                    currentMusicUri = viewModel.currentMusicUri,
+                    onHandlePlayerAction = { viewModel.handlePlayerActions(it) },
+                    onDeleteMusic = { uris, intentSender ->
+                        postViewModel.deleteMusic(
+                            uris,
+                            intentSender
+                        )
+                    },
+                    onHandleSorting = { sortingType ->
+                        postViewModel.handleFiltering(
+                            listToHandle = ListToHandle.TRACKS,
+                            sortingType = sortingType
+                        )
+                    },
+                    onHandleSearching = { query ->
+                        postViewModel.handleSearch(
+                            listToHandle = ListToHandle.TRACKS,
+                            query = query
+                        )
                     }
                 )
 
             }
             composable<Screen.Albums> {
                 AlbumsScreen(
-                    navController = navController,
                     albums = postViewModel.albums,
-                    viewModel = viewModel,
-                    postViewModel = postViewModel,
-                    animatedVisibilityScope = this
+                    animatedVisibilityScope = this,
+                    onHandleSorting = { sortingType ->
+                        postViewModel.handleFiltering(
+                            listToHandle = ListToHandle.ALBUMS,
+                            sortingType = sortingType
+                        )
+                    },
+                    onHandleSearching = { query ->
+                        postViewModel.handleSearch(
+                            listToHandle = ListToHandle.ALBUMS,
+                            query = query
+                        )
+                    },
+                    currentlyPlaying = viewModel.currentlyPlaying,
+                    chargePVMAlbumSongs = postViewModel::albumSongs,
+                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
+                    isPlaying = viewModel.isCurrentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
+                    onNavigate = { navController.navigate(it) },
+                    onNavigationItemClicked = { index, item ->
+                        navController.navigate(item.navigateTo) {
+                            viewModel.selectedItem = index
+                            launchSingleTop = true
+                        }
+                    },
+                    selectedIndex = viewModel.selectedItem
+
                 )
             }
             composable<Screen.Artists> {
                 ArtistsScreen(
                     artist = postViewModel.artists,
-                    navController = navController,
-                    viewModel = viewModel,
-                    postViewModel = postViewModel,
-                    animatedVisibilityScope = this
+                    onNavigate = { navController.navigate(it) },
+                    onNavigationItemClicked = { index, item ->
+                        navController.navigate(item.navigateTo) {
+                            viewModel.selectedItem = index
+                            launchSingleTop = true
+                        }
+                    },
+                    selectedIndex = viewModel.selectedItem,
+                    chargePVMLists = {
+                        postViewModel.artistSongs(it)
+                        postViewModel.artistAlbums(it)
+                    },
+                    currentlyPlaying = viewModel.currentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
+                    isPlaying = viewModel.isCurrentlyPlaying,
+                    animatedVisibilityScope = this,
+                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
+                    onHandleSorting = { sortingType ->
+                        postViewModel.handleFiltering(
+                            listToHandle = ListToHandle.ARTISTS,
+                            sortingType = sortingType
+                        )
+                    },
+                    onHandleSearching = { query ->
+                        postViewModel.handleSearch(
+                            listToHandle = ListToHandle.ARTISTS,
+                            query = query
+                        )
+                    }
                 )
             }
 
@@ -140,11 +213,16 @@ fun Nav() {
                         music = music,
                         onPopBackStack = navController::navigateUp,
                         onNavigate = { screen -> navController.navigate(screen) },
-                        metadataViewModel = metadataViewModel
+                        metadataViewModel = metadataViewModel,
+                        onEditMusic = { uris, intentSender ->
+                            postViewModel.editMusic(
+                                uris,
+                                intentSender
+                            )
+                        }
                     )
                 }
             }
         }
     }
-
 }

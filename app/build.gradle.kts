@@ -13,9 +13,8 @@ android {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "2.1.0"
-
+        versionCode = 12
+        versionName = "2.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -27,7 +26,6 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            isCrunchPngs = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -82,6 +80,8 @@ android {
         implementation(libs.koin.android)
         implementation(libs.koin.androidx.compose)
         debugImplementation(libs.androidx.ui.tooling)
+        //implementation("com.materialkolor:material-kolor:1.7.1")
+        implementation(libs.koin.androidx.startup)
         implementation(libs.jaudiotagger)
     }
 }

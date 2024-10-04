@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.Preferences
@@ -54,19 +55,19 @@ fun <T> rememberNonComposablePreference(
     context: Context
 ): MutableState<T> {
     val coroutineScope = CoroutineScope(Dispatchers.Main)
-    val state = mutableStateOf(defaultValue)
+    var state by mutableStateOf(defaultValue)
 
     coroutineScope.launch {
         context.dataStore.data
             .map { preferences -> preferences[key] ?: defaultValue }
             .collect { newValue ->
-                state.value = newValue
+                state = newValue
             }
     }
 
     return object : MutableState<T> {
         override var value: T
-            get() = state.value
+            get() = state
             set(value) {
                 coroutineScope.launch {
                     context.dataStore.edit {
@@ -88,3 +89,4 @@ fun rememberIsLandscape(): Boolean {
         config.orientation == Configuration.ORIENTATION_LANDSCAPE
     }
 }
+

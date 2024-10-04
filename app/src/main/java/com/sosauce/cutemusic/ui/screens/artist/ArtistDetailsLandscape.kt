@@ -38,7 +38,7 @@ fun ArtistDetailsLandscape(
     artistSongs: List<MediaItem>,
     onClickPlay: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    chargePVMAlbumSongs: (Long) -> Unit,
+    chargePVMAlbumSongs: (String) -> Unit,
     artist: Artist,
     currentMusicUri: String
 ) {
@@ -83,7 +83,7 @@ fun ArtistDetailsLandscape(
                             .padding(horizontal = 5.dp, vertical = 5.dp)
                             .clip(RoundedCornerShape(15.dp))
                             .clickable {
-                                chargePVMAlbumSongs(album.id)
+                                chargePVMAlbumSongs(album.name)
                                 onNavigate(Screen.AlbumsDetails(album.id))
                             }
                             .size(230.dp)

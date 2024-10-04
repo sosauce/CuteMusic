@@ -1,13 +1,9 @@
 package com.sosauce.cutemusic.ui.screens.main.components
 
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -40,9 +36,6 @@ import com.sosauce.cutemusic.ui.customs.formatBinarySize
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.ImageUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun BottomSheetContent(
@@ -50,6 +43,7 @@ fun BottomSheetContent(
     onNavigate: (Screen) -> Unit,
     onDismiss: () -> Unit,
     onLoadMetadata: ((String) -> Unit)? = null,
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
 ) {
     val context = LocalContext.current
     val fileBitrate =
@@ -60,9 +54,7 @@ fun BottomSheetContent(
     val path = music.mediaMetadata.extras?.getString("path")
 
     val deleteSongLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartIntentSenderForResult()
-        ) {
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
                     context,
@@ -180,13 +172,10 @@ fun BottomSheetContent(
                             bottomEnd = 24.dp
                         )
                     )
-                    .clickable {
-                        createDeleteRequest(
-                            uri,
-                            deleteSongLauncher,
-                            context
-                        )
-                    },
+                    .clickable { onDeleteMusic(
+                        listOf(uri),
+                        deleteSongLauncher
+                    ) },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                         alpha = 0.5f
@@ -249,34 +238,6 @@ private fun getFileBitrate(context: Context, uri: Uri): String {
         "Unknown"
     } finally {
         retriever.release()
-    }
-}
-
-
-private fun createDeleteRequest(
-    uri: Uri,
-    intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>,
-    context: Context
-) {
-    val coroutineScope = CoroutineScope(Dispatchers.Main)
-    coroutineScope.launch {
-        try {
-            context.contentResolver.delete(uri, null, null)
-        } catch (e: SecurityException) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val intentSender = MediaStore.createDeleteRequest(
-                    context.contentResolver,
-                    listOf(uri)
-                ).intentSender
-
-                intentSenderLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-            }
-        } catch (e: Exception) {
-            Log.e(
-                ContentValues.TAG,
-                "Error trying to delete song: ${e.message} ${e.stackTrace.joinToString()}"
-            )
-        }
     }
 }
 

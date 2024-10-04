@@ -3,16 +3,12 @@ package com.sosauce.cutemusic.main
 import android.app.Application
 import com.sosauce.cutemusic.di.appModule
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.java.KoinAndroidApplication
-import org.koin.core.Koin
-import org.koin.core.KoinApplication
-import org.koin.core.context.startKoin
+import org.koin.androix.startup.KoinStartup.onKoinStartup
 
 class App : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-        startKoin {
+    init {
+        @Suppress("OPT_IN_USAGE")
+        onKoinStartup {
             androidContext(this@App)
             modules(appModule)
         }

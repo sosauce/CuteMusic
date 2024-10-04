@@ -18,7 +18,6 @@ import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
@@ -30,55 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.ui.navigation.Screen
-
-@Composable
-fun SortRadioButtons(
-    sort: Boolean,
-    onChangeSort: () -> Unit
-) {
-
-
-    Column(
-        verticalArrangement = Arrangement.Center
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .clickable { onChangeSort() }
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = sort,
-                onClick = null
-            )
-            CuteText(
-                text = stringResource(id = R.string.ascending),
-                modifier = Modifier.padding(start = 15.dp),
-
-                )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .clickable { onChangeSort() }
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = !sort,
-                onClick = null
-            )
-            CuteText(
-                text = stringResource(id = R.string.descending),
-                modifier = Modifier.padding(start = 15.dp),
-
-                )
-        }
-    }
-}
 
 @Composable
 fun ScreenSelection(

@@ -113,7 +113,7 @@ fun ArtistDetails(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(15.dp))
                                     .clickable {
-                                        postViewModel.albumSongs(album.id)
+                                        postViewModel.albumSongs(album.name)
                                         onNavigate(Screen.AlbumsDetails(album.id))
                                     }
                             )

@@ -57,6 +57,7 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.LoopButton
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
@@ -65,7 +66,6 @@ import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.thenIf
 
 
 @OptIn(UnstableApi::class)
@@ -125,13 +125,16 @@ private fun SharedTransitionScope.NowPlayingContent(
         targetValue = if (viewModel.isCurrentlyPlaying) 30 else 50,
         label = "FAB Shape"
     )
+    var snap by rememberSnapSpeedAndPitch()
 
 
 
     if (showSpeedCard) {
         SpeedCard(
             viewModel = viewModel,
-            onDismiss = { showSpeedCard = false }
+            onDismiss = { showSpeedCard = false },
+            shouldSnap = snap,
+            onChangeSnap = { snap = !snap }
         )
     }
     Scaffold(
@@ -151,7 +154,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
-                    onClick = { onNavigateUp() }
+                    onClick = onNavigateUp
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowDown,
@@ -189,7 +192,7 @@ private fun SharedTransitionScope.NowPlayingContent(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = 30.dp),
+                        .padding(horizontal = 15.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
 
@@ -207,7 +210,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                             )
                             .basicMarquee()
                     )
-                    Spacer(modifier = Modifier.height(5.dp))
+                    //Spacer(modifier = Modifier.height(5.dp))
                     CuteText(
                         text = viewModel.currentArtist,
                         color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
@@ -316,7 +319,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                     )
                 }
                 LoopButton(
-                    onClick = { onClickLoop(it) },
+                    onClick = onClickLoop,
                     isLooping = viewModel.isLooping
                 )
             }
@@ -328,7 +331,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                     .fillMaxWidth()
                     .navigationBarsPadding()
             ) {
-                IconButton(onClick = { onShowLyrics() }) {
+                IconButton(onClick = onShowLyrics) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.Article,
                         contentDescription = "show lyrics"

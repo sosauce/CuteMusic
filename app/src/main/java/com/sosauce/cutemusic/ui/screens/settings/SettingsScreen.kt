@@ -49,9 +49,8 @@ fun SettingsScreen(
         ) {
             AboutCard()
             ThemeManagement()
-            Misc(
-                onNavigateTo = { onNavigate(it) }
-            )
+            //UISettings()
+            Misc(onNavigateTo = onNavigate)
         }
     }
 }

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.sosauce.cutemusic.ui.screens.blacklisted
 
 import android.widget.Toast
@@ -48,7 +50,6 @@ import com.sosauce.cutemusic.ui.shared_components.AppBar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlacklistedScreen(
     navController: NavController,
@@ -95,6 +96,7 @@ private fun BlacklistedScreenContent(
     onAddFolder: () -> Unit,
     onPopBackStack: () -> Unit,
 ) {
+
     var blacklistedFolders by rememberAllBlacklistedFolders()
 
     Scaffold(

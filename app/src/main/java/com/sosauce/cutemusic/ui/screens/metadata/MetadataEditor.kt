@@ -1,10 +1,7 @@
 package com.sosauce.cutemusic.ui.screens.metadata
 
 import android.app.Activity
-import android.content.Context
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -47,25 +44,24 @@ import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.AppBar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.ImageUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun MetadataEditor(
     music: MediaItem,
     onPopBackStack: () -> Unit,
     onNavigate: (Screen) -> Unit,
-    metadataViewModel: MetadataViewModel
+    metadataViewModel: MetadataViewModel,
+    onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
 ) {
 
     MetadataEditorContent(
         music = music,
-        onPopBackStack = { onPopBackStack() },
-        onNavigate = { onNavigate(it) },
+        onPopBackStack = onPopBackStack,
+        onNavigate = onNavigate,
         metadataState = metadataViewModel.metadataState,
         onMetadataAction = { metadataViewModel.onHandleMetadataActions(it) },
-        //vm = metadataViewModel
+        //vm = metadataViewModel,
+        onEditMusic = onEditMusic
     )
 }
 
@@ -76,6 +72,7 @@ fun MetadataEditorContent(
     onNavigate: (Screen) -> Unit,
     metadataState: MetadataState,
     onMetadataAction: (MetadataActions) -> Unit,
+    onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
     //vm: MetadataViewModel
 ) {
     val context = LocalContext.current
@@ -96,14 +93,14 @@ fun MetadataEditorContent(
                 onMetadataAction(MetadataActions.SaveChanges(path!!))
                 Toast.makeText(
                     context,
-                    "Success, you might need to restart the app to see changes.",
+                    context.getString(R.string.success),
                     Toast.LENGTH_SHORT
                 ).show()
                 onPopBackStack()
             } else {
                 Toast.makeText(
                     context,
-                    "Error while saving changes.",
+                    context.getString(R.string.error_saving),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -113,13 +110,10 @@ fun MetadataEditorContent(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    createEditRequest(
-                        uri = uri,
-                        intentSenderLauncher = editSongLauncher,
-                        context = context
-                    )
-                }
+                onClick = { onEditMusic(
+                    listOf(uri),
+                    editSongLauncher
+                ) }
             ) {
                 Icon(
                     imageVector = Icons.Default.Done,
@@ -129,7 +123,7 @@ fun MetadataEditorContent(
         },
         topBar = {
             AppBar(
-                title = "Editor",
+                title = stringResource(R.string.editor),
                 showBackArrow = true,
                 showMenuIcon = false,
                 onPopBackStack = { onPopBackStack() },
@@ -165,7 +159,7 @@ fun MetadataEditorContent(
                             Toast
                                 .makeText(
                                     context,
-                                    "Image editing will be avaible in the future!",
+                                    "Image editing will be available in the future!",
                                     Toast.LENGTH_SHORT
                                 )
                                 .show()
@@ -272,25 +266,6 @@ fun MetadataEditorContent(
                     metadataState.mutablePropertiesMap[7] = lyrics
                 }
             }
-        }
-    }
-}
-
-private fun createEditRequest(
-    uri: Uri,
-    context: Context,
-    intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>,
-) {
-    val coroutineScope = CoroutineScope(Dispatchers.Main)
-
-    coroutineScope.launch {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val intentSender = MediaStore.createWriteRequest(
-                context.contentResolver,
-                listOf(uri)
-            ).intentSender
-
-            intentSenderLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
         }
     }
 }

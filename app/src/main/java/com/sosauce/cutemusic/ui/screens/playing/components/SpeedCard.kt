@@ -32,21 +32,21 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 
 @Composable
 fun SpeedCard(
     onDismiss: () -> Unit,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    shouldSnap: Boolean,
+    onChangeSnap: () -> Unit
 ) {
     var speed by remember { mutableFloatStateOf(viewModel.getPlaybackSpeed().speed) }
     var pitch by remember { mutableFloatStateOf(viewModel.getPlaybackSpeed().pitch) }
     val interactionSource = remember {
         MutableInteractionSource()
     }
-    var snap by rememberSnapSpeedAndPitch()
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -68,7 +68,7 @@ fun SpeedCard(
             Box {
                 Column {
                     Spacer(Modifier.height(5.dp))
-                    if (!snap) {
+                    if (!shouldSnap) {
                         Box(
                             modifier = Modifier
                                 .background(
@@ -193,8 +193,8 @@ fun SpeedCard(
                         horizontalArrangement = Arrangement.End
                     ) {
                         Checkbox(
-                            checked = snap,
-                            onCheckedChange = { snap = !snap }
+                            checked = shouldSnap,
+                            onCheckedChange = { onChangeSnap() }
                         )
                         CuteText(
                             text = "Snap speed and pitch"

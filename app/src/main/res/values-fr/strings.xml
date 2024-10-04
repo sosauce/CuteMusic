@@ -53,4 +53,9 @@
     <string name="edit">Éditer</string>
     <string name="delete">Supprimer</string>
     <string name="ntg_playing">Rien en cours!</string>
+    <string name="UI">UI</string>
+    <string name="use_art">Material Art</string>
+    <string name="success">Succès</string>
+    <string name="error_saving">Erreur en essayant de sauvegarder les modifications.</string>
+    <string name="editor">Éditeur</string>
 </resources>

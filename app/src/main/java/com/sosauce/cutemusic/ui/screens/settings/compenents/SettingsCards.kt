@@ -26,19 +26,19 @@ import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
-fun SettingsCards(
+inline fun SettingsCards(
     hasInfoDialog: Boolean = false,
     checked: Boolean,
-    onCheckedChange: () -> Unit,
-    onClick: (() -> Unit)? = null,
     topDp: Dp,
     bottomDp: Dp,
-    text: String
+    text: String,
+    crossinline onCheckedChange: () -> Unit,
+    crossinline onClick: () -> Unit = {},
+    crossinline optionalDescription: @Composable () -> Unit = {}
 ) {
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier
-            .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 2.dp),
         shape = RoundedCornerShape(
             topStart = topDp,
@@ -52,16 +52,21 @@ fun SettingsCards(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .padding(15.dp)
-                .fillMaxWidth()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                CuteText(
-                    text = text,
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Column {
+                    CuteText(
+                        text = text
                     )
+                    optionalDescription()
+                }
                 if (hasInfoDialog) {
                     IconButton(
-                        onClick = { onClick?.invoke() }
+                        onClick = { onClick() }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
@@ -70,10 +75,10 @@ fun SettingsCards(
                     }
                 }
             }
-            Switch(
-                checked = checked,
-                onCheckedChange = { onCheckedChange() }
-            )
+                Switch(
+                    checked = checked,
+                    onCheckedChange = { onCheckedChange() }
+                )
         }
     }
 }
@@ -121,7 +126,6 @@ fun TextSettingsCards(
                 tipText?.let {
                     CuteText(
                         text = it,
-
                         fontSize = 12.sp,
                         color = Color.Gray
                     )

@@ -1,51 +1,12 @@
 package com.sosauce.cutemusic.utils
 
-import android.content.ContentResolver
-import android.database.ContentObserver
-import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.launch
-
-fun ContentResolver.queryAsFlow(
-    uri: Uri,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null
-) = callbackFlow {
-    val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            launch(Dispatchers.IO) {
-                runCatching {
-                    trySend(query(uri, projection, selection, selectionArgs, null))
-                }
-            }
-        }
-    }
-
-    registerContentObserver(uri, true, observer)
-
-    launch(Dispatchers.IO) {
-        runCatching {
-            trySend(
-                query(uri, projection, selection, selectionArgs, null)
-            )
-        }.onFailure {
-            Log.d("CuteError", it.message.toString())
-        }
-    }
-
-    awaitClose {
-        unregisterContentObserver(observer)
-    }
-
-}.conflate()
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 
 fun Modifier.thenIf(
     condition: Boolean,
@@ -56,4 +17,51 @@ fun Modifier.thenIf(
             modifier
         } else Modifier
     )
+}
+
+// How bad of a programmer am I for all the below functions
+
+@Composable
+fun rememberSearchbarAlignment(
+) : Alignment {
+
+    val isLandscape = rememberIsLandscape()
+
+    return remember(isLandscape) {
+        if (isLandscape) {
+            Alignment.BottomEnd
+        } else {
+            Alignment.BottomCenter
+        }
+    }
+}
+
+@Composable
+fun rememberSearchbarMaxFloatValue(
+) : Float {
+
+    val isLandscape = rememberIsLandscape()
+
+    return remember(isLandscape) {
+        if (isLandscape) {
+            0.4f
+        } else {
+            0.85f
+        }
+    }
+}
+
+@Composable
+fun rememberSearchbarRightPadding(
+) : Dp {
+
+    val isLandscape = rememberIsLandscape()
+
+    return remember(isLandscape) {
+        if (isLandscape) {
+            10.dp
+        } else {
+            0.dp
+        }
+    }
 }

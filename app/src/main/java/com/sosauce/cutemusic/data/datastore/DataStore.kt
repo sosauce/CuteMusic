@@ -10,17 +10,21 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.KILL_SERVICE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ALBUMS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ARTISTS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+private const val PREFERENCES_NAME = "settings"
 
-data object PreferencesKeys {
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(PREFERENCES_NAME)
+
+private data object PreferencesKeys {
     val SORT_ORDER = booleanPreferencesKey("sort_order")
     val SORT_ORDER_ARTISTS = booleanPreferencesKey("sort_order_artists")
     val SORT_ORDER_ALBUMS = booleanPreferencesKey("sort_order_albums")
@@ -32,6 +36,7 @@ data object PreferencesKeys {
     val HAS_SEEN_TIP = booleanPreferencesKey("has_seen_tip")
     val SNAP_SPEED_N_PITCH = booleanPreferencesKey("snap_peed_n_pitch")
     val KILL_SERVICE = booleanPreferencesKey("kill_service")
+    val USE_ART_THEME = booleanPreferencesKey("use_art_theme")
 }
 
 @Composable
@@ -74,6 +79,10 @@ fun rememberHasSeenTip() =
 fun rememberSnapSpeedAndPitch() =
     rememberPreference(key = SNAP_SPEED_N_PITCH, defaultValue = false)
 
-//fun rememberKillService(context: Context) =
-//    rememberNonComposablePreference(key = KILL_SERVICE, defaultValue = true, context = context)
+@Composable
+fun rememberUseArtTheme() =
+    rememberPreference(key = USE_ART_THEME, defaultValue = false)
+
+fun rememberKillService(context: Context) =
+    rememberNonComposablePreference(key = KILL_SERVICE, defaultValue = true, context = context)
 

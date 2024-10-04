@@ -5,10 +5,10 @@ package com.sosauce.cutemusic.ui.screens.artist
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,9 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
@@ -32,14 +31,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -50,7 +48,6 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
-import com.sosauce.cutemusic.data.datastore.rememberSortASCArtists
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
@@ -59,101 +56,35 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
-import com.sosauce.cutemusic.ui.shared_components.SortRadioButtons
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.SortingType
+import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
+import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
     artist: List<Artist>,
-    navController: NavController,
-    viewModel: MusicViewModel,
-    postViewModel: PostViewModel,
-    animatedVisibilityScope: AnimatedVisibilityScope
-) {
-
-    val isLandscape = rememberIsLandscape()
-
-    if (isLandscape) {
-        ArtistsScreenLandscape(
-            artists = artist,
-            chargePVMLists = {
-                postViewModel.artistSongs(it)
-                postViewModel.artistAlbums(it)
-            },
-            onNavigateTo = { navController.navigate(it) },
-            currentlyPlaying = viewModel.currentlyPlaying,
-            isCurrentlyPlaying = viewModel.isCurrentlyPlaying,
-            animatedVisibilityScope = animatedVisibilityScope,
-            selectedIndex = viewModel.selectedItem,
-            onNavigationItemClicked = { index, item ->
-                navController.navigate(item.navigateTo) {
-                    viewModel.selectedItem = index
-                    launchSingleTop = true
-                }
-            },
-            onHandlePlayerActions = { viewModel.handlePlayerActions(it) },
-            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull()
-
-        )
-    } else {
-        ArtistsScreenContent(
-            artist = artist,
-            onNavigate = { navController.navigate(it) },
-            onNavigationItemClicked = { index, item ->
-                navController.navigate(item.navigateTo) {
-                    viewModel.selectedItem = index
-                    launchSingleTop = true
-                }
-            },
-            selectedIndex = viewModel.selectedItem,
-            chargePVMLists = {
-                postViewModel.artistSongs(it)
-                postViewModel.artistAlbums(it)
-            },
-            currentlyPlaying = viewModel.currentlyPlaying,
-            onHandlePlayerActions = viewModel::handlePlayerActions,
-            isPlaying = viewModel.isCurrentlyPlaying,
-            animatedVisibilityScope = animatedVisibilityScope,
-            isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull()
-        )
-    }
-
-}
-
-
-@Composable
-private fun SharedTransitionScope.ArtistsScreenContent(
-    artist: List<Artist>,
-    onNavigate: (Screen) -> Unit,
-    chargePVMLists: (String) -> Unit,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
-    selectedIndex: Int,
-    currentlyPlaying: String,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    isPlaying: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlaylistEmpty: Boolean
+    onHandleSorting: (SortingType) -> Unit,
+    onHandleSearching: (String) -> Unit,
+    currentlyPlaying: String,
+    chargePVMLists: (String) -> Unit,
+    onNavigate: (Screen) -> Unit,
+    selectedIndex: Int,
+    isPlaying: Boolean,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    isPlaylistEmpty: Boolean,
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit
 ) {
 
     var query by remember { mutableStateOf("") }
-    var sort by rememberSortASCArtists()
-    var sortExpanded by remember { mutableStateOf(false) }
     var screenSelectionExpanded by remember { mutableStateOf(false) }
-    val displayArtists by remember {
-        derivedStateOf {
-            if (query.isNotEmpty()) {
-                artist.filter {
-                    it.name.contains(
-                        other = query,
-                        ignoreCase = true
-                    )
-                }
-            } else {
-                if (sort) artist
-                else artist.sortedByDescending { it.name }
-            }
-        }
-    }
+    var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
+    val float by animateFloatAsState(
+        targetValue = if (isSortedByASC) 45f else 135f,
+        label = "Arrow Icon Animation"
+    )
 
     Scaffold { values ->
         Box {
@@ -179,24 +110,39 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                         .padding(values),
                 ) {
                     items(
-                        items = displayArtists,
+                        items = artist,
                         key = { it.id }
                     ) {
-                        ArtistInfoList(it) {
-                            chargePVMLists(it.name)
-                            onNavigate(Screen.ArtistsDetails(it.id))
+                        Column(
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(
+                                    vertical = 2.dp,
+                                    horizontal = 4.dp
+                                )
+                        ) {
+                            ArtistInfoList(it) {
+                                chargePVMLists(it.name)
+                                onNavigate(Screen.ArtistsDetails(it.id))
+                            }
                         }
                     }
                 }
             }
             CuteSearchbar(
                 query = query,
-                onQueryChange = { query = it },
+                onQueryChange = {
+                    query = it
+                    onHandleSearching(query)
+                },
                 modifier = Modifier
                     .navigationBarsPadding()
-                    .fillMaxWidth(0.9f)
-                    .padding(bottom = 10.dp)
-                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(rememberSearchbarMaxFloatValue())
+                    .padding(
+                        bottom = 5.dp,
+                        end = rememberSearchbarRightPadding()
+                    )
+                    .align(rememberSearchbarAlignment())
                     .sharedElement(
                         state = rememberSharedContentState(key = "searchbar"),
                         animatedVisibilityScope = animatedVisibilityScope,
@@ -233,10 +179,19 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                 },
                 trailingIcon = {
                     Row {
-                        IconButton(onClick = { sortExpanded = true }) {
+                        IconButton(
+                            onClick = {
+                                isSortedByASC = !isSortedByASC
+                                when(isSortedByASC) {
+                                    true -> { onHandleSorting(SortingType.ASCENDING) }
+                                    false -> { onHandleSorting(SortingType.DESCENDING) }
+                                }
+                            }
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                contentDescription = null
+                                imageVector = Icons.Rounded.ArrowUpward,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(float)
                             )
                         }
                         IconButton(
@@ -245,18 +200,6 @@ private fun SharedTransitionScope.ArtistsScreenContent(
                             Icon(
                                 imageVector = Icons.Rounded.Settings,
                                 contentDescription = null
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = sortExpanded,
-                            onDismissRequest = { sortExpanded = false },
-                            modifier = Modifier
-                                .width(180.dp)
-                                .background(color = MaterialTheme.colorScheme.surface)
-                        ) {
-                            SortRadioButtons(
-                                sort = sort,
-                                onChangeSort = { sort = !sort }
                             )
                         }
                     }
@@ -270,13 +213,14 @@ private fun SharedTransitionScope.ArtistsScreenContent(
             )
         }
     }
+
 }
 
 
 @Composable
 fun ArtistInfoList(
     artist: Artist,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
     Row(

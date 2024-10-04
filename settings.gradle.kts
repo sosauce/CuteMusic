@@ -19,5 +19,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "CuteMusic"
 include(":app")
-include(":benchmark")
-include(":baselineprofile")

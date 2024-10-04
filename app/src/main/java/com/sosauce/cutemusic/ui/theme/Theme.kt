@@ -4,7 +4,6 @@ package com.sosauce.cutemusic.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -89,6 +88,23 @@ private val DarkColors = darkColorScheme(
 )
 
 
+//@Composable
+//fun DefaultOrArtTheme(content: @Composable () -> Unit) {
+//
+//    val useArtTheme by rememberUseArtTheme()
+//
+//    if (useArtTheme) {
+//        ArtTheme(
+//            content = content
+//        )
+//    } else {
+//        CuteMusicTheme(
+//            content = content
+//        )
+//    }
+//
+//}
+
 @Composable
 fun CuteMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -100,7 +116,6 @@ fun CuteMusicTheme(
     val useAmoledMode by rememberUseAmoledMode()
     val followSys by rememberFollowSys()
 
-
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -110,31 +125,29 @@ fun CuteMusicTheme(
         else -> LightColors
     }
 
-    fun whichThemeToUse(): ColorScheme {
-        return when {
-            useAmoledMode -> colorScheme.copy(
-                surface = Color.Black,
-                inverseSurface = Color.White,
-                background = Color.Black,
+    val colorSchemeToUse = when {
+        useAmoledMode -> colorScheme.copy(
+            surface = Color.Black,
+            inverseSurface = Color.White,
+            background = Color.Black,
+        )
+
+        followSys -> colorScheme
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+                context
             )
-
-            followSys -> colorScheme
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                if (useDarkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
-                    context
-                )
-            }
-
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
-                if (useDarkMode) DarkColors else LightColors
-            }
-
-            else -> DarkColors
         }
+
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
+            if (useDarkMode) DarkColors else LightColors
+        }
+
+        else -> DarkColors
     }
 
     MaterialTheme(
-        colorScheme = whichThemeToUse(),
+        colorScheme = colorSchemeToUse,
         typography = Typography(),
         content = content
     )
@@ -142,3 +155,66 @@ fun CuteMusicTheme(
 }
 
 val GlobalFont = FontFamily(Font(R.font.nunito))
+
+
+//@Composable
+//fun ArtTheme(content: @Composable () -> Unit) {
+//    val vm = koinViewModel<MusicViewModel>()
+//    val context = LocalContext.current
+//    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+//    var seedColor by remember { mutableStateOf<Color?>(null) }
+//    val useDarkMode by rememberUseDarkMode()
+//    val followSys by rememberFollowSys()
+//
+//    LaunchedEffect(vm.currentArt) {
+//        withContext(Dispatchers.IO) {
+//            try {
+//                val image = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                    context.contentResolver.loadThumbnail(
+//                        Uri.parse(vm.currentMusicUri) ?: Uri.EMPTY, Size(96, 96), null
+//                    )
+//                } else {
+//                    Bitmap.createScaledBitmap(
+//                        MediaStore.Images.Media.getBitmap(
+//                            context.contentResolver,
+//                            Uri.parse(vm.currentMusicUri)
+//                        ), 10, 10, false
+//                    )
+//
+//                }
+//
+//                imageBitmap = image.asImageBitmap()
+//
+//                val generatedColor = calculateSeedColor(image.asImageBitmap())
+//
+//                seedColor = generatedColor
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                seedColor = null
+//            }
+//        }
+//    }
+//    val isDark = when {
+//        followSys -> isSystemInDarkTheme()
+//        useDarkMode -> true
+//        else -> true
+//    }
+//
+//    val state = rememberDynamicMaterialThemeState(
+//        seedColor = seedColor ?: MaterialTheme.colorScheme.background,
+//        isDark = isDark
+//    )
+//
+//
+//    DynamicMaterialTheme(
+//        animate = false,
+//        state = state
+//    ) {
+//        content()
+//    }
+//}
+//
+//private fun calculateSeedColor(bitmap: ImageBitmap): Color {
+//    val suitableColors = bitmap.themeColors(fallback = Color.Black)
+//    return suitableColors.first()
+//}

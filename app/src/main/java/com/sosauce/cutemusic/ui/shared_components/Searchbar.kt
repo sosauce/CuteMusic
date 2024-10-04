@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -32,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,10 +86,7 @@ private fun SharedTransitionScope.CustomSearchbar(
     onNavigate: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    val roundedShape by animateDpAsState(
-        targetValue = if (isPlaylistEmpty) 24.dp else 50.dp,
-        label = ""
-    )
+    val roundedShape = 24.dp
 
     Column(
         modifier = modifier
