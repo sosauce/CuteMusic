@@ -77,9 +77,17 @@ class MusicViewModel (
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
                 viewModelScope.launch {
+                    while (player.isPlaying) {
+                        currentMusicDuration = player.duration
+                        currentPosition = player.currentPosition
+                        delay(550)
+                    }
+                }
+
+            // allows slider to be updated while player is not playing
+                viewModelScope.launch {
                     currentMusicDuration = player.duration
                     currentPosition = player.currentPosition
-                    delay(500)
                 }
         }
     }
