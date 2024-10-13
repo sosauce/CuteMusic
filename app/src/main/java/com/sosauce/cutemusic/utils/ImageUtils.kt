@@ -23,7 +23,7 @@ object ImageUtils {
     fun getAlbumArt(albumId: Long): Any? {
         val sArtworkUri = "content://media/external/audio/albumart".toUri()
         return try {
-            return ContentUris.withAppendedId(sArtworkUri, albumId)
+            ContentUris.withAppendedId(sArtworkUri, albumId)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
             null

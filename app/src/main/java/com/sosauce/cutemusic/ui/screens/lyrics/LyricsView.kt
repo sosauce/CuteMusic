@@ -1,9 +1,9 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.sosauce.cutemusic.ui.screens.lyrics
 
+import android.util.Log
 import android.view.WindowManager
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -40,14 +40,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.main.MainActivity
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LyricsView(
@@ -167,32 +170,32 @@ fun LyricsView(
         }
 
 
-                val horizontalArrangement = if (isLandscape) Arrangement.End else Arrangement.Center
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    MaterialTheme.colorScheme.background
-                                )
-                            )
-                        ),
-                    horizontalArrangement = horizontalArrangement,
-                ) {
-                    IconButton(
-                        onClick = {
-                            onHideLyrics()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = null
+        val horizontalArrangement = if (isLandscape) Arrangement.End else Arrangement.Center
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background
                         )
-                    }
+                    )
+                ),
+            horizontalArrangement = horizontalArrangement,
+        ) {
+            IconButton(
+                onClick = {
+                    onHideLyrics()
                 }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = null
+                )
             }
         }
+    }
+}
 

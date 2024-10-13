@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.basicMarquee
@@ -59,6 +60,7 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
+import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRow
 import com.sosauce.cutemusic.ui.screens.playing.components.LoopButton
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.screens.playing.components.ShuffleButton
@@ -73,7 +75,7 @@ import com.sosauce.cutemusic.utils.ImageUtils
 fun SharedTransitionScope.NowPlayingScreen(
     navController: NavController,
     viewModel: MusicViewModel,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     var showFullLyrics by remember { mutableStateOf(false) }
 
@@ -81,7 +83,7 @@ fun SharedTransitionScope.NowPlayingScreen(
         NowPlayingLandscape(
             viewModel = viewModel,
             navController = navController,
-            animatedVisibilityScope = animatedVisibilityScope
+            animatedVisibilityScope = animatedVisibilityScope,
         )
     } else {
         when (showFullLyrics) {
@@ -101,7 +103,7 @@ fun SharedTransitionScope.NowPlayingScreen(
                     onClickLoop = { viewModel.setLoop(it) },
                     onClickShuffle = { viewModel.setShuffle(it) },
                     animatedVisibilityScope = animatedVisibilityScope,
-                    onShowLyrics = { showFullLyrics = true }
+                    onShowLyrics = { showFullLyrics = true },
                 )
             }
         }
@@ -117,14 +119,10 @@ private fun SharedTransitionScope.NowPlayingContent(
     onClickLoop: (Boolean) -> Unit,
     onClickShuffle: (Boolean) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onShowLyrics: () -> Unit
+    onShowLyrics: () -> Unit,
 ) {
     val context = LocalContext.current
     var showSpeedCard by remember { mutableStateOf(false) }
-    val roundedFAB by animateIntAsState(
-        targetValue = if (viewModel.isCurrentlyPlaying) 30 else 50,
-        label = "FAB Shape"
-    )
     var snap by rememberSnapSpeedAndPitch()
 
 
@@ -221,108 +219,15 @@ private fun SharedTransitionScope.NowPlayingContent(
             }
             Spacer(modifier = Modifier.height(10.dp))
 
-            MusicSlider(
-                viewModel = viewModel
-            )
+            MusicSlider(viewModel = viewModel)
             Spacer(modifier = Modifier.height(7.dp))
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                ShuffleButton(
-                    onClick = onClickShuffle,
-                    isShuffling = viewModel.isShuffling
-                )
-                IconButton(
-                    onClick = {
-                        if (viewModel.currentPosition >= 10000) {
-                            onEvent(PlayerActions.RestartSong)
-                        } else {
-                            onEvent(PlayerActions.SeekToPreviousMusic)
-                        }
-                    }
-                ) {
-                    Crossfade(
-                        targetState = viewModel.currentPosition >= 10000,
-                        label = ""
-                    ) {
-                        if (!it) {
-                            Icon(
-                                imageVector = Icons.Rounded.SkipPrevious,
-                                contentDescription = null,
-                                modifier = Modifier.sharedElement(
-                                    state = rememberSharedContentState(key = "skipPreviousButton"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { _, _ ->
-                                        tween(durationMillis = 500)
-                                    }
-                                )
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.RestartAlt,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                }
-                IconButton(
-                    onClick = { onEvent(PlayerActions.RewindTo(5000)) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.FastRewind,
-                        contentDescription = null
-                    )
-                }
-                FloatingActionButton(
-                    onClick = { onEvent(PlayerActions.PlayOrPause) },
-                    shape = RoundedCornerShape(roundedFAB)
-                ) {
-                    Icon(
-                        imageVector = if (viewModel.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = "pause/play button",
-                        modifier = Modifier.sharedElement(
-                            state = rememberSharedContentState(key = "playPauseIcon"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        )
-                    )
-                }
-
-                IconButton(
-                    onClick = { onEvent(PlayerActions.SeekTo(5000)) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.FastForward,
-                        contentDescription = null
-                    )
-                }
-
-                IconButton(
-                    onClick = { onEvent(PlayerActions.SeekToNextMusic) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipNext,
-                        contentDescription = null,
-                        modifier = Modifier.sharedElement(
-                            state = rememberSharedContentState(key = "skipNextButton"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        )
-                    )
-                }
-                LoopButton(
-                    onClick = onClickLoop,
-                    isLooping = viewModel.isLooping
-                )
-            }
+            ActionsButtonsRow(
+                onClickLoop = onClickLoop,
+                onClickShuffle = onClickShuffle,
+                viewModel = viewModel,
+                onEvent = onEvent,
+                animatedVisibilityScope = animatedVisibilityScope
+            )
             Spacer(modifier = Modifier.weight(1f))
             Row(
                 horizontalArrangement = Arrangement.Center,

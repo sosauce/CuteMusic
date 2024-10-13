@@ -76,19 +76,13 @@ class MusicViewModel (
 
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
-                viewModelScope.launch {
-                    while (player.isPlaying) {
-                        currentMusicDuration = player.duration
-                        currentPosition = player.currentPosition
-                        delay(550)
-                    }
-                }
-
-            // allows slider to be updated while player is not playing
-                viewModelScope.launch {
+            viewModelScope.launch {
+                while (player.isPlaying) {
                     currentMusicDuration = player.duration
                     currentPosition = player.currentPosition
+                    delay(550)
                 }
+            }
         }
     }
 
@@ -103,29 +97,11 @@ class MusicViewModel (
                 Handler(Looper.getMainLooper()).post {
                     mediaController = controllerFuture.get()
                     mediaController!!.addListener(playerListener)
-                    // only set fields if kill service is set to false, else its gonna retrieve null data
-//                    if (shouldKill) {
-//                        loadBackData()
-//                    }
                 }
             },
             MoreExecutors.directExecutor()
         )
     }
-
-//    @UnstableApi
-//    private fun loadBackData() {
-//        currentlyPlaying = mediaController!!.mediaMetadata.title.toString()
-//        currentArtist = mediaController!!.mediaMetadata.artist.toString()
-//        currentArt = mediaController!!.mediaMetadata.artworkUri
-//        isCurrentlyPlaying = mediaController!!.isPlaying
-//        currentPosition = mediaController!!.currentPosition
-//        currentMusicDuration = mediaController!!.mediaMetadata.durationMs ?: Long.MAX_VALUE
-//        currentMusicUri = mediaController!!.mediaMetadata.extras?.getString("uri") ?: ""
-//        currentPath = mediaController!!.mediaMetadata.extras?.getString("path") ?: ""
-//        currentLrcFile = loadLrcFile(currentPath)
-//        currentLyrics = parseLrcFile(currentLrcFile)
-//    }
 
     private fun loadLrcFile(path: String): File? {
         val lrcFilePath = path.replaceAfterLast('.', "lrc")
@@ -140,25 +116,25 @@ class MusicViewModel (
         }
 
         viewModelScope.launch {
-                file.bufferedReader().useLines { lines ->
-                    lines.forEach { line ->
-                        val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
-                        val matchResult = regex.find(line)
+            file.bufferedReader().useLines { lines ->
+                lines.forEach { line ->
+                    val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
+                    val matchResult = regex.find(line)
 
-                        if (matchResult != null) {
-                            val (minutes, seconds, hundredths) = matchResult.destructured
-                            val timeInMillis =
-                                minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                            val lyricText = line.substring(matchResult.range.last + 1).trim()
-                            lyrics.add(
-                                Lyrics(
-                                    timeInMillis,
-                                    lyricText
-                                )
+                    if (matchResult != null) {
+                        val (minutes, seconds, hundredths) = matchResult.destructured
+                        val timeInMillis =
+                            minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
+                        val lyricText = line.substring(matchResult.range.last + 1).trim()
+                        lyrics.add(
+                            Lyrics(
+                                timeInMillis,
+                                lyricText
                             )
-                        }
+                        )
                     }
                 }
+            }
         }
 
         return lyrics
@@ -276,5 +252,4 @@ class MusicViewModel (
         }
     }
 }
-
 

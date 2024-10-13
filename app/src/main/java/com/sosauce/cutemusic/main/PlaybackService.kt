@@ -1,9 +1,12 @@
 package com.sosauce.cutemusic.main
 
+import android.app.PendingIntent
 import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -19,7 +22,13 @@ class PlaybackService : MediaLibraryService() {
         .setUsage(C.USAGE_MEDIA)
         .build()
 
-    private val shouldKill by rememberKillService(this)
+    private val listener = object : Player.Listener {
+        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+            super.onMediaMetadataChanged(mediaMetadata)
+            sendMusicBroadcast(mediaMetadata.title.toString())
+        }
+    }
+
 
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
@@ -33,7 +42,18 @@ class PlaybackService : MediaLibraryService() {
             .build()
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, callback)
+            .setSessionActivity(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, MainActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
             .build()
+
+        player.addListener(listener)
+
     }
 
 
@@ -43,20 +63,27 @@ class PlaybackService : MediaLibraryService() {
             release()
             mediaLibrarySession = null
         }
+        stopSelf()
         super.onDestroy()
     }
 
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        if (shouldKill) {
-            super.onTaskRemoved(rootIntent)
-            mediaLibrarySession?.run {
-                player.release()
-                release()
-                mediaLibrarySession = null
-                stopSelf()
-            }
+        super.onTaskRemoved(rootIntent)
+        stopSelf()
+    }
+
+    companion object {
+        private const val CURRENTLY_PLAYING_CHANGED = "CM_CUR_PLAY_CHANGED"
+    }
+
+    private fun sendMusicBroadcast(
+        currentlyPlaying: String
+    ) {
+        val intent = Intent(CURRENTLY_PLAYING_CHANGED).apply {
+            putExtra("currentlyPlaying", currentlyPlaying)
         }
+        sendBroadcast(intent)
     }
 
 }

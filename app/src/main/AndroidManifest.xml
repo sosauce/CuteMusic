@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission
         android:name="android.permission.READ_MEDIA_AUDIO"
         android:minSdkVersion="33" />
@@ -14,6 +13,9 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.RECEIVE_BOOT_COMPLETED"
+        tools:node="remove" />
 
     <application
         android:name=".main.App"
@@ -22,10 +24,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CuteSplash">
-        <profileable
-            android:shell="true"
-            tools:targetApi="29" />
+        android:theme="@style/Theme.CuteSplash"
+        tools:targetApi="tiramisu">
 
         <service
             android:name=".main.PlaybackService"
@@ -42,14 +42,16 @@
 
         <activity
             android:name=".main.MainActivity"
+            android:launchMode="singleTask"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:theme="@style/Theme.CuteSplash"
             tools:targetApi="tiramisu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.APP_MUSIC" />
             </intent-filter>
         </activity>
         <activity

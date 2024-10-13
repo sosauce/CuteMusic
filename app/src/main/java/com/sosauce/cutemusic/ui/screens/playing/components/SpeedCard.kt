@@ -73,7 +73,7 @@ fun SpeedCard(
                             modifier = Modifier
                                 .background(
                                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(16.dp)
+                                    shape = RoundedCornerShape(11.dp)
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
@@ -112,7 +112,7 @@ fun SpeedCard(
                             modifier = Modifier
                                 .background(
                                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(16.dp)
+                                    shape = RoundedCornerShape(11.dp)
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
@@ -176,7 +176,7 @@ fun SpeedCard(
                                 modifier = Modifier
                                     .background(
                                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        shape = RoundedCornerShape(16.dp)
+                                        shape = RoundedCornerShape(11.dp)
                                     )
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
                             ) {

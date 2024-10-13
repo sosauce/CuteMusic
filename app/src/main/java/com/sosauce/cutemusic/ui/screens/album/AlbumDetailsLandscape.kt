@@ -41,14 +41,14 @@ fun AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
     postViewModel: PostViewModel,
-    viewModel: MusicViewModel,
+    viewModel: MusicViewModel
 ) {
 
     val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
 
     Scaffold(
         modifier = Modifier.padding(45.dp)
-    ) { values ->
+    ) { _ ->
         Column {
             Row(
                 modifier = Modifier

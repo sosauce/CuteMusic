@@ -63,14 +63,14 @@ fun AlbumDetailsScreen(
             album = album,
             onNavigateUp = { onPopBackStack() },
             postViewModel = postViewModel,
-            viewModel = viewModel,
+            viewModel = viewModel
         )
     } else {
         AlbumDetailsContent(
             album = album,
             viewModel = viewModel,
             onPopBackStack = { onPopBackStack() },
-            albumSongs = albumSongs,
+            albumSongs = albumSongs
         )
     }
 
@@ -81,8 +81,7 @@ private fun AlbumDetailsContent(
     album: Album,
     viewModel: MusicViewModel,
     onPopBackStack: () -> Unit,
-    albumSongs: List<MediaItem>,
-
+    albumSongs: List<MediaItem>
     ) {
     val context = LocalContext.current
     Scaffold(

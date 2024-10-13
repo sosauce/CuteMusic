@@ -2,10 +2,14 @@
 
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.graphics.drawable.Animatable2
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -16,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,14 +36,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.utils.thenIf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun SharedTransitionScope.CuteSearchbar(
@@ -87,14 +98,14 @@ private fun SharedTransitionScope.CustomSearchbar(
 ) {
     val focusManager = LocalFocusManager.current
     val roundedShape = 24.dp
+    val leftIconOffsetX = remember { Animatable(0f) }
+    val rightIconOffsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(roundedShape)
-            )
             .clip(RoundedCornerShape(roundedShape))
+            .background(MaterialTheme.colorScheme.surface)
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.surfaceContainer,
@@ -135,7 +146,7 @@ private fun SharedTransitionScope.CustomSearchbar(
                     CuteText(
                         text = currentlyPlaying,
                         modifier = Modifier
-                            .padding(start = 15.dp)
+                            .padding(start = 10.dp)
                             .sharedElement(
                                 state = rememberSharedContentState(key = "currentlyPlaying"),
                                 animatedVisibilityScope = animatedVisibilityScope,
@@ -144,25 +155,47 @@ private fun SharedTransitionScope.CustomSearchbar(
                                 }
                             )
                             .basicMarquee()
+
                     )
                 }
-                Row(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    IconButton(onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) }) {
+                Row {
+                    IconButton(
+                        onClick = {
+                            onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
+                            scope.launch(Dispatchers.IO) {
+                                leftIconOffsetX.animateTo(
+                                    targetValue = -20f,
+                                    animationSpec = tween(250)
+                                )
+                                leftIconOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(250)
+                                )
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.SkipPrevious,
                             contentDescription = null,
-                            modifier = Modifier.sharedElement(
-                                state = rememberSharedContentState(key = "skipPreviousButton"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = { _, _ ->
-                                    tween(durationMillis = 500)
+                            modifier = Modifier
+                                .offset {
+                                    IntOffset(
+                                        x = leftIconOffsetX.value.toInt(),
+                                        y = 0
+                                    )
                                 }
-                            )
+                                .sharedElement(
+                                    state = rememberSharedContentState(key = "skipPreviousButton"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    boundsTransform = { _, _ ->
+                                        tween(durationMillis = 500)
+                                    }
+                                )
                         )
                     }
-                    IconButton(onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }) {
+                    IconButton(
+                        onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }
+                    ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                             contentDescription = null,
@@ -175,13 +208,32 @@ private fun SharedTransitionScope.CustomSearchbar(
                             )
                         )
                     }
-                    IconButton(onClick = {
-                        onHandlePlayerActions(PlayerActions.SeekToNextMusic)
-                    }) {
+                    IconButton(
+                        onClick = {
+                            onHandlePlayerActions(PlayerActions.SeekToNextMusic)
+                            scope.launch(Dispatchers.IO) {
+                                rightIconOffsetX.animateTo(
+                                    targetValue = 20f,
+                                    animationSpec = tween(250)
+                                )
+                                rightIconOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(250)
+                                )
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.SkipNext,
                             contentDescription = null,
-                            modifier = Modifier.sharedElement(
+                            modifier = Modifier
+                                .offset {
+                                    IntOffset(
+                                        x = rightIconOffsetX.value.toInt(),
+                                        y = 0
+                                    )
+                                }
+                                .sharedElement(
                                 state = rememberSharedContentState(key = "skipNextButton"),
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = { _, _ ->

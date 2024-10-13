@@ -125,9 +125,11 @@ class MediaStoreHelperImpl(
                 val id = cursor.getLong(idColumn)
                 val album = cursor.getString(albumColumn)
                 val artist = cursor.getString(artistColumn)
-
                 val albumInfo = Album(id, album, artist)
-                albums.add(albumInfo)
+
+                if (albums.none { it.name == albumInfo.name }) {
+                    albums.add(albumInfo)
+                }
             }
         }
 

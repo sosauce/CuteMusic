@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -29,9 +30,6 @@ import java.util.Locale
 fun MusicSlider(viewModel: MusicViewModel) {
 
     val sliderPosition = rememberUpdatedState(viewModel.currentPosition)
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
 
     Column {
         Row(
@@ -60,9 +58,8 @@ fun MusicSlider(viewModel: MusicViewModel) {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 CuteText(
-                    text = timeLeft(viewModel.currentPosition),
-
-                    )
+                    text = timeLeft(viewModel.currentPosition)
+                )
             }
         }
         SquigglySlider(

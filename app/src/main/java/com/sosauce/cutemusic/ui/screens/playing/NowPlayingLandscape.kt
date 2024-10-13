@@ -53,6 +53,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
+import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRow
 import com.sosauce.cutemusic.ui.screens.playing.components.LoopButton
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.screens.playing.components.ShuffleButton
@@ -64,7 +65,7 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 fun SharedTransitionScope.NowPlayingLandscape(
     viewModel: MusicViewModel,
     navController: NavController,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     NPLContent(
         viewModel = viewModel,
@@ -72,7 +73,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
         onNavigateUp = navController::navigateUp,
         onClickLoop = { viewModel.setLoop(it) },
         onClickShuffle = { viewModel.setShuffle(it) },
-        animatedVisibilityScope = animatedVisibilityScope
+        animatedVisibilityScope = animatedVisibilityScope,
     )
 }
 
@@ -83,7 +84,7 @@ private fun SharedTransitionScope.NPLContent(
     onEvent: (PlayerActions) -> Unit,
     onClickLoop: (Boolean) -> Unit,
     onClickShuffle: (Boolean) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(false) }
@@ -103,7 +104,8 @@ private fun SharedTransitionScope.NPLContent(
         targetValue = if (showLyrics) 200 else 320,
         label = "Image Size"
     )
-        Box(
+
+    Box(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
@@ -169,7 +171,6 @@ private fun SharedTransitionScope.NPLContent(
                             {
                                 CuteText(
                                     text = viewModel.currentlyPlaying,
-
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 30.sp
                                 )
@@ -177,86 +178,17 @@ private fun SharedTransitionScope.NPLContent(
                         }
                         CuteText(
                             text = viewModel.currentArtist,
-
                             color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                             fontSize = 16.sp
                         )
-                        MusicSlider(
-                            viewModel = viewModel
+                        MusicSlider(viewModel = viewModel)
+                        ActionsButtonsRow(
+                            onClickLoop = onClickLoop,
+                            onClickShuffle = onClickShuffle,
+                            viewModel = viewModel,
+                            onEvent = onEvent,
+                            animatedVisibilityScope = animatedVisibilityScope
                         )
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                        ) {
-                            ShuffleButton(
-                                onClick = { onClickShuffle(it) },
-                                isShuffling = viewModel.isShuffling
-                            )
-                            IconButton(
-                                onClick = { onEvent(PlayerActions.SeekToPreviousMusic) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.SkipPrevious,
-                                    contentDescription = null,
-                                    modifier = Modifier.sharedElement(
-                                        state = rememberSharedContentState(key = "skipPreviousButton"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ ->
-                                            tween(durationMillis = 500)
-                                        }
-                                    )
-                                )
-                            }
-                            IconButton(
-                                onClick = { onEvent(PlayerActions.RewindTo(5000)) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.FastRewind,
-                                    contentDescription = null
-                                )
-                            }
-
-                            FloatingActionButton(
-                                onClick = { onEvent(PlayerActions.PlayOrPause) }
-                            ) {
-                                Icon(
-                                    imageVector = if (viewModel.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                    contentDescription = "play/pause button"
-                                )
-                            }
-                            IconButton(
-                                onClick = { onEvent(PlayerActions.SeekTo(5000)) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.FastForward,
-                                    contentDescription = null
-                                )
-                            }
-
-                            IconButton(
-                                onClick = { onEvent(PlayerActions.SeekToNextMusic) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.SkipNext,
-                                    contentDescription = null,
-                                    modifier = Modifier.sharedElement(
-                                        state = rememberSharedContentState(key = "skipNextButton"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ ->
-                                            tween(durationMillis = 500)
-                                        }
-                                    )
-                                )
-                            }
-
-                            LoopButton(
-                                onClick = { onClickLoop(it) },
-                                isLooping = viewModel.isLooping
-                            )
-                        }
                         Spacer(modifier = Modifier.weight(1f))
                         Row(
                             horizontalArrangement = Arrangement.Center,

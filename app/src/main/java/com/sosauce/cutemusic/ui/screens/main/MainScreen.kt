@@ -334,7 +334,10 @@ fun MusicListItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
                 AsyncImage(
                     model = ImageUtils.imageRequester(
                         img = music.mediaMetadata.artworkUri,
@@ -365,7 +368,9 @@ fun MusicListItem(
             }
 
             if (showBottomSheet) {
-                IconButton(onClick = { isSheetOpen = true }) {
+                IconButton(
+                    onClick = { isSheetOpen = true }
+                ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreVert,
                         contentDescription = null
