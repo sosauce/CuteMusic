@@ -61,3 +61,6 @@ You can find a copy of the GNU General Public License v3 [here](https://www.gnu.
 ---
 To get started with contributing, please check the [get started readme](https://github.com/sosauce/CuteMusic/blob/main/GET_STARTED.md)
 
+---
+
+#### You can find the SHA-256 here : https://sosauce.github.io/projects/
