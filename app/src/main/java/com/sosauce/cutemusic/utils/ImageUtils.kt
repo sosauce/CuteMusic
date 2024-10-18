@@ -11,13 +11,15 @@ import java.io.FileNotFoundException
 
 object ImageUtils {
     fun imageRequester(img: Any?, context: Context): ImageRequest {
-        return ImageRequest.Builder(context)
+        val request = ImageRequest.Builder(context)
             .data(img)
             .crossfade(true)
             .transformations(
                 RoundedCornersTransformation(15f)
             )
             .build()
+
+        return request
     }
 
     fun getAlbumArt(albumId: Long): Any? {

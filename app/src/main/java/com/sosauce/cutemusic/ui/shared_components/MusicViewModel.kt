@@ -1,76 +1,107 @@
 package com.sosauce.cutemusic.ui.shared_components
 
 import android.app.Application
+import android.content.ComponentName
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
-import com.google.common.util.concurrent.ListenableFuture
+import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.datastore.rememberKillService
 import com.sosauce.cutemusic.domain.model.Lyrics
-import com.sosauce.cutemusic.ui.customs.playAtIndex
+import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
+import com.sosauce.cutemusic.main.PlaybackService
+import com.sosauce.cutemusic.utils.applyLoop
+import com.sosauce.cutemusic.utils.applyPlaybackSpeed
+import com.sosauce.cutemusic.utils.applyShuffle
+import com.sosauce.cutemusic.utils.playAtIndex
+import com.sosauce.cutemusic.utils.playFromAlbum
+import com.sosauce.cutemusic.utils.playFromArtist
+import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import java.io.File
 
-class MusicViewModel (
-    private val controllerFuture: ListenableFuture<MediaController>,
-    application: Application
+class MusicViewModel(
+    application: Application,
+    private val mediaStoreHelper: MediaStoreHelper
 ) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
-    private val shouldKill by rememberKillService(application)
-
-
     var selectedItem by mutableIntStateOf(0)
 
+    private val _musicState = MutableStateFlow(MusicState())
+    val musicState = _musicState.asStateFlow()
 
-
-    var currentlyPlaying by mutableStateOf("")
-    var currentArtist by mutableStateOf("")
-    var currentArt: Uri? by mutableStateOf(null)
-    var isCurrentlyPlaying by mutableStateOf(false)
-    var currentPosition by mutableLongStateOf(0L)
-    var currentMusicDuration by mutableLongStateOf(0L)
-    var currentMusicUri by mutableStateOf("")
-    var currentLyrics by mutableStateOf(listOf<Lyrics>())
-    var isLooping by mutableStateOf(false)
-    var isShuffling by mutableStateOf(false)
-    var currentPath by mutableStateOf("")
-
-    private var currentLrcFile by mutableStateOf<File?>(null)
 
     private val playerListener = object : Player.Listener {
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             super.onMediaMetadataChanged(mediaMetadata)
-            currentlyPlaying = (mediaMetadata.title ?: currentlyPlaying).toString()
-            currentArtist = (mediaMetadata.artist ?: currentArtist).toString()
-            currentArt = mediaMetadata.artworkUri ?: currentArt
-            currentPath = (mediaMetadata.extras?.getString("path") ?: currentPath)
-            currentMusicUri = mediaMetadata.extras?.getString("uri") ?: currentMusicUri
-            currentLrcFile = loadLrcFile(currentPath)
-            currentLyrics = parseLrcFile(currentLrcFile)
+            _musicState.value = _musicState.value.copy(
+                currentlyPlaying = mediaMetadata.title.toString(),
+                currentArtist = mediaMetadata.artist.toString(),
+                currentArtistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
+                currentArt = mediaMetadata.artworkUri,
+                currentPath = mediaMetadata.extras?.getString("path") ?: "No Path Found!",
+                currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No Uri Found!",
+                currentLrcFile = loadLrcFile(musicState.value.currentPath),
+                currentLyrics = parseLrcFile(musicState.value.currentLrcFile),
+                currentAlbum = mediaMetadata.albumTitle.toString(),
+                currentAlbumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
+                currentSize = mediaMetadata.extras?.getLong("size") ?: 0
+            )
         }
+
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
-            isCurrentlyPlaying = isPlaying
+            _musicState.value = _musicState.value.copy(
+                isCurrentlyPlaying = isPlaying
+            )
+        }
+
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            super.onRepeatModeChanged(repeatMode)
+            when (repeatMode) {
+                Player.REPEAT_MODE_ONE -> {
+                    _musicState.value = _musicState.value.copy(
+                        isLooping = true
+                    )
+                }
+
+                Player.REPEAT_MODE_OFF -> {
+                    _musicState.value = _musicState.value.copy(
+                        isLooping = false
+                    )
+                }
+
+
+                else -> {
+                    _musicState.value = _musicState.value.copy(
+                        isLooping = false
+                    )
+                }
+            }
+        }
+
+        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+            super.onShuffleModeEnabledChanged(shuffleModeEnabled)
+            _musicState.value = _musicState.value.copy(
+                isShuffling = shuffleModeEnabled
+            )
         }
 
 
@@ -78,30 +109,39 @@ class MusicViewModel (
             super.onEvents(player, events)
             viewModelScope.launch {
                 while (player.isPlaying) {
-                    currentMusicDuration = player.duration
-                    currentPosition = player.currentPosition
-                    delay(550)
+                    _musicState.value = _musicState.value.copy(
+                        currentMusicDuration = player.duration,
+                        currentPosition = player.currentPosition
+                    )
+                    delay(500)
                 }
             }
         }
     }
 
-    companion object {
-        const val CUTE_ERROR = "CuteError"
-    }
-
 
     init {
-        controllerFuture.addListener(
-            {
-                Handler(Looper.getMainLooper()).post {
-                    mediaController = controllerFuture.get()
-                    mediaController!!.addListener(playerListener)
-                }
-            },
-            MoreExecutors.directExecutor()
-        )
+        MediaController
+            .Builder(
+                application,
+                SessionToken(
+                    application,
+                    ComponentName(application, PlaybackService::class.java)
+                )
+            )
+            .buildAsync()
+            .apply {
+                addListener(
+                    {
+                        mediaController = get()
+                        mediaController!!.addListener(playerListener)
+                        mediaController!!.setMediaItems(mediaStoreHelper.musics)
+                    },
+                    MoreExecutors.directExecutor()
+                )
+            }
     }
+
 
     private fun loadLrcFile(path: String): File? {
         val lrcFilePath = path.replaceAfterLast('.', "lrc")
@@ -111,6 +151,8 @@ class MusicViewModel (
 
     private fun parseLrcFile(file: File?): List<Lyrics> {
         val lyrics = mutableListOf<Lyrics>()
+        val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
+
         if (file == null) {
             return emptyList()
         }
@@ -118,9 +160,7 @@ class MusicViewModel (
         viewModelScope.launch {
             file.bufferedReader().useLines { lines ->
                 lines.forEach { line ->
-                    val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
                     val matchResult = regex.find(line)
-
                     if (matchResult != null) {
                         val (minutes, seconds, hundredths) = matchResult.destructured
                         val timeInMillis =
@@ -155,77 +195,23 @@ class MusicViewModel (
             }
         }
     }
+
     override fun onCleared() {
         super.onCleared()
         mediaController!!.removeListener(playerListener)
         mediaController!!.release()
     }
 
-
-
-
     fun getPlaybackSpeed() = mediaController!!.playbackParameters
 
 
-    private fun playAtIndex(mediaId: String) {
-        try {
-            mediaController!!.playAtIndex(
-                mediaId = mediaId
-            )
-        } catch (e: Exception) {
-            Log.d(CUTE_ERROR, e.message.toString())
-        }
-    }
-
-    fun itemClicked(
-        mediaId: String,
-        musics1: List<MediaItem>
-    ) {
-
-        if (mediaController!!.mediaItemCount == 0) {
-            musics1.forEach {
-                mediaController!!.addMediaItem(it)
+    fun isPlayerReady(): Boolean {
+        return if (mediaController == null) false else
+            when (mediaController!!.playbackState) {
+                Player.STATE_IDLE -> false
+                Player.STATE_READY -> true
+                else -> true
             }
-            mediaController!!.prepare()
-        }
-
-        playAtIndex(mediaId)
-
-    }
-
-
-    fun isPlaylistEmptyAndDataNotNull(): Boolean {
-        return if (mediaController == null) false else mediaController!!.mediaItemCount != 0
-    }
-
-
-    fun setPlaybackSpeed(
-        speed: Float = 1f,
-        pitch: Float = 1f
-    ) {
-        mediaController!!.playbackParameters = PlaybackParameters(
-            speed,
-            pitch
-        )
-    }
-
-
-
-    fun setLoop(
-        shouldLoop: Boolean
-    ) {
-        if (shouldLoop) {
-            mediaController!!.repeatMode = Player.REPEAT_MODE_ONE
-            isLooping = true
-        } else {
-            mediaController!!.repeatMode = Player.REPEAT_MODE_OFF
-            isLooping = false
-        }
-    }
-
-    fun setShuffle(shouldShuffle: Boolean) {
-        mediaController!!.shuffleModeEnabled = shouldShuffle
-        isShuffling = mediaController!!.shuffleModeEnabled
     }
 
     fun quickPlay(uri: Uri?) {
@@ -242,14 +228,42 @@ class MusicViewModel (
 
     fun handlePlayerActions(action: PlayerActions) {
         when (action) {
+            is PlayerActions.RestartSong -> mediaController!!.seekTo(0)
+            is PlayerActions.PlayRandom -> mediaController!!.playRandom()
+            is PlayerActions.ApplyLoop -> mediaController!!.applyLoop()
+            is PlayerActions.ApplyShuffle -> mediaController!!.applyShuffle()
             is PlayerActions.PlayOrPause -> if (mediaController!!.isPlaying) mediaController!!.pause() else mediaController!!.play()
             is PlayerActions.SeekToNextMusic -> mediaController!!.seekToNextMediaItem()
             is PlayerActions.SeekToPreviousMusic -> mediaController!!.seekToPreviousMediaItem()
             is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
             is PlayerActions.SeekToSlider -> mediaController!!.seekTo(action.position)
             is PlayerActions.RewindTo -> mediaController!!.seekTo(mediaController!!.currentPosition - action.position)
-            is PlayerActions.RestartSong -> mediaController!!.seekTo(0)
+            is PlayerActions.ApplyPlaybackSpeed -> mediaController!!.applyPlaybackSpeed(
+                action.speed,
+                action.pitch
+            )
+
+            is PlayerActions.StartAlbumPlayback -> mediaController!!.playFromAlbum(
+                action.albumName,
+                action.mediaId,
+                mediaStoreHelper.musics
+            )
+
+            is PlayerActions.StartArtistPlayback -> mediaController!!.playFromArtist(
+                action.artistName,
+                action.mediaId,
+                mediaStoreHelper.musics
+            )
+
+            is PlayerActions.StartPlayback -> {
+                // If a user started album/artist playback, we need to make sure all songs are re-fed to Exoplayer when they want to play from anywhere else
+                if (mediaController!!.mediaItemCount != mediaStoreHelper.musics.size) {
+                    mediaController!!.setMediaItems(mediaStoreHelper.musics)
+                    mediaController!!.playAtIndex(action.mediaId)
+                } else {
+                    mediaController!!.playAtIndex(action.mediaId)
+                }
+            }
         }
     }
 }
-

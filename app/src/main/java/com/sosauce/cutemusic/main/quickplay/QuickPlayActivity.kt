@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -56,7 +57,8 @@ class QuickPlayActivity : ComponentActivity() {
                 ) { _ ->
                     MaterialTheme {
                         var uri by remember { mutableStateOf<Uri?>(null) }
-                        val vm = koinViewModel<MusicViewModel>()
+                        val viewModel = koinViewModel<MusicViewModel>()
+                        val musicState by viewModel.musicState.collectAsStateWithLifecycle()
 
                         when {
                             intent?.action == Intent.ACTION_SEND -> {
@@ -82,7 +84,7 @@ class QuickPlayActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             CuteText(
-                                text = vm.currentlyPlaying,
+                                text = musicState.currentlyPlaying,
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 20.sp,
                                 modifier = Modifier.basicMarquee()
@@ -91,13 +93,16 @@ class QuickPlayActivity : ComponentActivity() {
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             CuteText(
-                                text = vm.currentArtist,
+                                text = musicState.currentArtist,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                                 fontSize = 14.sp,
                                 modifier = Modifier.basicMarquee()
                             )
 
-                            MusicSlider(vm)
+                            MusicSlider(
+                                viewModel = viewModel,
+                                musicState = musicState
+                            )
                             Spacer(modifier = Modifier.height(7.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -106,13 +111,13 @@ class QuickPlayActivity : ComponentActivity() {
                             ) {
                                 FloatingActionButton(
                                     onClick = {
-                                        if (!vm.isPlaylistEmptyAndDataNotNull()) vm.quickPlay(uri) else vm.handlePlayerActions(
+                                        if (!viewModel.isPlayerReady()) viewModel.quickPlay(uri) else viewModel.handlePlayerActions(
                                             PlayerActions.PlayOrPause
                                         )
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = if (vm.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                        imageVector = if (musicState.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                                         contentDescription = "pause/play button"
                                     )
                                 }

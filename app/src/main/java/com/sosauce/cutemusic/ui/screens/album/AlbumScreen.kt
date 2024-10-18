@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -39,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -48,7 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -57,9 +54,7 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
-import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.SortingType
@@ -80,7 +75,7 @@ fun SharedTransitionScope.AlbumsScreen(
     selectedIndex: Int,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    isPlaylistEmpty: Boolean,
+    isPlayerReady: Boolean,
     onNavigationItemClicked: (Int, NavigationItem) -> Unit
 ) {
     val isLandscape = rememberIsLandscape()
@@ -130,10 +125,12 @@ fun SharedTransitionScope.AlbumsScreen(
                                 chargePVMAlbumSongs(album.name)
                                 onNavigate(Screen.AlbumsDetails(album.id))
                             }
-//                            .thenIf(
-//                                index == 0 || index == 1 || index == 2 || index == 3, // booo bad
-//                                Modifier.statusBarsPadding()
-//                            )
+                            .thenIf(
+                                if (isLandscape)
+                                    index == 0 || index == 1 || index == 2 || index == 3
+                                else index == 0 || index == 1,
+                                Modifier.statusBarsPadding()
+                            )
                     )
                 }
             }
@@ -151,14 +148,7 @@ fun SharedTransitionScope.AlbumsScreen(
                     bottom = 5.dp,
                     end = rememberSearchbarRightPadding()
                 )
-                .align(rememberSearchbarAlignment())
-                .sharedElement(
-                    state = rememberSharedContentState(key = "searchbar"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = { _, _ ->
-                        tween(durationMillis = 500)
-                    }
-                ),
+                .align(rememberSearchbarAlignment()),
             placeholder = {
                 CuteText(
                     text = stringResource(id = R.string.search) + " " + stringResource(R.string.albums),
@@ -179,7 +169,8 @@ fun SharedTransitionScope.AlbumsScreen(
                     onDismissRequest = { screenSelectionExpanded = false },
                     modifier = Modifier
                         .width(180.dp)
-                        .background(color = MaterialTheme.colorScheme.surface)
+                        .background(color = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(24.dp)
                 ) {
                     ScreenSelection(
                         onNavigationItemClicked = onNavigationItemClicked,
@@ -223,7 +214,7 @@ fun SharedTransitionScope.AlbumsScreen(
             onHandlePlayerActions = onHandlePlayerActions,
             isPlaying = isPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
-            isPlaylistEmpty = isPlaylistEmpty,
+            isPlayerReady = isPlayerReady,
             onNavigate = { onNavigate(Screen.NowPlaying) }
         )
     }

@@ -2,7 +2,6 @@
 
 package com.sosauce.cutemusic.ui.screens.lyrics
 
-import android.util.Log
 import android.view.WindowManager
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -40,30 +39,28 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.main.MainActivity
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LyricsView(
     viewModel: MusicViewModel,
     onHideLyrics: () -> Unit,
-    path: String,
-    isLandscape: Boolean = false
+    isLandscape: Boolean = false,
+    musicState: MusicState
 ) {
     var currentLyric by remember { mutableStateOf(Lyrics()) }
     val clipboardManager = LocalClipboardManager.current
-    val indexToScrollTo = viewModel.currentLyrics.indexOfFirst { lyric ->
-        viewModel.currentPosition in lyric.timestamp until (viewModel.currentLyrics.getOrNull(
-            viewModel.currentLyrics.indexOf(lyric) + 1
+    val indexToScrollTo = musicState.currentLyrics.indexOfFirst { lyric ->
+        musicState.currentPosition in lyric.timestamp until (musicState.currentLyrics.getOrNull(
+            musicState.currentLyrics.indexOf(lyric) + 1
         )?.timestamp ?: 0)
     }
     val lazyListState = rememberLazyListState(
@@ -94,29 +91,29 @@ fun LyricsView(
             state = lazyListState
         ) {
 
-            if (viewModel.currentLyrics.isEmpty()) {
+            if (musicState.currentLyrics.isEmpty()) {
                 item {
                     CuteText(
-                        text = viewModel.loadEmbeddedLyrics(path),
+                        text = viewModel.loadEmbeddedLyrics(musicState.currentPath),
                     )
                 }
             } else {
                 itemsIndexed(
-                    items = viewModel.currentLyrics,
+                    items = musicState.currentLyrics,
                     key = { _, item -> item.timestamp }
                 ) { index, lyric ->
 
 
-                    val nextTimestamp = remember(index, viewModel.currentLyrics) {
-                        if (index < viewModel.currentLyrics.size - 1) {
-                            viewModel.currentLyrics[index + 1].timestamp
+                    val nextTimestamp = remember(index, musicState.currentLyrics) {
+                        if (index < musicState.currentLyrics.size - 1) {
+                            musicState.currentLyrics[index + 1].timestamp
                         } else {
                             0
                         }
                     }
 
-                    val isCurrentLyric = remember(viewModel.currentPosition, nextTimestamp) {
-                        viewModel.currentPosition in lyric.timestamp until nextTimestamp
+                    val isCurrentLyric = remember(musicState.currentPosition, nextTimestamp) {
+                        musicState.currentPosition in lyric.timestamp until nextTimestamp
                     }
 
                     val color by animateColorAsState(

@@ -10,13 +10,17 @@ import com.sosauce.cutemusic.domain.model.Folder
 
 interface MediaStoreHelper {
 
-    fun getMusics() : List<MediaItem>
+    val musics: List<MediaItem>
+    val albums: List<Album>
+    val artists: List<Artist>
 
-    fun getAlbums(): List<Album>
+    fun fetchMusics(): List<MediaItem>
 
-    fun getArtists(): List<Artist>
+    fun fetchAlbums(): List<Album>
 
-    fun getFoldersWithMusics(): List<Folder>
+    fun fetchArtists(): List<Artist>
+
+    fun fetchFoldersWithMusics(): List<Folder>
 
     suspend fun deleteMusics(
         uris: List<Uri>,

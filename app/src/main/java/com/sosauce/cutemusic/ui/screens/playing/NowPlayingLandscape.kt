@@ -6,8 +6,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,16 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.FastRewind
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material.icons.rounded.Speed
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,16 +36,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRow
-import com.sosauce.cutemusic.ui.screens.playing.components.LoopButton
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
-import com.sosauce.cutemusic.ui.screens.playing.components.ShuffleButton
+import com.sosauce.cutemusic.ui.screens.playing.components.QuickActionsRow
 import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
@@ -64,27 +53,15 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 @Composable
 fun SharedTransitionScope.NowPlayingLandscape(
     viewModel: MusicViewModel,
-    navController: NavController,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-) {
-    NPLContent(
-        viewModel = viewModel,
-        onEvent = viewModel::handlePlayerActions,
-        onNavigateUp = navController::navigateUp,
-        onClickLoop = { viewModel.setLoop(it) },
-        onClickShuffle = { viewModel.setShuffle(it) },
-        animatedVisibilityScope = animatedVisibilityScope,
-    )
-}
-
-@Composable
-private fun SharedTransitionScope.NPLContent(
-    viewModel: MusicViewModel,
     onNavigateUp: () -> Unit,
     onEvent: (PlayerActions) -> Unit,
-    onClickLoop: (Boolean) -> Unit,
-    onClickShuffle: (Boolean) -> Unit,
+    onClickLoop: () -> Unit,
+    onClickShuffle: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    musicState: MusicState,
+    onChargeAlbumSongs: (String) -> Unit,
+    onNavigate: (Screen) -> Unit,
+    onChargeArtistLists: (String) -> Unit
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(false) }
@@ -106,112 +83,104 @@ private fun SharedTransitionScope.NPLContent(
     )
 
     Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(start = 30.dp, end = 30.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(start = 30.dp, end = 30.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Column {
-                    AsyncImage(
-                        model = viewModel.currentArt,
-                        stringResource(R.string.artwork),
-                        modifier = Modifier
-                            .size(imgSize.dp)
-                            .clip(RoundedCornerShape(10)),
-                        contentScale = ContentScale.Crop
-                    )
-                    if (showLyrics) {
-                        Spacer(Modifier.height(10.dp))
-                        CuteText(
-                            text = viewModel.currentlyPlaying
-                        )
-                        CuteText(
-                            text = viewModel.currentArtist
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                AsyncImage(
+                    model = musicState.currentArt,
+                    stringResource(R.string.artwork),
+                    modifier = Modifier
+                        .size(imgSize.dp)
+                        .clip(RoundedCornerShape(10)),
+                    contentScale = ContentScale.Crop
+                )
                 if (showLyrics) {
-                    LyricsView(
-                        viewModel = viewModel,
-                        onHideLyrics = { showLyrics = false },
-                        path = viewModel.currentPath,
-                        isLandscape = true
+                    Spacer(Modifier.height(10.dp))
+                    CuteText(
+                        text = musicState.currentlyPlaying
                     )
-                } else {
-                    Column(
-                        modifier = Modifier
+                    CuteText(
+                        text = musicState.currentArtist
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            if (showLyrics) {
+                LyricsView(
+                    viewModel = viewModel,
+                    onHideLyrics = { showLyrics = false },
+                    isLandscape = true,
+                    musicState = musicState
+                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        Modifier
                             .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                        IconButton(
+                            onClick = { onNavigateUp() }
                         ) {
-                            IconButton(
-                                onClick = { onNavigateUp() }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth(0.9f)
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp)
                             )
-                            {
-                                CuteText(
-                                    text = viewModel.currentlyPlaying,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 30.sp
-                                )
-                            }
                         }
-                        CuteText(
-                            text = viewModel.currentArtist,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                            fontSize = 16.sp
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth(0.9f)
                         )
-                        MusicSlider(viewModel = viewModel)
-                        ActionsButtonsRow(
-                            onClickLoop = onClickLoop,
-                            onClickShuffle = onClickShuffle,
-                            viewModel = viewModel,
-                            onEvent = onEvent,
-                            animatedVisibilityScope = animatedVisibilityScope
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            IconButton(onClick = { showSpeedCard = true }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Speed,
-                                    contentDescription = "change speed"
-                                )
-                            }
-                            IconButton(onClick = { showLyrics = true }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Article,
-                                    contentDescription = "show lyrics"
-                                )
-                            }
+                        {
+                            CuteText(
+                                text = musicState.currentlyPlaying,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontSize = 30.sp
+                            )
                         }
                     }
+                    CuteText(
+                        text = musicState.currentArtist,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
+                        fontSize = 16.sp
+                    )
+                    MusicSlider(
+                        viewModel = viewModel,
+                        musicState = musicState
+                    )
+                    ActionsButtonsRow(
+                        onClickLoop = onClickLoop,
+                        onClickShuffle = onClickShuffle,
+                        onEvent = onEvent,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        musicState = musicState
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    QuickActionsRow(
+                        musicState = musicState,
+                        onNavigate = onNavigate,
+                        onShowLyrics = { showLyrics = true },
+                        onChargeAlbumSongs = onChargeAlbumSongs,
+                        onShowSpeedCard = { showSpeedCard = true },
+                        onChargeArtistLists = onChargeArtistLists
+                    )
                 }
-
             }
+
         }
+    }
 }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.1"
+agp = "8.7.1"
 jaudiotagger = "3.0.1"
 koinAndroid = "4.0.0"
 koinAndroidxCompose = "4.0.0"

@@ -110,10 +110,12 @@ fun MetadataEditorContent(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onEditMusic(
-                    listOf(uri),
-                    editSongLauncher
-                ) }
+                onClick = {
+                    onEditMusic(
+                        listOf(uri),
+                        editSongLauncher
+                    )
+                }
             ) {
                 Icon(
                     imageVector = Icons.Default.Done,

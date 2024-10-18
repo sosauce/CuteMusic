@@ -2,20 +2,17 @@
 
 package com.sosauce.cutemusic.ui.navigation
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.sosauce.cutemusic.data.actions.MetadataActions
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
@@ -32,6 +29,9 @@ import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ListToHandle
 import org.koin.androidx.compose.koinViewModel
 
+// https://stackoverflow.com/a/78771053
+
+
 @Composable
 fun Nav() {
 
@@ -42,7 +42,7 @@ fun Nav() {
     val blacklistedFolders by rememberAllBlacklistedFolders()
     val musics = postViewModel.musics
         .filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
-
+    val musicState by viewModel.musicState.collectAsStateWithLifecycle()
 
 
     SharedTransitionLayout {
@@ -55,11 +55,9 @@ fun Nav() {
                     musics = musics,
                     selectedIndex = viewModel.selectedItem,
                     onNavigateTo = { navController.navigate(it) },
-                    currentlyPlaying = viewModel.currentlyPlaying,
-                    isCurrentlyPlaying = viewModel.isCurrentlyPlaying,
-                    onShortClick = {
-                        viewModel.itemClicked(it, musics)
-                    },
+                    currentlyPlaying = musicState.currentlyPlaying,
+                    isCurrentlyPlaying = musicState.isCurrentlyPlaying,
+                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
                     onNavigationItemClicked = { index, item ->
                         navController.navigate(item.navigateTo) {
                             viewModel.selectedItem = index
@@ -75,8 +73,8 @@ fun Nav() {
                             )
                         )
                     },
-                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
-                    currentMusicUri = viewModel.currentMusicUri,
+                    isPlayerReady = viewModel.isPlayerReady(),
+                    currentMusicUri = musicState.currentMusicUri,
                     onHandlePlayerAction = { viewModel.handlePlayerActions(it) },
                     onDeleteMusic = { uris, intentSender ->
                         postViewModel.deleteMusic(
@@ -95,7 +93,12 @@ fun Nav() {
                             listToHandle = ListToHandle.TRACKS,
                             query = query
                         )
-                    }
+                    },
+                    onChargeAlbumSongs = postViewModel::albumSongs,
+                    onChargeArtistLists = {
+                        postViewModel.artistSongs(it)
+                        postViewModel.artistAlbums(it)
+                    },
                 )
 
             }
@@ -115,10 +118,10 @@ fun Nav() {
                             query = query
                         )
                     },
-                    currentlyPlaying = viewModel.currentlyPlaying,
+                    currentlyPlaying = musicState.currentlyPlaying,
                     chargePVMAlbumSongs = postViewModel::albumSongs,
-                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
-                    isPlaying = viewModel.isCurrentlyPlaying,
+                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlaying = musicState.isCurrentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     onNavigate = { navController.navigate(it) },
                     onNavigationItemClicked = { index, item ->
@@ -142,15 +145,15 @@ fun Nav() {
                         }
                     },
                     selectedIndex = viewModel.selectedItem,
-                    chargePVMLists = {
+                    onChargeArtistLists = {
                         postViewModel.artistSongs(it)
                         postViewModel.artistAlbums(it)
                     },
-                    currentlyPlaying = viewModel.currentlyPlaying,
+                    currentlyPlaying = musicState.currentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
-                    isPlaying = viewModel.isCurrentlyPlaying,
+                    isPlaying = musicState.isCurrentlyPlaying,
                     animatedVisibilityScope = this,
-                    isPlaylistEmpty = viewModel.isPlaylistEmptyAndDataNotNull(),
+                    isPlayerReady = viewModel.isPlayerReady(),
                     onHandleSorting = { sortingType ->
                         postViewModel.handleFiltering(
                             listToHandle = ListToHandle.ARTISTS,
@@ -170,7 +173,13 @@ fun Nav() {
                 NowPlayingScreen(
                     navController = navController,
                     viewModel = viewModel,
-                    animatedVisibilityScope = this
+                    animatedVisibilityScope = this,
+                    musicState = musicState,
+                    onChargeAlbumSongs = postViewModel::albumSongs,
+                    onChargeArtistLists = {
+                        postViewModel.artistSongs(it)
+                        postViewModel.artistAlbums(it)
+                    }
                 )
             }
             composable<Screen.Settings> {
@@ -186,7 +195,10 @@ fun Nav() {
                         album = album,
                         viewModel = viewModel,
                         onPopBackStack = navController::navigateUp,
-                        postViewModel = postViewModel
+                        postViewModel = postViewModel,
+                        musicState = musicState,
+                        animatedVisibilityScope = this,
+                        onNavigate = { screen -> navController.navigate(screen) },
                     )
                 }
 
@@ -199,7 +211,9 @@ fun Nav() {
                         navController = navController,
                         viewModel = viewModel,
                         postViewModel = postViewModel,
-                        onNavigate = { screen -> navController.navigate(screen) }
+                        onNavigate = { screen -> navController.navigate(screen) },
+                        musicState = musicState,
+                        animatedVisibilityScope = this
                     )
                 }
             }

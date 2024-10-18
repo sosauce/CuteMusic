@@ -2,8 +2,7 @@
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
-import android.renderscript.RenderScript
-import androidx.compose.animation.AnimatedVisibility
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -12,21 +11,13 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FastForward
@@ -38,7 +29,6 @@ import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,34 +41,31 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberShouldApplyLoop
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.CuteIconButton
-import com.sosauce.cutemusic.utils.thenIf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoopButton(
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
     isLooping: Boolean
 ) {
+
     val rotation = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    var shouldApplyLoop by rememberShouldApplyLoop()
 
     IconButton(
         onClick = {
-            onClick(!isLooping)
+            shouldApplyLoop = !isLooping
+            onClick()
             scope.launch(Dispatchers.IO) {
                 rotation.animateTo(
                     targetValue = -360f,
@@ -90,6 +77,8 @@ fun LoopButton(
                     animationSpec = tween(0)
                 )
             }
+            Log.d("Looping2", shouldApplyLoop.toString())
+
         }
     ) {
         Icon(
@@ -103,15 +92,13 @@ fun LoopButton(
 
 @Composable
 fun ShuffleButton(
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
     isShuffling: Boolean
 ) {
 
 
     IconButton(
-        onClick = {
-            onClick(!isShuffling)
-        }
+        onClick = onClick
     ) {
         Icon(
             imageVector = Icons.Rounded.Shuffle,
@@ -123,11 +110,11 @@ fun ShuffleButton(
 
 @Composable
 fun SharedTransitionScope.ActionsButtonsRow(
-    onClickLoop: (Boolean) -> Unit,
-    onClickShuffle: (Boolean) -> Unit,
-    viewModel: MusicViewModel,
+    onClickLoop: () -> Unit,
+    onClickShuffle: () -> Unit,
     onEvent: (PlayerActions) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    musicState: MusicState
 ) {
 
 
@@ -148,7 +135,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
     )
 
     val roundedFAB by animateIntAsState(
-        targetValue = if (viewModel.isCurrentlyPlaying) 30 else 50,
+        targetValue = if (musicState.isCurrentlyPlaying) 30 else 50,
         label = "FAB Shape"
     )
 
@@ -181,7 +168,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                 } else {
                     ShuffleButton(
                         onClick = onClickShuffle,
-                        isShuffling = viewModel.isShuffling
+                        isShuffling = musicState.isShuffling
                     )
                 }
             }
@@ -200,7 +187,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                 } else {
                     IconButton(
                         onClick = {
-                            if (viewModel.currentPosition >= 10000) {
+                            if (musicState.currentPosition >= 10000) {
                                 onEvent(PlayerActions.RestartSong)
                             } else {
                                 onEvent(PlayerActions.SeekToPreviousMusic)
@@ -218,7 +205,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                         }
                     ) {
                         Crossfade(
-                            targetState = viewModel.currentPosition >= 10000,
+                            targetState = musicState.currentPosition >= 10000,
                             label = ""
                         ) {
                             if (!it) {
@@ -263,7 +250,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                         }
                     ) { CuteText("-10") }
                 } else {
-                    CuteIconButton (
+                    CuteIconButton(
                         onClick = { onEvent(PlayerActions.RewindTo(5000)) },
                         onLongClick = { showLongPressMenuMinus = true }
                     ) {
@@ -280,7 +267,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
             shape = RoundedCornerShape(roundedFAB)
         ) {
             Icon(
-                imageVector = if (viewModel.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                imageVector = if (musicState.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                 contentDescription = "pause/play button",
                 modifier = Modifier.sharedElement(
                     state = rememberSharedContentState(key = "playPauseIcon"),
@@ -388,7 +375,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                 } else {
                     LoopButton(
                         onClick = onClickLoop,
-                        isLooping = viewModel.isLooping
+                        isLooping = musicState.isLooping
                     )
                 }
             }

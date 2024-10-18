@@ -2,14 +2,11 @@
 
 package com.sosauce.cutemusic.ui.shared_components
 
-import android.graphics.drawable.Animatable2
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -36,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -54,7 +50,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SharedTransitionScope.CuteSearchbar(
     modifier: Modifier = Modifier,
-    query: String,
+    query: String = "",
     onQueryChange: (String) -> Unit = {},
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -63,38 +59,9 @@ fun SharedTransitionScope.CuteSearchbar(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlaying: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlaylistEmpty: Boolean,
-    onNavigate: () -> Unit
-) = CustomSearchbar(
-    query = query,
-    onQueryChange = onQueryChange,
-    leadingIcon = leadingIcon,
-    trailingIcon = trailingIcon,
-    placeholder = placeholder,
-    modifier = modifier,
-    currentlyPlaying = currentlyPlaying,
-    onHandlePlayerActions = onHandlePlayerActions,
-    isPlaying = isPlaying,
-    animatedVisibilityScope = animatedVisibilityScope,
-    isPlaylistEmpty = isPlaylistEmpty,
-    onNavigate = onNavigate
-)
-
-
-@Composable
-private fun SharedTransitionScope.CustomSearchbar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null,
-    modifier: Modifier,
-    currentlyPlaying: String,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    isPlaying: Boolean,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlaylistEmpty: Boolean,
-    onNavigate: () -> Unit
+    isPlayerReady: Boolean,
+    onNavigate: () -> Unit = {},
+    showSearchField: Boolean = true,
 ) {
     val focusManager = LocalFocusManager.current
     val roundedShape = 24.dp
@@ -112,21 +79,24 @@ private fun SharedTransitionScope.CustomSearchbar(
                 shape = RoundedCornerShape(roundedShape)
             )
             .thenIf(
-                isPlaylistEmpty,
+                isPlayerReady,
                 Modifier.clickable {
                     onNavigate()
                 }
             )
     ) {
         AnimatedVisibility(
-            visible = isPlaylistEmpty,
-            enter = fadeIn() + slideInVertically(initialOffsetY = { it })
+            visible = isPlayerReady,
+            enter = fadeIn() + slideInVertically(
+                animationSpec = tween(500),
+                initialOffsetY = { it }
+            )
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(start = 15.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
             ) {
                 Row(
                     modifier = Modifier.weight(1f)
@@ -139,7 +109,7 @@ private fun SharedTransitionScope.CustomSearchbar(
                                 state = rememberSharedContentState(key = "arrow"),
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = { _, _ ->
-                                    tween(durationMillis = 500)
+                                    tween(500)
                                 }
                             )
                     )
@@ -151,7 +121,7 @@ private fun SharedTransitionScope.CustomSearchbar(
                                 state = rememberSharedContentState(key = "currentlyPlaying"),
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = { _, _ ->
-                                    tween(durationMillis = 500)
+                                    tween(500)
                                 }
                             )
                             .basicMarquee()
@@ -188,7 +158,7 @@ private fun SharedTransitionScope.CustomSearchbar(
                                     state = rememberSharedContentState(key = "skipPreviousButton"),
                                     animatedVisibilityScope = animatedVisibilityScope,
                                     boundsTransform = { _, _ ->
-                                        tween(durationMillis = 500)
+                                        tween(500)
                                     }
                                 )
                         )
@@ -203,7 +173,7 @@ private fun SharedTransitionScope.CustomSearchbar(
                                 state = rememberSharedContentState(key = "playPauseIcon"),
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = { _, _ ->
-                                    tween(durationMillis = 500)
+                                    tween(500)
                                 }
                             )
                         )
@@ -234,41 +204,43 @@ private fun SharedTransitionScope.CustomSearchbar(
                                     )
                                 }
                                 .sharedElement(
-                                state = rememberSharedContentState(key = "skipNextButton"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = { _, _ ->
-                                    tween(durationMillis = 500)
-                                }
-                            )
+                                    state = rememberSharedContentState(key = "skipNextButton"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    boundsTransform = { _, _ ->
+                                        tween(500)
+                                    }
+                                )
                         )
                     }
                 }
             }
         }
-        TextField(
-            value = query,
-            onValueChange = onQueryChange,
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
-                disabledIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(50.dp),
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            placeholder = placeholder,
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(6.dp),
-            keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() }
-            )
+        if (showSearchField) {
+            TextField(
+                value = query,
+                onValueChange = onQueryChange,
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(50.dp),
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                placeholder = placeholder,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(6.dp),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                )
 
-        )
+            )
+        }
     }
 }
 

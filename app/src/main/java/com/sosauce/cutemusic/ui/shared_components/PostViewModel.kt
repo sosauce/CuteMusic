@@ -26,23 +26,23 @@ class PostViewModel(
 ) : AndroidViewModel(application) {
 
     var musics by mutableStateOf(
-        mediaStoreHelper.getMusics()
+        mediaStoreHelper.musics
     )
 
     var albums by mutableStateOf(
-        mediaStoreHelper.getAlbums()
+        mediaStoreHelper.albums
     )
 
     var artists by mutableStateOf(
-        mediaStoreHelper.getArtists()
+        mediaStoreHelper.artists
     )
 
     var folders by mutableStateOf(
-        mediaStoreHelper.getFoldersWithMusics()
+        mediaStoreHelper.fetchFoldersWithMusics()
     )
 
     private val observer = MediaStoreObserver {
-        musics = mediaStoreHelper.getMusics()
+        musics = mediaStoreHelper.fetchMusics()
     }
 
 
@@ -121,19 +121,21 @@ class PostViewModel(
         listToHandle: ListToHandle,
         sortingType: SortingType,
     ) {
-        when(listToHandle) {
+        when (listToHandle) {
             ListToHandle.TRACKS -> {
                 musics = if (sortingType == SortingType.ASCENDING)
                     musics.sortedBy { it.mediaMetadata.title.toString() }
                 else
                     musics.sortedByDescending { it.mediaMetadata.title.toString() }
             }
+
             ListToHandle.ALBUMS -> {
                 albums = if (sortingType == SortingType.ASCENDING)
                     albums.sortedBy { it.name }
                 else
                     albums.sortedByDescending { it.name }
             }
+
             ListToHandle.ARTISTS -> {
                 artists = if (sortingType == SortingType.ASCENDING)
                     artists.sortedBy { it.name }
@@ -147,25 +149,27 @@ class PostViewModel(
         listToHandle: ListToHandle,
         query: String = ""
     ) {
-        when(listToHandle) {
+        when (listToHandle) {
             ListToHandle.TRACKS -> {
-                musics = mediaStoreHelper.getMusics().filter {
+                musics = mediaStoreHelper.musics.filter {
                     it.mediaMetadata.title?.contains(
                         other = query,
                         ignoreCase = true
                     ) == true
                 }
             }
+
             ListToHandle.ALBUMS -> {
-                albums = mediaStoreHelper.getAlbums().filter {
+                albums = mediaStoreHelper.albums.filter {
                     it.name.contains(
                         other = query,
                         ignoreCase = true
                     )
                 }
             }
+
             ListToHandle.ARTISTS -> {
-                artists = mediaStoreHelper.getArtists().filter {
+                artists = mediaStoreHelper.artists.filter {
                     it.name.contains(
                         other = query,
                         ignoreCase = true
@@ -174,5 +178,5 @@ class PostViewModel(
             }
         }
     }
- }
+}
 

@@ -75,10 +75,10 @@ inline fun SettingsCards(
                     }
                 }
             }
-                Switch(
-                    checked = checked,
-                    onCheckedChange = { onCheckedChange() }
-                )
+            Switch(
+                checked = checked,
+                onCheckedChange = { onCheckedChange() }
+            )
         }
     }
 }

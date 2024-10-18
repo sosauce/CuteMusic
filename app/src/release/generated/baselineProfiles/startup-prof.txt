@@ -16552,10 +16552,10 @@ HSPLcom/sosauce/cutemusic/domain/blacklist/BlacklistedDatabase_Impl$1;->onOpen(L
 Lcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;
 HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;-><clinit>()V
 HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;-><init>(Landroid/content/Context;)V
-HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->getAlbums()Ljava/util/List;
-HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->getArtists()Ljava/util/List;
-HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->getFoldersWithMusics()Ljava/util/List;
-HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->getMusics()Ljava/util/List;
+HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->fetchAlbums()Ljava/util/List;
+HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->fetchArtists()Ljava/util/List;
+HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->fetchFoldersWithMusics()Ljava/util/List;
+HSPLcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;->fetchMusics()Ljava/util/List;
 Lcom/sosauce/cutemusic/main/App;
 HSPLcom/sosauce/cutemusic/main/App;->$r8$lambda$xrutaltFOQbSx_O2rxWYEJHPxKQ(Lcom/sosauce/cutemusic/main/App;Lorg/koin/core/KoinApplication;)Lkotlin/Unit;
 HSPLcom/sosauce/cutemusic/main/App;-><clinit>()V
@@ -16878,7 +16878,7 @@ Lcom/sosauce/cutemusic/ui/shared_components/PostViewModel;
 HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;-><clinit>()V
 HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;-><init>(Lcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;Lcom/sosauce/cutemusic/domain/blacklist/BlackDao;)V
 HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;->access$getMediaStoreHelperImpl$p(Lcom/sosauce/cutemusic/ui/shared_components/PostViewModel;)Lcom/sosauce/cutemusic/domain/repository/MediaStoreHelperImpl;
-HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;->getMusics()Ljava/util/List;
+HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;->fetchMusics()Ljava/util/List;
 HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;->getState()Lkotlinx/coroutines/flow/StateFlow;
 HSPLcom/sosauce/cutemusic/ui/shared_components/PostViewModel;->setMusics(Ljava/util/List;)V
 Lcom/sosauce/cutemusic/ui/shared_components/PostViewModel$1;

@@ -16,6 +16,7 @@ import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.ui.screens.settings.compenents.Misc
 import com.sosauce.cutemusic.ui.screens.settings.compenents.ThemeManagement
+import com.sosauce.cutemusic.ui.screens.settings.compenents.UISettings
 import com.sosauce.cutemusic.ui.shared_components.AppBar
 
 
@@ -49,7 +50,7 @@ fun SettingsScreen(
         ) {
             AboutCard()
             ThemeManagement()
-            //UISettings()
+            UISettings()
             Misc(onNavigateTo = onNavigate)
         }
     }

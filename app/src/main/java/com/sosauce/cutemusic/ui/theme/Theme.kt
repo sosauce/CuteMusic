@@ -1,5 +1,3 @@
-@file:Suppress("PrivatePropertyName")
-
 package com.sosauce.cutemusic.ui.theme
 
 import android.os.Build

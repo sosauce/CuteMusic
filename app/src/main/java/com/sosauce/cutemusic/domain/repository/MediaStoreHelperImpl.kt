@@ -18,16 +18,18 @@ import com.sosauce.cutemusic.domain.model.Folder
 
 class MediaStoreHelperImpl(
     private val context: Context
-): MediaStoreHelper {
+) : MediaStoreHelper {
 
-    override fun getMusics(): List<MediaItem> {
+    override fun fetchMusics(): List<MediaItem> {
         val musics = mutableListOf<MediaItem>()
 
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ARTIST_ID,
             MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
             //MediaStore.Audio.Media.IS_FAVORITE,
@@ -45,7 +47,9 @@ class MediaStoreHelperImpl(
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val artistIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             //val isFavColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_FAVORITE)
@@ -54,7 +58,9 @@ class MediaStoreHelperImpl(
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn)
                 val artist = cursor.getString(artistColumn)
+                val artistId = cursor.getLong(artistIdColumn)
                 val album = cursor.getString(albumColumn)
+                val albumId = cursor.getLong(albumIdColumn)
                 val filePath = cursor.getString(folderColumn)
                 val folder = filePath.substring(0, filePath.lastIndexOf('/'))
                 val size = cursor.getLong(sizeColumn)
@@ -63,36 +69,37 @@ class MediaStoreHelperImpl(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
-                val artUri = ContentUris.appendId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
-                ).appendPath("albumart").build()
+
+                val artUri = Uri.parse("$uri/albumart")
 
 
                 musics.add(
-                        MediaItem
-                            .Builder()
-                            .setUri(uri)
-                            .setMediaId(id.toString())
-                            .setMediaMetadata(
-                                MediaMetadata
-                                    .Builder()
-                                    .setIsBrowsable(false)
-                                    .setIsPlayable(true)
-                                    .setTitle(title)
-                                    .setArtist(artist)
-                                    .setAlbumTitle(album)
-                                    .setArtworkUri(artUri)
-                                    .setExtras(
-                                        Bundle()
-                                            .apply {
-                                                putString("folder", folder)
-                                                putLong("size", size)
-                                                putString("path", filePath)
-                                                putString("uri", uri.toString())
-                                        // putInt("isFavorite", isFavorite)
-                                    }).build()
-                            )
-                            .build()
+                    MediaItem
+                        .Builder()
+                        .setUri(uri)
+                        .setMediaId(id.toString())
+                        .setMediaMetadata(
+                            MediaMetadata
+                                .Builder()
+                                .setIsBrowsable(false)
+                                .setIsPlayable(true)
+                                .setTitle(title)
+                                .setArtist(artist)
+                                .setAlbumTitle(album)
+                                .setArtworkUri(artUri)
+                                .setExtras(
+                                    Bundle()
+                                        .apply {
+                                            putString("folder", folder)
+                                            putLong("size", size)
+                                            putString("path", filePath)
+                                            putString("uri", uri.toString())
+                                            putLong("album_id", albumId)
+                                            putLong("artist_id", artistId)
+                                            // putInt("isFavorite", isFavorite)
+                                        }).build()
+                        )
+                        .build()
                 )
             }
         }
@@ -101,7 +108,7 @@ class MediaStoreHelperImpl(
     }
 
 
-    override fun getAlbums(): List<Album> {
+    override fun fetchAlbums(): List<Album> {
         val albums = mutableListOf<Album>()
 
         val projection = arrayOf(
@@ -136,7 +143,7 @@ class MediaStoreHelperImpl(
         return albums
     }
 
-    override fun getArtists(): List<Artist> {
+    override fun fetchArtists(): List<Artist> {
         val artists = mutableListOf<Artist>()
 
         val projection = arrayOf(
@@ -171,7 +178,7 @@ class MediaStoreHelperImpl(
 
 
     // Only gets folder with musics in them
-    override fun getFoldersWithMusics(): List<Folder> {
+    override fun fetchFoldersWithMusics(): List<Folder> {
 
         val folders = mutableListOf<Folder>()
 
@@ -245,4 +252,9 @@ class MediaStoreHelperImpl(
             intentSenderLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
         }
     }
+
+    // Caching music to not re-query them in Music and Post ViewModels
+    override val musics: List<MediaItem> = fetchMusics()
+    override val albums: List<Album> = fetchAlbums()
+    override val artists: List<Artist> = fetchArtists()
 }

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
@@ -9,27 +9,38 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import me.saket.squiggles.SquigglySlider
 import java.util.Locale
 
 @Composable
-fun MusicSlider(viewModel: MusicViewModel) {
+fun MusicSlider(
+    viewModel: MusicViewModel,
+    musicState: MusicState
+) {
 
-    val sliderPosition = rememberUpdatedState(viewModel.currentPosition)
+    val sliderPosition = rememberUpdatedState(musicState.currentPosition)
+    val useClassicSlider by rememberUseClassicSlider()
+    val interactionSource = remember { MutableInteractionSource() }
 
     Column {
         Row(
@@ -46,7 +57,7 @@ fun MusicSlider(viewModel: MusicViewModel) {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 CuteText(
-                    text = totalDuration(viewModel.currentMusicDuration),
+                    text = totalDuration(musicState.currentMusicDuration),
                 )
             }
             Box(
@@ -58,22 +69,51 @@ fun MusicSlider(viewModel: MusicViewModel) {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 CuteText(
-                    text = timeLeft(viewModel.currentPosition)
+                    text = timeLeft(musicState.currentPosition)
                 )
             }
         }
-        SquigglySlider(
-            value = sliderPosition.value.toFloat(),
-            onValueChange = {
-                viewModel.currentPosition = it.toLong()
-                viewModel.handlePlayerActions(PlayerActions.SeekToSlider(viewModel.currentPosition))
-            },
-            valueRange = 0f..viewModel.currentMusicDuration.toFloat(),
-            onValueChangeFinished = {
-                viewModel.handlePlayerActions(PlayerActions.SeekToSlider(viewModel.currentPosition))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (useClassicSlider) {
+            Slider(
+                value = sliderPosition.value.toFloat(),
+                onValueChange = {
+                    musicState.currentPosition = it.toLong()
+                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                },
+                valueRange = 0f..musicState.currentMusicDuration.toFloat(),
+                onValueChangeFinished = {
+                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                },
+                modifier = Modifier.fillMaxWidth(),
+                track = { sliderState ->
+                    SliderDefaults.Track(
+                        sliderState = sliderState,
+                        drawStopIndicator = null,
+                        thumbTrackGapSize = 0.dp,
+                        modifier = Modifier.height(4.dp)
+                    )
+                },
+                thumb = {
+                    SliderDefaults.Thumb(
+                        interactionSource = interactionSource,
+                        thumbSize = DpSize(width = 20.dp, height = 20.dp)
+                    )
+                }
+            )
+        } else {
+            SquigglySlider(
+                value = sliderPosition.value.toFloat(),
+                onValueChange = {
+                    musicState.currentPosition = it.toLong()
+                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                },
+                valueRange = 0f..musicState.currentMusicDuration.toFloat(),
+                onValueChangeFinished = {
+                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

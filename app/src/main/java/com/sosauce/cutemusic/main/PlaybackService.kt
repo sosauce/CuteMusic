@@ -2,46 +2,88 @@ package com.sosauce.cutemusic.main
 
 import android.app.PendingIntent
 import android.content.Intent
-import androidx.compose.runtime.getValue
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
-import com.sosauce.cutemusic.data.datastore.rememberKillService
+import com.sosauce.cutemusic.R
 
-class PlaybackService : MediaLibraryService() {
+
+class PlaybackService : MediaLibraryService(),
+    MediaLibrarySession.Callback,
+    Player.Listener {
 
     private var mediaLibrarySession: MediaLibrarySession? = null
-    private var callback: MediaLibrarySession.Callback = object : MediaLibrarySession.Callback {}
     private val audioAttributes = AudioAttributes
         .Builder()
         .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
 
-    private val listener = object : Player.Listener {
-        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            super.onMediaMetadataChanged(mediaMetadata)
-            sendMusicBroadcast(mediaMetadata.title.toString())
-        }
+
+    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+        super.onMediaMetadataChanged(mediaMetadata)
+        sendMusicBroadcast(mediaMetadata.title.toString())
     }
-
-
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
         mediaLibrarySession
 
+    @UnstableApi
     override fun onCreate() {
         super.onCreate()
+
         val player = ExoPlayer.Builder(applicationContext)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()
         mediaLibrarySession = MediaLibrarySession
-            .Builder(this, player, callback)
+            .Builder(this, player, this)
+            .setShowPlayButtonIfPlaybackIsSuppressed(false)
+
+//            .setBitmapLoader(object : BitmapLoader {
+//
+//                override fun supportsMimeType(mimeType: String): Boolean = true
+//
+//                override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
+//                    throw UnsupportedOperationException()
+//
+//                override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> = throw UnsupportedOperationException()
+//
+//                override fun loadBitmapFromMetadata(metadata: MediaMetadata): ListenableFuture<Bitmap>? {
+//                    val completer = SettableFuture.create<Bitmap>()
+//                    val request = ImageRequest.Builder(this@PlaybackService)
+//                        .data(
+//                            if (metadata.artworkUri == Uri.parse("content://media/external/audio/media/1000000397/albumart")) {
+//                                R.drawable.artist
+//                            } else {
+//                                metadata.artworkUri
+//                            }
+//                        )
+//                        .target(
+//                            onSuccess = { result ->
+//                                completer.set((result as BitmapImage).bitmap)
+//                            },
+//                            onError = { _ ->
+//                                completer.setException(Exception("Error"))
+//                            }
+//                        )
+//                        .build()
+//                    println("Art URI: ${metadata.artworkUri}")
+//                    ImageLoader(this@PlaybackService).enqueue(request)
+//
+//                    return completer
+//                }
+//
+//                }
+
+//)
             .setSessionActivity(
                 PendingIntent.getActivity(
                     this,
@@ -51,8 +93,13 @@ class PlaybackService : MediaLibraryService() {
                 )
             )
             .build()
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider.Builder(this).build().apply {
+                setSmallIcon(R.drawable.round_music_note_24)
+            }
+        )
 
-        player.addListener(listener)
+        player.addListener(this)
 
     }
 
@@ -73,6 +120,7 @@ class PlaybackService : MediaLibraryService() {
         stopSelf()
     }
 
+
     companion object {
         private const val CURRENTLY_PLAYING_CHANGED = "CM_CUR_PLAY_CHANGED"
     }
@@ -80,10 +128,9 @@ class PlaybackService : MediaLibraryService() {
     private fun sendMusicBroadcast(
         currentlyPlaying: String
     ) {
-        val intent = Intent(CURRENTLY_PLAYING_CHANGED).apply {
+        Intent(CURRENTLY_PLAYING_CHANGED).apply {
             putExtra("currentlyPlaying", currentlyPlaying)
+            sendBroadcast(this)
         }
-        sendBroadcast(intent)
     }
-
 }

@@ -58,4 +58,6 @@
     <string name="success">Success</string>
     <string name="error_saving">Error while saving changes.</string>
     <string name="editor">Editor</string>
+    <string name="details">Details</string>
+    <string name="classic_slider">Use Classic Slider</string>
 </resources>

@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Person
@@ -43,18 +43,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
-import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.SortingType
@@ -69,12 +65,12 @@ fun SharedTransitionScope.ArtistsScreen(
     onHandleSorting: (SortingType) -> Unit,
     onHandleSearching: (String) -> Unit,
     currentlyPlaying: String,
-    chargePVMLists: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     selectedIndex: Int,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    isPlaylistEmpty: Boolean,
+    isPlayerReady: Boolean,
     onNavigationItemClicked: (Int, NavigationItem) -> Unit
 ) {
 
@@ -122,7 +118,7 @@ fun SharedTransitionScope.ArtistsScreen(
                                 )
                         ) {
                             ArtistInfoList(it) {
-                                chargePVMLists(it.name)
+                                onChargeArtistLists(it.name)
                                 onNavigate(Screen.ArtistsDetails(it.id))
                             }
                         }
@@ -142,14 +138,7 @@ fun SharedTransitionScope.ArtistsScreen(
                         bottom = 5.dp,
                         end = rememberSearchbarRightPadding()
                     )
-                    .align(rememberSearchbarAlignment())
-                    .sharedElement(
-                        state = rememberSharedContentState(key = "searchbar"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = { _, _ ->
-                            tween(durationMillis = 500)
-                        }
-                    ),
+                    .align(rememberSearchbarAlignment()),
                 placeholder = {
                     CuteText(
                         text = stringResource(id = R.string.search) + " " + stringResource(R.string.artists),
@@ -169,7 +158,8 @@ fun SharedTransitionScope.ArtistsScreen(
                         onDismissRequest = { screenSelectionExpanded = false },
                         modifier = Modifier
                             .width(180.dp)
-                            .background(color = MaterialTheme.colorScheme.surface)
+                            .background(color = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(24.dp)
                     ) {
                         ScreenSelection(
                             onNavigationItemClicked = onNavigationItemClicked,
@@ -182,9 +172,14 @@ fun SharedTransitionScope.ArtistsScreen(
                         IconButton(
                             onClick = {
                                 isSortedByASC = !isSortedByASC
-                                when(isSortedByASC) {
-                                    true -> { onHandleSorting(SortingType.ASCENDING) }
-                                    false -> { onHandleSorting(SortingType.DESCENDING) }
+                                when (isSortedByASC) {
+                                    true -> {
+                                        onHandleSorting(SortingType.ASCENDING)
+                                    }
+
+                                    false -> {
+                                        onHandleSorting(SortingType.DESCENDING)
+                                    }
                                 }
                             }
                         ) {
@@ -208,7 +203,7 @@ fun SharedTransitionScope.ArtistsScreen(
                 onHandlePlayerActions = onHandlePlayerActions,
                 isPlaying = isPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
-                isPlaylistEmpty = isPlaylistEmpty,
+                isPlayerReady = isPlayerReady,
                 onNavigate = { onNavigate(Screen.NowPlaying) }
             )
         }

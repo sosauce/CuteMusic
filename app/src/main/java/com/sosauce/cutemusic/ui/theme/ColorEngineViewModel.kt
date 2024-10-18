@@ -18,7 +18,7 @@ class ColorEngineViewModel : ViewModel() {
     fun generateNewPalette(
         uri: Uri,
         context: Context
-    ) : ImageBitmap?{
+    ): ImageBitmap? {
         var imageBitmap by mutableStateOf<ImageBitmap?>(null)
 
         viewModelScope.launch(Dispatchers.IO) {

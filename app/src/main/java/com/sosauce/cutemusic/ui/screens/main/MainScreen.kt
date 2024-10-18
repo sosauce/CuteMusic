@@ -5,9 +5,14 @@
 
 package com.sosauce.cutemusic.ui.screens.main
 
+import android.app.Activity
 import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -19,6 +24,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -27,7 +33,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -40,18 +45,25 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +73,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -72,9 +85,9 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.main.components.BottomSheetContent
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -94,13 +107,15 @@ fun SharedTransitionScope.MainScreen(
     onNavigationItemClicked: (Int, NavigationItem) -> Unit,
     selectedIndex: Int,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onLoadMetadata: ((String) -> Unit)? = null,
-    isPlaylistEmpty: Boolean,
+    onLoadMetadata: (String) -> Unit = {},
+    isPlayerReady: Boolean,
     currentMusicUri: String,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
     onHandleSorting: (SortingType) -> Unit,
-    onHandleSearching: (String) -> Unit
+    onHandleSearching: (String) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit
 ) {
     var query by remember { mutableStateOf("") }
     val state = rememberLazyListState()
@@ -112,166 +127,192 @@ fun SharedTransitionScope.MainScreen(
     )
 
 
-
-    Box(Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = state
-        ) {
-            if (musics.isEmpty()) {
-                item {
-                    CuteText(
-                        text = stringResource(id = R.string.no_musics_found),
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                        )
-                }
-            } else {
-                itemsIndexed(
-                    items = musics,
-                    key = { _, music -> music.mediaId }
-                ) { index, music ->
-                    Column(
-                        modifier = Modifier
-                            .animateItem()
-                            .padding(
-                                vertical = 2.dp,
-                                horizontal = 4.dp
-                            )
-                    ) {
-                        MusicListItem(
-                            onShortClick = { onShortClick(music.mediaId) },
-                            music = music,
-                            onNavigate = { onNavigateTo(it) },
-                            currentMusicUri = currentMusicUri,
-                            onLoadMetadata = onLoadMetadata,
-                            showBottomSheet = true,
-                            modifier = Modifier.thenIf(
-                                index == 0,
-                                Modifier.statusBarsPadding()
-                            ),
-                            onDeleteMusic = onDeleteMusic
-                        )
-                    }
+    Scaffold(
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = !isPlayerReady,
+                exit = scaleOut(
+                    // 2 times faster than the searchbar so it doesn't look too weird
+                    animationSpec = tween(250),
+                    transformOrigin = TransformOrigin(0.5f, 0.25f)
+                )
+            ) {
+                FloatingActionButton(
+                    onClick = { onHandlePlayerAction(PlayerActions.PlayRandom) },
+                    modifier = Modifier
+                        .padding(bottom = 70.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Shuffle,
+                        contentDescription = null
+                    )
                 }
             }
         }
-
-
-        Crossfade(
-            targetState = state.canScrollForward || musics.size <= 15,
-            label = "",
-            modifier = Modifier.align(rememberSearchbarAlignment())
-        ) { visible ->
-            if (visible) {
-                val transition = rememberInfiniteTransition(label = "Infinite Color Change")
-                val color by transition.animateColor(
-                    initialValue = LocalContentColor.current,
-                    targetValue = MaterialTheme.colorScheme.errorContainer,
-                    animationSpec = infiniteRepeatable(
-                        tween(500),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = ""
-                )
-                var hasSeenTip by rememberHasSeenTip()
-
-                CuteSearchbar(
-                    query = query,
-                    onQueryChange = {
-                        query = it
-                        onHandleSearching(query)
-                    },
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .fillMaxWidth(rememberSearchbarMaxFloatValue())
-                        .padding(
-                            bottom = 5.dp,
-                            end = rememberSearchbarRightPadding()
-                        )
-                        .sharedElement(
-                            state = rememberSharedContentState(key = "searchbar"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        ),
-                    placeholder = {
+    ) { _ ->
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = state
+            ) {
+                if (musics.isEmpty()) {
+                    item {
                         CuteText(
-                            text = stringResource(id = R.string.search) + " " + stringResource(id = R.string.music),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-
-                            )
-                    },
-                    leadingIcon = {
-                        IconButton(
-                            onClick = {
-                                screenSelectionExpanded = true
-                                // Let's prevent writing to datastore everytime the user clicks ;)
-                                if (!hasSeenTip) {
-                                    hasSeenTip = true
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.MusicNote,
-                                contentDescription = null,
-                                tint = if (!hasSeenTip) color else LocalContentColor.current
-                            )
-                        }
-
-
-                        DropdownMenu(
-                            expanded = screenSelectionExpanded,
-                            onDismissRequest = { screenSelectionExpanded = false },
+                            text = stringResource(id = R.string.no_musics_found),
                             modifier = Modifier
-                                .width(180.dp)
-                                .background(color = MaterialTheme.colorScheme.surface)
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    itemsIndexed(
+                        items = musics,
+                        key = { _, music -> music.mediaId }
+                    ) { index, music ->
+                        Column(
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(
+                                    vertical = 2.dp,
+                                    horizontal = 4.dp
+                                )
                         ) {
-                            ScreenSelection(
-                                onNavigationItemClicked = onNavigationItemClicked,
-                                selectedIndex = selectedIndex
+                            MusicListItem(
+                                onShortClick = { onShortClick(music.mediaId) },
+                                music = music,
+                                onNavigate = { onNavigateTo(it) },
+                                currentMusicUri = currentMusicUri,
+                                onLoadMetadata = onLoadMetadata,
+                                showBottomSheet = true,
+                                modifier = Modifier.thenIf(
+                                    index == 0,
+                                    Modifier.statusBarsPadding()
+                                ),
+                                onDeleteMusic = onDeleteMusic,
+                                onChargeAlbumSongs = onChargeAlbumSongs,
+                                onChargeArtistLists = onChargeArtistLists
                             )
                         }
-                    },
-                    trailingIcon = {
-                        Row {
+                    }
+                }
+            }
+
+            // TODO : How do you make it NOT scroll to the first item when sorting changes !!!!!
+            Crossfade(
+                targetState = true,
+                //targetState = state.canScrollForward || musics.size <= 15,
+                label = "",
+                modifier = Modifier.align(rememberSearchbarAlignment())
+            ) { visible ->
+                if (visible) {
+                    val transition = rememberInfiniteTransition(label = "Infinite Color Change")
+                    val color by transition.animateColor(
+                        initialValue = LocalContentColor.current,
+                        targetValue = MaterialTheme.colorScheme.errorContainer,
+                        animationSpec = infiniteRepeatable(
+                            tween(500),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = ""
+                    )
+                    var hasSeenTip by rememberHasSeenTip()
+
+                    CuteSearchbar(
+                        query = query,
+                        onQueryChange = {
+                            query = it
+                            onHandleSearching(query)
+                        },
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .fillMaxWidth(rememberSearchbarMaxFloatValue())
+                            .padding(
+                                bottom = 5.dp,
+                                end = rememberSearchbarRightPadding()
+                            ),
+                        placeholder = {
+                            CuteText(
+                                text = stringResource(id = R.string.search) + " " + stringResource(
+                                    id = R.string.music
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+
+                                )
+                        },
+                        leadingIcon = {
                             IconButton(
                                 onClick = {
-                                    isSortedByASC = !isSortedByASC
-                                    when(isSortedByASC) {
-                                        true -> { onHandleSorting(SortingType.ASCENDING) }
-                                        false -> { onHandleSorting(SortingType.DESCENDING) }
+                                    screenSelectionExpanded = true
+                                    // Let's prevent writing to datastore everytime the user clicks ;)
+                                    if (!hasSeenTip) {
+                                        hasSeenTip = true
                                     }
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.ArrowUpward,
+                                    imageVector = Icons.Rounded.MusicNote,
                                     contentDescription = null,
-                                    modifier = Modifier.rotate(float)
+                                    tint = if (!hasSeenTip) color else LocalContentColor.current
                                 )
                             }
-                            IconButton(
-                                onClick = { onNavigateTo(Screen.Settings) }
+
+
+                            DropdownMenu(
+                                expanded = screenSelectionExpanded,
+                                onDismissRequest = { screenSelectionExpanded = false },
+                                modifier = Modifier
+                                    .width(180.dp)
+                                    .background(color = MaterialTheme.colorScheme.surface),
+                                shape = RoundedCornerShape(24.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
+                                ScreenSelection(
+                                    onNavigationItemClicked = onNavigationItemClicked,
+                                    selectedIndex = selectedIndex
                                 )
                             }
-                        }
-                    },
-                    currentlyPlaying = currentlyPlaying,
-                    onHandlePlayerActions = onHandlePlayerAction,
-                    isPlaying = isCurrentlyPlaying,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    isPlaylistEmpty = isPlaylistEmpty,
-                    onNavigate = { onNavigateTo(Screen.NowPlaying) }
-                )
+                        },
+                        trailingIcon = {
+                            Row {
+                                IconButton(
+                                    onClick = {
+                                        isSortedByASC = !isSortedByASC
+                                        when (isSortedByASC) {
+                                            true -> {
+                                                onHandleSorting(SortingType.ASCENDING)
+                                            }
+
+                                            false -> {
+                                                onHandleSorting(SortingType.DESCENDING)
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.ArrowUpward,
+                                        contentDescription = null,
+                                        modifier = Modifier.rotate(float)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { onNavigateTo(Screen.Settings) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Settings,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        },
+                        currentlyPlaying = currentlyPlaying,
+                        onHandlePlayerActions = onHandlePlayerAction,
+                        isPlaying = isCurrentlyPlaying,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        isPlayerReady = isPlayerReady,
+                        onNavigate = { onNavigateTo(Screen.NowPlaying) }
+                    )
+                }
             }
         }
-
     }
 }
 
@@ -279,17 +320,21 @@ fun SharedTransitionScope.MainScreen(
 fun MusicListItem(
     modifier: Modifier = Modifier,
     music: MediaItem,
-    onShortClick: (String) -> Unit,
+    onShortClick: (albumName: String) -> Unit,
     onNavigate: (Screen) -> Unit = {},
     currentMusicUri: String,
-    onLoadMetadata: ((String) -> Unit)? = null,
+    onLoadMetadata: (String) -> Unit = {},
     showBottomSheet: Boolean = false,
-    onDeleteMusic: ((List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit)? = null
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
+    onChargeAlbumSongs: (String) -> Unit = {},
+    onChargeArtistLists: (String) -> Unit = {},
 ) {
 
-    val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
-    var isSheetOpen by remember { mutableStateOf(false) }
+    var isDropDownExpanded by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
+    val uri = remember { Uri.parse(music.mediaMetadata.extras?.getString("uri")) }
+    val path = remember { music.mediaMetadata.extras?.getString("path") }
     val isPlaying = currentMusicUri == music.mediaMetadata.extras?.getString("uri")
     val bgColor by animateColorAsState(
         targetValue = if (isPlaying) {
@@ -300,84 +345,183 @@ fun MusicListItem(
         label = "Background Color",
         animationSpec = tween(500)
     )
+    val deleteSongLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                    context,
+                    context.resources.getText(R.string.deleting_song_OK),
+                    Toast.LENGTH_SHORT
+                ).show()
 
-
-    if (isSheetOpen) {
-        ModalBottomSheet(
-            modifier = Modifier.fillMaxHeight(),
-            sheetState = sheetState,
-            onDismissRequest = { isSheetOpen = false },
-        ) {
-            BottomSheetContent(
-                music = music,
-                onNavigate = { onNavigate(it) },
-                onDismiss = { isSheetOpen = false },
-                onLoadMetadata = onLoadMetadata,
-                onDeleteMusic = onDeleteMusic!!
-            )
+            } else {
+                Toast.makeText(
+                    context,
+                    context.resources.getText(R.string.error_deleting_song),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
+
+    if (showDetailsDialog) {
+        MusicDetailsDialog(
+            music = music,
+            onDismissRequest = { showDetailsDialog = false }
+        )
     }
 
 
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .combinedClickable(
+                onClick = { onShortClick(music.mediaId) }
+            )
+            .background(
+                color = bgColor,
+                shape = RoundedCornerShape(24.dp)
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+
         Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .combinedClickable(
-                    onClick = { onShortClick(music.mediaId) }
-                )
-                .background(
-                    color = bgColor,
-                    shape = RoundedCornerShape(24.dp)
-                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.weight(1f)
         ) {
+            AsyncImage(
+                model = ImageUtils.imageRequester(
+                    img = music.mediaMetadata.artworkUri,
+                    context = context
+                ),
+                stringResource(R.string.artwork),
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .size(45.dp),
+                contentScale = ContentScale.Crop,
+            )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+            Column(
+                modifier = Modifier.padding(15.dp)
             ) {
-                AsyncImage(
-                    model = ImageUtils.imageRequester(
-                        img = music.mediaMetadata.artworkUri,
-                        context = context
-                    ),
-                    stringResource(R.string.artwork),
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .size(45.dp),
-                    contentScale = ContentScale.Crop,
+                CuteText(
+                    text = music.mediaMetadata.title.toString(),
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee()
                 )
-
-                Column(
-                    modifier = Modifier.padding(15.dp)
-                ) {
-                    CuteText(
-                        text = music.mediaMetadata.title.toString(),
-                        maxLines = 1,
-                        modifier = Modifier.basicMarquee()
-                    )
-                    CuteText(
-                        text = music.mediaMetadata.artist.toString(),
-
-                        maxLines = 1,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
-                    )
-                }
+                CuteText(
+                    text = music.mediaMetadata.artist.toString(),
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                )
             }
+        }
 
-            if (showBottomSheet) {
+        if (showBottomSheet) {
+            Row {
                 IconButton(
-                    onClick = { isSheetOpen = true }
+                    onClick = { isDropDownExpanded = true }
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreVert,
                         contentDescription = null
                     )
                 }
+                DropdownMenu(
+                    expanded = isDropDownExpanded,
+                    onDismissRequest = { isDropDownExpanded = false },
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    DropdownMenuItem(
+                        onClick = { showDetailsDialog = true },
+                        text = {
+                            CuteText(stringResource(R.string.details))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Info,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            isDropDownExpanded = false
+                            onLoadMetadata(path ?: "")
+                            onNavigate(Screen.MetadataEditor(music.mediaId))
+                        },
+                        text = {
+                            CuteText(stringResource(R.string.edit))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            isDropDownExpanded = false
+                            onChargeAlbumSongs(music.mediaMetadata.albumTitle.toString())
+                            onNavigate(
+                                Screen.AlbumsDetails(
+                                    music.mediaMetadata.extras?.getLong("album_id") ?: 0
+                                )
+                            )
+                        },
+                        text = {
+                            CuteText("Go to: ${music.mediaMetadata.albumTitle}")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Album,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            isDropDownExpanded = false
+                            onChargeArtistLists(music.mediaMetadata.artist.toString())
+                            onNavigate(
+                                Screen.ArtistsDetails(
+                                    music.mediaMetadata.extras?.getLong("artist_id") ?: 0
+                                )
+                            )
+                        },
+                        text = {
+                            CuteText("Go to: ${music.mediaMetadata.artist}")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Person,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = { onDeleteMusic(listOf(uri), deleteSongLauncher) },
+                        text = {
+                            CuteText(
+                                text = stringResource(R.string.delete),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
             }
         }
+    }
 }
 
 

@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.MusicState
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -41,7 +43,8 @@ fun AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
     postViewModel: PostViewModel,
-    viewModel: MusicViewModel
+    viewModel: MusicViewModel,
+    musicState: MusicState
 ) {
 
     val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
@@ -100,8 +103,14 @@ fun AlbumDetailsLandscape(
                     items(albumSongs, key = { it.mediaId }) { music ->
                         MusicListItem(
                             music = music,
-                            currentMusicUri = viewModel.currentMusicUri,
-                            onShortClick = { viewModel.itemClicked(it, listOf()) }
+                            currentMusicUri = musicState.currentMusicUri,
+                            onShortClick = {
+                                viewModel.handlePlayerActions(
+                                    PlayerActions.StartPlayback(
+                                        it
+                                    )
+                                )
+                            }
                         )
                     }
                 }

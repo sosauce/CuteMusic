@@ -17,16 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
+import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
-import com.sosauce.cutemusic.ui.customs.restart
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.restart
 
 @Composable
 fun Misc(
@@ -131,6 +131,7 @@ fun ThemeManagement() {
 @Composable
 fun UISettings() {
     var useArtTheme by rememberUseArtTheme()
+    var useClassicSlider by rememberUseClassicSlider()
 
     Column {
         CuteText(
@@ -138,20 +139,27 @@ fun UISettings() {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
         )
+//        SettingsCards(
+//            checked = useArtTheme,
+//            onCheckedChange = { useArtTheme = !useArtTheme },
+//            topDp = 24.dp,
+//            bottomDp = 24.dp,
+//            text = stringResource(id = R.string.use_art),
+//            optionalDescription = {
+//                CuteText(
+//                    text = "App's theme will follow the currently playing music's art",
+//                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
+//                    fontSize = 13.sp
+//
+//                )
+//            }
+//        )
         SettingsCards(
-            checked = useArtTheme,
-            onCheckedChange = { useArtTheme = !useArtTheme },
+            checked = useClassicSlider,
+            onCheckedChange = { useClassicSlider = !useClassicSlider },
             topDp = 24.dp,
             bottomDp = 24.dp,
-            text = stringResource(id = R.string.use_art),
-            optionalDescription = {
-                CuteText(
-                    text = "App's theme will follow the currently playing music's art",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-                    fontSize = 13.sp
-
-                )
-            }
+            text = stringResource(id = R.string.classic_slider),
         )
     }
 }

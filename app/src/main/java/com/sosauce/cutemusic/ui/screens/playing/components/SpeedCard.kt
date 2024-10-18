@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 
@@ -87,7 +88,12 @@ fun SpeedCard(
                             value = speed,
                             onValueChange = {
                                 speed = it
-                                viewModel.setPlaybackSpeed(speed, pitch)
+                                viewModel.handlePlayerActions(
+                                    PlayerActions.ApplyPlaybackSpeed(
+                                        speed = speed,
+                                        pitch = pitch
+                                    )
+                                )
                             },
                             valueRange = 0.5f..2f,
                             track = { sliderState ->
@@ -125,7 +131,12 @@ fun SpeedCard(
                             value = pitch,
                             onValueChange = {
                                 pitch = it
-                                viewModel.setPlaybackSpeed(speed, pitch)
+                                viewModel.handlePlayerActions(
+                                    PlayerActions.ApplyPlaybackSpeed(
+                                        speed = speed,
+                                        pitch = pitch
+                                    )
+                                )
                             },
                             valueRange = 0.5f..2f,
                             track = { sliderState ->
@@ -153,7 +164,12 @@ fun SpeedCard(
                                 onValueChange = {
                                     speed = it
                                     pitch = it
-                                    viewModel.setPlaybackSpeed(speed, pitch)
+                                    viewModel.handlePlayerActions(
+                                        PlayerActions.ApplyPlaybackSpeed(
+                                            speed = speed,
+                                            pitch = pitch
+                                        )
+                                    )
                                 },
                                 valueRange = 0.5f..2f,
                                 track = { sliderState ->

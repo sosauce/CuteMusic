@@ -1,7 +1,10 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 
 package com.sosauce.cutemusic.ui.screens.artist
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,7 +21,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,25 +35,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.sosauce.cutemusic.data.MusicState
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.album.AlbumCard
 import com.sosauce.cutemusic.ui.screens.main.MusicListItem
+import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
+import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
+import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 
 @Composable
-fun ArtistDetails(
+fun SharedTransitionScope.ArtistDetails(
     artist: Artist,
     navController: NavController,
     viewModel: MusicViewModel,
     postViewModel: PostViewModel,
     onNavigate: (Screen) -> Unit,
+    musicState: MusicState,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val artistSongs by remember { mutableStateOf(postViewModel.artistSongs) }
@@ -58,11 +73,11 @@ fun ArtistDetails(
             onNavigateUp = navController::navigateUp,
             artistAlbums = artistAlbums,
             artistSongs = artistSongs,
-            onClickPlay = { viewModel.itemClicked(it, listOf()) },
+            onClickPlay = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
             onNavigate = { navController.navigate(it) },
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
             artist = artist,
-            currentMusicUri = viewModel.currentMusicUri
+            currentMusicUri = musicState.currentMusicUri
         )
     } else {
         Scaffold(
@@ -94,12 +109,36 @@ fun ArtistDetails(
                         }
                     }
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.handlePlayerActions(
+                            PlayerActions.StartArtistPlayback(
+                                artistName = artist.name,
+                                mediaId = null
+                            )
+                        )
+                    },
+                    modifier = Modifier
+                        .padding(bottom = 55.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Shuffle,
+                        contentDescription = null
+                    )
+                }
             }
         ) { values ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(values)
+                    .padding(
+                        start = values.calculateLeftPadding(LayoutDirection.Ltr) + 10.dp,
+                        end = values.calculateRightPadding(LayoutDirection.Rtl) + 10.dp,
+                        top = values.calculateTopPadding(),
+                        bottom = values.calculateBottomPadding()
+                    )
             ) {
                 Column {
                     LazyRow {
@@ -122,13 +161,33 @@ fun ArtistDetails(
                         items(artistSongs) { music ->
                             MusicListItem(
                                 music = music,
-                                onShortClick = { viewModel.itemClicked(it, listOf()) },
-                                currentMusicUri = viewModel.currentMusicUri
+                                onShortClick = {
+                                    viewModel.handlePlayerActions(
+                                        PlayerActions.StartArtistPlayback(
+                                            artistName = artist.name,
+                                            mediaId = it
+                                        )
+                                    )
+                                },
+                                currentMusicUri = musicState.currentMusicUri
                             )
                         }
                     }
-
                 }
+                CuteSearchbar(
+                    currentlyPlaying = musicState.currentlyPlaying,
+                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlaying = musicState.isCurrentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .fillMaxWidth(rememberSearchbarMaxFloatValue())
+                        .padding(end = rememberSearchbarRightPadding())
+                        .align(rememberSearchbarAlignment()),
+                    showSearchField = false,
+                    onNavigate = { onNavigate(Screen.NowPlaying) }
+                )
             }
         }
     }
