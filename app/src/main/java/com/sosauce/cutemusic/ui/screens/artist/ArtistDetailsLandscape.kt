@@ -40,7 +40,8 @@ fun ArtistDetailsLandscape(
     onNavigate: (Screen) -> Unit,
     chargePVMAlbumSongs: (String) -> Unit,
     artist: Artist,
-    currentMusicUri: String
+    currentMusicUri: String,
+    isPlayerReady: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -96,7 +97,8 @@ fun ArtistDetailsLandscape(
                     MusicListItem(
                         music = music,
                         currentMusicUri = currentMusicUri,
-                        onShortClick = { onClickPlay(it) }
+                        onShortClick = { onClickPlay(it) },
+                        isPlayerReady = isPlayerReady
                     )
                 }
             }

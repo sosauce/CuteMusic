@@ -18,8 +18,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
@@ -29,8 +30,8 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
+import com.sosauce.cutemusic.utils.formatToReadableTime
 import me.saket.squiggles.SquigglySlider
-import java.util.Locale
 
 @Composable
 fun MusicSlider(
@@ -38,9 +39,10 @@ fun MusicSlider(
     musicState: MusicState
 ) {
 
-    val sliderPosition = rememberUpdatedState(musicState.currentPosition)
     val useClassicSlider by rememberUseClassicSlider()
     val interactionSource = remember { MutableInteractionSource() }
+    var tempSliderValue by remember { mutableStateOf<Float?>(null) }
+
 
     Column {
         Row(
@@ -56,9 +58,7 @@ fun MusicSlider(
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                CuteText(
-                    text = totalDuration(musicState.currentMusicDuration),
-                )
+                CuteText(musicState.currentPosition.formatToReadableTime())
             }
             Box(
                 modifier = Modifier
@@ -68,22 +68,22 @@ fun MusicSlider(
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                CuteText(
-                    text = timeLeft(musicState.currentPosition)
-                )
+                CuteText(musicState.currentMusicDuration.formatToReadableTime())
             }
         }
         if (useClassicSlider) {
             Slider(
-                value = sliderPosition.value.toFloat(),
-                onValueChange = {
-                    musicState.currentPosition = it.toLong()
-                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                value = tempSliderValue ?: musicState.currentPosition.toFloat(),
+                onValueChange = { tempSliderValue = it },
+                onValueChangeFinished = {
+                    tempSliderValue?.let {
+                        viewModel.handlePlayerActions(PlayerActions.UpdateCurrentPosition(it.toLong()))
+                        viewModel.handlePlayerActions(PlayerActions.SeekToSlider(it.toLong()))
+                    }
+
+                    tempSliderValue = null
                 },
                 valueRange = 0f..musicState.currentMusicDuration.toFloat(),
-                onValueChangeFinished = {
-                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
-                },
                 modifier = Modifier.fillMaxWidth(),
                 track = { sliderState ->
                     SliderDefaults.Track(
@@ -102,36 +102,19 @@ fun MusicSlider(
             )
         } else {
             SquigglySlider(
-                value = sliderPosition.value.toFloat(),
-                onValueChange = {
-                    musicState.currentPosition = it.toLong()
-                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
+                value = tempSliderValue ?: musicState.currentPosition.toFloat(),
+                onValueChange = { tempSliderValue = it },
+                onValueChangeFinished = {
+                    tempSliderValue?.let {
+                        viewModel.handlePlayerActions(PlayerActions.UpdateCurrentPosition(it.toLong()))
+                        viewModel.handlePlayerActions(PlayerActions.SeekToSlider(it.toLong()))
+                    }
+
+                    tempSliderValue = null
                 },
                 valueRange = 0f..musicState.currentMusicDuration.toFloat(),
-                onValueChangeFinished = {
-                    viewModel.handlePlayerActions(PlayerActions.SeekToSlider(musicState.currentPosition))
-                },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
-}
-
-
-fun totalDuration(
-    currentMusicDuration: Long
-): String {
-    val totalSeconds = currentMusicDuration / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
-}
-
-fun timeLeft(
-    currentPosition: Long
-): String {
-    val totalSeconds = currentPosition / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }

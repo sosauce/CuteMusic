@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
+import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
@@ -33,7 +34,6 @@ fun Misc(
     onNavigateTo: (Screen) -> Unit
 ) {
     val context = LocalContext.current
-    var useSystemFont by rememberUseSystemFont()
     //var killService by remember { rememberKillService(context) }
 
     Column {
@@ -62,13 +62,6 @@ fun Misc(
 //            bottomDp = 4.dp,
 //            text = "Kill Service"
 //        )
-        SettingsCards(
-            checked = useSystemFont,
-            onCheckedChange = { useSystemFont = !useSystemFont },
-            topDp = 4.dp,
-            bottomDp = 4.dp,
-            text = stringResource(id = R.string.use_sys_font)
-        )
         TextSettingsCards(
             text = stringResource(id = R.string.restart_app),
             tipText = stringResource(id = R.string.restart_app_why),
@@ -130,8 +123,9 @@ fun ThemeManagement() {
 
 @Composable
 fun UISettings() {
-    var useArtTheme by rememberUseArtTheme()
     var useClassicSlider by rememberUseClassicSlider()
+    var useSystemFont by rememberUseSystemFont()
+    var showXButton by rememberShowXButton()
 
     Column {
         CuteText(
@@ -139,27 +133,41 @@ fun UISettings() {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
         )
+        SettingsCards(
+            checked = useClassicSlider,
+            onCheckedChange = { useClassicSlider = !useClassicSlider },
+            topDp = 24.dp,
+            bottomDp = 4.dp,
+            text = stringResource(id = R.string.classic_slider),
+        )
 //        SettingsCards(
 //            checked = useArtTheme,
 //            onCheckedChange = { useArtTheme = !useArtTheme },
-//            topDp = 24.dp,
-//            bottomDp = 24.dp,
+//            topDp = 4.dp,
+//            bottomDp = 4.dp,
 //            text = stringResource(id = R.string.use_art),
 //            optionalDescription = {
 //                CuteText(
-//                    text = "App's theme will follow the currently playing music's art",
+//                    text = "CuteSearchbar will have the current artwork as it's background.",
 //                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-//                    fontSize = 13.sp
+//                    fontSize = 12.sp
 //
 //                )
 //            }
 //        )
         SettingsCards(
-            checked = useClassicSlider,
-            onCheckedChange = { useClassicSlider = !useClassicSlider },
-            topDp = 24.dp,
+            checked = showXButton,
+            onCheckedChange = { showXButton = !showXButton },
+            topDp = 4.dp,
+            bottomDp = 4.dp,
+            text = stringResource(id = R.string.show_close_button)
+        )
+        SettingsCards(
+            checked = useSystemFont,
+            onCheckedChange = { useSystemFont = !useSystemFont },
+            topDp = 4.dp,
             bottomDp = 24.dp,
-            text = stringResource(id = R.string.classic_slider),
+            text = stringResource(id = R.string.use_sys_font)
         )
     }
 }

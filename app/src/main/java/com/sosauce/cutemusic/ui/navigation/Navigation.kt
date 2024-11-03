@@ -46,10 +46,14 @@ fun Nav() {
 
 
     SharedTransitionLayout {
+
+        this
         NavHost(
             navController = navController,
             startDestination = Screen.Main
         ) {
+
+            this@SharedTransitionLayout
             composable<Screen.Main> {
                 MainScreen(
                     musics = musics,
@@ -99,6 +103,7 @@ fun Nav() {
                         postViewModel.artistSongs(it)
                         postViewModel.artistAlbums(it)
                     },
+                    musicState = musicState
                 )
 
             }
@@ -130,8 +135,8 @@ fun Nav() {
                             launchSingleTop = true
                         }
                     },
-                    selectedIndex = viewModel.selectedItem
-
+                    selectedIndex = viewModel.selectedItem,
+                    musicState = musicState
                 )
             }
             composable<Screen.Artists> {
@@ -165,7 +170,8 @@ fun Nav() {
                             listToHandle = ListToHandle.ARTISTS,
                             query = query
                         )
-                    }
+                    },
+                    musicState = musicState
                 )
             }
 

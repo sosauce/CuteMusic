@@ -3,17 +3,20 @@
 package com.sosauce.cutemusic.ui.screens.blacklisted
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,10 +38,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -120,16 +123,36 @@ private fun BlacklistedScreenContent(
         }
     ) { values ->
         LazyColumn(
-            modifier = Modifier.padding(values)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(values)
         ) {
-            items(items = blacklistedFolders.toList()) { folder ->
+            itemsIndexed(
+                items = blacklistedFolders.toList(),
+                key = { _, folder -> folder }
+            ) { index, folder ->
+
+                val topDp by animateDpAsState(
+                    targetValue = if (index == 0) 24.dp else 4.dp,
+                    label = "Top Dp",
+                    animationSpec = tween(500)
+                )
+                val bottomDp by animateDpAsState(
+                    targetValue = if (index == blacklistedFolders.size - 1) 24.dp else 4.dp,
+                    label = "Bottom Dp",
+                    animationSpec = tween(500)
+                )
+
                 BlackFolderItem(
                     folder = folder,
                     onClick = {
                         blacklistedFolders = blacklistedFolders.toMutableSet().apply {
                             remove(folder)
                         }
-                    }
+                    },
+                    topDp = topDp,
+                    bottomDp = bottomDp,
+                    modifier = Modifier.animateItem()
                 )
             }
         }
@@ -139,20 +162,28 @@ private fun BlacklistedScreenContent(
 
 @Composable
 private fun BlackFolderItem(
+    modifier: Modifier = Modifier,
     folder: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    topDp: Dp,
+    bottomDp: Dp,
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(
                 start = 13.dp,
                 end = 13.dp,
                 bottom = 8.dp
-            )
-            .clip(RoundedCornerShape(24.dp)),
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
+        ),
+        shape = RoundedCornerShape(
+            topStart = topDp,
+            topEnd = topDp,
+            bottomStart = bottomDp,
+            bottomEnd = bottomDp
+        ),
     ) {
         Row(
             modifier = Modifier
@@ -185,7 +216,7 @@ private fun BlackFolderItem(
                 )
             }
             IconButton(
-                onClick = { onClick() }
+                onClick = onClick
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

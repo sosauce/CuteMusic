@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.main.quickplay
 
 import android.content.Intent
@@ -7,23 +9,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRowQuickPlay
 import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
@@ -60,6 +58,7 @@ class QuickPlayActivity : ComponentActivity() {
                         val viewModel = koinViewModel<MusicViewModel>()
                         val musicState by viewModel.musicState.collectAsStateWithLifecycle()
 
+
                         when {
                             intent?.action == Intent.ACTION_SEND -> {
                                 if (intent?.type?.startsWith("audio/") == true) {
@@ -76,6 +75,13 @@ class QuickPlayActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                        LaunchedEffect(Unit) {
+                            viewModel.handlePlayerActions(
+                                PlayerActions.QuickPlay(uri!!)
+                            )
+                        }
+
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -104,25 +110,14 @@ class QuickPlayActivity : ComponentActivity() {
                                 musicState = musicState
                             )
                             Spacer(modifier = Modifier.height(7.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                FloatingActionButton(
-                                    onClick = {
-                                        if (!viewModel.isPlayerReady()) viewModel.quickPlay(uri) else viewModel.handlePlayerActions(
-                                            PlayerActions.PlayOrPause
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = if (musicState.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                        contentDescription = "pause/play button"
-                                    )
-                                }
-                            }
+                            ActionsButtonsRowQuickPlay(
+                                onClickLoop = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) },
+                                onClickShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
+                                onEvent = { viewModel.handlePlayerActions(it) },
+                                musicState = musicState
+                            )
                         }
+
                     }
                 }
             }

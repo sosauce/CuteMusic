@@ -3,15 +3,15 @@ package com.sosauce.cutemusic.utils
 import android.content.ContentUris
 import android.content.Context
 import androidx.core.net.toUri
-import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
 import java.io.FileNotFoundException
+import coil3.request.ImageRequest as ImageRequest3
 
 object ImageUtils {
-    fun imageRequester(img: Any?, context: Context): ImageRequest {
-        val request = ImageRequest.Builder(context)
+    fun imageRequester(img: Any?, context: Context): ImageRequest3 {
+        val request = ImageRequest3.Builder(context)
             .data(img)
             .crossfade(true)
             .transformations(

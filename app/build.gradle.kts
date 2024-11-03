@@ -13,8 +13,8 @@ android {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 14
-        versionName = "2.2.3"
+        versionCode = 15
+        versionName = "2.2.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -79,9 +79,9 @@ android {
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.koin.android)
         implementation(libs.koin.androidx.compose)
-        debugImplementation(libs.androidx.ui.tooling)
-        //implementation("com.materialkolor:material-kolor:1.7.1")
+        //implementation("com.materialkolor:material-kolor:2.0.0")
         implementation(libs.koin.androidx.startup)
         implementation(libs.jaudiotagger)
+        debugImplementation(libs.androidx.ui.tooling)
     }
 }

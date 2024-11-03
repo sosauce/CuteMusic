@@ -21,9 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -77,7 +75,8 @@ fun SharedTransitionScope.ArtistDetails(
             onNavigate = { navController.navigate(it) },
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
             artist = artist,
-            currentMusicUri = musicState.currentMusicUri
+            currentMusicUri = musicState.currentMusicUri,
+            isPlayerReady = viewModel.isPlayerReady()
         )
     } else {
         Scaffold(
@@ -109,25 +108,6 @@ fun SharedTransitionScope.ArtistDetails(
                         }
                     }
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.handlePlayerActions(
-                            PlayerActions.StartArtistPlayback(
-                                artistName = artist.name,
-                                mediaId = null
-                            )
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(bottom = 55.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Shuffle,
-                        contentDescription = null
-                    )
-                }
             }
         ) { values ->
             Box(
@@ -154,8 +134,10 @@ fun SharedTransitionScope.ArtistDetails(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    HorizontalDivider()
+                    if (artistAlbums.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        HorizontalDivider()
+                    }
                     Spacer(modifier = Modifier.height(10.dp))
                     LazyColumn {
                         items(artistSongs) { music ->
@@ -169,7 +151,8 @@ fun SharedTransitionScope.ArtistDetails(
                                         )
                                     )
                                 },
-                                currentMusicUri = musicState.currentMusicUri
+                                currentMusicUri = musicState.currentMusicUri,
+                                isPlayerReady = viewModel.isPlayerReady()
                             )
                         }
                     }
@@ -186,7 +169,15 @@ fun SharedTransitionScope.ArtistDetails(
                         .padding(end = rememberSearchbarRightPadding())
                         .align(rememberSearchbarAlignment()),
                     showSearchField = false,
-                    onNavigate = { onNavigate(Screen.NowPlaying) }
+                    onNavigate = { onNavigate(Screen.NowPlaying) },
+                    onClickFAB = {
+                        viewModel.handlePlayerActions(
+                            PlayerActions.StartArtistPlayback(
+                                artistName = artist.name,
+                                mediaId = null
+                            )
+                        )
+                    }
                 )
             }
         }

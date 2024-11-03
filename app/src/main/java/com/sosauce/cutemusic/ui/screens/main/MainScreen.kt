@@ -6,13 +6,13 @@
 package com.sosauce.cutemusic.ui.screens.main
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -24,7 +24,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -54,17 +53,18 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,7 +73,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -82,9 +81,11 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.screens.main.components.ShareOptionsContent
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicDetailsDialog
@@ -115,7 +116,8 @@ fun SharedTransitionScope.MainScreen(
     onHandleSorting: (SortingType) -> Unit,
     onHandleSearching: (String) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit
+    onChargeArtistLists: (String) -> Unit,
+    musicState: MusicState
 ) {
     var query by remember { mutableStateOf("") }
     val state = rememberLazyListState()
@@ -125,31 +127,18 @@ fun SharedTransitionScope.MainScreen(
         targetValue = if (isSortedByASC) 45f else 135f,
         label = "Arrow Icon Animation"
     )
-
-
-    Scaffold(
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = !isPlayerReady,
-                exit = scaleOut(
-                    // 2 times faster than the searchbar so it doesn't look too weird
-                    animationSpec = tween(250),
-                    transformOrigin = TransformOrigin(0.5f, 0.25f)
-                )
-            ) {
-                FloatingActionButton(
-                    onClick = { onHandlePlayerAction(PlayerActions.PlayRandom) },
-                    modifier = Modifier
-                        .padding(bottom = 70.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Shuffle,
-                        contentDescription = null
-                    )
-                }
+    val showCuteSearchbar by remember {
+        derivedStateOf {
+            if (musics.isEmpty()) {
+                true
+            } else {
+                state.layoutInfo.visibleItemsInfo.lastOrNull()?.index != musics.size - 1
             }
         }
-    ) { _ ->
+    }
+
+
+    Scaffold { _ ->
         Box(Modifier.fillMaxSize()) {
             LazyColumn(
                 state = state
@@ -159,6 +148,7 @@ fun SharedTransitionScope.MainScreen(
                         CuteText(
                             text = stringResource(id = R.string.no_musics_found),
                             modifier = Modifier
+                                .statusBarsPadding()
                                 .padding(16.dp)
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
@@ -184,13 +174,15 @@ fun SharedTransitionScope.MainScreen(
                                 currentMusicUri = currentMusicUri,
                                 onLoadMetadata = onLoadMetadata,
                                 showBottomSheet = true,
-                                modifier = Modifier.thenIf(
-                                    index == 0,
-                                    Modifier.statusBarsPadding()
-                                ),
                                 onDeleteMusic = onDeleteMusic,
                                 onChargeAlbumSongs = onChargeAlbumSongs,
-                                onChargeArtistLists = onChargeArtistLists
+                                onChargeArtistLists = onChargeArtistLists,
+                                modifier = Modifier
+                                    .thenIf(
+                                        index == 0,
+                                        Modifier.statusBarsPadding()
+                                    ),
+                                isPlayerReady = isPlayerReady
                             )
                         }
                     }
@@ -199,8 +191,7 @@ fun SharedTransitionScope.MainScreen(
 
             // TODO : How do you make it NOT scroll to the first item when sorting changes !!!!!
             Crossfade(
-                targetState = true,
-                //targetState = state.canScrollForward || musics.size <= 15,
+                targetState = showCuteSearchbar,
                 label = "",
                 modifier = Modifier.align(rememberSearchbarAlignment())
             ) { visible ->
@@ -243,7 +234,6 @@ fun SharedTransitionScope.MainScreen(
                             IconButton(
                                 onClick = {
                                     screenSelectionExpanded = true
-                                    // Let's prevent writing to datastore everytime the user clicks ;)
                                     if (!hasSeenTip) {
                                         hasSeenTip = true
                                     }
@@ -308,7 +298,8 @@ fun SharedTransitionScope.MainScreen(
                         isPlaying = isCurrentlyPlaying,
                         animatedVisibilityScope = animatedVisibilityScope,
                         isPlayerReady = isPlayerReady,
-                        onNavigate = { onNavigateTo(Screen.NowPlaying) }
+                        onNavigate = { onNavigateTo(Screen.NowPlaying) },
+                        onClickFAB = { onHandlePlayerAction(PlayerActions.PlayRandom) }
                     )
                 }
             }
@@ -328,16 +319,18 @@ fun MusicListItem(
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
     onChargeAlbumSongs: (String) -> Unit = {},
     onChargeArtistLists: (String) -> Unit = {},
+    isPlayerReady: Boolean
 ) {
 
     val context = LocalContext.current
     var isDropDownExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
+    var showShareOptions by remember { mutableStateOf(false) }
     val uri = remember { Uri.parse(music.mediaMetadata.extras?.getString("uri")) }
     val path = remember { music.mediaMetadata.extras?.getString("path") }
     val isPlaying = currentMusicUri == music.mediaMetadata.extras?.getString("uri")
     val bgColor by animateColorAsState(
-        targetValue = if (isPlaying) {
+        targetValue = if (isPlaying && isPlayerReady) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             MaterialTheme.colorScheme.background
@@ -363,11 +356,25 @@ fun MusicListItem(
             }
         }
 
+    val shareIntent = Intent()
+        .apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            type = "audio/*"
+        }
+
     if (showDetailsDialog) {
         MusicDetailsDialog(
             music = music,
             onDismissRequest = { showDetailsDialog = false }
         )
+    }
+
+    if (showShareOptions) {
+        BasicAlertDialog(
+            onDismissRequest = { showShareOptions = false }
+        ) { ShareOptionsContent() }
     }
 
 
@@ -498,6 +505,27 @@ fun MusicListItem(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Rounded.Person,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    null
+                                )
+                            )
+                        },
+                        text = {
+                            CuteText(
+                                text = stringResource(R.string.share)
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
                                 contentDescription = null
                             )
                         }

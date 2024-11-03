@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
@@ -20,6 +21,7 @@ class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
+    @UnstableApi
     override fun fetchMusics(): List<MediaItem> {
         val musics = mutableListOf<MediaItem>()
 
@@ -32,6 +34,7 @@ class MediaStoreHelperImpl(
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.DURATION,
             //MediaStore.Audio.Media.IS_FAVORITE,
         )
 
@@ -52,6 +55,7 @@ class MediaStoreHelperImpl(
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             //val isFavColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_FAVORITE)
 
             while (cursor.moveToNext()) {
@@ -64,6 +68,7 @@ class MediaStoreHelperImpl(
                 val filePath = cursor.getString(folderColumn)
                 val folder = filePath.substring(0, filePath.lastIndexOf('/'))
                 val size = cursor.getLong(sizeColumn)
+                val duration = cursor.getLong(durationColumn)
                 //val isFavorite = cursor.getInt(isFavColumn) // 1 = is favorite, 0 = no
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -87,6 +92,7 @@ class MediaStoreHelperImpl(
                                 .setArtist(artist)
                                 .setAlbumTitle(album)
                                 .setArtworkUri(artUri)
+                                .setDurationMs(duration)
                                 .setExtras(
                                     Bundle()
                                         .apply {

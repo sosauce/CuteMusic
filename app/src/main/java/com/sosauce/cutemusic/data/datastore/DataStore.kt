@@ -11,6 +11,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ALBUMS
@@ -40,6 +41,7 @@ private data object PreferencesKeys {
     val USE_ART_THEME = booleanPreferencesKey("use_art_theme")
     val APPLY_LOOP = booleanPreferencesKey("apply_loop")
     val USE_CLASSIC_SLIDER = booleanPreferencesKey("use_classic_slider")
+    val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
 }
 
 @Composable
@@ -95,3 +97,7 @@ fun rememberShouldApplyLoop() =
 @Composable
 fun rememberUseClassicSlider() =
     rememberPreference(key = USE_CLASSIC_SLIDER, defaultValue = false)
+
+@Composable
+fun rememberShowXButton() =
+    rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)

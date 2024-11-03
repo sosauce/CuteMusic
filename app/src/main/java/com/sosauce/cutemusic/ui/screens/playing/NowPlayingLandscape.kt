@@ -70,10 +70,11 @@ fun SharedTransitionScope.NowPlayingLandscape(
 
     if (showSpeedCard) {
         SpeedCard(
-            viewModel = viewModel,
             onDismiss = { showSpeedCard = false },
             shouldSnap = snap,
-            onChangeSnap = { snap = !snap }
+            onChangeSnap = { snap = !snap },
+            musicState = musicState,
+            onHandlePlayerAction = onEvent
         )
     }
 

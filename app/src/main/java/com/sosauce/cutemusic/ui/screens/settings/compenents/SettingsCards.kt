@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -131,6 +132,52 @@ fun TextSettingsCards(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SettingCategoryCards(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+    topDp: Dp,
+    bottomDp: Dp,
+    icon: ImageVector,
+) {
+    Card(
+        shape = RoundedCornerShape(
+            topStart = topDp,
+            topEnd = topDp,
+            bottomStart = bottomDp,
+            bottomEnd = bottomDp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        onClick = onClick
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier
+                .padding(
+                    top = 24.dp,
+                    bottom = 24.dp,
+                    start = 10.dp
+                )
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null
+            )
+            CuteText(
+                text = text,
+                modifier = Modifier.padding(start = 5.dp)
+            )
         }
     }
 }

@@ -5,9 +5,7 @@ sealed interface MetadataActions {
         val path: String
     ) : MetadataActions
 
-    data class SaveChanges(
-        val path: String
-    ) : MetadataActions
+    data object SaveChanges : MetadataActions
 
     data object ClearState : MetadataActions
 }

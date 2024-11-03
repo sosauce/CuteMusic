@@ -1,5 +1,7 @@
 package com.sosauce.cutemusic.data.actions
 
+import android.net.Uri
+
 sealed interface PlayerActions {
     data object PlayOrPause : PlayerActions
     data object SeekToNextMusic : PlayerActions
@@ -8,6 +10,7 @@ sealed interface PlayerActions {
     data object PlayRandom : PlayerActions
     data object ApplyLoop : PlayerActions
     data object ApplyShuffle : PlayerActions
+    data object StopPlayback : PlayerActions
     data class SeekTo(val position: Long) : PlayerActions
     data class SeekToSlider(val position: Long) : PlayerActions
     data class RewindTo(val position: Long) : PlayerActions
@@ -25,5 +28,14 @@ sealed interface PlayerActions {
     data class ApplyPlaybackSpeed(
         val speed: Float,
         val pitch: Float
+    ) : PlayerActions
+
+    data class UpdateCurrentPosition(
+        val position: Long
+    ) : PlayerActions
+
+
+    data class QuickPlay(
+        val uri: Uri
     ) : PlayerActions
 }

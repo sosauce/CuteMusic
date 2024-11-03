@@ -66,7 +66,7 @@ fun LoopButton(
         onClick = {
             shouldApplyLoop = !isLooping
             onClick()
-            scope.launch(Dispatchers.IO) {
+            scope.launch(Dispatchers.Main) {
                 rotation.animateTo(
                     targetValue = -360f,
                     animationSpec = tween(1000)
@@ -116,8 +116,6 @@ fun SharedTransitionScope.ActionsButtonsRow(
     animatedVisibilityScope: AnimatedVisibilityScope,
     musicState: MusicState
 ) {
-
-
     val leftIconOffsetX = remember { Animatable(0f) }
     val rightIconOffsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -192,7 +190,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                             } else {
                                 onEvent(PlayerActions.SeekToPreviousMusic)
                             }
-                            scope.launch(Dispatchers.IO) {
+                            scope.launch(Dispatchers.Main) {
                                 leftIconOffsetX.animateTo(
                                     targetValue = -20f,
                                     animationSpec = tween(250)
@@ -327,7 +325,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                     IconButton(
                         onClick = {
                             onEvent(PlayerActions.SeekToNextMusic)
-                            scope.launch(Dispatchers.IO) {
+                            scope.launch(Dispatchers.Main) {
                                 rightIconOffsetX.animateTo(
                                     targetValue = 20f,
                                     animationSpec = tween(250)
@@ -356,6 +354,257 @@ fun SharedTransitionScope.ActionsButtonsRow(
                                         tween(durationMillis = 500)
                                     }
                                 )
+                        )
+                    }
+                }
+            }
+
+            Crossfade(
+                targetState = showLongPressMenuPlus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.SeekTo(10000))
+                            showLongPressMenuPlus = false
+                        }
+                    ) { CuteText("+10") }
+                } else {
+                    LoopButton(
+                        onClick = onClickLoop,
+                        isLooping = musicState.isLooping
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ActionsButtonsRowQuickPlay(
+    onClickLoop: () -> Unit,
+    onClickShuffle: () -> Unit,
+    onEvent: (PlayerActions) -> Unit,
+    musicState: MusicState
+) {
+    val leftIconOffsetX = remember { Animatable(0f) }
+    val rightIconOffsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    var showLongPressMenuPlus by remember { mutableStateOf(false) }
+    var showLongPressMenuMinus by remember { mutableStateOf(false) }
+    val colorMinus by animateColorAsState(
+        targetValue = if (showLongPressMenuMinus) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.background,
+        label = "",
+        animationSpec = tween(300)
+    )
+    val colorPlus by animateColorAsState(
+        targetValue = if (showLongPressMenuPlus) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.background,
+        label = "",
+        animationSpec = tween(300)
+    )
+
+    val roundedFAB by animateIntAsState(
+        targetValue = if (musicState.isCurrentlyPlaying) 30 else 50,
+        label = "FAB Shape"
+    )
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(end = 5.dp)
+                .background(
+                    color = colorMinus,
+                    shape = RoundedCornerShape(24.dp)
+                )
+        ) {
+            Crossfade(
+                targetState = showLongPressMenuMinus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.RewindTo(3000))
+                            showLongPressMenuMinus = false
+                        }
+                    ) { CuteText("-3") }
+                } else {
+                    ShuffleButton(
+                        onClick = onClickShuffle,
+                        isShuffling = musicState.isShuffling
+                    )
+                }
+            }
+
+            Crossfade(
+                targetState = showLongPressMenuMinus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.RewindTo(5000))
+                            showLongPressMenuMinus = false
+                        }
+                    ) { CuteText("-5") }
+                } else {
+                    IconButton(
+                        onClick = {
+                            if (musicState.currentPosition >= 10000) {
+                                onEvent(PlayerActions.RestartSong)
+                            } else {
+                                onEvent(PlayerActions.SeekToPreviousMusic)
+                            }
+                            scope.launch(Dispatchers.Main) {
+                                leftIconOffsetX.animateTo(
+                                    targetValue = -20f,
+                                    animationSpec = tween(250)
+                                )
+                                leftIconOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(250)
+                                )
+                            }
+                        }
+                    ) {
+                        Crossfade(
+                            targetState = musicState.currentPosition >= 10000,
+                            label = ""
+                        ) {
+                            if (!it) {
+                                Icon(
+                                    imageVector = Icons.Rounded.SkipPrevious,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .offset {
+                                            IntOffset(
+                                                x = leftIconOffsetX.value.toInt(),
+                                                y = 0
+                                            )
+                                        }
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.RestartAlt,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Crossfade(
+                targetState = showLongPressMenuMinus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.RewindTo(10000))
+                            showLongPressMenuMinus = false
+                        }
+                    ) { CuteText("-10") }
+                } else {
+                    CuteIconButton(
+                        onClick = { onEvent(PlayerActions.RewindTo(5000)) },
+                        onLongClick = { showLongPressMenuMinus = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FastRewind,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+        }
+        FloatingActionButton(
+            onClick = { onEvent(PlayerActions.PlayOrPause) },
+            shape = RoundedCornerShape(roundedFAB)
+        ) {
+            Icon(
+                imageVector = if (musicState.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                contentDescription = "pause/play button",
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(start = 5.dp)
+                .background(
+                    color = colorPlus,
+                    shape = RoundedCornerShape(24.dp)
+
+                )
+        ) {
+
+            Crossfade(
+                targetState = showLongPressMenuPlus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.SeekTo(3000))
+                            showLongPressMenuPlus = false
+                        }
+                    ) { CuteText("+3") }
+                } else {
+                    CuteIconButton(
+                        onClick = { onEvent(PlayerActions.SeekTo(5000)) },
+                        onLongClick = { showLongPressMenuPlus = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FastForward,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+
+            Crossfade(
+                targetState = showLongPressMenuPlus,
+                label = ""
+            ) {
+                if (it) {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.SeekTo(5000))
+                            showLongPressMenuPlus = false
+                        }
+                    ) { CuteText("+5") }
+                } else {
+                    IconButton(
+                        onClick = {
+                            onEvent(PlayerActions.SeekToNextMusic)
+                            scope.launch(Dispatchers.Main) {
+                                rightIconOffsetX.animateTo(
+                                    targetValue = 20f,
+                                    animationSpec = tween(250)
+                                )
+                                rightIconOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(250)
+                                )
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.SkipNext,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .offset {
+                                    IntOffset(
+                                        x = rightIconOffsetX.value.toInt(),
+                                        y = 0
+                                    )
+                                }
                         )
                     }
                 }

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
@@ -71,7 +72,8 @@ fun SharedTransitionScope.ArtistsScreen(
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
+    musicState: MusicState
 ) {
 
     var query by remember { mutableStateOf("") }
@@ -204,7 +206,8 @@ fun SharedTransitionScope.ArtistsScreen(
                 isPlaying = isPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
                 isPlayerReady = isPlayerReady,
-                onNavigate = { onNavigate(Screen.NowPlaying) }
+                onNavigate = { onNavigate(Screen.NowPlaying) },
+                onClickFAB = { onHandlePlayerActions(PlayerActions.PlayRandom) }
             )
         }
     }

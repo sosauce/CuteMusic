@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
-import org.jaudiotagger.tag.TagOptionSingleton
 import java.io.File
 
 class MetadataViewModel(
@@ -19,11 +18,8 @@ class MetadataViewModel(
 ) : AndroidViewModel(application) {
 
     private val _metadata = MutableStateFlow(MetadataState())
-    val metadataState = _metadata.asStateFlow().value
+    val metadataState = _metadata.asStateFlow()
 
-    init {
-        TagOptionSingleton.getInstance().isAndroid = true
-    }
 
     override fun onCleared() {
         super.onCleared()
@@ -32,7 +28,8 @@ class MetadataViewModel(
 
     private fun loadMetadataJAudio(path: String) {
 
-        val audioFile = AudioFileIO.read(File(path))
+        val audioFile = AudioFileIO
+            .read(File(path))
 
         audioFile.tag.apply {
             val tagList = listOf(
@@ -59,8 +56,9 @@ class MetadataViewModel(
         try {
             val file = File(path)
             val audioFile = AudioFileIO.read(file)
+
             audioFile.tag.apply {
-                val tagList = mapOf(
+                mapOf(
                     FieldKey.TITLE to 0,
                     FieldKey.ARTIST to 1,
                     FieldKey.ALBUM to 2,
@@ -70,12 +68,14 @@ class MetadataViewModel(
                     FieldKey.DISC_NO to 6,
                     FieldKey.LYRICS to 7
                 )
-                tagList.forEach {
-                    setField(it.key, _metadata.value.mutablePropertiesMap[it.value])
-                }
-                //setField(ArtworkFactory.)
-                AudioFileIO.write(audioFile)
+                    .forEach {
+                        Log.d("Test", _metadata.value.mutablePropertiesMap[it.value])
+                        setField(it.key, _metadata.value.mutablePropertiesMap[it.value])
+                    }
             }
+
+            AudioFileIO.write(audioFile)
+
             MediaScannerConnection.scanFile(
                 application.applicationContext,
                 arrayOf(file.toString()),
@@ -99,13 +99,16 @@ class MetadataViewModel(
         when (action) {
             is MetadataActions.SaveChanges -> {
                 viewModelScope.launch {
-                    saveAllChanges(action.path)
+                    saveAllChanges(metadataState.value.songPath)
                 }
             }
 
             is MetadataActions.LoadSong -> {
                 viewModelScope.launch {
-                    loadMetadataJAudio(action.path)
+                    _metadata.value = _metadata.value.copy(
+                        songPath = action.path
+                    )
+                    loadMetadataJAudio(metadataState.value.songPath)
                 }
             }
 
@@ -114,7 +117,6 @@ class MetadataViewModel(
             }
         }
     }
-
 }
 
 

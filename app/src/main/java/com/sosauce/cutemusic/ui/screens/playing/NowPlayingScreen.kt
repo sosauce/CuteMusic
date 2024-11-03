@@ -1,4 +1,4 @@
-@file:kotlin.OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class)
 
 package com.sosauce.cutemusic.ui.screens.playing
 
@@ -131,10 +131,11 @@ private fun SharedTransitionScope.NowPlayingContent(
 
     if (showSpeedCard) {
         SpeedCard(
-            viewModel = viewModel,
             onDismiss = { showSpeedCard = false },
             shouldSnap = snap,
-            onChangeSnap = { snap = !snap }
+            onChangeSnap = { snap = !snap },
+            musicState = musicState,
+            onHandlePlayerAction = onEvent
         )
     }
     Column(
@@ -158,13 +159,6 @@ private fun SharedTransitionScope.NowPlayingContent(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
                     contentDescription = null,
                     modifier = Modifier
-                        .sharedElement(
-                            state = rememberSharedContentState(key = "arrow"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        )
                         .size(28.dp)
                 )
             }

@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
@@ -54,11 +56,13 @@ fun MetadataEditor(
     onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
 ) {
 
+    val metadataState by metadataViewModel.metadataState.collectAsStateWithLifecycle()
+
     MetadataEditorContent(
         music = music,
         onPopBackStack = onPopBackStack,
         onNavigate = onNavigate,
-        metadataState = metadataViewModel.metadataState,
+        metadataState = metadataState,
         onMetadataAction = { metadataViewModel.onHandleMetadataActions(it) },
         //vm = metadataViewModel,
         onEditMusic = onEditMusic
@@ -77,7 +81,6 @@ fun MetadataEditorContent(
 ) {
     val context = LocalContext.current
     val uri = Uri.parse(music.mediaMetadata.extras?.getString("uri"))
-    val path = music.mediaMetadata.extras?.getString("path")
 //    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 //
 //    val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
@@ -90,13 +93,13 @@ fun MetadataEditorContent(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) {
             if (it.resultCode == Activity.RESULT_OK) {
-                onMetadataAction(MetadataActions.SaveChanges(path!!))
+                onMetadataAction(MetadataActions.SaveChanges)
                 Toast.makeText(
                     context,
                     context.getString(R.string.success),
                     Toast.LENGTH_SHORT
                 ).show()
-                onPopBackStack()
+                //onPopBackStack()
             } else {
                 Toast.makeText(
                     context,

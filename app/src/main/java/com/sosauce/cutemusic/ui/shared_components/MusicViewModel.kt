@@ -2,7 +2,6 @@ package com.sosauce.cutemusic.ui.shared_components
 
 import android.app.Application
 import android.content.ComponentName
-import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -11,7 +10,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
@@ -48,6 +49,7 @@ class MusicViewModel(
 
 
     private val playerListener = object : Player.Listener {
+        @UnstableApi
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             super.onMediaMetadataChanged(mediaMetadata)
             _musicState.value = _musicState.value.copy(
@@ -57,14 +59,22 @@ class MusicViewModel(
                 currentArt = mediaMetadata.artworkUri,
                 currentPath = mediaMetadata.extras?.getString("path") ?: "No Path Found!",
                 currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No Uri Found!",
-                currentLrcFile = loadLrcFile(musicState.value.currentPath),
-                currentLyrics = parseLrcFile(musicState.value.currentLrcFile),
+                currentLrcFile = getLrcFile(),
                 currentAlbum = mediaMetadata.albumTitle.toString(),
                 currentAlbumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
-                currentSize = mediaMetadata.extras?.getLong("size") ?: 0
+                currentSize = mediaMetadata.extras?.getLong("size") ?: 0,
+                currentMusicDuration = mediaMetadata.durationMs ?: 0,
+                currentLyrics = parseLyrics()
             )
         }
 
+
+        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+            super.onPlaybackParametersChanged(playbackParameters)
+            _musicState.value = _musicState.value.copy(
+                playbackParameters = playbackParameters
+            )
+        }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
@@ -87,7 +97,6 @@ class MusicViewModel(
                         isLooping = false
                     )
                 }
-
 
                 else -> {
                     _musicState.value = _musicState.value.copy(
@@ -119,7 +128,6 @@ class MusicViewModel(
         }
     }
 
-
     init {
         MediaController
             .Builder(
@@ -139,45 +147,39 @@ class MusicViewModel(
                     },
                     MoreExecutors.directExecutor()
                 )
+
             }
     }
 
 
-    private fun loadLrcFile(path: String): File? {
-        val lrcFilePath = path.replaceAfterLast('.', "lrc")
+    private fun getLrcFile(): File? {
+        val lrcFilePath = musicState.value.currentPath.replaceAfterLast('.', "lrc")
         val lrcFile = File(lrcFilePath)
         return if (lrcFile.exists()) lrcFile else null
     }
 
-    private fun parseLrcFile(file: File?): List<Lyrics> {
-        val lyrics = mutableListOf<Lyrics>()
+    fun parseLyrics(): List<Lyrics> {
+        val file = musicState.value.currentLrcFile
         val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
 
-        if (file == null) {
-            return emptyList()
-        }
+        if (file == null) return emptyList()
 
-        viewModelScope.launch {
+        return try {
             file.bufferedReader().useLines { lines ->
-                lines.forEach { line ->
-                    val matchResult = regex.find(line)
-                    if (matchResult != null) {
+                lines.asSequence().mapNotNull { line ->
+                    regex.find(line)?.let { matchResult ->
                         val (minutes, seconds, hundredths) = matchResult.destructured
-                        val timeInMillis =
+                        val millis =
                             minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                        val lyricText = line.substring(matchResult.range.last + 1).trim()
-                        lyrics.add(
-                            Lyrics(
-                                timeInMillis,
-                                lyricText
-                            )
-                        )
+                        val lyric = line.substring(matchResult.range.last + 1).trim()
+                        Lyrics(millis, lyric)
                     }
-                }
+                }.toList()
             }
+        } catch (e: Exception) {
+            e.stackTrace
+            emptyList()
         }
-
-        return lyrics
     }
 
     fun loadEmbeddedLyrics(
@@ -202,8 +204,6 @@ class MusicViewModel(
         mediaController!!.release()
     }
 
-    fun getPlaybackSpeed() = mediaController!!.playbackParameters
-
 
     fun isPlayerReady(): Boolean {
         return if (mediaController == null) false else
@@ -213,18 +213,6 @@ class MusicViewModel(
                 else -> true
             }
     }
-
-    fun quickPlay(uri: Uri?) {
-        mediaController!!.clearMediaItems()
-        uri?.let { MediaItem.fromUri(it) }?.let {
-            mediaController!!.setMediaItem(
-                it
-            )
-        }
-        mediaController!!.prepare()
-        mediaController!!.play()
-    }
-
 
     fun handlePlayerActions(action: PlayerActions) {
         when (action) {
@@ -238,6 +226,7 @@ class MusicViewModel(
             is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
             is PlayerActions.SeekToSlider -> mediaController!!.seekTo(action.position)
             is PlayerActions.RewindTo -> mediaController!!.seekTo(mediaController!!.currentPosition - action.position)
+            is PlayerActions.StopPlayback -> mediaController!!.stop()
             is PlayerActions.ApplyPlaybackSpeed -> mediaController!!.applyPlaybackSpeed(
                 action.speed,
                 action.pitch
@@ -262,6 +251,23 @@ class MusicViewModel(
                     mediaController!!.playAtIndex(action.mediaId)
                 } else {
                     mediaController!!.playAtIndex(action.mediaId)
+                }
+            }
+
+            is PlayerActions.UpdateCurrentPosition -> {
+                _musicState.value = _musicState.value.copy(
+                    currentPosition = action.position
+                )
+            }
+
+            is PlayerActions.QuickPlay -> {
+                if (mediaController != null) {
+                    mediaController!!.clearMediaItems()
+                    mediaController!!.setMediaItem(
+                        MediaItem.fromUri(action.uri)
+                    )
+                    mediaController!!.prepare()
+                    mediaController!!.play()
                 }
             }
         }

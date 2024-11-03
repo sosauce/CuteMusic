@@ -22,9 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -119,25 +117,6 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.handlePlayerActions(
-                        PlayerActions.StartAlbumPlayback(
-                            albumName = album.name,
-                            mediaId = null
-                        )
-                    )
-                },
-                modifier = Modifier
-                    .padding(bottom = 55.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Shuffle,
-                    contentDescription = null
-                )
-            }
         }
     ) { values ->
         Box(
@@ -204,7 +183,8 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                         )
                                     )
                                 },
-                                currentMusicUri = musicState.currentMusicUri
+                                currentMusicUri = musicState.currentMusicUri,
+                                isPlayerReady = viewModel.isPlayerReady()
                             )
                         }
                     }
@@ -223,7 +203,15 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                     .padding(end = rememberSearchbarRightPadding())
                     .align(rememberSearchbarAlignment()),
                 showSearchField = false,
-                onNavigate = { onNavigate(Screen.NowPlaying) }
+                onNavigate = { onNavigate(Screen.NowPlaying) },
+                onClickFAB = {
+                    viewModel.handlePlayerActions(
+                        PlayerActions.StartAlbumPlayback(
+                            albumName = album.name,
+                            mediaId = null
+                        )
+                    )
+                }
             )
 
         }

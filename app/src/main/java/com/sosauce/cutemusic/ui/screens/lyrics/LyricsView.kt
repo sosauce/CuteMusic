@@ -94,7 +94,7 @@ fun LyricsView(
             if (musicState.currentLyrics.isEmpty()) {
                 item {
                     CuteText(
-                        text = viewModel.loadEmbeddedLyrics(musicState.currentPath),
+                        text = viewModel.loadEmbeddedLyrics(musicState.currentPath).toString(),
                     )
                 }
             } else {

@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Album
@@ -76,7 +77,8 @@ fun SharedTransitionScope.AlbumsScreen(
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
+    musicState: MusicState
 ) {
     val isLandscape = rememberIsLandscape()
     var query by remember { mutableStateOf("") }
@@ -91,7 +93,6 @@ fun SharedTransitionScope.AlbumsScreen(
     }
 
     Box {
-
         if (albums.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -215,7 +216,8 @@ fun SharedTransitionScope.AlbumsScreen(
             isPlaying = isPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
             isPlayerReady = isPlayerReady,
-            onNavigate = { onNavigate(Screen.NowPlaying) }
+            onNavigate = { onNavigate(Screen.NowPlaying) },
+            onClickFAB = { onHandlePlayerActions(PlayerActions.PlayRandom) }
         )
     }
 }

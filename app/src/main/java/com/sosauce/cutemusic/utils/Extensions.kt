@@ -144,10 +144,18 @@ fun Uri.getBitrate(context: Context): String {
         val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
         bitrate?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
     } catch (e: Exception) {
+        e.stackTrace
         "Error parsing bitrate!"
     } finally {
         retriever.release()
     }
+}
+
+fun Long.formatToReadableTime(): String {
+    val totalSeconds = this / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }
 
 @Composable

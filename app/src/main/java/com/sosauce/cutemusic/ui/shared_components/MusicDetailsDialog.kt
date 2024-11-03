@@ -25,13 +25,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.formatBinarySize
+import com.sosauce.cutemusic.utils.formatToReadableTime
 import com.sosauce.cutemusic.utils.getBitrate
 
+@UnstableApi
 @Composable
 fun MusicDetailsDialog(
     music: MediaItem,
@@ -104,12 +107,14 @@ fun MusicDetailsDialog(
                 )
                 CuteText(
                     text = "${stringResource(id = R.string.bitrate)}: $fileBitrate",
-
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 CuteText(
                     text = "${stringResource(id = R.string.type)}: $fileType",
-
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+                CuteText(
+                    text = "${stringResource(id = R.string.duration)}: ${music.mediaMetadata.durationMs?.formatToReadableTime() ?: 0}",
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
@@ -187,12 +192,10 @@ fun MusicStateDetailsDialog(
                 )
                 CuteText(
                     text = "${stringResource(id = R.string.bitrate)}: $fileBitrate",
-
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 CuteText(
                     text = "${stringResource(id = R.string.type)}: $fileType",
-
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }

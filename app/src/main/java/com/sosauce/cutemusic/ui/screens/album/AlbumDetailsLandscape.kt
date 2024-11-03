@@ -110,7 +110,8 @@ fun AlbumDetailsLandscape(
                                         it
                                     )
                                 )
-                            }
+                            },
+                            isPlayerReady = viewModel.isPlayerReady()
                         )
                     }
                 }
