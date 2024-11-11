@@ -21,7 +21,6 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
-import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
