@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.sosauce.cutemusic.domain.repository
 
 import android.content.ContentUris
@@ -13,16 +15,23 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import com.sosauce.cutemusic.data.datastore.getBlacklistedFolder
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 
 class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
+    private fun getBlacklistedFoldersAsync(): Set<String> = runBlocking { getBlacklistedFolder(context) }
+
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {
+
+        var blacklistedFolders = getBlacklistedFoldersAsync()
         val musics = mutableListOf<MediaItem>()
 
         val projection = arrayOf(
@@ -38,13 +47,16 @@ class MediaStoreHelperImpl(
             //MediaStore.Audio.Media.IS_FAVORITE,
         )
 
+        val selection = blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
+        val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
+
 
 
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
-            null,
-            null,
+            selection,
+            selectionArgs,
             "${MediaStore.Audio.Media.TITLE} ASC"
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)

@@ -41,7 +41,6 @@ fun Nav() {
     val metadataViewModel = koinViewModel<MetadataViewModel>()
     val blacklistedFolders by rememberAllBlacklistedFolders()
     val musics = postViewModel.musics
-        .filter { it.mediaMetadata.extras?.getString("folder") !in blacklistedFolders }
     val musicState by viewModel.musicState.collectAsStateWithLifecycle()
 
 

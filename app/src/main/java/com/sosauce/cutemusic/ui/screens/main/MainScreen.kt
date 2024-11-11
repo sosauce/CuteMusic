@@ -131,6 +131,13 @@ fun SharedTransitionScope.MainScreen(
         derivedStateOf {
             if (musics.isEmpty()) {
                 true
+            } else if (
+
+                // Are both the first and last element visible ?
+                state.layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
+                state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == musics.size - 1
+            ) {
+                true
             } else {
                 state.layoutInfo.visibleItemsInfo.lastOrNull()?.index != musics.size - 1
             }

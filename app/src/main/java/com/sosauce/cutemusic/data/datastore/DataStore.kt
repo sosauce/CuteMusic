@@ -21,6 +21,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
+import kotlinx.coroutines.flow.first
 
 private const val PREFERENCES_NAME = "settings"
 
@@ -101,3 +102,10 @@ fun rememberUseClassicSlider() =
 @Composable
 fun rememberShowXButton() =
     rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
+
+
+suspend fun getBlacklistedFolder(context: Context): Set<String> {
+    val preferences = context.dataStore.data.first()
+    return preferences[BLACKLISTED_FOLDERS] ?: emptySet()
+}
+

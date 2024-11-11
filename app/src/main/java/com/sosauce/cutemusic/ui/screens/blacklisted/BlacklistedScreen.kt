@@ -81,6 +81,11 @@ fun BlacklistedScreen(
                             add(path)
                         }
                         isSheetOpen = false
+                        Toast.makeText(
+                            context,
+                            context.resources.getText(R.string.pls_restart),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             )
@@ -89,9 +94,8 @@ fun BlacklistedScreen(
 
     BlacklistedScreenContent(
         onAddFolder = { isSheetOpen = true },
-        onPopBackStack = navController::navigateUp,
-
-        )
+        onPopBackStack = navController::navigateUp
+    )
 }
 
 @Composable

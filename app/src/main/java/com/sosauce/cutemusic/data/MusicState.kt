@@ -2,7 +2,6 @@ package com.sosauce.cutemusic.data
 
 import android.net.Uri
 import androidx.media3.common.PlaybackParameters
-import androidx.media3.common.Player
 import com.sosauce.cutemusic.domain.model.Lyrics
 import java.io.File
 
