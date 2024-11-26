@@ -44,16 +44,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -75,6 +69,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -103,12 +98,12 @@ fun SharedTransitionScope.MainScreen(
     musics: List<MediaItem>,
     currentlyPlaying: String,
     isCurrentlyPlaying: Boolean,
-    onNavigateTo: (Screen) -> Unit,
+    onNavigate: (Screen) -> Unit,
     onShortClick: (String) -> Unit,
     onNavigationItemClicked: (Int, NavigationItem) -> Unit,
     selectedIndex: Int,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onLoadMetadata: (String) -> Unit = {},
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     isPlayerReady: Boolean,
     currentMusicUri: String,
     onHandlePlayerAction: (PlayerActions) -> Unit,
@@ -133,7 +128,7 @@ fun SharedTransitionScope.MainScreen(
                 true
             } else if (
 
-                // Are both the first and last element visible ?
+            // Are both the first and last element visible ?
                 state.layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
                 state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == musics.size - 1
             ) {
@@ -177,7 +172,7 @@ fun SharedTransitionScope.MainScreen(
                             MusicListItem(
                                 onShortClick = { onShortClick(music.mediaId) },
                                 music = music,
-                                onNavigate = { onNavigateTo(it) },
+                                onNavigate = { onNavigate(it) },
                                 currentMusicUri = currentMusicUri,
                                 onLoadMetadata = onLoadMetadata,
                                 showBottomSheet = true,
@@ -247,7 +242,7 @@ fun SharedTransitionScope.MainScreen(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.MusicNote,
+                                    painter = painterResource(R.drawable.music_note_rounded),
                                     contentDescription = null,
                                     tint = if (!hasSeenTip) color else LocalContentColor.current
                                 )
@@ -291,7 +286,7 @@ fun SharedTransitionScope.MainScreen(
                                     )
                                 }
                                 IconButton(
-                                    onClick = { onNavigateTo(Screen.Settings) }
+                                    onClick = { onNavigate(Screen.Settings) }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Settings,
@@ -305,7 +300,7 @@ fun SharedTransitionScope.MainScreen(
                         isPlaying = isCurrentlyPlaying,
                         animatedVisibilityScope = animatedVisibilityScope,
                         isPlayerReady = isPlayerReady,
-                        onNavigate = { onNavigateTo(Screen.NowPlaying) },
+                        onNavigate = { onNavigate(Screen.NowPlaying) },
                         onClickFAB = { onHandlePlayerAction(PlayerActions.PlayRandom) }
                     )
                 }
@@ -321,7 +316,7 @@ fun MusicListItem(
     onShortClick: (albumName: String) -> Unit,
     onNavigate: (Screen) -> Unit = {},
     currentMusicUri: String,
-    onLoadMetadata: (String) -> Unit = {},
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     showBottomSheet: Boolean = false,
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
     onChargeAlbumSongs: (String) -> Unit = {},
@@ -363,13 +358,6 @@ fun MusicListItem(
             }
         }
 
-    val shareIntent = Intent()
-        .apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            type = "audio/*"
-        }
 
     if (showDetailsDialog) {
         MusicDetailsDialog(
@@ -455,27 +443,28 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Info,
-                                contentDescription = null
+                                imageVector = Icons.Rounded.ErrorOutline,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(180f)
                             )
                         }
                     )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onLoadMetadata(path ?: "")
-                            onNavigate(Screen.MetadataEditor(music.mediaId))
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.edit))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
+//                    DropdownMenuItem(
+//                        onClick = {
+//                            isDropDownExpanded = false
+//                            onLoadMetadata(path ?: "", uri)
+//                            onNavigate(Screen.MetadataEditor(music.mediaId))
+//                        },
+//                        text = {
+//                            CuteText(stringResource(R.string.edit))
+//                        },
+//                        leadingIcon = {
+//                            Icon(
+//                                painter = painterResource(R.drawable.edit_rounded),
+//                                contentDescription = null
+//                            )
+//                        }
+//                    )
                     DropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
@@ -491,7 +480,7 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Album,
+                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
                                 contentDescription = null
                             )
                         }
@@ -511,13 +500,20 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Person,
+                                painter = painterResource(R.drawable.artist_rounded),
                                 contentDescription = null
                             )
                         }
                     )
                     DropdownMenuItem(
                         onClick = {
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                type = "audio/*"
+                            }
+
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
@@ -532,7 +528,7 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Share,
+                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
                                 contentDescription = null
                             )
                         }
@@ -547,7 +543,7 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Delete,
+                                painter = painterResource(R.drawable.trash_rounded),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.error
                             )

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
+import com.sosauce.cutemusic.data.datastore.rememberShowAlbumsTab
+import com.sosauce.cutemusic.data.datastore.rememberShowArtistsTab
+import com.sosauce.cutemusic.data.datastore.rememberShowFoldersTab
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
@@ -30,7 +35,7 @@ import com.sosauce.cutemusic.utils.restart
 
 @Composable
 fun Misc(
-    onNavigateTo: (Screen) -> Unit
+    onNavigate: (Screen) -> Unit
 ) {
     val context = LocalContext.current
     //var killService by remember { rememberKillService(context) }
@@ -43,7 +48,7 @@ fun Misc(
         )
         TextSettingsCards(
             text = stringResource(id = R.string.blacklisted_folders),
-            onClick = { onNavigateTo(Screen.Blacklisted) },
+            onClick = { onNavigate(Screen.Blacklisted) },
             modifier = Modifier
                 .padding(
                     top = 25.dp,
@@ -125,6 +130,20 @@ fun UISettings() {
     var useClassicSlider by rememberUseClassicSlider()
     var useSystemFont by rememberUseSystemFont()
     var showXButton by rememberShowXButton()
+    var showAlbumsTab by rememberShowAlbumsTab()
+    var showArtistsTab by rememberShowArtistsTab()
+    var showFoldersTab by rememberShowFoldersTab()
+
+    var showTabManager by remember { mutableStateOf(false) }
+
+    if (showTabManager) {
+        TabManager(
+            onDismissRequest = { showTabManager = false },
+            showArtistsTab = showArtistsTab,
+            showAlbumsTab = showAlbumsTab,
+            showFoldersTab = showFoldersTab
+        )
+    }
 
     Column {
         CuteText(
@@ -132,10 +151,23 @@ fun UISettings() {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 34.dp, vertical = 8.dp)
         )
+        TextSettingsCards(
+            text = stringResource(id = R.string.manage_shown_tabs),
+            onClick = { showTabManager = true },
+            modifier = Modifier
+                .padding(
+                    top = 25.dp,
+                    start = 15.dp,
+                    bottom = 25.dp
+                )
+                .fillMaxWidth(),
+            topDp = 24.dp,
+            bottomDp = 4.dp
+        )
         SettingsCards(
             checked = useClassicSlider,
             onCheckedChange = { useClassicSlider = !useClassicSlider },
-            topDp = 24.dp,
+            topDp = 4.dp,
             bottomDp = 4.dp,
             text = stringResource(id = R.string.classic_slider),
         )

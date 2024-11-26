@@ -23,6 +23,9 @@ sealed class Screen {
     data object Artists : Screen()
 
     @Serializable
+    data object AllFolders : Screen()
+
+    @Serializable
     data class AlbumsDetails(
         val id: Long
     ) : Screen()

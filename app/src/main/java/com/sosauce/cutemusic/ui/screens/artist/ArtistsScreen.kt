@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
@@ -37,13 +36,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -53,7 +52,6 @@ import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
-import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.SortingType
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
@@ -150,7 +148,7 @@ fun SharedTransitionScope.ArtistsScreen(
                 leadingIcon = {
                     IconButton(onClick = { screenSelectionExpanded = true }) {
                         Icon(
-                            imageVector = Icons.Rounded.Person,
+                            painter = painterResource(R.drawable.artist_rounded),
                             contentDescription = null
                         )
                     }
@@ -220,7 +218,6 @@ fun ArtistInfoList(
     artist: Artist,
     onClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,17 +226,20 @@ fun ArtistInfoList(
     ) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = ImageUtils.imageRequester(
-                    img = R.drawable.artist,
-                    context = context
-                ),
-                contentDescription = stringResource(id = R.string.artwork),
+            Box(
                 modifier = Modifier
                     .padding(start = 10.dp)
-                    .size(45.dp),
-                contentScale = ContentScale.Crop,
-            )
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFFAB3AA)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.artist_rounded),
+                    contentDescription = stringResource(id = R.string.artwork),
+                    modifier = Modifier.size(30.dp)
+                )
+            }
 
             Column(
                 modifier = Modifier.padding(20.dp)

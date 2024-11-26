@@ -11,11 +11,11 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ALBUMS_TAB
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ARTISTS_TAB
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_FOLDERS_TAB
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ALBUMS
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_ORDER_ARTISTS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
@@ -28,9 +28,6 @@ private const val PREFERENCES_NAME = "settings"
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(PREFERENCES_NAME)
 
 private data object PreferencesKeys {
-    val SORT_ORDER = booleanPreferencesKey("sort_order")
-    val SORT_ORDER_ARTISTS = booleanPreferencesKey("sort_order_artists")
-    val SORT_ORDER_ALBUMS = booleanPreferencesKey("sort_order_albums")
     val USE_DARK_MODE = booleanPreferencesKey("use_dark_mode")
     val USE_AMOLED_MODE = booleanPreferencesKey("use_amoled_mode")
     val FOLLOW_SYS = booleanPreferencesKey("follow_sys")
@@ -43,19 +40,10 @@ private data object PreferencesKeys {
     val APPLY_LOOP = booleanPreferencesKey("apply_loop")
     val USE_CLASSIC_SLIDER = booleanPreferencesKey("use_classic_slider")
     val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
+    val SHOW_ALBUMS_TAB = booleanPreferencesKey("show_albums_tab")
+    val SHOW_ARTISTS_TAB = booleanPreferencesKey("show_artists_tab")
+    val SHOW_FOLDERS_TAB = booleanPreferencesKey("show_folders_tab")
 }
-
-@Composable
-fun rememberSortASC() =
-    rememberPreference(key = SORT_ORDER, defaultValue = true)
-
-@Composable
-fun rememberSortASCArtists() =
-    rememberPreference(key = SORT_ORDER_ARTISTS, defaultValue = true)
-
-@Composable
-fun rememberSortASCAlbums() =
-    rememberPreference(key = SORT_ORDER_ALBUMS, defaultValue = true)
 
 @Composable
 fun rememberUseDarkMode() =
@@ -102,6 +90,18 @@ fun rememberUseClassicSlider() =
 @Composable
 fun rememberShowXButton() =
     rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
+
+@Composable
+fun rememberShowAlbumsTab() =
+    rememberPreference(key = SHOW_ALBUMS_TAB, defaultValue = true)
+
+@Composable
+fun rememberShowArtistsTab() =
+    rememberPreference(key = SHOW_ARTISTS_TAB, defaultValue = true)
+
+@Composable
+fun rememberShowFoldersTab() =
+    rememberPreference(key = SHOW_FOLDERS_TAB, defaultValue = true)
 
 
 suspend fun getBlacklistedFolder(context: Context): Set<String> {

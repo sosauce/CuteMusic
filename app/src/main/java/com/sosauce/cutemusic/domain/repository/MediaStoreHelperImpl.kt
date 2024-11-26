@@ -26,12 +26,17 @@ class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
-    private fun getBlacklistedFoldersAsync(): Set<String> = runBlocking { getBlacklistedFolder(context) }
+    private fun getBlacklistedFoldersAsync(): Set<String> =
+        runBlocking { getBlacklistedFolder(context) }
+
+    private val blacklistedFolders = getBlacklistedFoldersAsync()
+    private val selection =
+        blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
+    private val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
 
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {
 
-        var blacklistedFolders = getBlacklistedFoldersAsync()
         val musics = mutableListOf<MediaItem>()
 
         val projection = arrayOf(
@@ -43,13 +48,8 @@ class MediaStoreHelperImpl(
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DURATION,
-            //MediaStore.Audio.Media.IS_FAVORITE,
+            MediaStore.Audio.Media.DURATION
         )
-
-        val selection = blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
-        val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
-
 
 
         context.contentResolver.query(
@@ -153,7 +153,9 @@ class MediaStoreHelperImpl(
                 val albumInfo = Album(id, album, artist)
 
                 if (albums.none { it.name == albumInfo.name }) {
-                    albums.add(albumInfo)
+                    if (musics.map { it.mediaMetadata.extras?.getLong("album_id") }.contains(id)) {
+                        albums.add(albumInfo)
+                    }
                 }
             }
         }
@@ -187,7 +189,9 @@ class MediaStoreHelperImpl(
                     id = id,
                     name = artist
                 )
-                artists.add(artistInfo)
+                if (musics.map { it.mediaMetadata.extras?.getLong("artist_id") }.contains(id)) {
+                    artists.add(artistInfo)
+                }
             }
         }
 
@@ -275,4 +279,5 @@ class MediaStoreHelperImpl(
     override val musics: List<MediaItem> = fetchMusics()
     override val albums: List<Album> = fetchAlbums()
     override val artists: List<Artist> = fetchArtists()
+    override val folders: List<Folder> = fetchFoldersWithMusics()
 }

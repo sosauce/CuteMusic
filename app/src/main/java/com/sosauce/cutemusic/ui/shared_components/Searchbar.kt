@@ -92,7 +92,8 @@ fun SharedTransitionScope.CuteSearchbar(
                     minWidth = 45.dp,
                     minHeight = 45.dp
                 )
-                .align(Alignment.End)
+                .align(Alignment.End),
+            shape = RoundedCornerShape(14.dp)
         ) {
             Icon(
                 imageVector = Icons.Rounded.Shuffle,

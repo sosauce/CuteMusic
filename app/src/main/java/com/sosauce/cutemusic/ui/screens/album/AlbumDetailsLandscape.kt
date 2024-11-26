@@ -111,7 +111,7 @@ fun AlbumDetailsLandscape(
                                     )
                                 )
                             },
-                            isPlayerReady = viewModel.isPlayerReady()
+                            isPlayerReady = musicState.isPlayerReady
                         )
                     }
                 }

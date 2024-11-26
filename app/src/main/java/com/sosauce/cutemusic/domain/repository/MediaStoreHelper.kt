@@ -13,6 +13,7 @@ interface MediaStoreHelper {
     val musics: List<MediaItem>
     val albums: List<Album>
     val artists: List<Artist>
+    val folders: List<Folder>
 
     fun fetchMusics(): List<MediaItem>
 

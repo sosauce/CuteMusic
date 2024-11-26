@@ -9,25 +9,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberShowAlbumsTab
+import com.sosauce.cutemusic.data.datastore.rememberShowArtistsTab
+import com.sosauce.cutemusic.data.datastore.rememberShowFoldersTab
 import com.sosauce.cutemusic.ui.navigation.Screen
 
 @Composable
@@ -37,28 +35,48 @@ fun ScreenSelection(
 ) {
 
     val context = LocalContext.current
+    val showAlbumsTab by rememberShowAlbumsTab()
+    val showArtistsTab by rememberShowArtistsTab()
+    val showFoldersTab by rememberShowFoldersTab()
 
-    val items = listOf(
-        NavigationItem(
-            title = context.getString(R.string.music),
-            navigateTo = Screen.Main,
-            activeIcon = Icons.Rounded.MusicNote,
-            notActiveIcon = Icons.Outlined.MusicNote
-        ),
-        NavigationItem(
-            title = stringResource(R.string.albums),
-            navigateTo = Screen.Albums,
-            activeIcon = Icons.Rounded.Album,
-            notActiveIcon = Icons.Outlined.Album
-        ),
-        NavigationItem(
-            title = stringResource(R.string.artists),
-            navigateTo = Screen.Artists,
-            activeIcon = Icons.Rounded.Person,
-            notActiveIcon = Icons.Outlined.Person
+
+    val items = mutableListOf<NavigationItem>().apply {
+        add(
+            NavigationItem(
+                title = context.getString(R.string.music),
+                navigateTo = Screen.Main,
+                icon = painterResource(R.drawable.music_note_rounded)
+            )
         )
+        if (showAlbumsTab) {
+            add(
+                NavigationItem(
+                    title = stringResource(R.string.albums),
+                    navigateTo = Screen.Albums,
+                    icon = painterResource(androidx.media3.session.R.drawable.media3_icon_album)
+                )
+            )
+        }
+        if (showArtistsTab) {
+            add(
+                NavigationItem(
+                    title = stringResource(R.string.artists),
+                    navigateTo = Screen.Artists,
+                    icon = painterResource(R.drawable.artist_rounded)
+                )
+            )
+        }
+        if (showFoldersTab) {
+            add(
+                NavigationItem(
+                    title = stringResource(R.string.folders),
+                    navigateTo = Screen.AllFolders,
+                    icon = painterResource(R.drawable.folder_rounded)
+                )
+            )
+        }
+    }
 
-    )
 
 
     Column(
@@ -85,7 +103,7 @@ fun ScreenSelection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = navigationItem.activeIcon,
+                    painter = navigationItem.icon,
                     contentDescription = navigationItem.title,
                     modifier = Modifier.padding(start = 15.dp)
                 )
@@ -103,6 +121,5 @@ fun ScreenSelection(
 data class NavigationItem(
     val title: String,
     val navigateTo: Screen,
-    val activeIcon: ImageVector,
-    val notActiveIcon: ImageVector,
+    val icon: Painter
 )

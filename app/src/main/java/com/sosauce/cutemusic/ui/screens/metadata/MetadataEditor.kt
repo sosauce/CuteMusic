@@ -2,6 +2,7 @@ package com.sosauce.cutemusic.ui.screens.metadata
 
 import android.app.Activity
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -21,7 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -92,6 +93,8 @@ fun MetadataEditorContent(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) {
+            Log.d("resulta", it.resultCode.toString())
+
             if (it.resultCode == Activity.RESULT_OK) {
                 onMetadataAction(MetadataActions.SaveChanges)
                 Toast.makeText(
@@ -121,7 +124,7 @@ fun MetadataEditorContent(
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Done,
+                    imageVector = Icons.Rounded.Done,
                     contentDescription = null
                 )
             }

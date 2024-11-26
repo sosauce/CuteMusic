@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Article
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -26,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
@@ -74,7 +72,7 @@ fun QuickActionsRow(
 
         IconButton(onClick = onShowLyrics) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Article,
+                painter = painterResource(R.drawable.lyrics_rounded),
                 contentDescription = "show lyrics"
             )
         }
@@ -106,8 +104,9 @@ fun QuickActionsRow(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = null
+                            imageVector = Icons.Rounded.ErrorOutline,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(180f)
                         )
                     }
                 )
@@ -122,7 +121,7 @@ fun QuickActionsRow(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Rounded.Album,
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
                             contentDescription = null
                         )
                     }
@@ -138,7 +137,7 @@ fun QuickActionsRow(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Rounded.Person,
+                            painter = painterResource(R.drawable.artist_rounded),
                             contentDescription = null
                         )
                     }
@@ -152,7 +151,7 @@ fun QuickActionsRow(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
                             contentDescription = null
                         )
                     }

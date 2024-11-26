@@ -72,4 +72,6 @@
     <string name="share">Share</string>
     <string name="show_close_button">Show Close Button on CuteSearchbar</string>
     <string name="duration">Duration</string>
+    <string name="folders">Folders</string>
+    <string name="manage_shown_tabs">Manage Shown Tabs</string>
 </resources>

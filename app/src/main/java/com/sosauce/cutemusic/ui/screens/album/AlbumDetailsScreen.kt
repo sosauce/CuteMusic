@@ -184,7 +184,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                     )
                                 },
                                 currentMusicUri = musicState.currentMusicUri,
-                                isPlayerReady = viewModel.isPlayerReady()
+                                isPlayerReady = musicState.isPlayerReady
                             )
                         }
                     }
@@ -193,7 +193,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
 
             CuteSearchbar(
                 currentlyPlaying = musicState.currentlyPlaying,
-                isPlayerReady = viewModel.isPlayerReady(),
+                isPlayerReady = musicState.isPlayerReady,
                 isPlaying = musicState.isCurrentlyPlaying,
                 onHandlePlayerActions = viewModel::handlePlayerActions,
                 animatedVisibilityScope = animatedVisibilityScope,

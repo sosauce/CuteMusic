@@ -15,10 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +67,7 @@ fun SharedTransitionScope.ArtistDetails(
 
     val artistSongs by remember { mutableStateOf(postViewModel.artistSongs) }
     val artistAlbums by remember { mutableStateOf(postViewModel.artistAlbums) }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     if (rememberIsLandscape()) {
         ArtistDetailsLandscape(
@@ -76,10 +79,11 @@ fun SharedTransitionScope.ArtistDetails(
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
             artist = artist,
             currentMusicUri = musicState.currentMusicUri,
-            isPlayerReady = viewModel.isPlayerReady()
+            isPlayerReady = musicState.isPlayerReady
         )
     } else {
         Scaffold(
+            //modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 TopAppBar(
                     title = {
@@ -106,7 +110,8 @@ fun SharedTransitionScope.ArtistDetails(
                                 contentDescription = "Back arrow"
                             )
                         }
-                    }
+                    },
+                    scrollBehavior = scrollBehavior
                 )
             }
         ) { values ->
@@ -120,7 +125,9 @@ fun SharedTransitionScope.ArtistDetails(
                         bottom = values.calculateBottomPadding()
                     )
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
                     LazyRow {
                         items(items = artistAlbums, key = { it.id }) { album ->
                             AlbumCard(
@@ -139,27 +146,25 @@ fun SharedTransitionScope.ArtistDetails(
                         HorizontalDivider()
                     }
                     Spacer(modifier = Modifier.height(10.dp))
-                    LazyColumn {
-                        items(artistSongs) { music ->
-                            MusicListItem(
-                                music = music,
-                                onShortClick = {
-                                    viewModel.handlePlayerActions(
-                                        PlayerActions.StartArtistPlayback(
-                                            artistName = artist.name,
-                                            mediaId = it
-                                        )
+                    artistSongs.forEach { music ->
+                        MusicListItem(
+                            music = music,
+                            onShortClick = {
+                                viewModel.handlePlayerActions(
+                                    PlayerActions.StartArtistPlayback(
+                                        artistName = artist.name,
+                                        mediaId = it
                                     )
-                                },
-                                currentMusicUri = musicState.currentMusicUri,
-                                isPlayerReady = viewModel.isPlayerReady()
-                            )
-                        }
+                                )
+                            },
+                            currentMusicUri = musicState.currentMusicUri,
+                            isPlayerReady = musicState.isPlayerReady
+                        )
                     }
                 }
                 CuteSearchbar(
                     currentlyPlaying = musicState.currentlyPlaying,
-                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlayerReady = musicState.isPlayerReady,
                     isPlaying = musicState.isCurrentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     animatedVisibilityScope = animatedVisibilityScope,

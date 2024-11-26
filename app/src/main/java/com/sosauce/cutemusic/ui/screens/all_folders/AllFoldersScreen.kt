@@ -1,31 +1,29 @@
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.sosauce.cutemusic.ui.screens.album
+package com.sosauce.cutemusic.ui.screens.all_folders
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
@@ -34,114 +32,141 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
-import com.sosauce.cutemusic.domain.model.Album
+import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.screens.blacklisted.components.FolderItem
+import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
-import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.SortingType
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
-import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
-fun SharedTransitionScope.AlbumsScreen(
-    albums: List<Album>,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    onHandleSorting: (SortingType) -> Unit,
-    onHandleSearching: (String) -> Unit,
-    currentlyPlaying: String,
-    chargePVMAlbumSongs: (String) -> Unit,
-    onNavigate: (Screen) -> Unit,
+fun SharedTransitionScope.AllFoldersScreen(
+    musics: List<MediaItem>,
+    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
     selectedIndex: Int,
-    isPlaying: Boolean,
+    onNavigate: (Screen) -> Unit,
+    currentlyPlaying: String,
+    isCurrentlyPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
-    musicState: MusicState
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    val isLandscape = rememberIsLandscape()
+
     var query by remember { mutableStateOf("") }
+    val groupedMusics = remember(musics) {
+        musics.groupBy {
+            it.mediaMetadata.extras?.getString("path")
+                ?.substring(0, it.mediaMetadata.extras?.getString("path")?.lastIndexOf('/') ?: 0)
+        }
+    }
+    val groupedAndFilteredMusics = remember(query, musics) {
+        if (query.isEmpty()) {
+            groupedMusics
+        } else groupedMusics.filter { it.key?.contains(query, true) != false }
+
+    }
+    var areMusicsVisible = remember { mutableStateMapOf<String, Boolean>() }
     var screenSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
     val float by animateFloatAsState(
         targetValue = if (isSortedByASC) 45f else 135f,
         label = "Arrow Icon Animation"
     )
-    val numberOfGrids = remember {
-        if (isLandscape) 4 else 2
-    }
 
-    Box {
-        if (albums.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                CuteText(
-                    text = stringResource(id = R.string.no_albums_found),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+    Box(Modifier.fillMaxSize()) {
 
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(numberOfGrids),
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                itemsIndexed(
-                    items = albums,
-                    key = { _, album -> album.id }
-                ) { index, album ->
-                    AlbumCard(
-                        album = album,
-                        modifier = Modifier
-                            .animateItem()
-                            .clip(RoundedCornerShape(15.dp))
-                            .clickable {
-                                chargePVMAlbumSongs(album.name)
-                                onNavigate(Screen.AlbumsDetails(album.id))
-                            }
-                            .thenIf(
-                                if (isLandscape)
-                                    index == 0 || index == 1 || index == 2 || index == 3
-                                else index == 0 || index == 1,
-                                Modifier.statusBarsPadding()
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+        ) {
+
+            groupedAndFilteredMusics.onEachIndexed { index, (folder, musics) ->
+                item(
+                    key = folder
+                ) {
+                    val isExpanded = areMusicsVisible[folder] == true
+
+                    val rotation by animateFloatAsState(
+                        targetValue = if (isExpanded) 270f else 180f,
+                        label = "Arrow Rotation"
+                    )
+                    val bottomDp by animateDpAsState(
+                        targetValue = if (index == groupedAndFilteredMusics.keys.size - 1 || isExpanded) 24.dp else 4.dp,
+                        label = ""
+                    )
+                    val topDp by animateDpAsState(
+                        targetValue = if (index == 0 || isExpanded) 24.dp else 4.dp,
+                        label = ""
+                    )
+
+                    FolderItem(
+                        folder = Folder(
+                            name = folder?.substring(folder.lastIndexOf('/') + 1) ?: "No Name",
+                            path = folder.toString()
+                        ),
+                        onClick = { areMusicsVisible[folder ?: "No Name"] = !isExpanded },
+                        topDp = topDp,
+                        bottomDp = bottomDp,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Rounded.ArrowBackIosNew,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .rotate(rotation),
+                                tint = MaterialTheme.colorScheme.onBackground
                             )
+                        }
                     )
                 }
+
+                items(
+                    items = musics,
+                    key = { it.mediaId }
+                ) { music ->
+                    AnimatedVisibility(areMusicsVisible[folder] == true) {
+                        Column(
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(
+                                    start = 20.dp
+                                )
+                        ) {
+                            MusicListItem(
+                                onShortClick = { },
+                                music = music,
+                                currentMusicUri = "",
+                                showBottomSheet = false,
+                                isPlayerReady = true,
+                            )
+                        }
+                    }
+                }
+
             }
         }
+
         CuteSearchbar(
             query = query,
-            onQueryChange = {
-                query = it
-                onHandleSearching(query)
-            },
+            onQueryChange = { query = it },
             modifier = Modifier
                 .navigationBarsPadding()
                 .fillMaxWidth(rememberSearchbarMaxFloatValue())
@@ -152,18 +177,25 @@ fun SharedTransitionScope.AlbumsScreen(
                 .align(rememberSearchbarAlignment()),
             placeholder = {
                 CuteText(
-                    text = stringResource(id = R.string.search) + " " + stringResource(R.string.albums),
+                    text = stringResource(id = R.string.search) + " " + stringResource(
+                        id = R.string.folders
+                    ),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 
                     )
             },
             leadingIcon = {
-                IconButton(onClick = { screenSelectionExpanded = true }) {
+                IconButton(
+                    onClick = {
+                        screenSelectionExpanded = true
+                    }
+                ) {
                     Icon(
-                        painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
+                        painter = painterResource(R.drawable.folder_rounded),
                         contentDescription = null
                     )
                 }
+
 
                 DropdownMenu(
                     expanded = screenSelectionExpanded,
@@ -185,12 +217,10 @@ fun SharedTransitionScope.AlbumsScreen(
                         onClick = {
                             isSortedByASC = !isSortedByASC
                             when (isSortedByASC) {
-                                true -> {
-                                    onHandleSorting(SortingType.ASCENDING)
+                                true -> { /* sort by ASC */
                                 }
 
-                                false -> {
-                                    onHandleSorting(SortingType.DESCENDING)
+                                false -> { /* sort by DESC */
                                 }
                             }
                         }
@@ -213,65 +243,13 @@ fun SharedTransitionScope.AlbumsScreen(
             },
             currentlyPlaying = currentlyPlaying,
             onHandlePlayerActions = onHandlePlayerActions,
-            isPlaying = isPlaying,
+            isPlaying = isCurrentlyPlaying,
             animatedVisibilityScope = animatedVisibilityScope,
             isPlayerReady = isPlayerReady,
             onNavigate = { onNavigate(Screen.NowPlaying) },
             onClickFAB = { onHandlePlayerActions(PlayerActions.PlayRandom) }
         )
     }
+
+
 }
-
-
-@Composable
-fun AlbumCard(
-    album: Album,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-
-    Column(
-        modifier = modifier
-            .padding(20.dp)
-    ) {
-        AsyncImage(
-            model = ImageUtils.imageRequester(
-                img = ImageUtils.getAlbumArt(album.id) ?: R.drawable.ic_launcher_foreground,
-                context = context
-            ),
-            contentDescription = stringResource(id = R.string.artwork),
-            modifier = Modifier
-                .size(160.dp)
-                .clip(RoundedCornerShape(24.dp)),
-            contentScale = ContentScale.Crop
-        )
-        Spacer(Modifier.height(10.dp))
-        Column {
-            CuteText(
-                text = album.name,
-                maxLines = 1,
-                modifier = Modifier.basicMarquee()
-            )
-            CuteText(
-                text = album.artist,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                modifier = Modifier.basicMarquee()
-            )
-        }
-    }
-}
-
-//@Preview
-//@Composable
-//private fun AlbumScreenPreview() {
-//    CuteMusicTheme {
-//        AlbumsScreenContent(
-//            albums = emptyList(),
-//            onNavigate = {},
-//            bottomBarIndex = 1,
-//            onBottomBarNavigation = {_, _ ->}
-//        ) {
-//
-//        }
-//    }
-//}

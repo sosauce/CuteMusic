@@ -126,6 +126,29 @@ class MusicViewModel(
                 }
             }
         }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState)
+            when (playbackState) {
+                Player.STATE_IDLE -> {
+                    _musicState.value = _musicState.value.copy(
+                        isPlayerReady = false
+                    )
+                }
+
+                Player.STATE_READY -> {
+                    _musicState.value = _musicState.value.copy(
+                        isPlayerReady = true
+                    )
+                }
+
+                else -> {
+                    _musicState.value = _musicState.value.copy(
+                        isPlayerReady = true
+                    )
+                }
+            }
+        }
     }
 
     init {
@@ -202,16 +225,6 @@ class MusicViewModel(
         super.onCleared()
         mediaController!!.removeListener(playerListener)
         mediaController!!.release()
-    }
-
-
-    fun isPlayerReady(): Boolean {
-        return if (mediaController == null) false else
-            when (mediaController!!.playbackState) {
-                Player.STATE_IDLE -> false
-                Player.STATE_READY -> true
-                else -> true
-            }
     }
 
     fun handlePlayerActions(action: PlayerActions) {

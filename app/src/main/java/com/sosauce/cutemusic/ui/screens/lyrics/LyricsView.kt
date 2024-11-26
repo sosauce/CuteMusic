@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,15 +59,13 @@ fun LyricsView(
 ) {
     var currentLyric by remember { mutableStateOf(Lyrics()) }
     val clipboardManager = LocalClipboardManager.current
-    val indexToScrollTo = musicState.currentLyrics.indexOfFirst { lyric ->
-        musicState.currentPosition in lyric.timestamp until (musicState.currentLyrics.getOrNull(
-            musicState.currentLyrics.indexOf(lyric) + 1
-        )?.timestamp ?: 0)
-    }
     val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = if (indexToScrollTo != -1) indexToScrollTo else 0
+        initialFirstVisibleItemIndex = if (musicState.currentLyrics.indexOf(currentLyric) != -1) musicState.currentLyrics.indexOf(
+            currentLyric
+        ) else 0
     )
     val context = LocalContext.current
+    val a = context.contentResolver
 
     DisposableEffect(Unit) {
         val window = (context as MainActivity).window
@@ -74,6 +73,14 @@ fun LyricsView(
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    LaunchedEffect(currentLyric) {
+        val indexOfCurrentLyric = musicState.currentLyrics.indexOf(currentLyric)
+
+        if (indexOfCurrentLyric != -1) {
+            lazyListState.animateScrollToItem(musicState.currentLyrics.indexOf(currentLyric))
         }
     }
 
@@ -103,8 +110,7 @@ fun LyricsView(
                     key = { _, item -> item.timestamp }
                 ) { index, lyric ->
 
-
-                    val nextTimestamp = remember(index, musicState.currentLyrics) {
+                    val nextTimestamp = remember(index) {
                         if (index < musicState.currentLyrics.size - 1) {
                             musicState.currentLyrics[index + 1].timestamp
                         } else {
@@ -112,9 +118,12 @@ fun LyricsView(
                         }
                     }
 
-                    val isCurrentLyric = remember(musicState.currentPosition, nextTimestamp) {
-                        musicState.currentPosition in lyric.timestamp until nextTimestamp
+                    val isCurrentLyric by remember(musicState.currentPosition) {
+                        derivedStateOf {
+                            musicState.currentPosition in lyric.timestamp until nextTimestamp
+                        }
                     }
+
 
                     val color by animateColorAsState(
                         targetValue = if (isCurrentLyric) {
@@ -127,9 +136,6 @@ fun LyricsView(
 
                     if (isCurrentLyric) {
                         currentLyric = lyric
-                        LaunchedEffect(Unit) {
-                            lazyListState.animateScrollToItem(index)
-                        }
                     }
 
 

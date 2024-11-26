@@ -23,4 +23,5 @@ data class MusicState(
     val currentSize: Long = 0,
     val currentLrcFile: File? = null,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+    val isPlayerReady: Boolean = false
 )

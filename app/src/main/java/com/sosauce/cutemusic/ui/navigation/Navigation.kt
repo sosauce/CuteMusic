@@ -13,9 +13,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.sosauce.cutemusic.data.actions.MetadataActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
+import com.sosauce.cutemusic.ui.screens.all_folders.AllFoldersScreen
 import com.sosauce.cutemusic.ui.screens.artist.ArtistDetails
 import com.sosauce.cutemusic.ui.screens.artist.ArtistsScreen
 import com.sosauce.cutemusic.ui.screens.blacklisted.BlacklistedScreen
@@ -39,25 +39,21 @@ fun Nav() {
     val viewModel = koinViewModel<MusicViewModel>()
     val postViewModel = koinViewModel<PostViewModel>()
     val metadataViewModel = koinViewModel<MetadataViewModel>()
-    val blacklistedFolders by rememberAllBlacklistedFolders()
     val musics = postViewModel.musics
     val musicState by viewModel.musicState.collectAsStateWithLifecycle()
+    val folders = postViewModel.folders
 
 
     SharedTransitionLayout {
-
-        this
         NavHost(
             navController = navController,
             startDestination = Screen.Main
         ) {
-
-            this@SharedTransitionLayout
             composable<Screen.Main> {
                 MainScreen(
                     musics = musics,
                     selectedIndex = viewModel.selectedItem,
-                    onNavigateTo = { navController.navigate(it) },
+                    onNavigate = { navController.navigate(it) },
                     currentlyPlaying = musicState.currentlyPlaying,
                     isCurrentlyPlaying = musicState.isCurrentlyPlaying,
                     onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
@@ -68,15 +64,16 @@ fun Nav() {
                         }
                     },
                     animatedVisibilityScope = this,
-                    onLoadMetadata = { uri ->
+                    onLoadMetadata = { path, uri ->
                         metadataViewModel.onHandleMetadataActions(MetadataActions.ClearState)
                         metadataViewModel.onHandleMetadataActions(
                             MetadataActions.LoadSong(
+                                path,
                                 uri
                             )
                         )
                     },
-                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlayerReady = musicState.isPlayerReady,
                     currentMusicUri = musicState.currentMusicUri,
                     onHandlePlayerAction = { viewModel.handlePlayerActions(it) },
                     onDeleteMusic = { uris, intentSender ->
@@ -124,7 +121,7 @@ fun Nav() {
                     },
                     currentlyPlaying = musicState.currentlyPlaying,
                     chargePVMAlbumSongs = postViewModel::albumSongs,
-                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlayerReady = musicState.isPlayerReady,
                     isPlaying = musicState.isCurrentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     onNavigate = { navController.navigate(it) },
@@ -157,7 +154,7 @@ fun Nav() {
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     isPlaying = musicState.isCurrentlyPlaying,
                     animatedVisibilityScope = this,
-                    isPlayerReady = viewModel.isPlayerReady(),
+                    isPlayerReady = musicState.isPlayerReady,
                     onHandleSorting = { sortingType ->
                         postViewModel.handleFiltering(
                             listToHandle = ListToHandle.ARTISTS,
@@ -244,6 +241,25 @@ fun Nav() {
                         }
                     )
                 }
+            }
+
+            composable<Screen.AllFolders> {
+                AllFoldersScreen(
+                    musics = musics,
+                    onNavigationItemClicked = { index, item ->
+                        navController.navigate(item.navigateTo) {
+                            viewModel.selectedItem = index
+                            launchSingleTop = true
+                        }
+                    },
+                    selectedIndex = viewModel.selectedItem,
+                    onNavigate = { navController.navigate(it) },
+                    currentlyPlaying = musicState.currentlyPlaying,
+                    isCurrentlyPlaying = musicState.isCurrentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
+                    isPlayerReady = musicState.isPlayerReady,
+                    animatedVisibilityScope = this,
+                )
             }
         }
     }

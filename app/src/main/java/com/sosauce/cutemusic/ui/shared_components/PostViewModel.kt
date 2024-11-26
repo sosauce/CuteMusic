@@ -38,7 +38,7 @@ class PostViewModel(
     )
 
     var folders by mutableStateOf(
-        mediaStoreHelper.fetchFoldersWithMusics()
+        mediaStoreHelper.folders
     )
 
     private val observer = MediaStoreObserver {

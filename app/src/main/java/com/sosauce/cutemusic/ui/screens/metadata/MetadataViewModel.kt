@@ -1,7 +1,11 @@
 package com.sosauce.cutemusic.ui.screens.metadata
 
+import android.annotation.SuppressLint
 import android.app.Application
-import android.media.MediaScannerConnection
+import android.content.Context
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,9 +13,7 @@ import com.sosauce.cutemusic.data.actions.MetadataActions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.jaudiotagger.audio.AudioFileIO
-import org.jaudiotagger.tag.FieldKey
-import java.io.File
+import java.io.FileNotFoundException
 
 class MetadataViewModel(
     private val application: Application
@@ -28,85 +30,81 @@ class MetadataViewModel(
 
     private fun loadMetadataJAudio(path: String) {
 
-        val audioFile = AudioFileIO
-            .read(File(path))
-
-        audioFile.tag.apply {
-            val tagList = listOf(
-                getFirst(FieldKey.TITLE),
-                getFirst(FieldKey.ARTIST),
-                getFirst(FieldKey.ALBUM),
-                getFirst(FieldKey.YEAR),
-                getFirst(FieldKey.GENRE),
-                getFirst(FieldKey.TRACK),
-                getFirst(FieldKey.DISC_NO),
-                getFirst(FieldKey.LYRICS),
-            )
-
-
-            tagList.forEach {
-                _metadata.value.mutablePropertiesMap.add(it)
-            }
-            //_metadata.value.art = firstArtwork ?: null
-        }
+//        val audioFile = AudioFileIO
+//            .read(File(path))
+//
+//        audioFile.tag.apply {
+//            val tagList = listOf(
+//                getFirst(FieldKey.TITLE),
+//                getFirst(FieldKey.ARTIST),
+//                getFirst(FieldKey.ALBUM),
+//                getFirst(FieldKey.YEAR),
+//                getFirst(FieldKey.GENRE),
+//                getFirst(FieldKey.TRACK),
+//                getFirst(FieldKey.DISC_NO),
+//                getFirst(FieldKey.LYRICS),
+//            )
+//
+//
+//            tagList.forEach {
+//                _metadata.value.mutablePropertiesMap.add(it)
+//            }
+//            //_metadata.value.art = firstArtwork ?: null
+//        }
     }
 
 
-    private fun saveAllChanges(path: String) {
-        try {
-            val file = File(path)
-            val audioFile = AudioFileIO.read(file)
-
-            audioFile.tag.apply {
-                mapOf(
-                    FieldKey.TITLE to 0,
-                    FieldKey.ARTIST to 1,
-                    FieldKey.ALBUM to 2,
-                    FieldKey.YEAR to 3,
-                    FieldKey.GENRE to 4,
-                    FieldKey.TRACK to 5,
-                    FieldKey.DISC_NO to 6,
-                    FieldKey.LYRICS to 7
-                )
-                    .forEach {
-                        Log.d("Test", _metadata.value.mutablePropertiesMap[it.value])
-                        setField(it.key, _metadata.value.mutablePropertiesMap[it.value])
-                    }
-            }
-
-            AudioFileIO.write(audioFile)
-
-            MediaScannerConnection.scanFile(
-                application.applicationContext,
-                arrayOf(file.toString()),
-                null,
-                null
-            )
-
-        } catch (e: Exception) {
-            Log.d("CuteError", e.message.toString())
-        }
-
+    private fun saveAllChanges() {
     }
+
 
     private fun clearState() {
         _metadata.value.mutablePropertiesMap.clear()
         //_metadata.value.art
     }
 
+    @SuppressLint("Range")
+    private fun getFileDescriptorFromPath(
+        context: Context,
+        filePath: String,
+        mode: String = "r"
+    ): ParcelFileDescriptor? {
+        val resolver = context.contentResolver
+        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+
+        val projection = arrayOf(MediaStore.Files.FileColumns._ID)
+        val selection = "${MediaStore.Files.FileColumns.DATA}=?"
+        val selectionArgs = arrayOf(filePath)
+
+        resolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val fileId = cursor.getInt(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID))
+                if (fileId == -1) {
+                    return null
+                } else {
+                    val fileUri = Uri.withAppendedPath(uri, fileId.toString())
+                    try {
+                        return resolver.openFileDescriptor(fileUri, mode)
+                    } catch (e: FileNotFoundException) {
+                        Log.e("MediaStoreReceiver", "File not found: ${e.message}")
+                    }
+                }
+            }
+        }
+
+        return null
+    }
+
 
     fun onHandleMetadataActions(action: MetadataActions) {
         when (action) {
-            is MetadataActions.SaveChanges -> {
-                viewModelScope.launch {
-                    saveAllChanges(metadataState.value.songPath)
-                }
-            }
+            is MetadataActions.SaveChanges -> saveAllChanges()
 
             is MetadataActions.LoadSong -> {
                 viewModelScope.launch {
                     _metadata.value = _metadata.value.copy(
-                        songPath = action.path
+                        songPath = action.path,
+                        songUri = action.uri
                     )
                     loadMetadataJAudio(metadataState.value.songPath)
                 }
@@ -118,7 +116,6 @@ class MetadataViewModel(
         }
     }
 }
-
 
 
 

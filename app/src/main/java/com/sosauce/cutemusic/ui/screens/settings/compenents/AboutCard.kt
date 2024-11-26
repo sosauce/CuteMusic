@@ -1,6 +1,7 @@
 package com.sosauce.cutemusic.ui.screens.settings.compenents
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,11 +11,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -40,14 +43,28 @@ fun AboutCard() {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painterResource(id = R.drawable.cute_music_icon),
-                contentDescription = stringResource(id = R.string.app_icon),
+//            Image(
+//                painterResource(id = R.drawable.cute_music_icon),
+//                contentDescription = stringResource(id = R.string.app_icon),
+//                modifier = Modifier
+//                    .size(100.dp)
+//                    .padding(15.dp)
+//                    .clip(RoundedCornerShape(15))
+//            )
+            Box(
                 modifier = Modifier
                     .size(100.dp)
                     .padding(15.dp)
                     .clip(RoundedCornerShape(15))
-            )
+                    .background(Color(0xFFFAB3AA)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.music_note_rounded),
+                    contentDescription = stringResource(id = R.string.app_icon),
+                    modifier = Modifier.size(60.dp)
+                )
+            }
             Column {
                 CuteText(
                     text = stringResource(id = R.string.cm_by_sosauce),

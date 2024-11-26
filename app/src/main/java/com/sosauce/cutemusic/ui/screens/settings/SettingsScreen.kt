@@ -55,7 +55,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(10.dp))
             ThemeManagement()
             UISettings()
-            Misc(onNavigateTo = onNavigate)
+            Misc(onNavigate = onNavigate)
 //            SettingCategoryCards(
 //                text = "UI & Theme",
 //                onClick = {},

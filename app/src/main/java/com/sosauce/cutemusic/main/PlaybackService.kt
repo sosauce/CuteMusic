@@ -95,7 +95,7 @@ class PlaybackService : MediaLibraryService(),
             .build()
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this).build().apply {
-                setSmallIcon(R.drawable.round_music_note_24)
+                setSmallIcon(R.drawable.music_note_rounded)
             }
         )
 

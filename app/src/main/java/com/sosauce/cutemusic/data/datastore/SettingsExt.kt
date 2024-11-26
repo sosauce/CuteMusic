@@ -58,7 +58,8 @@ fun <T> rememberPreferenceNonComposable(
     val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     val state = context.dataStore.data
-            .map { it[key] ?: defaultValue }.stateIn(coroutineScope, SharingStarted.WhileSubscribed(5000), defaultValue)
+        .map { it[key] ?: defaultValue }
+        .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5000), defaultValue)
 
     return object : MutableState<T> {
         override var value: T
