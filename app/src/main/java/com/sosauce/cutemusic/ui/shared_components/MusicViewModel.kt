@@ -1,7 +1,13 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
+import android.content.Context
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +22,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Lyrics
@@ -32,12 +39,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.jaudiotagger.audio.AudioFileIO
-import org.jaudiotagger.tag.FieldKey
 import java.io.File
+import java.io.FileNotFoundException
 
 class MusicViewModel(
-    application: Application,
+    private val application: Application,
     private val mediaStoreHelper: MediaStoreHelper
 ) : AndroidViewModel(application) {
 
@@ -205,20 +211,45 @@ class MusicViewModel(
         }
     }
 
-    fun loadEmbeddedLyrics(
-        path: String
-    ): String {
-        val file = AudioFileIO.read(File(path))
+    fun loadEmbeddedLyrics(): String {
 
-        file.tag.apply {
-            val embeddedLyrics = getFirst(FieldKey.LYRICS)
+        val fd = getFileDescriptorFromPath(application, musicState.value.currentPath)
+        return fd?.dup()?.detachFd()?.let {
+            TagLib.getMetadata(it)?.propertyMap["LYRICS"]?.getOrNull(0) ?: "No Lyrics Found !"
+        } ?: "No Lyrics Found !"
 
-            return if (embeddedLyrics != "") {
-                embeddedLyrics
-            } else {
-                "No lyrics found !"
+    }
+
+    @SuppressLint("Range")
+    private fun getFileDescriptorFromPath(
+        context: Context,
+        filePath: String,
+        mode: String = "r"
+    ): ParcelFileDescriptor? {
+        val resolver = context.contentResolver
+        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+
+        val projection = arrayOf(MediaStore.Files.FileColumns._ID)
+        val selection = "${MediaStore.Files.FileColumns.DATA}=?"
+        val selectionArgs = arrayOf(filePath)
+
+        resolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val fileId = cursor.getInt(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID))
+                if (fileId == -1) {
+                    return null
+                } else {
+                    val fileUri = Uri.withAppendedPath(uri, fileId.toString())
+                    try {
+                        return resolver.openFileDescriptor(fileUri, mode)
+                    } catch (e: FileNotFoundException) {
+                        Log.e("MediaStoreReceiver", "File not found: ${e.message}")
+                    }
+                }
             }
         }
+
+        return null
     }
 
     override fun onCleared() {

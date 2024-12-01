@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +45,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
@@ -52,7 +52,6 @@ import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
-import com.sosauce.cutemusic.utils.SortingType
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
@@ -61,8 +60,6 @@ import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 fun SharedTransitionScope.ArtistsScreen(
     artist: List<Artist>,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onHandleSorting: (SortingType) -> Unit,
-    onHandleSearching: (String) -> Unit,
     currentlyPlaying: String,
     onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
@@ -71,7 +68,6 @@ fun SharedTransitionScope.ArtistsScreen(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
     onNavigationItemClicked: (Int, NavigationItem) -> Unit,
-    musicState: MusicState
 ) {
 
     var query by remember { mutableStateOf("") }
@@ -81,10 +77,26 @@ fun SharedTransitionScope.ArtistsScreen(
         targetValue = if (isSortedByASC) 45f else 135f,
         label = "Arrow Icon Animation"
     )
+    val displayArtists by remember(isSortedByASC, artist, query) {
+        derivedStateOf {
+            if (query.isNotEmpty()) {
+                artist.filter {
+                    it.name.contains(
+                        other = query,
+                        ignoreCase = true
+                    ) == true
+                }
+            } else {
+                if (isSortedByASC) artist
+                else artist.sortedByDescending { it.name }
+            }
+
+        }
+    }
 
     Scaffold { values ->
         Box {
-            if (artist.isEmpty()) {
+            if (displayArtists.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -106,7 +118,7 @@ fun SharedTransitionScope.ArtistsScreen(
                         .padding(values),
                 ) {
                     items(
-                        items = artist,
+                        items = displayArtists,
                         key = { it.id }
                     ) {
                         Column(
@@ -127,10 +139,7 @@ fun SharedTransitionScope.ArtistsScreen(
             }
             CuteSearchbar(
                 query = query,
-                onQueryChange = {
-                    query = it
-                    onHandleSearching(query)
-                },
+                onQueryChange = { query = it },
                 modifier = Modifier
                     .navigationBarsPadding()
                     .fillMaxWidth(rememberSearchbarMaxFloatValue())
@@ -170,18 +179,7 @@ fun SharedTransitionScope.ArtistsScreen(
                 trailingIcon = {
                     Row {
                         IconButton(
-                            onClick = {
-                                isSortedByASC = !isSortedByASC
-                                when (isSortedByASC) {
-                                    true -> {
-                                        onHandleSorting(SortingType.ASCENDING)
-                                    }
-
-                                    false -> {
-                                        onHandleSorting(SortingType.DESCENDING)
-                                    }
-                                }
-                            }
+                            onClick = { isSortedByASC = !isSortedByASC }
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.ArrowUpward,

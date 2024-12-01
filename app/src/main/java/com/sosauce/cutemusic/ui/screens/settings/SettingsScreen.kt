@@ -36,9 +36,7 @@ fun SettingsScreen(
             AppBar(
                 title = stringResource(id = R.string.settings),
                 showBackArrow = true,
-                showMenuIcon = false,
-                onPopBackStack = { onPopBackStack() },
-                onNavigate = { onNavigate(it) }
+                onPopBackStack = { onPopBackStack() }
             )
         },
         modifier = Modifier

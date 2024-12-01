@@ -26,7 +26,6 @@ import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
-import com.sosauce.cutemusic.utils.ListToHandle
 import org.koin.androidx.compose.koinViewModel
 
 // https://stackoverflow.com/a/78771053
@@ -39,9 +38,9 @@ fun Nav() {
     val viewModel = koinViewModel<MusicViewModel>()
     val postViewModel = koinViewModel<PostViewModel>()
     val metadataViewModel = koinViewModel<MetadataViewModel>()
-    val musics = postViewModel.musics
+    val musics by postViewModel.musics.collectAsStateWithLifecycle()
     val musicState by viewModel.musicState.collectAsStateWithLifecycle()
-    val folders = postViewModel.folders
+    val albums by postViewModel.albums.collectAsStateWithLifecycle()
 
 
     SharedTransitionLayout {
@@ -65,7 +64,6 @@ fun Nav() {
                     },
                     animatedVisibilityScope = this,
                     onLoadMetadata = { path, uri ->
-                        metadataViewModel.onHandleMetadataActions(MetadataActions.ClearState)
                         metadataViewModel.onHandleMetadataActions(
                             MetadataActions.LoadSong(
                                 path,
@@ -82,43 +80,20 @@ fun Nav() {
                             intentSender
                         )
                     },
-                    onHandleSorting = { sortingType ->
-                        postViewModel.handleFiltering(
-                            listToHandle = ListToHandle.TRACKS,
-                            sortingType = sortingType
-                        )
-                    },
-                    onHandleSearching = { query ->
-                        postViewModel.handleSearch(
-                            listToHandle = ListToHandle.TRACKS,
-                            query = query
-                        )
-                    },
                     onChargeAlbumSongs = postViewModel::albumSongs,
                     onChargeArtistLists = {
                         postViewModel.artistSongs(it)
                         postViewModel.artistAlbums(it)
-                    },
-                    musicState = musicState
+                    }
                 )
 
             }
+
             composable<Screen.Albums> {
+
                 AlbumsScreen(
-                    albums = postViewModel.albums,
+                    albums = albums,
                     animatedVisibilityScope = this,
-                    onHandleSorting = { sortingType ->
-                        postViewModel.handleFiltering(
-                            listToHandle = ListToHandle.ALBUMS,
-                            sortingType = sortingType
-                        )
-                    },
-                    onHandleSearching = { query ->
-                        postViewModel.handleSearch(
-                            listToHandle = ListToHandle.ALBUMS,
-                            query = query
-                        )
-                    },
                     currentlyPlaying = musicState.currentlyPlaying,
                     chargePVMAlbumSongs = postViewModel::albumSongs,
                     isPlayerReady = musicState.isPlayerReady,
@@ -132,7 +107,6 @@ fun Nav() {
                         }
                     },
                     selectedIndex = viewModel.selectedItem,
-                    musicState = musicState
                 )
             }
             composable<Screen.Artists> {
@@ -154,20 +128,7 @@ fun Nav() {
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     isPlaying = musicState.isCurrentlyPlaying,
                     animatedVisibilityScope = this,
-                    isPlayerReady = musicState.isPlayerReady,
-                    onHandleSorting = { sortingType ->
-                        postViewModel.handleFiltering(
-                            listToHandle = ListToHandle.ARTISTS,
-                            sortingType = sortingType
-                        )
-                    },
-                    onHandleSearching = { query ->
-                        postViewModel.handleSearch(
-                            listToHandle = ListToHandle.ARTISTS,
-                            query = query
-                        )
-                    },
-                    musicState = musicState
+                    isPlayerReady = musicState.isPlayerReady
                 )
             }
 
@@ -192,7 +153,7 @@ fun Nav() {
             }
             composable<Screen.AlbumsDetails> {
                 val index = it.toRoute<Screen.AlbumsDetails>()
-                postViewModel.albums.find { album -> album.id == index.id }?.let { album ->
+                albums.find { album -> album.id == index.id }?.let { album ->
                     AlbumDetailsScreen(
                         album = album,
                         viewModel = viewModel,

@@ -3,17 +3,34 @@ package com.sosauce.cutemusic.ui.screens.metadata
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.kyant.taglib.AudioProperties
+import com.kyant.taglib.AudioPropertiesReadStyle
+import com.kyant.taglib.Metadata
+import com.kyant.taglib.Picture
+import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.data.actions.MetadataActions
+import com.sosauce.cutemusic.utils.toAudioFileMetadata
+import com.sosauce.cutemusic.utils.toModifiableMap
+import com.sosauce.cutemusic.utils.toPropertyMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.FileNotFoundException
+
+// Inspired by Metadator and TagLib !
 
 class MetadataViewModel(
     private val application: Application
@@ -28,39 +45,110 @@ class MetadataViewModel(
         _metadata.value.mutablePropertiesMap.clear()
     }
 
-    private fun loadMetadataJAudio(path: String) {
+    suspend fun loadMetadata() {
+        runCatching {
+            getFileDescriptorFromPath(application, metadataState.value.songPath)?.use { fd ->
+                val metadata = loadAudioMetadata(fd)
+                val audioProperties = loadAudioProperties(fd)
+                val audioArt = loadAudioArt(fd)
 
-//        val audioFile = AudioFileIO
-//            .read(File(path))
-//
-//        audioFile.tag.apply {
-//            val tagList = listOf(
-//                getFirst(FieldKey.TITLE),
-//                getFirst(FieldKey.ARTIST),
-//                getFirst(FieldKey.ALBUM),
-//                getFirst(FieldKey.YEAR),
-//                getFirst(FieldKey.GENRE),
-//                getFirst(FieldKey.TRACK),
-//                getFirst(FieldKey.DISC_NO),
-//                getFirst(FieldKey.LYRICS),
-//            )
-//
-//
-//            tagList.forEach {
-//                _metadata.value.mutablePropertiesMap.add(it)
-//            }
-//            //_metadata.value.art = firstArtwork ?: null
-//        }
+                _metadata.value = _metadata.value.copy(
+                    metadata = metadata,
+                    audioProperties = audioProperties,
+                    art = audioArt
+                )
+
+            }
+        }.onSuccess {
+            metadataState.value.metadata?.propertyMap?.toModifiableMap()?.forEach {
+                metadataState.value.mutablePropertiesMap[it.key] = it.value ?: ""
+            }
+        }
     }
+
+
+    private suspend fun loadAudioMetadata(songFd: ParcelFileDescriptor): Metadata? {
+        val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
+
+        return withContext(Dispatchers.IO) {
+            TagLib.getMetadata(fd)
+        }
+    }
+
+    private suspend fun loadAudioProperties(
+        songFd: ParcelFileDescriptor,
+        readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Fast
+    ): AudioProperties? {
+        val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
+
+        return withContext(Dispatchers.IO) {
+            TagLib.getAudioProperties(fd, readStyle)
+        }
+    }
+
+    private suspend fun loadAudioArt(songFd: ParcelFileDescriptor): Picture? {
+        val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
+
+        return withContext(Dispatchers.IO) {
+            TagLib.getFrontCover(fd)
+        }
+    }
+
 
 
     private fun saveAllChanges() {
+        try {
+            val fd = getFileDescriptorFromPath(application, metadataState.value.songPath, "w")
+
+
+            fd?.dup()?.detachFd()?.let {
+                TagLib.savePropertyMap(it, metadataState.value.mutablePropertiesMap.toAudioFileMetadata().toPropertyMap())
+            }
+
+            fd?.dup()?.detachFd()?.let {
+                if (metadataState.value.art != null) {
+                    TagLib.savePictures(it, arrayOf(metadataState.value.art!!))
+                }
+            }
+
+            MediaScannerConnection.scanFile(
+                application.applicationContext,
+                arrayOf(metadataState.value.songPath),
+                null,
+                null
+            )
+        } catch (e: Exception) {
+            Log.d("hello", "some error occured")
+            e.printStackTrace()
+        }
     }
+    private fun saveNewAudioArt(uri: Uri) {
+
+        // App will crash if it tries to open an input stream on an empty uri !
+        if (uri == Uri.EMPTY) return
+
+        val mimeType = application.contentResolver.getType(uri)
+        val byteArray = application.contentResolver.openInputStream(uri)?.use { inputStream ->
+
+            val baos = ByteArrayOutputStream()
+            BitmapFactory.decodeStream(inputStream).apply {
+                compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            }
+
+            baos.toByteArray()
+        }
 
 
-    private fun clearState() {
-        _metadata.value.mutablePropertiesMap.clear()
-        //_metadata.value.art
+        val picture = Picture(
+            data = byteArray ?: byteArrayOf(),
+            description = "",
+            pictureType = "Front Cover",
+            mimeType = mimeType ?: "image/jpeg"
+        )
+
+        _metadata.value = _metadata.value.copy(
+            art = picture
+        )
     }
 
     @SuppressLint("Range")
@@ -106,12 +194,15 @@ class MetadataViewModel(
                         songPath = action.path,
                         songUri = action.uri
                     )
-                    loadMetadataJAudio(metadataState.value.songPath)
+                    loadMetadata()
                 }
             }
+            is MetadataActions.UpdateAudioArt -> { saveNewAudioArt(action.newArtUri) }
 
-            is MetadataActions.ClearState -> {
-                clearState()
+            is MetadataActions.RemoveArtwork -> {
+                _metadata.value = _metadata.value.copy(
+                    art = null
+                )
             }
         }
     }

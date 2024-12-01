@@ -15,7 +15,7 @@ val appModule = module {
         MediaStoreHelperImpl(androidContext())
     }
     viewModel {
-        PostViewModel(get(), androidApplication())
+        PostViewModel(get())
     }
     viewModel {
         MusicViewModel(androidApplication(), get())

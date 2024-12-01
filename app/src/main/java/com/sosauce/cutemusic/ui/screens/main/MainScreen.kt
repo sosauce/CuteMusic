@@ -74,9 +74,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.ui.navigation.Screen
@@ -87,7 +87,6 @@ import com.sosauce.cutemusic.ui.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.SortingType
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
@@ -108,11 +107,8 @@ fun SharedTransitionScope.MainScreen(
     currentMusicUri: String,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
-    onHandleSorting: (SortingType) -> Unit,
-    onHandleSearching: (String) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
-    musicState: MusicState
 ) {
     var query by remember { mutableStateOf("") }
     val state = rememberLazyListState()
@@ -139,171 +135,172 @@ fun SharedTransitionScope.MainScreen(
         }
     }
 
+    val displayMusics by remember(isSortedByASC, musics, query) {
+        derivedStateOf {
+            if (query.isNotEmpty()) {
+                musics.filter {
+                    it.mediaMetadata.title?.contains(
+                        other = query,
+                        ignoreCase = true
+                    ) == true
+                }
+            } else {
+                if (isSortedByASC) musics
+                else musics.sortedByDescending { it.mediaMetadata.title.toString() }
+            }
 
-    Scaffold { _ ->
-        Box(Modifier.fillMaxSize()) {
-            LazyColumn(
-                state = state
-            ) {
-                if (musics.isEmpty()) {
-                    item {
-                        CuteText(
-                            text = stringResource(id = R.string.no_musics_found),
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    itemsIndexed(
-                        items = musics,
-                        key = { _, music -> music.mediaId }
-                    ) { index, music ->
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
-                        ) {
-                            MusicListItem(
-                                onShortClick = { onShortClick(music.mediaId) },
-                                music = music,
-                                onNavigate = { onNavigate(it) },
-                                currentMusicUri = currentMusicUri,
-                                onLoadMetadata = onLoadMetadata,
-                                showBottomSheet = true,
-                                onDeleteMusic = onDeleteMusic,
-                                onChargeAlbumSongs = onChargeAlbumSongs,
-                                onChargeArtistLists = onChargeArtistLists,
-                                modifier = Modifier
-                                    .thenIf(
-                                        index == 0,
-                                        Modifier.statusBarsPadding()
-                                    ),
-                                isPlayerReady = isPlayerReady
+        }
+    }
+
+
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = state
+        ) {
+            if (displayMusics.isEmpty()) {
+                item {
+                    CuteText(
+                        text = stringResource(id = R.string.no_musics_found),
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                itemsIndexed(
+                    items = displayMusics,
+                    key = { _, music -> music.mediaId }
+                ) { index, music ->
+                    Column(
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(
+                                vertical = 2.dp,
+                                horizontal = 4.dp
                             )
-                        }
+                    ) {
+                        MusicListItem(
+                            onShortClick = { onShortClick(music.mediaId) },
+                            music = music,
+                            onNavigate = { onNavigate(it) },
+                            currentMusicUri = currentMusicUri,
+                            onLoadMetadata = onLoadMetadata,
+                            showBottomSheet = true,
+                            onDeleteMusic = onDeleteMusic,
+                            onChargeAlbumSongs = onChargeAlbumSongs,
+                            onChargeArtistLists = onChargeArtistLists,
+                            modifier = Modifier
+                                .thenIf(
+                                    index == 0,
+                                    Modifier.statusBarsPadding()
+                                ),
+                            isPlayerReady = isPlayerReady
+                        )
                     }
                 }
             }
+        }
 
-            // TODO : How do you make it NOT scroll to the first item when sorting changes !!!!!
-            Crossfade(
-                targetState = showCuteSearchbar,
-                label = "",
-                modifier = Modifier.align(rememberSearchbarAlignment())
-            ) { visible ->
-                if (visible) {
-                    val transition = rememberInfiniteTransition(label = "Infinite Color Change")
-                    val color by transition.animateColor(
-                        initialValue = LocalContentColor.current,
-                        targetValue = MaterialTheme.colorScheme.errorContainer,
-                        animationSpec = infiniteRepeatable(
-                            tween(500),
-                            repeatMode = RepeatMode.Reverse
+        // TODO : How do you make it NOT scroll to the first item when sorting changes !!!!!
+        Crossfade(
+            targetState = showCuteSearchbar,
+            label = "",
+            modifier = Modifier.align(rememberSearchbarAlignment())
+        ) { visible ->
+            if (visible) {
+                val transition = rememberInfiniteTransition(label = "Infinite Color Change")
+                val color by transition.animateColor(
+                    initialValue = LocalContentColor.current,
+                    targetValue = MaterialTheme.colorScheme.errorContainer,
+                    animationSpec = infiniteRepeatable(
+                        tween(500),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = ""
+                )
+                var hasSeenTip by rememberHasSeenTip()
+
+                CuteSearchbar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .fillMaxWidth(rememberSearchbarMaxFloatValue())
+                        .padding(
+                            bottom = 5.dp,
+                            end = rememberSearchbarRightPadding()
                         ),
-                        label = ""
-                    )
-                    var hasSeenTip by rememberHasSeenTip()
-
-                    CuteSearchbar(
-                        query = query,
-                        onQueryChange = {
-                            query = it
-                            onHandleSearching(query)
-                        },
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .fillMaxWidth(rememberSearchbarMaxFloatValue())
-                            .padding(
-                                bottom = 5.dp,
-                                end = rememberSearchbarRightPadding()
+                    placeholder = {
+                        CuteText(
+                            text = stringResource(id = R.string.search) + " " + stringResource(
+                                id = R.string.music
                             ),
-                        placeholder = {
-                            CuteText(
-                                text = stringResource(id = R.string.search) + " " + stringResource(
-                                    id = R.string.music
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 
-                                )
-                        },
-                        leadingIcon = {
-                            IconButton(
-                                onClick = {
-                                    screenSelectionExpanded = true
-                                    if (!hasSeenTip) {
-                                        hasSeenTip = true
-                                    }
+                            )
+                    },
+                    leadingIcon = {
+                        IconButton(
+                            onClick = {
+                                screenSelectionExpanded = true
+                                if (!hasSeenTip) {
+                                    hasSeenTip = true
                                 }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music_note_rounded),
+                                contentDescription = null,
+                                tint = if (!hasSeenTip) color else LocalContentColor.current
+                            )
+                        }
+
+
+                        DropdownMenu(
+                            expanded = screenSelectionExpanded,
+                            onDismissRequest = { screenSelectionExpanded = false },
+                            modifier = Modifier
+                                .width(180.dp)
+                                .background(color = MaterialTheme.colorScheme.surface),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            ScreenSelection(
+                                onNavigationItemClicked = onNavigationItemClicked,
+                                selectedIndex = selectedIndex
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        Row {
+                            IconButton(
+                                onClick = { isSortedByASC = !isSortedByASC }
                             ) {
                                 Icon(
-                                    painter = painterResource(R.drawable.music_note_rounded),
+                                    imageVector = Icons.Rounded.ArrowUpward,
                                     contentDescription = null,
-                                    tint = if (!hasSeenTip) color else LocalContentColor.current
+                                    modifier = Modifier.rotate(float)
                                 )
                             }
-
-
-                            DropdownMenu(
-                                expanded = screenSelectionExpanded,
-                                onDismissRequest = { screenSelectionExpanded = false },
-                                modifier = Modifier
-                                    .width(180.dp)
-                                    .background(color = MaterialTheme.colorScheme.surface),
-                                shape = RoundedCornerShape(24.dp)
+                            IconButton(
+                                onClick = { onNavigate(Screen.Settings) }
                             ) {
-                                ScreenSelection(
-                                    onNavigationItemClicked = onNavigationItemClicked,
-                                    selectedIndex = selectedIndex
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null
                                 )
                             }
-                        },
-                        trailingIcon = {
-                            Row {
-                                IconButton(
-                                    onClick = {
-                                        isSortedByASC = !isSortedByASC
-                                        when (isSortedByASC) {
-                                            true -> {
-                                                onHandleSorting(SortingType.ASCENDING)
-                                            }
-
-                                            false -> {
-                                                onHandleSorting(SortingType.DESCENDING)
-                                            }
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.ArrowUpward,
-                                        contentDescription = null,
-                                        modifier = Modifier.rotate(float)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { onNavigate(Screen.Settings) }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Settings,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        },
-                        currentlyPlaying = currentlyPlaying,
-                        onHandlePlayerActions = onHandlePlayerAction,
-                        isPlaying = isCurrentlyPlaying,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        isPlayerReady = isPlayerReady,
-                        onNavigate = { onNavigate(Screen.NowPlaying) },
-                        onClickFAB = { onHandlePlayerAction(PlayerActions.PlayRandom) }
-                    )
-                }
+                        }
+                    },
+                    currentlyPlaying = currentlyPlaying,
+                    onHandlePlayerActions = onHandlePlayerAction,
+                    isPlaying = isCurrentlyPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    isPlayerReady = isPlayerReady,
+                    onNavigate = { onNavigate(Screen.NowPlaying) },
+                    onClickFAB = { onHandlePlayerAction(PlayerActions.PlayRandom) }
+                )
             }
         }
     }
@@ -449,22 +446,22 @@ fun MusicListItem(
                             )
                         }
                     )
-//                    DropdownMenuItem(
-//                        onClick = {
-//                            isDropDownExpanded = false
-//                            onLoadMetadata(path ?: "", uri)
-//                            onNavigate(Screen.MetadataEditor(music.mediaId))
-//                        },
-//                        text = {
-//                            CuteText(stringResource(R.string.edit))
-//                        },
-//                        leadingIcon = {
-//                            Icon(
-//                                painter = painterResource(R.drawable.edit_rounded),
-//                                contentDescription = null
-//                            )
-//                        }
-//                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            isDropDownExpanded = false
+                            onLoadMetadata(path ?: "", uri)
+                            onNavigate(Screen.MetadataEditor(music.mediaId))
+                        },
+                        text = {
+                            CuteText(stringResource(R.string.edit))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.edit_rounded),
+                                contentDescription = null
+                            )
+                        }
+                    )
                     DropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false

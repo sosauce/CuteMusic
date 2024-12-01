@@ -1,36 +1,40 @@
 package com.sosauce.cutemusic.ui.shared_components
 
-import android.app.Application
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
-import com.sosauce.cutemusic.domain.repository.MediaStoreObserver
-import com.sosauce.cutemusic.utils.ListToHandle
-import com.sosauce.cutemusic.utils.SortingType
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.collections.filter
 
 
 class PostViewModel(
-    private val mediaStoreHelper: MediaStoreHelper,
-    private val application: Application
-) : AndroidViewModel(application) {
+    private val mediaStoreHelper: MediaStoreHelper
+) : ViewModel() {
 
-    var musics by mutableStateOf(
+
+
+    var musics = mediaStoreHelper.fetchLatestMusics().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
         mediaStoreHelper.musics
     )
 
-    var albums by mutableStateOf(
-        mediaStoreHelper.albums
+    var albums = mediaStoreHelper.fetchLatestAlbums().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
     )
 
     var artists by mutableStateOf(
@@ -41,26 +45,10 @@ class PostViewModel(
         mediaStoreHelper.folders
     )
 
-    private val observer = MediaStoreObserver {
-        musics = mediaStoreHelper.fetchMusics()
-    }
 
 
-    init {
-        application.contentResolver.registerContentObserver(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            true,
-            observer
-        )
-    }
-
-    companion object {
+    private companion object {
         const val CUTE_ERROR = "CuteError"
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        application.contentResolver.unregisterContentObserver(observer)
     }
 
     var albumSongs by mutableStateOf(listOf<MediaItem>())
@@ -69,7 +57,11 @@ class PostViewModel(
 
     fun albumSongs(album: String) {
         try {
-            albumSongs = musics.filter { it.mediaMetadata.albumTitle.toString() == album }
+            viewModelScope.launch {
+                musics.collectLatest {
+                    albumSongs = it.filter { it.mediaMetadata.albumTitle.toString() == album }
+                }
+            }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
         }
@@ -77,7 +69,11 @@ class PostViewModel(
 
     fun artistSongs(artistName: String) {
         try {
-            artistSongs = musics.filter { it.mediaMetadata.artist == artistName }
+            viewModelScope.launch {
+                musics.collectLatest {
+                    artistSongs = it.filter { it.mediaMetadata.artist == artistName }
+                }
+            }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
         }
@@ -86,7 +82,7 @@ class PostViewModel(
 
     fun artistAlbums(artistName: String) {
         try {
-            artistAlbums = albums.filter { it.artist == artistName }
+            artistAlbums = albums.value.filter { it.artist == artistName }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
         }
@@ -117,66 +113,6 @@ class PostViewModel(
         }
     }
 
-    fun handleFiltering(
-        listToHandle: ListToHandle,
-        sortingType: SortingType,
-    ) {
-        when (listToHandle) {
-            ListToHandle.TRACKS -> {
-                musics = if (sortingType == SortingType.ASCENDING)
-                    musics.sortedBy { it.mediaMetadata.title.toString() }
-                else
-                    musics.sortedByDescending { it.mediaMetadata.title.toString() }
-            }
 
-            ListToHandle.ALBUMS -> {
-                albums = if (sortingType == SortingType.ASCENDING)
-                    albums.sortedBy { it.name }
-                else
-                    albums.sortedByDescending { it.name }
-            }
-
-            ListToHandle.ARTISTS -> {
-                artists = if (sortingType == SortingType.ASCENDING)
-                    artists.sortedBy { it.name }
-                else
-                    artists.sortedByDescending { it.name }
-            }
-        }
-    }
-
-    fun handleSearch(
-        listToHandle: ListToHandle,
-        query: String = ""
-    ) {
-        when (listToHandle) {
-            ListToHandle.TRACKS -> {
-                musics = mediaStoreHelper.musics.filter {
-                    it.mediaMetadata.title?.contains(
-                        other = query,
-                        ignoreCase = true
-                    ) == true
-                }
-            }
-
-            ListToHandle.ALBUMS -> {
-                albums = mediaStoreHelper.albums.filter {
-                    it.name.contains(
-                        other = query,
-                        ignoreCase = true
-                    )
-                }
-            }
-
-            ListToHandle.ARTISTS -> {
-                artists = mediaStoreHelper.artists.filter {
-                    it.name.contains(
-                        other = query,
-                        ignoreCase = true
-                    )
-                }
-            }
-        }
-    }
 }
 

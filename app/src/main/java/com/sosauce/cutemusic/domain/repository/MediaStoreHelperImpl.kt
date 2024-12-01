@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.domain.repository
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -19,20 +20,26 @@ import com.sosauce.cutemusic.data.datastore.getBlacklistedFolder
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
+import com.sosauce.cutemusic.utils.observe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
+@SuppressLint("UnsafeOptInUsageError")
 class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
-    private fun getBlacklistedFoldersAsync(): Set<String> =
-        runBlocking { getBlacklistedFolder(context) }
+    private fun getBlacklistedFoldersAsync(): Set<String> = runBlocking { getBlacklistedFolder(context) }
 
     private val blacklistedFolders = getBlacklistedFoldersAsync()
-    private val selection =
-        blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
+    private val selection = blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
     private val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
+
+
+    override fun fetchLatestMusics(): Flow<List<MediaItem>> = context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map { fetchMusics() }
+    override fun fetchLatestAlbums(): Flow<List<Album>> = context.contentResolver.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI).map { fetchAlbums() }
 
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {

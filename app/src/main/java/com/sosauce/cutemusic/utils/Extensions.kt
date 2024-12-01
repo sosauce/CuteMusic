@@ -1,10 +1,13 @@
 package com.sosauce.cutemusic.utils
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import java.util.Locale
 
 fun Modifier.thenIf(
@@ -156,6 +162,77 @@ fun Long.formatToReadableTime(): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+}
+
+fun PropertyMap.toModifiableMap(separator: String = ", "): MutableMap<String, String?> {
+    return mutableMapOf(
+        "TITLE" to this["TITLE"]?.getOrNull(0),
+        "ARTIST" to this["ARTIST"]?.joinToString(separator),
+        "ALBUM" to this["ALBUM"]?.getOrNull(0),
+        "TRACKNUMBER" to this["TRACKNUMBER"]?.getOrNull(0),
+        "DISCNUMBER" to this["DISCNUMBER"]?.getOrNull(0),
+        "DATE" to this["DATE"]?.getOrNull(0),
+        "GENRE" to this["GENRE"]?.joinToString(separator),
+        "LYRICS" to this["LYRICS"]?.getOrNull(0),
+        "DATE" to this["DATE"]?.getOrNull(0),
+    )
+}
+
+fun String?.formatForField(separator: String = ","): Array<String> {
+    return this?.split(separator)?.map { it.trim() }?.toTypedArray() ?: arrayOf(this ?: "")
+}
+
+
+
+@Stable
+data class AudioFileMetadata(
+    val title: String?,
+    val artist: String?,
+    val album: String?,
+    val trackNumber: String?,
+    val discNumber: String?,
+    val date: String?,
+    val genre: String?,
+    val lyrics: String?
+)
+
+fun Map<String, String?>.toAudioFileMetadata(): AudioFileMetadata {
+    return AudioFileMetadata(
+        title = this["TITLE"],
+        artist = this["ARTIST"],
+        album = this["ALBUM"],
+        trackNumber = this["TRACKNUMBER"],
+        discNumber = this["DISCNUMBER"],
+        date = this["DATE"],
+        genre = this["GENRE"],
+        lyrics = this["LYRICS"]
+    )
+}
+
+fun AudioFileMetadata.toPropertyMap(): PropertyMap {
+    return hashMapOf(
+        "TITLE" to arrayOf(title ?: ""),
+        "ARTIST" to artist.formatForField(),
+        "ALBUM" to arrayOf(album ?: ""),
+        "TRACKNUMBER" to arrayOf(trackNumber ?: ""),
+        "DISCNUMBER" to arrayOf(discNumber ?: ""),
+        "DATE" to arrayOf(date ?: ""),
+        "GENRE" to genre.formatForField(),
+        "LYRICS" to arrayOf(lyrics ?: "")
+    )
+}
+
+fun ContentResolver.observe(uri: Uri) = callbackFlow {
+    val observer = object : ContentObserver(null) {
+        override fun onChange(selfChange: Boolean) {
+            trySend(selfChange)
+        }
+    }
+    registerContentObserver(uri, true, observer)
+    trySend(false)
+    awaitClose {
+        unregisterContentObserver(observer)
+    }
 }
 
 @Composable

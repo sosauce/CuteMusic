@@ -1,6 +1,5 @@
 [versions]
 agp = "8.7.2"
-jaudiotagger = "3.0.1"
 koinAndroid = "4.0.0"
 koinAndroidxCompose = "4.0.0"
 koinAndroidxStartup = "4.0.0"
@@ -20,6 +19,7 @@ media3Session = "1.5.0"
 navigationCompose = "2.8.4"
 squigglyslider = "1.0.0"
 serialization = "2.0.0"
+taglib = "1.0.0-alpha25"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -39,12 +39,12 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
-jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 koin-androidx-startup = { module = "io.insert-koin:koin-androidx-startup", version.ref = "koinAndroidxStartup" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 squigglyslider = { module = "me.saket.squigglyslider:squigglyslider", version.ref = "squigglyslider" }
+taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -111,7 +111,6 @@ private fun BlacklistedScreenContent(
             AppBar(
                 title = stringResource(id = R.string.blacklisted_folders),
                 showBackArrow = true,
-                showMenuIcon = false,
                 onPopBackStack = { onPopBackStack() }
             )
         },

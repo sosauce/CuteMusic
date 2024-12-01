@@ -2,11 +2,11 @@ package com.sosauce.cutemusic.ui.screens.metadata
 
 import android.app.Activity
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -65,7 +65,6 @@ fun MetadataEditor(
         onNavigate = onNavigate,
         metadataState = metadataState,
         onMetadataAction = { metadataViewModel.onHandleMetadataActions(it) },
-        //vm = metadataViewModel,
         onEditMusic = onEditMusic
     )
 }
@@ -78,23 +77,15 @@ fun MetadataEditorContent(
     metadataState: MetadataState,
     onMetadataAction: (MetadataActions) -> Unit,
     onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
-    //vm: MetadataViewModel
 ) {
     val context = LocalContext.current
     val uri = Uri.parse(music.mediaMetadata.extras?.getString("uri"))
-//    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-//
-//    val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-//        selectedImageUri = it
-//        vm.changeImage(getFilePathFromUri(context, selectedImageUri!!))
-//    }
+    val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { onMetadataAction(MetadataActions.UpdateAudioArt(it ?: Uri.EMPTY)) }
 
     val editSongLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) {
-            Log.d("resulta", it.resultCode.toString())
-
             if (it.resultCode == Activity.RESULT_OK) {
                 onMetadataAction(MetadataActions.SaveChanges)
                 Toast.makeText(
@@ -102,7 +93,6 @@ fun MetadataEditorContent(
                     context.getString(R.string.success),
                     Toast.LENGTH_SHORT
                 ).show()
-                //onPopBackStack()
             } else {
                 Toast.makeText(
                     context,
@@ -133,85 +123,86 @@ fun MetadataEditorContent(
             AppBar(
                 title = stringResource(R.string.editor),
                 showBackArrow = true,
-                showMenuIcon = false,
                 onPopBackStack = { onPopBackStack() },
-                onNavigate = { onNavigate(it) }
             )
         }
-    ) { value ->
+    ) { pv ->
         Column(
             modifier = Modifier
-                .padding(value)
+                .padding(pv)
                 .fillMaxSize()
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+//                IconButton(
+//                    onClick = { onMetadataAction(MetadataActions.RemoveArtwork) },
+//                    modifier = Modifier.align(Alignment.End)
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Rounded.Close,
+//                        contentDescription = null
+//                    )
+//                }
                 AsyncImage(
                     model = ImageUtils.imageRequester(
-                        img = music.mediaMetadata.artworkUri,
+                        img = metadataState.art?.data,
                         context = context
                     ),
                     contentDescription = stringResource(id = R.string.artwork),
                     modifier = Modifier
                         .size(200.dp)
-                        .padding(10.dp)
+                        .padding(bottom = 10.dp)
                         .clip(RoundedCornerShape(5))
                         .clickable {
-//                            photoPickerLauncher.launch(
-//                                PickVisualMediaRequest(
-//                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-//                                ))
-                            Toast
-                                .makeText(
-                                    context,
-                                    "Image editing will be available in the future!",
-                                    Toast.LENGTH_SHORT
-                                )
-                                .show()
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                ))
                         },
                     contentScale = ContentScale.Crop
                 )
             }
 
+
             Column {
                 EditTextField(
-                    value = metadataState.mutablePropertiesMap[0],
+                    value = metadataState.mutablePropertiesMap["TITLE"],
                     label = {
                         CuteText(
                             text = stringResource(R.string.title)
                         )
                     }
                 ) { title ->
-                    metadataState.mutablePropertiesMap[0] = title
+                    metadataState.mutablePropertiesMap["TITLE"] = title
                 }
                 EditTextField(
-                    value = metadataState.mutablePropertiesMap[1],
+                    value = metadataState.mutablePropertiesMap["ARTIST"],
                     label = {
                         CuteText(
                             text = stringResource(R.string.artists).removeSuffix("s") // I'm too lazy to do plurals
                         )
                     }
                 ) { artist ->
-                    metadataState.mutablePropertiesMap[1] = artist
+                    metadataState.mutablePropertiesMap["ARTIST"] = artist
                 }
                 EditTextField(
-                    value = metadataState.mutablePropertiesMap[2],
+                    value = metadataState.mutablePropertiesMap["ALBUM"],
                     label = {
                         CuteText(
                             text = stringResource(R.string.albums).removeSuffix("s") // I'm too lazy to do plurals
                         )
                     }
                 ) { album ->
-                    metadataState.mutablePropertiesMap[2] = album
+                    metadataState.mutablePropertiesMap["ALBUM"] = album
                 }
                 Spacer(Modifier.height(25.dp))
 
                 Row {
                     EditTextField(
-                        value = metadataState.mutablePropertiesMap[3],
+                        value = metadataState.mutablePropertiesMap["DATE"],
                         label = {
                             CuteText(
                                 text = stringResource(R.string.year)
@@ -220,10 +211,10 @@ fun MetadataEditorContent(
                         modifier = Modifier.weight(1f),
                         keyboardType = KeyboardType.Number
                     ) { year ->
-                        metadataState.mutablePropertiesMap[3] = year
+                        metadataState.mutablePropertiesMap["DATE"] = year
                     }
                     EditTextField(
-                        value = metadataState.mutablePropertiesMap[4],
+                        value = metadataState.mutablePropertiesMap["GENRE"],
                         label = {
                             CuteText(
                                 text = stringResource(R.string.genre)
@@ -231,12 +222,12 @@ fun MetadataEditorContent(
                         },
                         modifier = Modifier.weight(1f)
                     ) { genre ->
-                        metadataState.mutablePropertiesMap[4] = genre
+                        metadataState.mutablePropertiesMap["GENRE"] = genre
                     }
                 }
                 Row {
                     EditTextField(
-                        value = metadataState.mutablePropertiesMap[5],
+                        value = metadataState.mutablePropertiesMap["TRACKNUMBER"],
                         label = {
                             CuteText(
                                 text = stringResource(R.string.track_nb),
@@ -246,10 +237,10 @@ fun MetadataEditorContent(
                         modifier = Modifier.weight(1f),
                         keyboardType = KeyboardType.Number
                     ) { track ->
-                        metadataState.mutablePropertiesMap[5] = track
+                        metadataState.mutablePropertiesMap["TRACKNUMBER"] = track
                     }
                     EditTextField(
-                        value = metadataState.mutablePropertiesMap[6],
+                        value = metadataState.mutablePropertiesMap["DISCNUMBER"],
                         label = {
                             CuteText(
                                 text = stringResource(R.string.disc_nb),
@@ -259,11 +250,11 @@ fun MetadataEditorContent(
                         modifier = Modifier.weight(1f),
                         keyboardType = KeyboardType.Number
                     ) { disc ->
-                        metadataState.mutablePropertiesMap[6] = disc
+                        metadataState.mutablePropertiesMap["DISCNUMBER"] = disc
                     }
                 }
                 EditTextField(
-                    value = metadataState.mutablePropertiesMap[7],
+                    value = metadataState.mutablePropertiesMap["LYRICS"],
                     label = {
                         CuteText(
                             text = "Lyrics",
@@ -271,7 +262,7 @@ fun MetadataEditorContent(
                         )
                     }
                 ) { lyrics ->
-                    metadataState.mutablePropertiesMap[7] = lyrics
+                    metadataState.mutablePropertiesMap["LYRICS"] = lyrics
                 }
             }
         }
