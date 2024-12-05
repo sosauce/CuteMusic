@@ -18,7 +18,7 @@
     <string name="artwork">"Arte de portada"</string>
     <string name="artists">"Artistas"</string>
     <string name="albums">"Álbumes"</string>
-    <string name="music">Musica</string>
+    <string name="music">Música</string>
     <string name="cm_by_sosauce">"CuteMusic por sosauce"</string>
     <string name="app_icon">"Icono de la app"</string>
     <string name="search">"Buscar"</string>
@@ -38,7 +38,7 @@
     <string name="follow_sys">"Seguir sistema"</string>
     <string name="ascending">"Ascendente"</string>
     <string name="descending">"Descendente"</string>
-    <string name="playback_speed">"Establecer velocidad de reproducción"</string>
+    <string name="playback_speed">"Ajustar velocidad de reproducción"</string>
     <string name="yes">Sí</string>
     <string name="blacklisted_folders">Carpetas en la lista negra</string>
     <string name="delete_folder">Borrar carpeta</string>
