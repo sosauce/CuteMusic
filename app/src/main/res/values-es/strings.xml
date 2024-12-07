@@ -18,7 +18,7 @@
     <string name="artwork">"Arte de portada"</string>
     <string name="artists">"Artistas"</string>
     <string name="albums">"Álbumes"</string>
-    <string name="music">Musica</string>
+    <string name="music">Música</string>
     <string name="cm_by_sosauce">"CuteMusic por sosauce"</string>
     <string name="app_icon">"Icono de la app"</string>
     <string name="search">"Buscar"</string>
@@ -38,7 +38,7 @@
     <string name="follow_sys">"Seguir sistema"</string>
     <string name="ascending">"Ascendente"</string>
     <string name="descending">"Descendente"</string>
-    <string name="playback_speed">"Establecer velocidad de reproducción"</string>
+    <string name="playback_speed">"Ajustar velocidad de reproducción"</string>
     <string name="yes">Sí</string>
     <string name="blacklisted_folders">Carpetas en la lista negra</string>
     <string name="delete_folder">Borrar carpeta</string>
@@ -53,4 +53,24 @@
     <string name="edit">Editar</string>
     <string name="delete">Eliminar</string>
     <string name="ntg_playing">¡No se está reproduciendo nada!</string>
+    <string name="UI">IU</string>
+    <string name="use_art">Arte material</string>
+    <string name="success">Éxito</string>
+    <string name="error_saving">Error al guardar los cambios.</string>
+    <string name="editor">Editor</string>
+    <string name="details">Detalles</string>
+    <string name="classic_slider">Usar slider clásico</string>
+    <string name="cancel">Cancelar</string>
+    <string name="set_sap">Ajustar velocidad y tono</string>
+    <string name="set_speed">Ajustar velocidad</string>
+    <string name="set_pitch">Ajustar tono</string>
+    <string name="speed">Velocidad</string>
+    <string name="pitch">Tono</string>
+    <string name="snap">Ajustar velocidad y tono al instante</string>
+    <string name="new_rate">Ingresa una nueva tasa entre 0.5 y 2</string>
+    <string name="share">Compartir</string>
+    <string name="show_close_button">Mostrar botón de cerrar en la barra de búsqueda Cute</string>
+    <string name="duration">Duración</string>
+    <string name="folders">Carpetas</string>
+    <string name="manage_shown_tabs">Administrar pestañas visibles</string>
 </resources>
