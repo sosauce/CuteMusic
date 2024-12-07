@@ -80,7 +80,10 @@ fun MetadataEditorContent(
 ) {
     val context = LocalContext.current
     val uri = Uri.parse(music.mediaMetadata.extras?.getString("uri"))
-    val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { onMetadataAction(MetadataActions.UpdateAudioArt(it ?: Uri.EMPTY)) }
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+            onMetadataAction(MetadataActions.UpdateAudioArt(it ?: Uri.EMPTY))
+        }
 
     val editSongLauncher =
         rememberLauncherForActivityResult(
@@ -160,7 +163,8 @@ fun MetadataEditorContent(
                             photoPickerLauncher.launch(
                                 PickVisualMediaRequest(
                                     ActivityResultContracts.PickVisualMedia.ImageOnly
-                                ))
+                                )
+                            )
                         },
                     contentScale = ContentScale.Crop
                 )

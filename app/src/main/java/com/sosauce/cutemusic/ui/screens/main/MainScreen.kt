@@ -56,7 +56,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -74,7 +73,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -221,6 +219,7 @@ fun SharedTransitionScope.MainScreen(
                     label = ""
                 )
                 var hasSeenTip by rememberHasSeenTip()
+
 
                 CuteSearchbar(
                     query = query,
@@ -473,7 +472,7 @@ fun MusicListItem(
                             )
                         },
                         text = {
-                            CuteText("Go to: ${music.mediaMetadata.albumTitle}")
+                            CuteText(stringResource(R.string.go_to) + music.mediaMetadata.albumTitle)
                         },
                         leadingIcon = {
                             Icon(
@@ -493,7 +492,7 @@ fun MusicListItem(
                             )
                         },
                         text = {
-                            CuteText("Go to: ${music.mediaMetadata.artist}")
+                            CuteText(stringResource(R.string.go_to) + music.mediaMetadata.artist)
                         },
                         leadingIcon = {
                             Icon(

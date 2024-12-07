@@ -151,7 +151,13 @@ fun SharedTransitionScope.AllFoldersScreen(
                                 )
                         ) {
                             MusicListItem(
-                                onShortClick = { },
+                                onShortClick = {
+                                    onHandlePlayerActions(
+                                        PlayerActions.StartPlayback(
+                                            it
+                                        )
+                                    )
+                                },
                                 music = music,
                                 currentMusicUri = "",
                                 showBottomSheet = false,

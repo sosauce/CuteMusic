@@ -177,7 +177,8 @@ fun SharedTransitionScope.NowPlayingLandscape(
                         onShowLyrics = { showLyrics = true },
                         onChargeAlbumSongs = onChargeAlbumSongs,
                         onShowSpeedCard = { showSpeedCard = true },
-                        onChargeArtistLists = onChargeArtistLists
+                        onChargeArtistLists = onChargeArtistLists,
+                        onHandlePlayerActions = onEvent
                     )
                 }
             }

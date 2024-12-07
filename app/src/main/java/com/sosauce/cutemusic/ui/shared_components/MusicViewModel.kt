@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.os.CountDownTimer
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
@@ -52,6 +53,8 @@ class MusicViewModel(
 
     private val _musicState = MutableStateFlow(MusicState())
     val musicState = _musicState.asStateFlow()
+
+    var sleepCountdownTimer: CountDownTimer? = null
 
 
     private val playerListener = object : Player.Listener {
@@ -313,6 +316,29 @@ class MusicViewModel(
                     mediaController!!.prepare()
                     mediaController!!.play()
                 }
+            }
+
+            is PlayerActions.SetSleepTimer -> {
+                val totalTimeMillis =
+                    (action.hours * 60 * 60 * 1000L) + (action.minutes * 60 * 1000L)
+
+                // Cancel any active timer before setting a new one
+                sleepCountdownTimer?.cancel()
+                sleepCountdownTimer = null
+
+                sleepCountdownTimer = object : CountDownTimer(totalTimeMillis, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        _musicState.value = _musicState.value.copy(
+                            sleepTimer = millisUntilFinished
+                        )
+                    }
+
+                    override fun onFinish() {
+                        mediaController!!.pause()
+                        cancel()
+                    }
+                }
+                sleepCountdownTimer?.start()
             }
         }
     }

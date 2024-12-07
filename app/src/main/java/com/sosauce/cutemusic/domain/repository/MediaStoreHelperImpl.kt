@@ -31,15 +31,22 @@ class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
-    private fun getBlacklistedFoldersAsync(): Set<String> = runBlocking { getBlacklistedFolder(context) }
+    private fun getBlacklistedFoldersAsync(): Set<String> =
+        runBlocking { getBlacklistedFolder(context) }
 
     private val blacklistedFolders = getBlacklistedFoldersAsync()
-    private val selection = blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
+    private val selection =
+        blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" }
     private val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
 
 
-    override fun fetchLatestMusics(): Flow<List<MediaItem>> = context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map { fetchMusics() }
-    override fun fetchLatestAlbums(): Flow<List<Album>> = context.contentResolver.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI).map { fetchAlbums() }
+    override fun fetchLatestMusics(): Flow<List<MediaItem>> =
+        context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+            .map { fetchMusics() }
+
+    override fun fetchLatestAlbums(): Flow<List<Album>> =
+        context.contentResolver.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI)
+            .map { fetchAlbums() }
 
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {

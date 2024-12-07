@@ -232,7 +232,8 @@ private fun SharedTransitionScope.NowPlayingContent(
             onShowLyrics = onShowLyrics,
             onChargeAlbumSongs = onChargeAlbumSongs,
             onShowSpeedCard = { showSpeedCard = true },
-            onChargeArtistLists = onChargeArtistLists
+            onChargeArtistLists = onChargeArtistLists,
+            onHandlePlayerActions = onEvent
         )
     }
 }

@@ -58,4 +58,21 @@
     <string name="success">Succès</string>
     <string name="error_saving">Erreur en essayant de sauvegarder les modifications.</string>
     <string name="editor">Éditeur</string>
+    <string name="details">Détails</string>
+    <string name="classic_slider">Utiliser le slider classique</string>
+    <string name="cancel">Annuler</string>
+    <string name="set_sap">Fixer la vitesse et le tempo</string>
+    <string name="set_speed">Fixer la vitesse</string>
+    <string name="set_pitch">Fixer le tempo</string>
+    <string name="speed">Vitesse</string>
+    <string name="pitch">Tempo</string>
+    <string name="snap">Assembler la vitesse et le tempo</string>
+    <string name="new_rate">Entrer un nouveau taux entre 0.5 et 2</string>
+    <string name="share">Partager</string>
+    <string name="show_close_button">Montrer le button fermer sur la CuteSearchbar</string>
+    <string name="duration">Duration</string>
+    <string name="folders">Dossiers</string>
+    <string name="manage_shown_tabs">Gérer les onglets visibles</string>
+    <string name="set_sleep_timer">Fixer un temps de veille</string>
+    <string name="go_to">Aller à:</string>
 </resources>

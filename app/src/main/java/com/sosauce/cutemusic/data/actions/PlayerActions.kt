@@ -34,8 +34,12 @@ sealed interface PlayerActions {
         val position: Long
     ) : PlayerActions
 
-
     data class QuickPlay(
         val uri: Uri
+    ) : PlayerActions
+
+    data class SetSleepTimer(
+        val hours: Int,
+        val minutes: Int
     ) : PlayerActions
 }

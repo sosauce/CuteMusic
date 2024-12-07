@@ -43,6 +43,7 @@
         <activity
             android:name=".main.MainActivity"
             android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:theme="@style/Theme.CuteSplash"

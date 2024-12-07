@@ -9,15 +9,21 @@ android {
     namespace = "com.sosauce.cutemusic"
     compileSdk = 35
 
+
+
     defaultConfig {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 18
-        versionName = "2.3.1"
+        versionCode = 19
+        versionName = "2.3.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
         }
     }
 

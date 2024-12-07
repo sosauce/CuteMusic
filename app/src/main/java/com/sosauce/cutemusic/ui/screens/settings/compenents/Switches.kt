@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
@@ -31,13 +30,11 @@ import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.utils.restart
 
 @Composable
 fun Misc(
     onNavigate: (Screen) -> Unit
 ) {
-    val context = LocalContext.current
     //var killService by remember { rememberKillService(context) }
 
     Column {
@@ -57,7 +54,7 @@ fun Misc(
                 )
                 .fillMaxWidth(),
             topDp = 24.dp,
-            bottomDp = 4.dp
+            bottomDp = 24.dp
         )
 //        SettingsCards(
 //            checked = killService,
@@ -66,16 +63,7 @@ fun Misc(
 //            bottomDp = 4.dp,
 //            text = "Kill Service"
 //        )
-        TextSettingsCards(
-            text = stringResource(id = R.string.restart_app),
-            tipText = stringResource(id = R.string.restart_app_why),
-            onClick = { context.restart() },
-            modifier = Modifier
-                .padding(15.dp)
-                .fillMaxWidth(),
-            topDp = 4.dp,
-            bottomDp = 24.dp
-        )
+
     }
 }
 

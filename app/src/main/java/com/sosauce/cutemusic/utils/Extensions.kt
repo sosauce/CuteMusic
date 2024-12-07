@@ -2,7 +2,6 @@ package com.sosauce.cutemusic.utils
 
 import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -59,12 +58,9 @@ fun Long.formatBinarySize(): String {
     }
 }
 
-fun Context.restart() {
-    val intent = packageManager.getLaunchIntentForPackage(packageName)!!
-    val componentName = intent.component!!
-    val restartIntent = Intent.makeRestartActivityTask(componentName)
-    startActivity(restartIntent)
-    Runtime.getRuntime().exit(0)
+
+fun Long.toReadableMinutes(): Int {
+    return (this / 1000 / 60).toInt()
 }
 
 fun Player.playAtIndex(
@@ -143,6 +139,7 @@ fun Player.applyPlaybackSpeed(
     )
 }
 
+
 fun Uri.getBitrate(context: Context): String {
     val retriever = MediaMetadataRetriever()
     return try {
@@ -181,7 +178,6 @@ fun PropertyMap.toModifiableMap(separator: String = ", "): MutableMap<String, St
 fun String?.formatForField(separator: String = ","): Array<String> {
     return this?.split(separator)?.map { it.trim() }?.toTypedArray() ?: arrayOf(this ?: "")
 }
-
 
 
 @Stable

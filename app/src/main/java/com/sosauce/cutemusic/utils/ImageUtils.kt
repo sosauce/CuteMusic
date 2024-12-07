@@ -3,7 +3,6 @@ package com.sosauce.cutemusic.utils
 import android.content.ContentUris
 import android.content.Context
 import androidx.core.net.toUri
-import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation

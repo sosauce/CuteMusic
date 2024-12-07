@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.FileNotFoundException
 
 // Inspired by Metadator and TagLib !
@@ -95,14 +94,16 @@ class MetadataViewModel(
     }
 
 
-
     private fun saveAllChanges() {
         try {
             val fd = getFileDescriptorFromPath(application, metadataState.value.songPath, "w")
 
 
             fd?.dup()?.detachFd()?.let {
-                TagLib.savePropertyMap(it, metadataState.value.mutablePropertiesMap.toAudioFileMetadata().toPropertyMap())
+                TagLib.savePropertyMap(
+                    it,
+                    metadataState.value.mutablePropertiesMap.toAudioFileMetadata().toPropertyMap()
+                )
             }
 
             fd?.dup()?.detachFd()?.let {
@@ -122,6 +123,7 @@ class MetadataViewModel(
             e.printStackTrace()
         }
     }
+
     private fun saveNewAudioArt(uri: Uri) {
 
         // App will crash if it tries to open an input stream on an empty uri !
@@ -197,7 +199,10 @@ class MetadataViewModel(
                     loadMetadata()
                 }
             }
-            is MetadataActions.UpdateAudioArt -> { saveNewAudioArt(action.newArtUri) }
+
+            is MetadataActions.UpdateAudioArt -> {
+                saveNewAudioArt(action.newArtUri)
+            }
 
             is MetadataActions.RemoveArtwork -> {
                 _metadata.value = _metadata.value.copy(
