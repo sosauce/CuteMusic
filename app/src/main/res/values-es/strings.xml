@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name" translatable="false">CuteMusic</string>
     <string name="theme">"Tema"</string>
     <string name="settings">"Ajustes"</string>
     <string name="dark_mode">"Modo Oscuro"</string>
@@ -31,8 +31,6 @@
     <string name="error_deleting_song">"Hubo un error al eliminar la canción"</string>
     <string name="deleting_song_OK">"La canción ha sido eliminada exitosamente"</string>
     <string name="okay">"De acuerdo"</string>
-    <string name="restart_app">"Reiniciar la app"</string>
-    <string name="restart_app_why">"Si enfrentas problemas"</string>
     <string name="misc">"Varios"</string>
     <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
     <string name="follow_sys">"Seguir sistema"</string>
@@ -44,8 +42,9 @@
     <string name="delete_folder">Borrar carpeta</string>
     <string name="folder_delete_u_sure">¿Quieres borrar esta carpeta?</string>
     <string name="alrdy_blacklisted">¡La carpeta ya está en la lista!</string>
+    <string name="pls_restart">¡Por favor reinicia la app para que los cambios tengan efecto!</string>
     <string name="use_sys_font">Usar fuente del sistema</string>
-   <string name="title">Título</string>
+    <string name="title">Título</string>
     <string name="year">Año</string>
     <string name="genre">Género</string>
     <string name="track_nb">Número de pista</string>
@@ -73,4 +72,6 @@
     <string name="duration">Duración</string>
     <string name="folders">Carpetas</string>
     <string name="manage_shown_tabs">Administrar pestañas visibles</string>
+    <string name="set_sleep_timer">Ajustar temporizador para dormir</string>
+    <string name="go_to">Ir a:</string>
 </resources>
