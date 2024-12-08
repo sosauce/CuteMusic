@@ -70,7 +70,7 @@
     <string name="new_rate">输入一个介于0.5与2之间的新值</string>
     <string name="share">分享</string>
     <string name="show_close_button">在搜索栏显示关闭按钮</string>
-    <string name="duration">市场</string>
+    <string name="duration">时长</string>
     <string name="folders">文件夹</string>
     <string name="manage_shown_tabs">管理显示的标签页</string>
     <string name="set_sleep_timer">设置睡眠定时</string>
