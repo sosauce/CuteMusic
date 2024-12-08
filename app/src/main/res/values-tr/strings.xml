@@ -30,8 +30,6 @@
     <string name="error_deleting_song">Şarkı silinirken bir hata oluştu.</string>
     <string name="deleting_song_OK">Şarkı başarıyla silindi.</string>
     <string name="okay">Tamam</string>
-    <string name="restart_app">Uygulamayı Yeniden Başlatın</string>
-    <string name="restart_app_why">Sorun yaşıyorsanız.</string>
     <string name="misc">Diğer</string>
     <string name="no_albums_found">Albüm bulunamadı !</string>
     <string name="follow_sys">Sistemi Takip Et</string>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">CuteMusic</string>
+    <string name="app_name">CuteMusic</string>
     <string name="theme">Theme</string>
     <string name="settings">Settings</string>
     <string name="dark_mode">Dark mode</string>
@@ -74,4 +74,5 @@
     <string name="manage_shown_tabs">Manage shown tabs</string>
     <string name="set_sleep_timer">Set sleep timer</string>
     <string name="go_to">Go to:</string>
+    <string name="no_lyrics_note">No Lyrics Found !</string>
 </resources>

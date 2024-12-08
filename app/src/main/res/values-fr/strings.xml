@@ -31,8 +31,6 @@
     <string name="error_deleting_song">Il y a eu un problème en essayant de supprimer la musique.</string>
     <string name="deleting_song_OK">Musique supprimée avec succès</string>
     <string name="okay">OK</string>
-    <string name="restart_app">Redémarrer l\'app</string>
-    <string name="restart_app_why">Si vous encontrez des problèmes</string>
     <string name="misc">Divers</string>
     <string name="no_albums_found">Pas d\'albums trouvés !</string>
     <string name="follow_sys">Suivre le système</string>
