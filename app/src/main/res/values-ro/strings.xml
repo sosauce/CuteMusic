@@ -30,8 +30,6 @@
     <string name="error_deleting_song">A fost o eroare la ștergerea melodia.</string>
     <string name="deleting_song_OK">Melodia ștearsă cu succes.</string>
     <string name="okay">OK</string>
-    <string name="restart_app">Repornește applicația</string>
-    <string name="restart_app_why">Dacă se întâmplă probleme.</string>
     <string name="misc">Altele</string>
     <string name="no_albums_found">Nu s-au găsit albume !</string>
     <string name="follow_sys">Urmărește sistemul</string>

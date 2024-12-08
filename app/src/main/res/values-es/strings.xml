@@ -31,8 +31,6 @@
     <string name="error_deleting_song">"Hubo un error al eliminar la canción"</string>
     <string name="deleting_song_OK">"La canción ha sido eliminada exitosamente"</string>
     <string name="okay">"De acuerdo"</string>
-    <string name="restart_app">"Reiniciar la app"</string>
-    <string name="restart_app_why">"Si enfrentas problemas"</string>
     <string name="misc">"Varios"</string>
     <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
     <string name="follow_sys">"Seguir sistema"</string>
