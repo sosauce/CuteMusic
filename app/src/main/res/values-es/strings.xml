@@ -74,4 +74,5 @@
     <string name="manage_shown_tabs">Administrar pestañas visibles</string>
     <string name="set_sleep_timer">Ajustar temporizador para dormir</string>
     <string name="go_to">Ir a:</string>
+    <string name="no_lyrics_note">¡No se encontraron letras！</string>
 </resources>
