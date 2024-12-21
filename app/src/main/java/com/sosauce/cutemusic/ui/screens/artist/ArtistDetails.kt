@@ -21,7 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -79,7 +79,8 @@ fun SharedTransitionScope.ArtistDetails(
             chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
             artist = artist,
             currentMusicUri = musicState.currentMusicUri,
-            isPlayerReady = musicState.isPlayerReady
+            isPlayerReady = musicState.isPlayerReady,
+            animatedVisibilityScope = animatedVisibilityScope
         )
     } else {
         Scaffold(
@@ -96,7 +97,6 @@ fun SharedTransitionScope.ArtistDetails(
                             )
                             CuteText(
                                 text = "${artistSongs.size} ${if (artistSongs.size <= 1) "song" else "songs"}",
-
                                 fontSize = 20.sp
                             )
                         }
@@ -106,7 +106,7 @@ fun SharedTransitionScope.ArtistDetails(
                             onClick = navController::navigateUp
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                                 contentDescription = "Back arrow"
                             )
                         }
@@ -137,7 +137,8 @@ fun SharedTransitionScope.ArtistDetails(
                                     .clickable {
                                         postViewModel.albumSongs(album.name)
                                         onNavigate(Screen.AlbumsDetails(album.id))
-                                    }
+                                    },
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
                         }
                     }

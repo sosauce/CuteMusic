@@ -2,15 +2,12 @@
 
 package com.sosauce.cutemusic.ui.screens.blacklisted
 
-import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,27 +16,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -48,7 +39,6 @@ import androidx.navigation.NavController
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.domain.model.Folder
-import com.sosauce.cutemusic.ui.screens.blacklisted.components.AllFoldersBottomSheet
 import com.sosauce.cutemusic.ui.shared_components.AppBar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import java.io.File
@@ -58,51 +48,6 @@ fun BlacklistedScreen(
     navController: NavController,
     folders: List<Folder>,
 ) {
-    var isSheetOpen by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    var blacklistedFolders by rememberAllBlacklistedFolders()
-
-    if (isSheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { isSheetOpen = false },
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            AllFoldersBottomSheet(
-                folders = folders,
-                onClick = { path ->
-                    if (path in blacklistedFolders) {
-                        Toast.makeText(
-                            context,
-                            context.resources.getText(R.string.alrdy_blacklisted),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        blacklistedFolders = blacklistedFolders.toMutableSet().apply {
-                            add(path)
-                        }
-                        isSheetOpen = false
-                        Toast.makeText(
-                            context,
-                            context.resources.getText(R.string.pls_restart),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            )
-        }
-    }
-
-    BlacklistedScreenContent(
-        onAddFolder = { isSheetOpen = true },
-        onPopBackStack = navController::navigateUp
-    )
-}
-
-@Composable
-private fun BlacklistedScreenContent(
-    onAddFolder: () -> Unit,
-    onPopBackStack: () -> Unit,
-) {
 
     var blacklistedFolders by rememberAllBlacklistedFolders()
 
@@ -111,18 +56,8 @@ private fun BlacklistedScreenContent(
             AppBar(
                 title = stringResource(id = R.string.blacklisted_folders),
                 showBackArrow = true,
-                onPopBackStack = { onPopBackStack() }
+                onPopBackStack = navController::navigateUp
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onAddFolder() }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null
-                )
-            }
         }
     ) { values ->
         LazyColumn(
@@ -130,54 +65,97 @@ private fun BlacklistedScreenContent(
                 .fillMaxSize()
                 .padding(values)
         ) {
-            itemsIndexed(
-                items = blacklistedFolders.toList(),
-                key = { _, folder -> folder }
-            ) { index, folder ->
-
-                val topDp by animateDpAsState(
-                    targetValue = if (index == 0) 24.dp else 4.dp,
-                    label = "Top Dp",
-                    animationSpec = tween(500)
-                )
-                val bottomDp by animateDpAsState(
-                    targetValue = if (index == blacklistedFolders.size - 1) 24.dp else 4.dp,
-                    label = "Bottom Dp",
-                    animationSpec = tween(500)
-                )
-
-                BlackFolderItem(
-                    folder = folder,
-                    onClick = {
-                        blacklistedFolders = blacklistedFolders.toMutableSet().apply {
-                            remove(folder)
+            folders.sortedBy { it.name }
+                .groupBy { it.path in blacklistedFolders }
+                .toSortedMap(compareByDescending { it })
+                .forEach { (isBlacklisted, allFolders) ->
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 34.dp,
+                                    vertical = 8.dp
+                                )
+                        ) {
+                            CuteText(
+                                text = if (isBlacklisted) stringResource(R.string.blacklisted) else stringResource(
+                                    R.string.not_blacklisted
+                                ),
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    },
-                    topDp = topDp,
-                    bottomDp = bottomDp,
-                    modifier = Modifier.animateItem()
-                )
-            }
+                    }
+
+                    itemsIndexed(
+                        items = allFolders,
+                        key = { _, folder -> folder.path }
+                    ) { index, folder ->
+                        val topDp by animateDpAsState(
+                            targetValue = if (index == 0) 24.dp else 4.dp,
+                            label = "Top Dp"
+                        )
+                        val bottomDp by animateDpAsState(
+                            targetValue = if (index == allFolders.size - 1) 24.dp else 4.dp,
+                            label = "Bottom Dp"
+                        )
+
+                        FolderItem(
+                            folder = folder.path,
+                            topDp = topDp,
+                            bottomDp = bottomDp,
+                            modifier = Modifier.animateItem(),
+                            actionButton = {
+                                if (isBlacklisted) {
+                                    IconButton(
+                                        onClick = {
+                                            blacklistedFolders =
+                                                blacklistedFolders.toMutableSet().apply {
+                                                    remove(folder.path)
+                                                }
+                                        }
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.trash_rounded_filled),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                } else {
+                                    IconButton(
+                                        onClick = {
+                                            blacklistedFolders =
+                                                blacklistedFolders.toMutableSet().apply {
+                                                    add(folder.path)
+                                                }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Add,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
         }
     }
 }
 
 
 @Composable
-private fun BlackFolderItem(
+fun FolderItem(
     modifier: Modifier = Modifier,
     folder: String,
-    onClick: () -> Unit,
     topDp: Dp,
     bottomDp: Dp,
+    actionButton: @Composable () -> Unit
 ) {
     Card(
         modifier = modifier
-            .padding(
-                start = 13.dp,
-                end = 13.dp,
-                bottom = 8.dp
-            ),
+            .padding(horizontal = 16.dp, vertical = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -196,7 +174,7 @@ private fun BlackFolderItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Image(
-                imageVector = Icons.Default.FolderOpen,
+                painter = painterResource(R.drawable.folder_rounded),
                 contentDescription = null,
                 modifier = Modifier.size(33.dp),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
@@ -208,7 +186,7 @@ private fun BlackFolderItem(
                 horizontalAlignment = Alignment.Start
             ) {
                 CuteText(
-                    text = getFileName(folder),
+                    text = File(folder).name,
                     fontSize = 18.sp
                 )
                 CuteText(
@@ -218,20 +196,7 @@ private fun BlackFolderItem(
                     modifier = Modifier.basicMarquee()
                 )
             }
-            IconButton(
-                onClick = onClick
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
+            actionButton()
         }
     }
-}
-
-private fun getFileName(filePath: String): String {
-    val file = File(filePath)
-    return file.name
 }

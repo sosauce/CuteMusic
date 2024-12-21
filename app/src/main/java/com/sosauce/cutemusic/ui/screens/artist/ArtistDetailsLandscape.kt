@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.screens.artist
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +37,7 @@ import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
-fun ArtistDetailsLandscape(
+fun SharedTransitionScope.ArtistDetailsLandscape(
     onNavigateUp: () -> Unit,
     artistAlbums: List<Album>,
     artistSongs: List<MediaItem>,
@@ -41,7 +46,8 @@ fun ArtistDetailsLandscape(
     chargePVMAlbumSongs: (String) -> Unit,
     artist: Artist,
     currentMusicUri: String,
-    isPlayerReady: Boolean
+    isPlayerReady: Boolean,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     Column(
         modifier = Modifier
@@ -87,7 +93,8 @@ fun ArtistDetailsLandscape(
                                 chargePVMAlbumSongs(album.name)
                                 onNavigate(Screen.AlbumsDetails(album.id))
                             }
-                            .size(230.dp)
+                            .size(230.dp),
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }

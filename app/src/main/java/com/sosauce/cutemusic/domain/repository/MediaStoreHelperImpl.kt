@@ -21,9 +21,13 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.utils.observe
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 @SuppressLint("UnsafeOptInUsageError")
@@ -31,8 +35,10 @@ class MediaStoreHelperImpl(
     private val context: Context
 ) : MediaStoreHelper {
 
+
     private fun getBlacklistedFoldersAsync(): Set<String> =
         runBlocking { getBlacklistedFolder(context) }
+
 
     private val blacklistedFolders = getBlacklistedFoldersAsync()
     private val selection =
@@ -40,16 +46,29 @@ class MediaStoreHelperImpl(
     private val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
 
 
-    override fun fetchLatestMusics(): Flow<List<MediaItem>> =
+    override fun fetchLatestMusics(): StateFlow<List<MediaItem>> =
         context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-            .map { fetchMusics() }
+            .map {
+                fetchMusics()
+            }
+            .stateIn(
+                CoroutineScope(Dispatchers.IO),
+                SharingStarted.WhileSubscribed(5000),
+                listOf()
+            )
 
-    override fun fetchLatestAlbums(): Flow<List<Album>> =
+    override fun fetchLatestAlbums(): StateFlow<List<Album>> =
         context.contentResolver.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI)
             .map { fetchAlbums() }
+            .stateIn(
+                CoroutineScope(Dispatchers.IO),
+                SharingStarted.WhileSubscribed(5000),
+                listOf()
+            )
 
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {
+
 
         val musics = mutableListOf<MediaItem>()
 
@@ -62,7 +81,8 @@ class MediaStoreHelperImpl(
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DURATION
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.TRACK,
         )
 
 
@@ -82,6 +102,7 @@ class MediaStoreHelperImpl(
             val folderColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val trackNbColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
             //val isFavColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_FAVORITE)
 
             while (cursor.moveToNext()) {
@@ -95,6 +116,7 @@ class MediaStoreHelperImpl(
                 val folder = filePath.substring(0, filePath.lastIndexOf('/'))
                 val size = cursor.getLong(sizeColumn)
                 val duration = cursor.getLong(durationColumn)
+                val trackNumber = cursor.getInt(trackNbColumn)
                 //val isFavorite = cursor.getInt(isFavColumn) // 1 = is favorite, 0 = no
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -119,6 +141,7 @@ class MediaStoreHelperImpl(
                                 .setAlbumTitle(album)
                                 .setArtworkUri(artUri)
                                 .setDurationMs(duration)
+                                .setTrackNumber(trackNumber)
                                 .setExtras(
                                     Bundle()
                                         .apply {
@@ -128,6 +151,7 @@ class MediaStoreHelperImpl(
                                             putString("uri", uri.toString())
                                             putLong("album_id", albumId)
                                             putLong("artist_id", artistId)
+                                            putBoolean("is_saf", false)
                                             // putInt("isFavorite", isFavorite)
                                         }).build()
                         )

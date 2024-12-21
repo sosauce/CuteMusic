@@ -219,10 +219,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                                         }
                                         .sharedElement(
                                             state = rememberSharedContentState(key = "skipPreviousButton"),
-                                            animatedVisibilityScope = animatedVisibilityScope,
-                                            boundsTransform = { _, _ ->
-                                                tween(durationMillis = 500)
-                                            }
+                                            animatedVisibilityScope = animatedVisibilityScope
                                         )
                                 )
                             } else {
@@ -269,10 +266,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                 contentDescription = "pause/play button",
                 modifier = Modifier.sharedElement(
                     state = rememberSharedContentState(key = "playPauseIcon"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = { _, _ ->
-                        tween(durationMillis = 500)
-                    }
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             )
         }
@@ -349,10 +343,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                                 }
                                 .sharedElement(
                                     state = rememberSharedContentState(key = "skipNextButton"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { _, _ ->
-                                        tween(durationMillis = 500)
-                                    }
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 )
                         )
                     }

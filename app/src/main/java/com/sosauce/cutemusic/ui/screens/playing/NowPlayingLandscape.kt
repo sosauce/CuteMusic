@@ -178,7 +178,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                         onChargeAlbumSongs = onChargeAlbumSongs,
                         onShowSpeedCard = { showSpeedCard = true },
                         onChargeArtistLists = onChargeArtistLists,
-                        onHandlePlayerActions = onEvent
+                        onHandlePlayerActions = onEvent,
                     )
                 }
             }

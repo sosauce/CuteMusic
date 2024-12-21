@@ -142,9 +142,11 @@ fun SharedTransitionScope.AlbumsScreen(
                             .thenIf(
                                 if (isLandscape)
                                     index == 0 || index == 1 || index == 2 || index == 3
-                                else index == 0 || index == 1,
+                                else index == 0 || index == 1
+                            ) {
                                 Modifier.statusBarsPadding()
-                            )
+                            },
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -223,9 +225,10 @@ fun SharedTransitionScope.AlbumsScreen(
 
 
 @Composable
-fun AlbumCard(
+fun SharedTransitionScope.AlbumCard(
     album: Album,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     val context = LocalContext.current
 
@@ -241,6 +244,10 @@ fun AlbumCard(
             contentDescription = stringResource(id = R.string.artwork),
             modifier = Modifier
                 .size(160.dp)
+                .sharedElement(
+                    state = rememberSharedContentState(key = album.id),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                )
                 .clip(RoundedCornerShape(24.dp)),
             contentScale = ContentScale.Crop
         )
@@ -249,12 +256,22 @@ fun AlbumCard(
             CuteText(
                 text = album.name,
                 maxLines = 1,
-                modifier = Modifier.basicMarquee()
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState(key = album.name + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                    .basicMarquee()
             )
             CuteText(
                 text = album.artist,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                modifier = Modifier.basicMarquee()
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState(key = album.artist + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                    .basicMarquee()
             )
         }
     }

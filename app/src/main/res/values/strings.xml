@@ -75,4 +75,10 @@
     <string name="set_sleep_timer">Set sleep timer</string>
     <string name="go_to">Go to:</string>
     <string name="no_lyrics_note">No lyrics found !</string>
+    <string name="open_eq">Equalizer</string>
+    <string name="from_saf">This track comes from the S.A.F</string>
+    <string name="open_saf">Open S.A.F to add tracks</string>
+    <string name="blacklisted">Blacklisted</string>
+    <string name="not_blacklisted">Not blacklisted</string>
+    <string name="saf_manager">S.A.F manager</string>
 </resources>

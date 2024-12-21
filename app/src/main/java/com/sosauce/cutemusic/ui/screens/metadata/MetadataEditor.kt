@@ -59,30 +59,15 @@ fun MetadataEditor(
 
     val metadataState by metadataViewModel.metadataState.collectAsStateWithLifecycle()
 
-    MetadataEditorContent(
-        music = music,
-        onPopBackStack = onPopBackStack,
-        onNavigate = onNavigate,
-        metadataState = metadataState,
-        onMetadataAction = { metadataViewModel.onHandleMetadataActions(it) },
-        onEditMusic = onEditMusic
-    )
-}
-
-@Composable
-fun MetadataEditorContent(
-    music: MediaItem,
-    onPopBackStack: () -> Unit,
-    onNavigate: (Screen) -> Unit,
-    metadataState: MetadataState,
-    onMetadataAction: (MetadataActions) -> Unit,
-    onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
-) {
     val context = LocalContext.current
     val uri = Uri.parse(music.mediaMetadata.extras?.getString("uri"))
     val photoPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-            onMetadataAction(MetadataActions.UpdateAudioArt(it ?: Uri.EMPTY))
+            metadataViewModel.onHandleMetadataActions(
+                MetadataActions.UpdateAudioArt(
+                    it ?: Uri.EMPTY
+                )
+            )
         }
 
     val editSongLauncher =
@@ -90,7 +75,7 @@ fun MetadataEditorContent(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) {
             if (it.resultCode == Activity.RESULT_OK) {
-                onMetadataAction(MetadataActions.SaveChanges)
+                metadataViewModel.onHandleMetadataActions(MetadataActions.SaveChanges)
                 Toast.makeText(
                     context,
                     context.getString(R.string.success),
@@ -272,6 +257,7 @@ fun MetadataEditorContent(
         }
     }
 }
+
 
 @Composable
 private fun EditTextField(

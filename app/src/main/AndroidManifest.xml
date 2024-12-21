@@ -19,6 +19,7 @@
 
     <application
         android:name=".main.App"
+        android:appCategory="audio"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -37,6 +38,16 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".main.AutoPlaybackService"
+            android:exported="true"
+            android:enabled="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService"/>
             </intent-filter>
         </service>
 
@@ -96,7 +107,9 @@
 
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>
+
     </application>
+
 
 
 

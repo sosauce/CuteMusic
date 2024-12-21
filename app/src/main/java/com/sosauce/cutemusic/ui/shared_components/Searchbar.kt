@@ -93,7 +93,11 @@ fun SharedTransitionScope.CuteSearchbar(
                     minWidth = 45.dp,
                     minHeight = 45.dp
                 )
-                .align(Alignment.End),
+                .align(Alignment.End)
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(key = "fab"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                ),
             shape = RoundedCornerShape(14.dp)
         ) {
             Icon(
@@ -111,12 +115,11 @@ fun SharedTransitionScope.CuteSearchbar(
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = RoundedCornerShape(roundedShape)
                 )
-                .thenIf(
-                    isPlayerReady,
+                .thenIf(isPlayerReady) {
                     Modifier.clickable {
                         onNavigate()
                     }
-                )
+                }
         ) {
             AnimatedVisibility(
                 visible = isPlayerReady,
@@ -149,15 +152,11 @@ fun SharedTransitionScope.CuteSearchbar(
                             text = currentlyPlaying,
                             modifier = Modifier
                                 .padding(start = 5.dp)
-                                .sharedElement(
-                                    state = rememberSharedContentState(key = "currentlyPlaying"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { _, _ ->
-                                        tween(500)
-                                    }
-                                )
                                 .basicMarquee()
-
+                                .sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = "currentlyPlaying"),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
                         )
                     }
                     Row {
@@ -188,10 +187,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                     }
                                     .sharedElement(
                                         state = rememberSharedContentState(key = "skipPreviousButton"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ ->
-                                            tween(500)
-                                        }
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
                         }
@@ -203,10 +199,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                 contentDescription = null,
                                 modifier = Modifier.sharedElement(
                                     state = rememberSharedContentState(key = "playPauseIcon"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { _, _ ->
-                                        tween(500)
-                                    }
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 )
                             )
                         }
@@ -237,10 +230,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                     }
                                     .sharedElement(
                                         state = rememberSharedContentState(key = "skipNextButton"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ ->
-                                            tween(500)
-                                        }
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
                         }

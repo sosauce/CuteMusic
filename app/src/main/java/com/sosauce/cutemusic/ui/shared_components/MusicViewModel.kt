@@ -29,6 +29,7 @@ import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
+import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.main.PlaybackService
 import com.sosauce.cutemusic.utils.applyLoop
 import com.sosauce.cutemusic.utils.applyPlaybackSpeed
@@ -37,16 +38,24 @@ import com.sosauce.cutemusic.utils.playAtIndex
 import com.sosauce.cutemusic.utils.playFromAlbum
 import com.sosauce.cutemusic.utils.playFromArtist
 import com.sosauce.cutemusic.utils.playRandom
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileNotFoundException
 
+@OptIn(FlowPreview::class)
+@SuppressLint("UnsafeOptInUsageError")
 class MusicViewModel(
     private val application: Application,
-    private val mediaStoreHelper: MediaStoreHelper
+    private val mediaStoreHelper: MediaStoreHelper,
+    private val safManager: SafManager
 ) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
@@ -58,7 +67,8 @@ class MusicViewModel(
     var sleepCountdownTimer: CountDownTimer? = null
 
 
-    private val playerListener = object : Player.Listener {
+    private val playerListener = @UnstableApi
+    object : Player.Listener {
         @UnstableApi
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             super.onMediaMetadataChanged(mediaMetadata)
@@ -67,8 +77,8 @@ class MusicViewModel(
                 currentArtist = mediaMetadata.artist.toString(),
                 currentArtistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
                 currentArt = mediaMetadata.artworkUri,
-                currentPath = mediaMetadata.extras?.getString("path") ?: "No Path Found!",
-                currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No Uri Found!",
+                currentPath = mediaMetadata.extras?.getString("path") ?: "No path found!",
+                currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No uri found!",
                 currentLrcFile = getLrcFile(),
                 currentAlbum = mediaMetadata.albumTitle.toString(),
                 currentAlbumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
@@ -81,46 +91,58 @@ class MusicViewModel(
 
         override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
             super.onPlaybackParametersChanged(playbackParameters)
-            _musicState.value = _musicState.value.copy(
-                playbackParameters = playbackParameters
-            )
+            _musicState.update {
+                it.copy(
+                    playbackParameters = playbackParameters
+                )
+            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
-            _musicState.value = _musicState.value.copy(
-                isCurrentlyPlaying = isPlaying
-            )
+            _musicState.update {
+                it.copy(
+                    isCurrentlyPlaying = isPlaying
+                )
+            }
         }
 
         override fun onRepeatModeChanged(repeatMode: Int) {
             super.onRepeatModeChanged(repeatMode)
             when (repeatMode) {
                 Player.REPEAT_MODE_ONE -> {
-                    _musicState.value = _musicState.value.copy(
-                        isLooping = true
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isLooping = true
+                        )
+                    }
                 }
 
                 Player.REPEAT_MODE_OFF -> {
-                    _musicState.value = _musicState.value.copy(
-                        isLooping = false
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isLooping = false
+                        )
+                    }
                 }
 
                 else -> {
-                    _musicState.value = _musicState.value.copy(
-                        isLooping = false
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isLooping = false
+                        )
+                    }
                 }
             }
         }
 
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             super.onShuffleModeEnabledChanged(shuffleModeEnabled)
-            _musicState.value = _musicState.value.copy(
-                isShuffling = shuffleModeEnabled
-            )
+            _musicState.update {
+                it.copy(
+                    isShuffling = shuffleModeEnabled
+                )
+            }
         }
 
 
@@ -128,10 +150,12 @@ class MusicViewModel(
             super.onEvents(player, events)
             viewModelScope.launch {
                 while (player.isPlaying) {
-                    _musicState.value = _musicState.value.copy(
-                        currentMusicDuration = player.duration,
-                        currentPosition = player.currentPosition
-                    )
+                    _musicState.update {
+                        it.copy(
+                            currentMusicDuration = player.duration,
+                            currentPosition = player.currentPosition
+                        )
+                    }
                     delay(500)
                 }
             }
@@ -141,27 +165,55 @@ class MusicViewModel(
             super.onPlaybackStateChanged(playbackState)
             when (playbackState) {
                 Player.STATE_IDLE -> {
-                    _musicState.value = _musicState.value.copy(
-                        isPlayerReady = false
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isPlayerReady = false
+                        )
+                    }
                 }
 
                 Player.STATE_READY -> {
-                    _musicState.value = _musicState.value.copy(
-                        isPlayerReady = true
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isPlayerReady = true
+                        )
+                    }
                 }
 
                 else -> {
-                    _musicState.value = _musicState.value.copy(
-                        isPlayerReady = true
-                    )
+                    _musicState.update {
+                        it.copy(
+                            isPlayerReady = true
+                        )
+                    }
                 }
             }
         }
     }
 
     init {
+//        if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR) {
+//            MediaController
+//                .Builder(
+//                    application,
+//                    SessionToken(
+//                        application,
+//                        ComponentName(application, AutoPlaybackService::class.java)
+//                    )
+//                )
+//                .buildAsync()
+//                .apply {
+//                    addListener(
+//                        {
+//                            mediaController = get()
+//                            mediaController!!.addListener(playerListener)
+//                        },
+//                        MoreExecutors.directExecutor()
+//                    )
+//
+//                }
+//        } else {
+//        }
         MediaController
             .Builder(
                 application,
@@ -176,7 +228,24 @@ class MusicViewModel(
                     {
                         mediaController = get()
                         mediaController!!.addListener(playerListener)
-                        mediaController!!.setMediaItems(mediaStoreHelper.musics)
+                        viewModelScope.launch {
+                            combine(
+                                mediaStoreHelper.fetchLatestMusics(),
+                                safManager.fetchLatestSafTracks()
+                            ) { musics, safTracks ->
+                                val combinedList = musics + safTracks
+                                combinedList
+                            }
+                                .debounce(500)
+                                .collectLatest { combinedList ->
+                                    mediaController!!.replaceMediaItems(
+                                        0,
+                                        combinedList.size - 1,
+                                        combinedList
+                                    )
+                                }
+                        }
+
                     },
                     MoreExecutors.directExecutor()
                 )
@@ -219,7 +288,8 @@ class MusicViewModel(
 
         val fd = getFileDescriptorFromPath(application, musicState.value.currentPath)
         return fd?.dup()?.detachFd()?.let {
-            TagLib.getMetadata(it)?.propertyMap["LYRICS"]?.getOrNull(0) ?: application.getString(R.string.no_lyrics_note)
+            TagLib.getMetadata(it)?.propertyMap["LYRICS"]?.getOrNull(0)
+                ?: application.getString(R.string.no_lyrics_note)
         } ?: application.getString(R.string.no_lyrics_note)
 
     }

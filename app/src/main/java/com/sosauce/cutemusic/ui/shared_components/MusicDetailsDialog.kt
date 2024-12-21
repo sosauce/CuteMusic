@@ -117,6 +117,20 @@ fun MusicDetailsDialog(
                     text = "${stringResource(id = R.string.duration)}: ${music.mediaMetadata.durationMs?.formatToReadableTime() ?: 0}",
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
+                if (music.mediaMetadata.extras?.getBoolean("is_saf") == true) {
+                    Spacer(Modifier.height(5.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHighest),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CuteText(stringResource(R.string.from_saf))
+                        }
+                    }
+                }
             }
         }
     )

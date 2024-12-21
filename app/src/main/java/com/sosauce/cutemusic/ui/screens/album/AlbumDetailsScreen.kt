@@ -144,7 +144,11 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                             contentDescription = stringResource(R.string.artwork),
                             modifier = Modifier
                                 .size(150.dp)
-                                .clip(RoundedCornerShape(12.dp)),
+                                .sharedElement(
+                                    state = rememberSharedContentState(key = album.id),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                )
+                                .clip(RoundedCornerShape(24.dp)),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(Modifier.width(10.dp))
@@ -154,13 +158,23 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                             CuteText(
                                 text = album.name,
                                 fontSize = 22.sp,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier
+                                    .sharedElement(
+                                        state = rememberSharedContentState(key = album.name + album.id),
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                    )
+                                    .basicMarquee()
                             )
                             CuteText(
                                 text = album.artist,
                                 fontSize = 22.sp,
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier
+                                    .sharedElement(
+                                        state = rememberSharedContentState(key = album.artist + album.id),
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                    )
+                                    .basicMarquee()
                             )
                             Spacer(Modifier.height(60.dp))
                             CuteText(
@@ -172,21 +186,26 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                     }
                     Spacer(Modifier.height(10.dp))
                     Column {
-                        albumSongs.forEach { music ->
-                            MusicListItem(
-                                music = music,
-                                onShortClick = {
-                                    viewModel.handlePlayerActions(
-                                        PlayerActions.StartAlbumPlayback(
-                                            albumName = music.mediaMetadata.albumTitle.toString(),
-                                            mediaId = it
+                        albumSongs.sortedWith(compareBy(
+                            { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
+                            { it.mediaMetadata.trackNumber }
+                        ))
+                            .forEach { music ->
+                                MusicListItem(
+                                    music = music,
+                                    onShortClick = {
+                                        viewModel.handlePlayerActions(
+                                            PlayerActions.StartAlbumPlayback(
+                                                albumName = music.mediaMetadata.albumTitle.toString(),
+                                                mediaId = it
+                                            )
                                         )
-                                    )
-                                },
-                                currentMusicUri = musicState.currentMusicUri,
-                                isPlayerReady = musicState.isPlayerReady
-                            )
-                        }
+                                    },
+                                    currentMusicUri = musicState.currentMusicUri,
+                                    isPlayerReady = musicState.isPlayerReady,
+                                    showTrackNumber = true
+                                )
+                            }
                     }
                 }
             }

@@ -6,7 +6,6 @@ package com.sosauce.cutemusic.ui.screens.playing
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -153,7 +152,7 @@ private fun SharedTransitionScope.NowPlayingContent(
             horizontalArrangement = Arrangement.Start
         ) {
             IconButton(
-                onClick = onNavigateUp
+                onClick = onNavigateUp,
             ) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
@@ -193,14 +192,12 @@ private fun SharedTransitionScope.NowPlayingContent(
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp,
                     modifier = Modifier
-                        .sharedElement(
-                            state = rememberSharedContentState(key = "currentlyPlaying"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { _, _ ->
-                                tween(durationMillis = 500)
-                            }
-                        )
                         .basicMarquee()
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "currentlyPlaying"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+
                 )
                 //Spacer(modifier = Modifier.height(5.dp))
                 CuteText(

@@ -1,5 +1,6 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
@@ -12,23 +13,39 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
+import com.sosauce.cutemusic.domain.repository.SafManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.filter
 
 
 class PostViewModel(
-    private val mediaStoreHelper: MediaStoreHelper
+    private val mediaStoreHelper: MediaStoreHelper,
+    private val safManager: SafManager
 ) : ViewModel() {
 
 
+    @SuppressLint("UnsafeOptInUsageError")
+    val safTracks = safManager.fetchLatestSafTracks()
+
+//    @SuppressLint("UnsafeOptInUsageError")
+//    var musics = combine(safTracks, mediaStoreHelper.fetchLatestMusics()) { safList, trackList ->
+//        safList + trackList
+//    }.stateIn(
+//        CoroutineScope(Dispatchers.IO),
+//        SharingStarted.WhileSubscribed(5000),
+//        mediaStoreHelper.musics
+//    )
+
     var musics = mediaStoreHelper.fetchLatestMusics().stateIn(
-        viewModelScope,
+        CoroutineScope(Dispatchers.IO),
         SharingStarted.WhileSubscribed(5000),
         mediaStoreHelper.musics
     )
+
 
     var albums = mediaStoreHelper.fetchLatestAlbums().stateIn(
         viewModelScope,
@@ -56,9 +73,7 @@ class PostViewModel(
     fun albumSongs(album: String) {
         try {
             viewModelScope.launch {
-                musics.collectLatest {
-                    albumSongs = it.filter { it.mediaMetadata.albumTitle.toString() == album }
-                }
+                albumSongs = musics.value.filter { it.mediaMetadata.albumTitle.toString() == album }
             }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
@@ -68,9 +83,7 @@ class PostViewModel(
     fun artistSongs(artistName: String) {
         try {
             viewModelScope.launch {
-                musics.collectLatest {
-                    artistSongs = it.filter { it.mediaMetadata.artist == artistName }
-                }
+                artistSongs = musics.value.filter { it.mediaMetadata.artist == artistName }
             }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)

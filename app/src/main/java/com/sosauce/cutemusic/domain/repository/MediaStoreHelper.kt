@@ -7,7 +7,7 @@ import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface MediaStoreHelper {
 
@@ -17,10 +17,10 @@ interface MediaStoreHelper {
     val folders: List<Folder>
 
     fun fetchMusics(): List<MediaItem>
-    fun fetchLatestMusics(): Flow<List<MediaItem>>
+    fun fetchLatestMusics(): StateFlow<List<MediaItem>>
 
     fun fetchAlbums(): List<Album>
-    fun fetchLatestAlbums(): Flow<List<Album>>
+    fun fetchLatestAlbums(): StateFlow<List<Album>>
 
     fun fetchArtists(): List<Artist>
 

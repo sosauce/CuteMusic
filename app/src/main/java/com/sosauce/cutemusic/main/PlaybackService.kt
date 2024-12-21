@@ -13,6 +13,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
 
 
 class PlaybackService : MediaLibraryService(),
@@ -45,6 +46,7 @@ class PlaybackService : MediaLibraryService(),
             .build()
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, this)
+            .setId(CUTE_MUSIC_ID)
             .setShowPlayButtonIfPlaybackIsSuppressed(false)
 
 //            .setBitmapLoader(object : BitmapLoader {

@@ -7,6 +7,7 @@ package com.sosauce.cutemusic.ui.screens.main
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Paint
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,7 +66,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -190,10 +195,9 @@ fun SharedTransitionScope.MainScreen(
                             onChargeAlbumSongs = onChargeAlbumSongs,
                             onChargeArtistLists = onChargeArtistLists,
                             modifier = Modifier
-                                .thenIf(
-                                    index == 0,
+                                .thenIf(index == 0) {
                                     Modifier.statusBarsPadding()
-                                ),
+                                },
                             isPlayerReady = isPlayerReady
                         )
                     }
@@ -317,7 +321,9 @@ fun MusicListItem(
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
     onChargeAlbumSongs: (String) -> Unit = {},
     onChargeArtistLists: (String) -> Unit = {},
-    isPlayerReady: Boolean
+    isPlayerReady: Boolean,
+    onDeleteSafTrack: () -> Unit = {},
+    showTrackNumber: Boolean = false
 ) {
 
     val context = LocalContext.current
@@ -336,6 +342,8 @@ fun MusicListItem(
         label = "Background Color",
         animationSpec = tween(500)
     )
+    val materialSurfaceContainer = MaterialTheme.colorScheme.surfaceContainer
+    val materialOnSurface = MaterialTheme.colorScheme.onSurface
     val deleteSongLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
@@ -397,7 +405,51 @@ fun MusicListItem(
                 stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)
-                    .size(45.dp),
+                    .size(45.dp)
+                    .drawWithContent {
+                        drawContent()
+                        if (showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+                            val circleCenter = Offset(size.width, size.height / 12)
+                            drawCircle(
+                                color = materialSurfaceContainer,
+                                center = circleCenter,
+                                radius = 25f
+                            )
+                            val text = Paint().apply {
+                                color = materialOnSurface.toArgb()
+                                textSize = 30f
+                                textAlign = Paint.Align.CENTER
+                            }
+                            drawContext.canvas.nativeCanvas.drawText(
+                                music.mediaMetadata.trackNumber.toString(),
+                                circleCenter.x,
+                                circleCenter.y - (text.ascent() + text.descent()) / 2,
+                                text
+                            )
+                        }
+                    },
+//                    .thenIf(showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+//                        Modifier.drawWithContent {
+//                            val circleCenter = Offset(size.width, size.height / 12)
+//                            drawContent()
+//                            drawCircle(
+//                                color = materialSurfaceContainer,
+//                                center = circleCenter,
+//                                radius = 25f
+//                            )
+//                            val text = Paint().apply {
+//                                color = materialOnSurface.toArgb()
+//                                textSize = 30f
+//                                textAlign = Paint.Align.CENTER
+//                            }
+//                            drawContext.canvas.nativeCanvas.drawText(
+//                                music.mediaMetadata.trackNumber.toString(),
+//                                circleCenter.x,
+//                                circleCenter.y - (text.ascent() + text.descent()) / 2,
+//                                text
+//                            )
+//                        }
+//                    },
                 contentScale = ContentScale.Crop,
             )
 
@@ -445,62 +497,64 @@ fun MusicListItem(
                             )
                         }
                     )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onLoadMetadata(path ?: "", uri)
-                            onNavigate(Screen.MetadataEditor(music.mediaId))
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.edit))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.edit_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onChargeAlbumSongs(music.mediaMetadata.albumTitle.toString())
-                            onNavigate(
-                                Screen.AlbumsDetails(
-                                    music.mediaMetadata.extras?.getLong("album_id") ?: 0
+                    if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                        DropdownMenuItem(
+                            onClick = {
+                                isDropDownExpanded = false
+                                onLoadMetadata(path ?: "", uri)
+                                onNavigate(Screen.MetadataEditor(music.mediaId))
+                            },
+                            text = {
+                                CuteText(stringResource(R.string.edit))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.edit_rounded),
+                                    contentDescription = null
                                 )
-                            )
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.go_to) + music.mediaMetadata.albumTitle)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onChargeArtistLists(music.mediaMetadata.artist.toString())
-                            onNavigate(
-                                Screen.ArtistsDetails(
-                                    music.mediaMetadata.extras?.getLong("artist_id") ?: 0
+                            }
+                        )
+                        DropdownMenuItem(
+                            onClick = {
+                                isDropDownExpanded = false
+                                onChargeAlbumSongs(music.mediaMetadata.albumTitle.toString())
+                                onNavigate(
+                                    Screen.AlbumsDetails(
+                                        music.mediaMetadata.extras?.getLong("album_id") ?: 0
+                                    )
                                 )
-                            )
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.go_to) + music.mediaMetadata.artist)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.artist_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
+                            },
+                            text = {
+                                CuteText("${stringResource(R.string.go_to)} ${music.mediaMetadata.albumTitle}")
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            onClick = {
+                                isDropDownExpanded = false
+                                onChargeArtistLists(music.mediaMetadata.artist.toString())
+                                onNavigate(
+                                    Screen.ArtistsDetails(
+                                        music.mediaMetadata.extras?.getLong("artist_id") ?: 0
+                                    )
+                                )
+                            },
+                            text = {
+                                CuteText("${stringResource(R.string.go_to)} ${music.mediaMetadata.artist}")
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.artist_rounded),
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
                     DropdownMenuItem(
                         onClick = {
                             val shareIntent = Intent().apply {
@@ -530,7 +584,13 @@ fun MusicListItem(
                         }
                     )
                     DropdownMenuItem(
-                        onClick = { onDeleteMusic(listOf(uri), deleteSongLauncher) },
+                        onClick = {
+                            if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                                onDeleteMusic(listOf(uri), deleteSongLauncher)
+                            } else {
+                                onDeleteSafTrack()
+                            }
+                        },
                         text = {
                             CuteText(
                                 text = stringResource(R.string.delete),

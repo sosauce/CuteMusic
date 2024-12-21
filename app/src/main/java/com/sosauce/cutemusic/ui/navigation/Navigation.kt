@@ -23,6 +23,7 @@ import com.sosauce.cutemusic.ui.screens.main.MainScreen
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataEditor
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
+import com.sosauce.cutemusic.ui.screens.saf.SafScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
@@ -220,6 +221,19 @@ fun Nav() {
                     onHandlePlayerActions = viewModel::handlePlayerActions,
                     isPlayerReady = musicState.isPlayerReady,
                     animatedVisibilityScope = this,
+                )
+            }
+
+            composable<Screen.Saf> {
+                val latestSafTracks by postViewModel.safTracks.collectAsStateWithLifecycle()
+
+                SafScreen(
+                    onNavigateUp = navController::navigateUp,
+                    latestSafTracks = latestSafTracks,
+                    onNavigate = { navController.navigate(it) },
+                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
+                    isPlayerReady = musicState.isPlayerReady,
+                    currentMusicUri = musicState.currentMusicUri,
                 )
             }
         }

@@ -2,6 +2,7 @@ package com.sosauce.cutemusic.di
 
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelperImpl
+import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
@@ -14,11 +15,16 @@ val appModule = module {
     single<MediaStoreHelper> {
         MediaStoreHelperImpl(androidContext())
     }
+
+    single {
+        SafManager(androidContext())
+    }
+
     viewModel {
-        PostViewModel(get())
+        PostViewModel(get(), get())
     }
     viewModel {
-        MusicViewModel(androidApplication(), get())
+        MusicViewModel(androidApplication(), get(), get())
     }
     viewModel {
         MetadataViewModel(androidApplication())

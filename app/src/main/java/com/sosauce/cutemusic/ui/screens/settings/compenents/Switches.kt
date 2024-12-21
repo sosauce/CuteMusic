@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
@@ -36,6 +37,7 @@ fun Misc(
     onNavigate: (Screen) -> Unit
 ) {
     //var killService by remember { rememberKillService(context) }
+    val context = LocalContext.current
 
     Column {
         CuteText(
@@ -56,6 +58,19 @@ fun Misc(
             topDp = 24.dp,
             bottomDp = 24.dp
         )
+//        TextSettingsCards(
+//            text = stringResource(id = R.string.saf_manager),
+//            onClick = { onNavigate(Screen.Saf) },
+//            modifier = Modifier
+//                .padding(
+//                    top = 25.dp,
+//                    start = 15.dp,
+//                    bottom = 25.dp
+//                )
+//                .fillMaxWidth(),
+//            topDp = 4.dp,
+//            bottomDp = 24.dp
+//        )
 //        SettingsCards(
 //            checked = killService,
 //            onCheckedChange = { killService = !killService },
@@ -87,7 +102,8 @@ fun ThemeManagement() {
             text = stringResource(id = R.string.follow_sys)
         )
         AnimatedContent(
-            targetState = !followSys, label = "",
+            targetState = !followSys,
+            label = "",
             transitionSpec = {
                 (slideInHorizontally() + fadeIn()).togetherWith(slideOutHorizontally() + fadeOut())
             }

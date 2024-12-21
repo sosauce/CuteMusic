@@ -26,6 +26,9 @@ sealed class Screen {
     data object AllFolders : Screen()
 
     @Serializable
+    data object Saf : Screen()
+
+    @Serializable
     data class AlbumsDetails(
         val id: Long
     ) : Screen()

@@ -27,15 +27,15 @@ import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 
 @Composable
-inline fun SettingsCards(
+fun SettingsCards(
     hasInfoDialog: Boolean = false,
     checked: Boolean,
     topDp: Dp,
     bottomDp: Dp,
     text: String,
-    crossinline onCheckedChange: () -> Unit,
-    crossinline onClick: () -> Unit = {},
-    crossinline optionalDescription: @Composable () -> Unit = {}
+    onCheckedChange: () -> Unit,
+    onClick: () -> Unit = {},
+    optionalDescription: @Composable () -> Unit = {}
 ) {
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),

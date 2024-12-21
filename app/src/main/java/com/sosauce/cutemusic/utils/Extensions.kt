@@ -19,17 +19,17 @@ import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 fun Modifier.thenIf(
     condition: Boolean,
-    modifier: Modifier
+    modifier: Modifier.() -> Modifier
 ): Modifier {
-    return this.then(
-        if (condition) {
-            modifier
-        } else Modifier
-    )
+    return if (condition) {
+        this.then(modifier())
+    } else this
 }
 
 fun Long.formatBinarySize(): String {
@@ -140,6 +140,18 @@ fun Player.applyPlaybackSpeed(
 }
 
 
+fun ByteArray.getUriFromByteArray(context: Context): Uri {
+    val albumArtFile = File(context.cacheDir, "album_art_${this.hashCode()}.jpg")
+    try {
+        FileOutputStream(albumArtFile).use { os ->
+            os.write(this)
+        }
+        return Uri.fromFile(albumArtFile)
+    } catch (e: Exception) {
+        return Uri.EMPTY
+    }
+}
+
 fun Uri.getBitrate(context: Context): String {
     val retriever = MediaMetadataRetriever()
     return try {
@@ -221,6 +233,7 @@ fun AudioFileMetadata.toPropertyMap(): PropertyMap {
 fun ContentResolver.observe(uri: Uri) = callbackFlow {
     val observer = object : ContentObserver(null) {
         override fun onChange(selfChange: Boolean) {
+
             trySend(selfChange)
         }
     }

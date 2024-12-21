@@ -1,8 +1,10 @@
 package com.sosauce.cutemusic.data.datastore
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -11,6 +13,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ALBUMS_TAB
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ARTISTS_TAB
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_FOLDERS_TAB
@@ -21,7 +24,10 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 private const val PREFERENCES_NAME = "settings"
 
@@ -43,6 +49,7 @@ private data object PreferencesKeys {
     val SHOW_ALBUMS_TAB = booleanPreferencesKey("show_albums_tab")
     val SHOW_ARTISTS_TAB = booleanPreferencesKey("show_artists_tab")
     val SHOW_FOLDERS_TAB = booleanPreferencesKey("show_folders_tab")
+    val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
 }
 
 @Composable
@@ -103,9 +110,25 @@ fun rememberShowArtistsTab() =
 fun rememberShowFoldersTab() =
     rememberPreference(key = SHOW_FOLDERS_TAB, defaultValue = true)
 
+@Composable
+fun rememberAllSafTracks() =
+    rememberPreference(key = SAF_TRACKS, defaultValue = emptySet())
+
 
 suspend fun getBlacklistedFolder(context: Context): Set<String> {
     val preferences = context.dataStore.data.first()
     return preferences[BLACKLISTED_FOLDERS] ?: emptySet()
 }
+
+fun getSafTracks(context: Context): Flow<Set<String>> =
+
+    context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                Log.d("CuteError", "getSafTracks: ${exception.message}")
+            } else throw exception
+        }
+        .map { preference ->
+            preference[SAF_TRACKS] ?: emptySet()
+        }
 

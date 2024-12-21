@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,9 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.blacklisted.components.FolderItem
+import com.sosauce.cutemusic.ui.screens.blacklisted.FolderItem
 import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -118,22 +116,22 @@ fun SharedTransitionScope.AllFoldersScreen(
                     )
 
                     FolderItem(
-                        folder = Folder(
-                            name = folder?.substring(folder.lastIndexOf('/') + 1) ?: "No Name",
-                            path = folder.toString()
-                        ),
-                        onClick = { areMusicsVisible[folder ?: "No Name"] = !isExpanded },
+                        folder = folder ?: " No name",
                         topDp = topDp,
                         bottomDp = bottomDp,
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowBackIosNew,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .rotate(rotation),
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
+                        modifier = Modifier.animateItem(),
+                        actionButton = {
+                            IconButton(
+                                onClick = {
+                                    areMusicsVisible[folder ?: "No name"] = !isExpanded
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ArrowBackIosNew,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(rotation)
+                                )
+                            }
                         }
                     )
                 }
