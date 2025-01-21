@@ -7,3 +7,4 @@
 - Beautiful landscape UI!
 - Tag Editor!
 - Playlist support !
+- Material art: Color scheme dynamically changes depending on currently playing song's artwork !
