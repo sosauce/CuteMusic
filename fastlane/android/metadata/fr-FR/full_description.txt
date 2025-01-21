@@ -7,3 +7,4 @@
 - Un beau mode paysage !
 - Éditeur de métas-données !
 - Support pour les playlistes !
+- Material art : La palette de couleurs change dynamiquement en fonction de l'illustration de la chanson en cours de lecture !
