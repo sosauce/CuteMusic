@@ -1,1 +1,1 @@
-Placeholder
+CuteMusic est un lecteur de musique hors ligne simple et minialiste pour Android.
