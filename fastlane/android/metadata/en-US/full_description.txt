@@ -1,1 +1,9 @@
-Placeholder
+- Play any song from anywhere just by sharing the audio file to the app without downloading it!
+- Easy search across all your music/albums/artists!
+- Very fast and snappy!
+- No unnecessary permissions needed!
+- Material 3/You & Monet theming (+ Amoled mode)!
+- Blacklist Folders!
+- Beautiful landscape UI!
+- Tag Editor!
+- Playlist support !
