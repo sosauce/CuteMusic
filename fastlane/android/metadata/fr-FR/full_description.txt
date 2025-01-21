@@ -1,1 +1,9 @@
-Placeholder
+- Jouez n'importe quelle musique, just en partageant le fichier à l'application, sans le télécharger !
+- Recherche simple à travers touts vos musiques/albums/artistes !
+- Très rapide et fluide !
+- Pas de permissions inutiles !
+- Support pour Material 3/ Monet (+ Mode amoled) !
+- Ajouter des dossiers à la liste noir !
+- Un beau mode paysage !
+- Éditeur de métas-données !
+- Support pour les playlistes !
