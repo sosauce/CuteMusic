@@ -1,1 +1,1 @@
-Placeholder
+CuteMusic is a simple, lightweight and offline music player app for Android.
