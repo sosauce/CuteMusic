@@ -47,9 +47,7 @@ class QuickPlayActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-
-            val viewModel = koinViewModel<MusicViewModel>()
-            CuteMusicTheme(musicViewModel = viewModel) {
+            CuteMusicTheme {
                 Scaffold(
                     modifier = Modifier
                         .fillMaxSize()
@@ -57,6 +55,7 @@ class QuickPlayActivity : ComponentActivity() {
                 ) { _ ->
                     MaterialTheme {
                         var uri by remember { mutableStateOf<Uri?>(null) }
+                        val viewModel = koinViewModel<MusicViewModel>()
                         val musicState by viewModel.musicState.collectAsStateWithLifecycle()
 
 

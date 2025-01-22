@@ -17,7 +17,6 @@
         android:name="android.permission.RECEIVE_BOOT_COMPLETED"
         tools:node="remove" />
 
-
     <application
         android:name=".main.App"
         android:appCategory="audio"

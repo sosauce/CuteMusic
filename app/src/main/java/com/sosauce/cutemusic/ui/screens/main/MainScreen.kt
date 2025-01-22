@@ -21,19 +21,18 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -41,32 +40,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -79,7 +69,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -88,33 +77,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.actions.PlaylistActions
-import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
 import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
-import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.ShareOptionsContent
-import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
-import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.NavigationItem
-import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
-import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import com.sosauce.cutemusic.utils.thenIf
-import org.koin.androidx.compose.koinViewModel
-import java.io.File
 
 @Composable
 fun SharedTransitionScope.MainScreen(
@@ -138,12 +117,10 @@ fun SharedTransitionScope.MainScreen(
     val state = rememberLazyListState()
     var screenSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
-//    val float by animateFloatAsState(
-//        targetValue = if (isSortedByASC) 45f else 135f,
-//        label = "Arrow Icon Animation"
-//    )
-    var sortMenuExpanded by remember { mutableStateOf(false) }
-    var groupByFolders by rememberGroupByFolders()
+    val float by animateFloatAsState(
+        targetValue = if (isSortedByASC) 45f else 135f,
+        label = "Arrow Icon Animation"
+    )
     val showCuteSearchbar by remember {
         derivedStateOf {
             if (musics.isEmpty()) {
@@ -160,6 +137,7 @@ fun SharedTransitionScope.MainScreen(
             }
         }
     }
+
     val displayMusics by remember(isSortedByASC, musics, query) {
         derivedStateOf {
             if (query.isNotEmpty()) {
@@ -182,107 +160,46 @@ fun SharedTransitionScope.MainScreen(
         LazyColumn(
             state = state
         ) {
-            if (groupByFolders) {
-                displayMusics.groupBy { File(it.mediaMetadata.extras?.getString("folder") ?: "").name }
-                    .onEachIndexed { index, (folderName, allMusics) ->
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .thenIf(index == 0) {
-                                        Modifier.statusBarsPadding()
-                                    }
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(0.95f)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(10.dp)
-                                        )
-                                        .align(Alignment.Center)
-                                        .padding(vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.folder_rounded),
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                                    CuteText(folderName)
-                                }
-                            }
-                        }
-                        items(
-                            items = allMusics,
-                            key = { it.mediaId }
-                        ) { music ->
-                            Column(
-                                modifier = Modifier
-                                    .animateItem()
-                                    .padding(
-                                        vertical = 2.dp,
-                                        horizontal = 4.dp
-                                    )
-                            ) {
-                                MusicListItem(
-                                    onShortClick = { onShortClick(music.mediaId) },
-                                    music = music,
-                                    onNavigate = { onNavigate(it) },
-                                    currentMusicUri = currentMusicUri,
-                                    onLoadMetadata = onLoadMetadata,
-                                    showBottomSheet = true,
-                                    onDeleteMusic = onDeleteMusic,
-                                    onChargeAlbumSongs = onChargeAlbumSongs,
-                                    onChargeArtistLists = onChargeArtistLists,
-                                    isPlayerReady = isPlayerReady
-                                )
-                            }
-                        }
-                    }
+            if (displayMusics.isEmpty()) {
+                item {
+                    CuteText(
+                        text = stringResource(id = R.string.no_musics_found),
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
             } else {
-                if (displayMusics.isEmpty()) {
-                    item {
-                        CuteText(
-                            text = stringResource(id = R.string.no_musics_found),
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    itemsIndexed(
-                        items = displayMusics,
-                        key = { _, music -> music.mediaId }
-                    ) { index, music ->
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
-                        ) {
-                            MusicListItem(
-                                onShortClick = { onShortClick(music.mediaId) },
-                                music = music,
-                                onNavigate = { onNavigate(it) },
-                                currentMusicUri = currentMusicUri,
-                                onLoadMetadata = onLoadMetadata,
-                                showBottomSheet = true,
-                                onDeleteMusic = onDeleteMusic,
-                                onChargeAlbumSongs = onChargeAlbumSongs,
-                                onChargeArtistLists = onChargeArtistLists,
-                                modifier = Modifier
-                                    .thenIf(index == 0) {
-                                        Modifier.statusBarsPadding()
-                                    },
-                                isPlayerReady = isPlayerReady
+                itemsIndexed(
+                    items = displayMusics,
+                    key = { _, music -> music.mediaId }
+                ) { index, music ->
+                    Column(
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(
+                                vertical = 2.dp,
+                                horizontal = 4.dp
                             )
-                        }
+                    ) {
+                        MusicListItem(
+                            onShortClick = { onShortClick(music.mediaId) },
+                            music = music,
+                            onNavigate = { onNavigate(it) },
+                            currentMusicUri = currentMusicUri,
+                            onLoadMetadata = onLoadMetadata,
+                            showBottomSheet = true,
+                            onDeleteMusic = onDeleteMusic,
+                            onChargeAlbumSongs = onChargeAlbumSongs,
+                            onChargeArtistLists = onChargeArtistLists,
+                            modifier = Modifier
+                                .thenIf(index == 0) {
+                                    Modifier.statusBarsPadding()
+                                },
+                            isPlayerReady = isPlayerReady
+                        )
                     }
                 }
             }
@@ -320,7 +237,9 @@ fun SharedTransitionScope.MainScreen(
                         ),
                     placeholder = {
                         CuteText(
-                            text = stringResource(id = R.string.search_tracks),
+                            text = stringResource(id = R.string.search) + " " + stringResource(
+                                id = R.string.music
+                            ),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 
                             )
@@ -359,11 +278,12 @@ fun SharedTransitionScope.MainScreen(
                     trailingIcon = {
                         Row {
                             IconButton(
-                                onClick = { sortMenuExpanded = true }
+                                onClick = { isSortedByASC = !isSortedByASC }
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                    contentDescription = null
+                                    imageVector = Icons.Rounded.ArrowUpward,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(float)
                                 )
                             }
                             IconButton(
@@ -373,67 +293,6 @@ fun SharedTransitionScope.MainScreen(
                                     imageVector = Icons.Rounded.Settings,
                                     contentDescription = null
                                 )
-                            }
-
-                            DropdownMenu(
-                                expanded = sortMenuExpanded,
-                                onDismissRequest = { sortMenuExpanded = false },
-                                shape = RoundedCornerShape(24.dp),
-                                modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(5.dp)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(15.dp)
-                                    ) {
-                                        Checkbox(
-                                            modifier = Modifier.size(20.dp), // https://stackoverflow.com/a/77142600/28577483
-                                            checked = groupByFolders,
-                                            onCheckedChange = { groupByFolders = it }
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText("Group tracks by folders")
-                                    }
-                                    HorizontalDivider(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .wrapContentWidth()
-                                    )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .clickable { isSortedByASC = true }
-                                            .padding(10.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = isSortedByASC,
-                                            onClick = null,
-
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText(stringResource(R.string.ascending))
-                                    }
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .clickable { isSortedByASC = false }
-                                            .padding(10.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = !isSortedByASC,
-                                            onClick = null
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText(stringResource(R.string.descending))
-                                    }
-
-                                }
                             }
                         }
                     },
@@ -472,13 +331,13 @@ fun MusicListItem(
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showShareOptions by remember { mutableStateOf(false) }
     val uri = remember { Uri.parse(music.mediaMetadata.extras?.getString("uri")) }
-    val path = remember { music.mediaMetadata.extras?.getString("path")  ?: "" }
-    val isPlaying = currentMusicUri == uri.toString()
+    val path = remember { music.mediaMetadata.extras?.getString("path") }
+    val isPlaying = currentMusicUri == music.mediaMetadata.extras?.getString("uri")
     val bgColor by animateColorAsState(
         targetValue = if (isPlaying && isPlayerReady) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
-            Color.Transparent
+            MaterialTheme.colorScheme.background
         },
         label = "Background Color",
         animationSpec = tween(500)
@@ -502,8 +361,6 @@ fun MusicListItem(
                 ).show()
             }
         }
-    var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
 
 
     if (showDetailsDialog) {
@@ -518,69 +375,6 @@ fun MusicListItem(
             onDismissRequest = { showShareOptions = false }
         ) { ShareOptionsContent() }
     }
-
-    if (showPlaylistCreatorDialog) {
-        CreatePlaylistDialog { showPlaylistCreatorDialog = false }
-    }
-
-    if (showPlaylistDialog) {
-        val playlistViewModel = koinViewModel<PlaylistViewModel>()
-        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-        ModalBottomSheet(
-            onDismissRequest = { showPlaylistDialog = false }
-        ) {
-            LazyColumn {
-                item {
-                    OutlinedButton(
-                        onClick = { showPlaylistCreatorDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = null
-                            )
-                            Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                            CuteText(stringResource(R.string.create_playlist))
-                        }
-                    }
-                }
-
-                items(
-                    items = playlists,
-                    key = { it.id }
-                ) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        allowEditAction = false,
-                        onClickPlaylist = {
-                            if (playlist.musics.contains(music.mediaId)) {
-                                Toast.makeText(context, context.getString(R.string.alrdy_in_playlist), Toast.LENGTH_SHORT).show()
-                            } else {
-                                val playlist = Playlist(
-                                    id = playlist.id,
-                                    name = playlist.name,
-                                    emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList().apply { add(music.mediaId) }
-                                )
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(playlist)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
-
-    }
-
-
 
 
 
@@ -633,8 +427,29 @@ fun MusicListItem(
                                 text
                             )
                         }
-                    }
-                    .clip(RoundedCornerShape(5.dp)),
+                    },
+//                    .thenIf(showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+//                        Modifier.drawWithContent {
+//                            val circleCenter = Offset(size.width, size.height / 12)
+//                            drawContent()
+//                            drawCircle(
+//                                color = materialSurfaceContainer,
+//                                center = circleCenter,
+//                                radius = 25f
+//                            )
+//                            val text = Paint().apply {
+//                                color = materialOnSurface.toArgb()
+//                                textSize = 30f
+//                                textAlign = Paint.Align.CENTER
+//                            }
+//                            drawContext.canvas.nativeCanvas.drawText(
+//                                music.mediaMetadata.trackNumber.toString(),
+//                                circleCenter.x,
+//                                circleCenter.y - (text.ascent() + text.descent()) / 2,
+//                                text
+//                            )
+//                        }
+//                    },
                 contentScale = ContentScale.Crop,
             )
 
@@ -740,18 +555,6 @@ fun MusicListItem(
                             }
                         )
                     }
-                    DropdownMenuItem(
-                        onClick = { showPlaylistDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.add_to_playlist))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
-                    )
                     DropdownMenuItem(
                         onClick = {
                             val shareIntent = Intent().apply {

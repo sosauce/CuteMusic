@@ -29,7 +29,7 @@ fun <T> rememberPreference(
     val state by remember {
         context.dataStore.data
             .map { it[key] ?: defaultValue }
-    }.collectAsStateWithLifecycle(defaultValue)
+    }.collectAsStateWithLifecycle(initialValue = defaultValue)
 
     return remember(state) {
         object : MutableState<T> {
@@ -55,7 +55,7 @@ fun <T> rememberPreferenceNonComposable(
     key: Preferences.Key<T>,
     defaultValue: T,
 ): MutableState<T> {
-    val coroutineScope = CoroutineScope(Dispatchers.IO)
+    val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     val state = context.dataStore.data
         .map { it[key] ?: defaultValue }

@@ -150,7 +150,7 @@ fun SharedTransitionScope.ArtistsScreen(
                     .align(rememberSearchbarAlignment()),
                 placeholder = {
                     CuteText(
-                        text = stringResource(id = R.string.search_artists),
+                        text = stringResource(id = R.string.search) + " " + stringResource(R.string.artists),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                     )
                 },
@@ -219,7 +219,6 @@ fun ArtistInfoList(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -228,8 +227,8 @@ fun ArtistInfoList(
             Box(
                 modifier = Modifier
                     .padding(start = 10.dp)
-                    .size(45.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFFAB3AA)),
                 contentAlignment = Alignment.Center
             ) {
@@ -246,7 +245,13 @@ fun ArtistInfoList(
                 CuteText(
                     text = artist.name,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.then(
+                        if (artist.name.length >= 25) {
+                            Modifier.basicMarquee()
+                        } else {
+                            Modifier
+                        }
+                    )
                 )
 
             }

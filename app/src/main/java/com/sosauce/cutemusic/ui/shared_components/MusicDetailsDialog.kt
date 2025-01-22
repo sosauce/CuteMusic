@@ -28,7 +28,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.formatBinarySize
 import com.sosauce.cutemusic.utils.formatToReadableTime
@@ -78,7 +78,7 @@ fun MusicDetailsDialog(
                             modifier = Modifier
                                 .size(100.dp)
                                 .padding(15.dp)
-                                .clip(RoundedCornerShape(10)),
+                                .clip(RoundedCornerShape(15)),
                             contentScale = ContentScale.Crop
 
                         )

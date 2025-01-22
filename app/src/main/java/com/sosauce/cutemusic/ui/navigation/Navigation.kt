@@ -15,6 +15,7 @@ import com.sosauce.cutemusic.data.actions.MetadataActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
+import com.sosauce.cutemusic.ui.screens.all_folders.AllFoldersScreen
 import com.sosauce.cutemusic.ui.screens.artist.ArtistDetails
 import com.sosauce.cutemusic.ui.screens.artist.ArtistsScreen
 import com.sosauce.cutemusic.ui.screens.blacklisted.BlacklistedScreen
@@ -22,12 +23,9 @@ import com.sosauce.cutemusic.ui.screens.main.MainScreen
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataEditor
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
-import com.sosauce.cutemusic.ui.screens.playlists.PlaylistDetailsScreen
-import com.sosauce.cutemusic.ui.screens.playlists.PlaylistsScreen
 import com.sosauce.cutemusic.ui.screens.saf.SafScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -35,15 +33,12 @@ import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun Nav(
-    viewModel: MusicViewModel
-) {
+fun Nav() {
 
     val navController = rememberNavController()
+    val viewModel = koinViewModel<MusicViewModel>()
     val postViewModel = koinViewModel<PostViewModel>()
     val metadataViewModel = koinViewModel<MetadataViewModel>()
-    //val tracks by postViewModel.musics.collectAsStateWithLifecycle()
-    //val safTracks by postViewModel.safTracks.collectAsStateWithLifecycle()
     val musics by postViewModel.musics.collectAsStateWithLifecycle()
     val musicState by viewModel.musicState.collectAsStateWithLifecycle()
     val albums by postViewModel.albums.collectAsStateWithLifecycle()
@@ -210,66 +205,36 @@ fun Nav(
                 }
             }
 
-//            composable<Screen.Saf> {
-//                val latestSafTracks by postViewModel.safTracks.collectAsStateWithLifecycle()
-//
-//                SafScreen(
-//                    onNavigateUp = navController::navigateUp,
-//                    latestSafTracks = latestSafTracks,
-//                    onNavigate = { navController.navigate(it) },
-//                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
-//                    isPlayerReady = musicState.isPlayerReady,
-//                    currentMusicUri = musicState.currentMusicUri,
-//                )
-//            }
-
-            composable<Screen.Playlists> {
-                PlaylistsScreen(
-                    selectedIndex = viewModel.selectedItem,
-                    onNavigate = { navController.navigate(it) },
-                    currentlyPlaying = musicState.currentlyPlaying,
-                    isCurrentlyPlaying = musicState.isCurrentlyPlaying,
+            composable<Screen.AllFolders> {
+                AllFoldersScreen(
+                    musics = musics,
                     onNavigationItemClicked = { index, item ->
                         navController.navigate(item.navigateTo) {
                             viewModel.selectedItem = index
                             launchSingleTop = true
                         }
                     },
-                    animatedVisibilityScope = this,
+                    selectedIndex = viewModel.selectedItem,
+                    onNavigate = { navController.navigate(it) },
+                    currentlyPlaying = musicState.currentlyPlaying,
+                    isCurrentlyPlaying = musicState.isCurrentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
                     isPlayerReady = musicState.isPlayerReady,
-                    onHandlePlayerAction = { viewModel.handlePlayerActions(it) }
+                    animatedVisibilityScope = this,
                 )
             }
 
-            composable<Screen.PlaylistDetails> {
-                val playlistViewModel = koinViewModel<PlaylistViewModel>()
-                val index = it.toRoute<Screen.PlaylistDetails>()
-                val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+            composable<Screen.Saf> {
+                val latestSafTracks by postViewModel.safTracks.collectAsStateWithLifecycle()
 
-                playlists.find { it.id == index.id }?.let { playlist ->
-                    PlaylistDetailsScreen(
-                        playlist = playlist,
-                        onNavigate = { navController.navigate(it) },
-                        onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
-                        isPlayerReady = musicState.isPlayerReady,
-                        currentMusicUri = musicState.currentMusicUri,
-                        onDeleteMusic = { uris, intentSender ->
-                            postViewModel.deleteMusic(
-                                uris,
-                                intentSender
-                            )
-                        },
-                        onChargeAlbumSongs = postViewModel::albumSongs,
-                        onChargeArtistLists = {
-                            postViewModel.artistSongs(it)
-                            postViewModel.artistAlbums(it)
-                        },
-                        musics = musics,
-                        onPopBackStack = navController::navigateUp
-                    )
-                }
-
-
+                SafScreen(
+                    onNavigateUp = navController::navigateUp,
+                    latestSafTracks = latestSafTracks,
+                    onNavigate = { navController.navigate(it) },
+                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
+                    isPlayerReady = musicState.isPlayerReady,
+                    currentMusicUri = musicState.currentMusicUri,
+                )
             }
         }
     }

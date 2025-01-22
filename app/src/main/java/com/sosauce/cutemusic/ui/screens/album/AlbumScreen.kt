@@ -164,7 +164,7 @@ fun SharedTransitionScope.AlbumsScreen(
                 .align(rememberSearchbarAlignment()),
             placeholder = {
                 CuteText(
-                    text = stringResource(id = R.string.search_albums),
+                    text = stringResource(id = R.string.search) + " " + stringResource(R.string.albums),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 
                     )

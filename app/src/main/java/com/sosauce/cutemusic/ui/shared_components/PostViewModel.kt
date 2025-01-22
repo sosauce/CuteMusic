@@ -1,5 +1,6 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
@@ -13,6 +14,8 @@ import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -21,10 +24,12 @@ import kotlin.collections.filter
 
 class PostViewModel(
     private val mediaStoreHelper: MediaStoreHelper,
-    //private val safManager: SafManager
+    private val safManager: SafManager
 ) : ViewModel() {
 
 
+    @SuppressLint("UnsafeOptInUsageError")
+    val safTracks = safManager.fetchLatestSafTracks()
 
 //    @SuppressLint("UnsafeOptInUsageError")
 //    var musics = combine(safTracks, mediaStoreHelper.fetchLatestMusics()) { safList, trackList ->
@@ -36,16 +41,10 @@ class PostViewModel(
 //    )
 
     var musics = mediaStoreHelper.fetchLatestMusics().stateIn(
-        viewModelScope,
+        CoroutineScope(Dispatchers.IO),
         SharingStarted.WhileSubscribed(5000),
         mediaStoreHelper.musics
     )
-
-//    val safTracks = safManager.fetchLatestSafTracks().stateIn(
-//        viewModelScope,
-//        SharingStarted.WhileSubscribed(5000),
-//        emptyList()
-//    )
 
 
     var albums = mediaStoreHelper.fetchLatestAlbums().stateIn(

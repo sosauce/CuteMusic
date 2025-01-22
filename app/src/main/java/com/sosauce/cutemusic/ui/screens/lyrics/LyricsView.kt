@@ -43,8 +43,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.main.MainActivity
 import com.sosauce.cutemusic.ui.shared_components.CuteText
