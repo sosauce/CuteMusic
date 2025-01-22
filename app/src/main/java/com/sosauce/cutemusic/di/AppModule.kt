@@ -32,7 +32,7 @@ val appModule = module {
     }
 
     viewModel {
-        PostViewModel(get(), get())
+        PostViewModel(get()/*, get()*/)
     }
     viewModel {
         MusicViewModel(androidApplication(), get() /*, get()*/)
