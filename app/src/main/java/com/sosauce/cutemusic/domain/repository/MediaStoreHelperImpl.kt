@@ -124,13 +124,14 @@ class MediaStoreHelperImpl(
                 )
 
                 val artUri = Uri.parse("$uri/albumart")
+                val mediaId = id.toString()
 
 
                 musics.add(
                     MediaItem
                         .Builder()
                         .setUri(uri)
-                        .setMediaId(id.toString())
+                        .setMediaId(mediaId)
                         .setMediaMetadata(
                             MediaMetadata
                                 .Builder()
@@ -152,6 +153,7 @@ class MediaStoreHelperImpl(
                                             putLong("album_id", albumId)
                                             putLong("artist_id", artistId)
                                             putBoolean("is_saf", false)
+                                            putString("mediaId", mediaId)
                                             // putInt("isFavorite", isFavorite)
                                         }).build()
                         )

@@ -3,20 +3,19 @@ plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.sosauce.cutemusic"
     compileSdk = 35
 
-
-
     defaultConfig {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 21
-        versionName = "2.3.4"
+        versionCode = 22
+        versionName = "2.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -54,14 +53,14 @@ android {
         }
 
 
-        splits {
-            abi {
-                isEnable = true
-                reset()
-                include("armeabi-v7a", "arm64-v8a")
-                isUniversalApk = true
-            }
-        }
+//        splits {
+//            abi {
+//                isEnable = true
+//                reset()
+//                include("armeabi-v7a", "arm64-v8a")
+//                isUniversalApk = true
+//            }
+//        }
     }
 
     dependencies {
@@ -85,9 +84,13 @@ android {
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.koin.android)
         implementation(libs.koin.androidx.compose)
-        //implementation("com.materialkolor:material-kolor:2.0.0")
+        implementation(libs.material.kolor)
+        implementation(libs.androidx.palette.ktx)
         implementation(libs.koin.androidx.startup)
         implementation(libs.taglib)
         debugImplementation(libs.androidx.ui.tooling)
+        implementation(libs.androidx.room.ktx)
+        implementation(libs.androidx.emoji2.emojipicker)
+        ksp(libs.androidx.room.compiler)
     }
 }

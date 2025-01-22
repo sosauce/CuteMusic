@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.sosauce.cutemusic.ui.navigation.Nav
+import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
+import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,14 +34,15 @@ class MainActivity : ComponentActivity() {
             permission,
             0
         )
-
         setContent {
-            CuteMusicTheme {
+            val musicViewModel = koinViewModel<MusicViewModel>()
+
+            CuteMusicTheme(musicViewModel = musicViewModel) {
                 Scaffold(
                     modifier = Modifier
                         .fillMaxSize()
                 ) { _ ->
-                    Nav()
+                    Nav(musicViewModel)
                 }
             }
         }

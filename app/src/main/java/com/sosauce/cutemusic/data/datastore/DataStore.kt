@@ -12,11 +12,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ALBUMS_TAB
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_ARTISTS_TAB
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_FOLDERS_TAB
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
@@ -46,10 +45,9 @@ private data object PreferencesKeys {
     val APPLY_LOOP = booleanPreferencesKey("apply_loop")
     val USE_CLASSIC_SLIDER = booleanPreferencesKey("use_classic_slider")
     val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
-    val SHOW_ALBUMS_TAB = booleanPreferencesKey("show_albums_tab")
-    val SHOW_ARTISTS_TAB = booleanPreferencesKey("show_artists_tab")
-    val SHOW_FOLDERS_TAB = booleanPreferencesKey("show_folders_tab")
+    val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
     val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
+    val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
 }
 
 @Composable
@@ -97,22 +95,17 @@ fun rememberUseClassicSlider() =
 @Composable
 fun rememberShowXButton() =
     rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
-
 @Composable
-fun rememberShowAlbumsTab() =
-    rememberPreference(key = SHOW_ALBUMS_TAB, defaultValue = true)
-
-@Composable
-fun rememberShowArtistsTab() =
-    rememberPreference(key = SHOW_ARTISTS_TAB, defaultValue = true)
-
-@Composable
-fun rememberShowFoldersTab() =
-    rememberPreference(key = SHOW_FOLDERS_TAB, defaultValue = true)
+fun rememberShowShuffleButton() =
+    rememberPreference(key = SHOW_SHUFFLE_BUTTON, defaultValue = true)
 
 @Composable
 fun rememberAllSafTracks() =
     rememberPreference(key = SAF_TRACKS, defaultValue = emptySet())
+
+@Composable
+fun rememberGroupByFolders() =
+    rememberPreference(key = GROUP_BY_FOLDERS, defaultValue = false)
 
 
 suspend fun getBlacklistedFolder(context: Context): Set<String> {
