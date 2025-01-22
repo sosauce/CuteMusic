@@ -1,1 +1,10 @@
-Placeholder
+- ¡Reproduce cualquier canción desde cualquier lugar simplemente compartiendo el archivo de audio con la app sin necesidad de descargarlo!
+- ¡Busca fácil y rápidamente entre toda tu música, álbumes y artistas!
+- ¡Muy rápido y ágil!
+- ¡Sin permisos innecesarios!
+- ¡Temas Material 3/You & Monet (y modo AMOLED)!
+- ¡Lista negra de carpetas!
+¡Interfaz hermosa en modo horizontal!
+- ¡Editor de etiquetas!
+- ¡Soporte para listas de reproducción!
+- ¡Arte dinámico: el esquema de colores cambia según la carátula de la canción que estés reproduciendo!
