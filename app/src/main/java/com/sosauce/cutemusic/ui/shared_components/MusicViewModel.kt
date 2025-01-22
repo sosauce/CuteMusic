@@ -25,8 +25,8 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
@@ -55,7 +55,7 @@ import java.io.FileNotFoundException
 class MusicViewModel(
     private val application: Application,
     private val mediaStoreHelper: MediaStoreHelper,
-    private val safManager: SafManager
+    //private val safManager: SafManager
 ) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
@@ -72,20 +72,27 @@ class MusicViewModel(
         @UnstableApi
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             super.onMediaMetadataChanged(mediaMetadata)
-            _musicState.value = _musicState.value.copy(
-                currentlyPlaying = mediaMetadata.title.toString(),
-                currentArtist = mediaMetadata.artist.toString(),
-                currentArtistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
-                currentArt = mediaMetadata.artworkUri,
-                currentPath = mediaMetadata.extras?.getString("path") ?: "No path found!",
-                currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No uri found!",
-                currentLrcFile = getLrcFile(),
-                currentAlbum = mediaMetadata.albumTitle.toString(),
-                currentAlbumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
-                currentSize = mediaMetadata.extras?.getLong("size") ?: 0,
-                currentMusicDuration = mediaMetadata.durationMs ?: 0,
-                currentLyrics = parseLyrics()
-            )
+            _musicState.update {
+                it.copy(
+                    currentlyPlaying = mediaMetadata.title.toString(),
+                    currentArtist = mediaMetadata.artist.toString(),
+                    currentMediaId = mediaMetadata.extras?.getString("mediaId") ?: ("No Id found!" + System.currentTimeMillis()),
+                    currentArtistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
+                    currentArt = mediaMetadata.artworkUri,
+                    currentPath = mediaMetadata.extras?.getString("path") ?: "No path found!",
+                    currentMusicUri = mediaMetadata.extras?.getString("uri") ?: "No uri found!",
+                    currentLrcFile = getLrcFile(),
+                    currentAlbum = mediaMetadata.albumTitle.toString(),
+                    currentAlbumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
+                    currentSize = mediaMetadata.extras?.getLong("size") ?: 0,
+                    currentMusicDuration = mediaMetadata.durationMs ?: 0,
+                    currentLyrics = parseLyrics()
+                )
+            }
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            super.onMediaItemTransition(mediaItem, reason)
         }
 
 
@@ -228,23 +235,25 @@ class MusicViewModel(
                     {
                         mediaController = get()
                         mediaController!!.addListener(playerListener)
-                        viewModelScope.launch {
-                            combine(
-                                mediaStoreHelper.fetchLatestMusics(),
-                                safManager.fetchLatestSafTracks()
-                            ) { musics, safTracks ->
-                                val combinedList = musics + safTracks
-                                combinedList
-                            }
-                                .debounce(500)
-                                .collectLatest { combinedList ->
-                                    mediaController!!.replaceMediaItems(
-                                        0,
-                                        combinedList.size - 1,
-                                        combinedList
-                                    )
-                                }
-                        }
+                        mediaController!!.setMediaItems(mediaStoreHelper.musics)
+//                        viewModelScope.launch {
+//                            combine(
+//                                mediaStoreHelper.fetchLatestMusics(),
+//                                safManager.fetchLatestSafTracks()
+//                            ) { musics, safTracks ->
+//                                val combinedList = musics + safTracks
+//                                combinedList
+//                            }
+//                                .debounce(500)
+//                                .collectLatest { combinedList ->
+//                                    Log.d("helpme", combinedList.size.toString())
+//                                    mediaController!!.replaceMediaItems(
+//                                        0,
+//                                        combinedList.size - 1,
+//                                        combinedList
+//                                    )
+//                                }
+//                        }
 
                     },
                     MoreExecutors.directExecutor()

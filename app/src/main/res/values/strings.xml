@@ -81,4 +81,18 @@
     <string name="blacklisted">Blacklisted</string>
     <string name="not_blacklisted">Not blacklisted</string>
     <string name="saf_manager">S.A.F manager</string>
+    <string name="search_tracks">Search tracks</string>
+    <string name="search_albums">Search albums</string>
+    <string name="search_artists">Search artists</string>
+    <string name="search_playlists">Search playlists</string>
+    <string name="no_playlists">You have no playlists ! Make your listening experience fun by creating one !</string>
+    <string name="alrdy_in_playlist">Track already in playlist!</string>
+    <string name="del_playlist">Delete playlist</string>
+    <string name="modify">Modify</string>
+    <string name="modify_playlist">Modify playlist</string>
+    <string name="create_playlist">Create playlist</string>
+    <string name="create">Create</string>
+    <string name="playlist">Playlist</string>
+    <string name="add_to_playlist">Add to playlist</string>
+    <string name="art_description">App\'s theme will be based on the currently playing song\'s art.</string>
 </resources>

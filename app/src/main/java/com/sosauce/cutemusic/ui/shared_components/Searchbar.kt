@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -52,8 +53,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
-import com.sosauce.cutemusic.utils.thenIf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -66,14 +67,15 @@ fun SharedTransitionScope.CuteSearchbar(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
-    currentlyPlaying: String,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    isPlaying: Boolean,
+    currentlyPlaying: String = "Meow",
+    onHandlePlayerActions: (PlayerActions) -> Unit = {},
+    isPlaying: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isPlayerReady: Boolean,
+    isPlayerReady: Boolean = true,
     onNavigate: () -> Unit = {},
     showSearchField: Boolean = true,
-    onClickFAB: () -> Unit
+    isPlaylist: Boolean = false,
+    onClickFAB: () -> Unit = {}
 ) {
 
     val focusManager = LocalFocusManager.current
@@ -82,28 +84,31 @@ fun SharedTransitionScope.CuteSearchbar(
     val rightIconOffsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     var showXButton by rememberShowXButton()
+    var showShuffleButton by rememberShowShuffleButton()
 
     Column(
         modifier = modifier.imePadding()
     ) {
-        FloatingActionButton(
-            onClick = onClickFAB,
-            modifier = Modifier
-                .defaultMinSize(
-                    minWidth = 45.dp,
-                    minHeight = 45.dp
+        if (showShuffleButton || isPlaylist) {
+            FloatingActionButton(
+                onClick = onClickFAB,
+                modifier = Modifier
+                    .defaultMinSize(
+                        minWidth = 45.dp,
+                        minHeight = 45.dp
+                    )
+                    .align(Alignment.End)
+                    .sharedBounds(
+                        sharedContentState = rememberSharedContentState(key = "fab"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(
+                    imageVector = if (!isPlaylist) Icons.Rounded.Shuffle else Icons.Rounded.Add,
+                    contentDescription = null
                 )
-                .align(Alignment.End)
-                .sharedBounds(
-                    sharedContentState = rememberSharedContentState(key = "fab"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                ),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Shuffle,
-                contentDescription = null
-            )
+            }
         }
         Spacer(Modifier.height(5.dp))
         Column(
@@ -115,10 +120,8 @@ fun SharedTransitionScope.CuteSearchbar(
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = RoundedCornerShape(roundedShape)
                 )
-                .thenIf(isPlayerReady) {
-                    Modifier.clickable {
-                        onNavigate()
-                    }
+                .clickable(isPlayerReady) {
+                    onNavigate()
                 }
         ) {
             AnimatedVisibility(
@@ -270,6 +273,8 @@ fun SharedTransitionScope.CuteSearchbar(
         }
     }
 }
+
+
 
 
 

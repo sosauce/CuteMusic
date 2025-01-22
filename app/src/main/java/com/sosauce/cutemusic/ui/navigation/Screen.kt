@@ -23,7 +23,7 @@ sealed class Screen {
     data object Artists : Screen()
 
     @Serializable
-    data object AllFolders : Screen()
+    data object Playlists : Screen()
 
     @Serializable
     data object Saf : Screen()
@@ -36,6 +36,11 @@ sealed class Screen {
     @Serializable
     data class ArtistsDetails(
         val id: Long
+    ) : Screen()
+
+    @Serializable
+    data class PlaylistDetails(
+        val id: Int
     ) : Screen()
 
     @Serializable

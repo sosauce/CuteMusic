@@ -1,5 +1,8 @@
 package com.sosauce.cutemusic.ui.theme
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,15 +12,38 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.palette.graphics.Palette
+import coil3.BitmapImage
+import coil3.ImageLoader
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.ktx.themeColors
+import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
+import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
+import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 
 private val LightColors = lightColorScheme(
@@ -85,34 +111,18 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
-
-//@Composable
-//fun DefaultOrArtTheme(content: @Composable () -> Unit) {
-//
-//    val useArtTheme by rememberUseArtTheme()
-//
-//    if (useArtTheme) {
-//        ArtTheme(
-//            content = content
-//        )
-//    } else {
-//        CuteMusicTheme(
-//            content = content
-//        )
-//    }
-//
-//}
-
 @Composable
 fun CuteMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    musicViewModel: MusicViewModel,
+    content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
     val useDarkMode by rememberUseDarkMode()
     val useAmoledMode by rememberUseAmoledMode()
     val followSys by rememberFollowSys()
+    val useArtTheme by rememberUseArtTheme()
 
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -137,82 +147,79 @@ fun CuteMusicTheme(
             )
         }
 
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> {
-            if (useDarkMode) DarkColors else LightColors
-        }
-
         else -> DarkColors
     }
 
-    MaterialTheme(
-        colorScheme = colorSchemeToUse,
-        typography = Typography(),
-        content = content
-    )
+    if (useArtTheme) {
+        val themeProcessingViewModel = viewModel<ThemeProcessingViewModel>()
+        val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
+
+        LaunchedEffect(musicState.currentArt) {
+            themeProcessingViewModel.urlToBitmap(musicState.currentArt, context)
+        }
+
+        val state = rememberDynamicMaterialThemeState(
+            seedColor = Color(themeProcessingViewModel.palette?.swatches?.first()?.rgb ?: 0), // I've found this to have the best color accuracy !?
+            //seedColor = themeProcessingViewModel.dominantColor,
+            isDark = isSystemInDarkTheme() || useDarkMode,
+            isAmoled = useAmoledMode
+        )
+
+        DynamicMaterialTheme(
+            state = state,
+            animate = true
+        ) { content() }
+    } else {
+        MaterialTheme(
+            colorScheme = colorSchemeToUse,
+            typography = Typography(),
+            content = content
+        )
+    }
 
 }
 
 val GlobalFont = FontFamily(Font(R.font.nunito))
 
 
-//@Composable
-//fun ArtTheme(content: @Composable () -> Unit) {
-//    val vm = koinViewModel<MusicViewModel>()
-//    val context = LocalContext.current
-//    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-//    var seedColor by remember { mutableStateOf<Color?>(null) }
-//    val useDarkMode by rememberUseDarkMode()
-//    val followSys by rememberFollowSys()
-//
-//    LaunchedEffect(vm.currentArt) {
-//        withContext(Dispatchers.IO) {
-//            try {
-//                val image = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                    context.contentResolver.loadThumbnail(
-//                        Uri.parse(vm.currentMusicUri) ?: Uri.EMPTY, Size(96, 96), null
-//                    )
-//                } else {
-//                    Bitmap.createScaledBitmap(
-//                        MediaStore.Images.Media.getBitmap(
-//                            context.contentResolver,
-//                            Uri.parse(vm.currentMusicUri)
-//                        ), 10, 10, false
-//                    )
-//
-//                }
-//
-//                imageBitmap = image.asImageBitmap()
-//
-//                val generatedColor = calculateSeedColor(image.asImageBitmap())
-//
-//                seedColor = generatedColor
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//                seedColor = null
-//            }
-//        }
-//    }
-//    val isDark = when {
-//        followSys -> isSystemInDarkTheme()
-//        useDarkMode -> true
-//        else -> true
-//    }
-//
-//    val state = rememberDynamicMaterialThemeState(
-//        seedColor = seedColor ?: MaterialTheme.colorScheme.background,
-//        isDark = isDark
-//    )
-//
-//
-//    DynamicMaterialTheme(
-//        animate = false,
-//        state = state
-//    ) {
-//        content()
-//    }
-//}
-//
-//private fun calculateSeedColor(bitmap: ImageBitmap): Color {
-//    val suitableColors = bitmap.themeColors(fallback = Color.Black)
-//    return suitableColors.first()
-//}
+class ThemeProcessingViewModel: ViewModel() {
+
+
+    var palette by mutableStateOf<Palette?>(null)
+    var dominantColor by mutableStateOf(Color.Black)
+
+    private fun createPaletteAsync(bitmap: Bitmap) {
+        Palette.from(bitmap).generate { generatedPalette ->
+             palette = generatedPalette
+        }
+    }
+
+
+    fun calculateSeedColor(bitmap: ImageBitmap) {
+        val suitableColors = bitmap.themeColors(fallback = Color.Black)
+        dominantColor = suitableColors.first()
+    }
+
+    fun urlToBitmap(
+        imageUri: Uri?,
+        context: Context,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val loader = ImageLoader(context)
+            val request = ImageRequest.Builder(context)
+                .data(imageUri)
+                .allowHardware(false) // If set to true it will not work ???
+                .build()
+            val result = loader.execute(request)
+            if (result is SuccessResult) {
+                createPaletteAsync((result.image as BitmapImage).bitmap)
+                // Note: When MaterialKolor supports Bitmap or is faster use it and remove Palette dependency
+                // calculateSeedColor((result.image as BitmapImage).bitmap.asImageBitmap())
+            } else if (result is ErrorResult) {
+                cancel(result.throwable.localizedMessage ?: "CuteError", result.throwable)
+            }
+        }
+    }
+
+
+}

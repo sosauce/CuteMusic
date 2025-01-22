@@ -1,4 +1,4 @@
-package com.sosauce.cutemusic.data
+package com.sosauce.cutemusic.data.states
 
 import android.net.Uri
 import androidx.compose.runtime.Stable
@@ -26,5 +26,6 @@ data class MusicState(
     val currentLrcFile: File? = null,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val isPlayerReady: Boolean = false,
-    val sleepTimer: Long = 0
+    val sleepTimer: Long = 0,
+    val currentMediaId: String = ""
 )

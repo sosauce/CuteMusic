@@ -38,9 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.MusicState
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
+import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRow

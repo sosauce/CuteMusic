@@ -1,25 +1,31 @@
 [versions]
-agp = "8.7.3"
-koinAndroid = "4.0.0"
-koinAndroidxCompose = "4.0.0"
+agp = "8.8.0"
+emoji2Emojipicker = "1.5.0"
+koinAndroid = "4.0.1"
+koinAndroidxCompose = "4.0.1"
 koinAndroidxStartup = "4.0.0"
-kotlin = "2.0.21"
-activityCompose = "1.9.3"
-coilCompose = "3.0.3"
-composeBom = "2024.12.01"
+kotlin = "2.1.0"
+activityCompose = "1.10.0"
+coilCompose = "3.0.4"
+composeBom = "2025.01.00"
 composeAnimation = "1.7.6"
 coreKtx = "1.15.0"
 coreSplashscreen = "1.0.1"
-datastorePreferences = "1.1.1"
-kotlinxSerializationJson = "1.7.3"
+datastorePreferences = "1.1.2"
+kotlinxSerializationJson = "1.8.0"
 lifecycleViewmodelCompose = "2.8.7"
-media3Common = "1.5.0"
-media3Exoplayer = "1.5.0"
-media3Session = "1.5.0"
+materialKolor = "2.0.0"
+media3Common = "1.5.1"
+media3Exoplayer = "1.5.1"
+media3Session = "1.5.1"
 navigationCompose = "2.8.5"
+paletteKtx = "1.0.0"
 squigglyslider = "1.0.0"
 serialization = "2.0.0"
 taglib = "1.0.0-alpha25"
+roomCompiler = "2.6.1"
+roomKtx = "2.6.1"
+ksp = "2.1.0-1.0.29"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -28,6 +34,7 @@ androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = 
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-emoji2-emojipicker = { module = "androidx.emoji2:emoji2-emojipicker", version.ref = "emoji2Emojipicker" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -36,6 +43,7 @@ androidx-media3-common = { module = "androidx.media3:media3-common", version.ref
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Session" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version.ref = "paletteKtx" }
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
@@ -43,11 +51,15 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndr
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 koin-androidx-startup = { module = "io.insert-koin:koin-androidx-startup", version.ref = "koinAndroidxStartup" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 squigglyslider = { module = "me.saket.squigglyslider:squigglyslider", version.ref = "squigglyslider" }
 taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization"}
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
