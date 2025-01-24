@@ -76,11 +76,11 @@
     <string name="set_sleep_timer">设置睡眠定时</string>
     <string name="go_to">"前往: "</string>
     <string name="no_lyrics_note">未发现歌词！</string>
-        <string name="open_eq">均衡器</string>
-    <string name="from_saf">这首歌来自S.A.F</string>
+    <string name="open_eq">均衡器</string>
+    <string name="from_saf">这首歌通过S.A.F添加</string>
     <string name="open_saf">通过S.A.F来添加歌曲</string>
-    <string name="blacklisted">已被屏蔽</string>
-    <string name="not_blacklisted">未屏蔽</string>
+    <string name="blacklisted">已被拉黑</string>
+    <string name="not_blacklisted">未拉黑</string>
     <string name="saf_manager">S.A.F 管理器</string>
     <string name="search_tracks">搜索曲目</string>
     <string name="search_albums">搜索专辑</string>
