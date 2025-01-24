@@ -47,6 +47,7 @@ fun Nav(
     val musics by postViewModel.musics.collectAsStateWithLifecycle()
     val musicState by viewModel.musicState.collectAsStateWithLifecycle()
     val albums by postViewModel.albums.collectAsStateWithLifecycle()
+    val artists by postViewModel.artists.collectAsStateWithLifecycle()
 
 
     SharedTransitionLayout {
@@ -115,29 +116,6 @@ fun Nav(
                     selectedIndex = viewModel.selectedItem,
                 )
             }
-            composable<Screen.Artists> {
-                ArtistsScreen(
-                    artist = postViewModel.artists,
-                    onNavigate = { navController.navigate(it) },
-                    onNavigationItemClicked = { index, item ->
-                        navController.navigate(item.navigateTo) {
-                            viewModel.selectedItem = index
-                            launchSingleTop = true
-                        }
-                    },
-                    selectedIndex = viewModel.selectedItem,
-                    onChargeArtistLists = {
-                        postViewModel.artistSongs(it)
-                        postViewModel.artistAlbums(it)
-                    },
-                    currentlyPlaying = musicState.currentlyPlaying,
-                    onHandlePlayerActions = viewModel::handlePlayerActions,
-                    isPlaying = musicState.isCurrentlyPlaying,
-                    animatedVisibilityScope = this,
-                    isPlayerReady = musicState.isPlayerReady
-                )
-            }
-
             composable<Screen.NowPlaying> {
                 NowPlayingScreen(
                     navController = navController,
@@ -172,9 +150,32 @@ fun Nav(
                 }
 
             }
+
+            composable<Screen.Artists> {
+                ArtistsScreen(
+                    artist = artists,
+                    onNavigate = { navController.navigate(it) },
+                    onNavigationItemClicked = { index, item ->
+                        navController.navigate(item.navigateTo) {
+                            viewModel.selectedItem = index
+                            launchSingleTop = true
+                        }
+                    },
+                    selectedIndex = viewModel.selectedItem,
+                    onChargeArtistLists = {
+                        postViewModel.artistSongs(it)
+                        postViewModel.artistAlbums(it)
+                    },
+                    currentlyPlaying = musicState.currentlyPlaying,
+                    onHandlePlayerActions = viewModel::handlePlayerActions,
+                    isPlaying = musicState.isCurrentlyPlaying,
+                    animatedVisibilityScope = this,
+                    isPlayerReady = musicState.isPlayerReady
+                )
+            }
             composable<Screen.ArtistsDetails> {
                 val index = it.toRoute<Screen.ArtistsDetails>()
-                postViewModel.artists.find { artist -> artist.id == index.id }?.let { artist ->
+                artists.find { artist -> artist.id == index.id }?.let { artist ->
                     ArtistDetails(
                         artist = artist,
                         navController = navController,
@@ -187,9 +188,12 @@ fun Nav(
                 }
             }
             composable<Screen.Blacklisted> {
+
+                val folders by postViewModel.folders.collectAsStateWithLifecycle()
+
                 BlacklistedScreen(
                     navController = navController,
-                    folders = postViewModel.folders,
+                    folders = folders,
                 )
             }
             composable<Screen.MetadataEditor> {

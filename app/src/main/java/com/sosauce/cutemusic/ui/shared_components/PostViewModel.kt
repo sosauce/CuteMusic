@@ -14,6 +14,7 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.filter
@@ -35,7 +36,7 @@ class PostViewModel(
 //        mediaStoreHelper.musics
 //    )
 
-    var musics = mediaStoreHelper.fetchLatestMusics().stateIn(
+    val musics = mediaStoreHelper.fetchLatestMusics().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         mediaStoreHelper.musics
@@ -48,18 +49,22 @@ class PostViewModel(
 //    )
 
 
-    var albums = mediaStoreHelper.fetchLatestAlbums().stateIn(
+    val albums = mediaStoreHelper.fetchLatestAlbums().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         emptyList()
     )
 
-    var artists by mutableStateOf(
-        mediaStoreHelper.artists
+    val artists = mediaStoreHelper.fetchLatestArtists().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
     )
 
-    var folders by mutableStateOf(
-        mediaStoreHelper.folders
+    val folders = mediaStoreHelper.fetchLatestFoldersWithMusics().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
     )
 
 
@@ -73,9 +78,7 @@ class PostViewModel(
 
     fun albumSongs(album: String) {
         try {
-            viewModelScope.launch {
-                albumSongs = musics.value.filter { it.mediaMetadata.albumTitle.toString() == album }
-            }
+            albumSongs = musics.value.filter { it.mediaMetadata.albumTitle.toString() == album }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
         }
@@ -83,9 +86,7 @@ class PostViewModel(
 
     fun artistSongs(artistName: String) {
         try {
-            viewModelScope.launch {
-                artistSongs = musics.value.filter { it.mediaMetadata.artist == artistName }
-            }
+            artistSongs = musics.value.filter { it.mediaMetadata.artist == artistName }
         } catch (e: Exception) {
             Log.e(CUTE_ERROR, e.message, e)
         }

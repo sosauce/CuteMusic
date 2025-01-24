@@ -24,6 +24,7 @@ import com.sosauce.cutemusic.utils.observe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -46,25 +47,21 @@ class MediaStoreHelperImpl(
     private val selectionArgs = blacklistedFolders.map { "$it%" }.toTypedArray()
 
 
-    override fun fetchLatestMusics(): StateFlow<List<MediaItem>> =
+    override fun fetchLatestMusics(): Flow<List<MediaItem>> =
         context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-            .map {
-                fetchMusics()
-            }
-            .stateIn(
-                CoroutineScope(Dispatchers.IO),
-                SharingStarted.WhileSubscribed(5000),
-                listOf()
-            )
+            .map { fetchMusics() }
 
-    override fun fetchLatestAlbums(): StateFlow<List<Album>> =
+    override fun fetchLatestAlbums(): Flow<List<Album>> =
         context.contentResolver.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI)
             .map { fetchAlbums() }
-            .stateIn(
-                CoroutineScope(Dispatchers.IO),
-                SharingStarted.WhileSubscribed(5000),
-                listOf()
-            )
+
+    override fun fetchLatestArtists(): Flow<List<Artist>> =
+        context.contentResolver.observe(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI)
+            .map { fetchArtists() }
+
+    override fun fetchLatestFoldersWithMusics(): Flow<List<Folder>> =
+        context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+            .map { fetchFoldersWithMusics() }
 
     @UnstableApi
     override fun fetchMusics(): List<MediaItem> {
