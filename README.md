@@ -6,6 +6,26 @@
    <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
    <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
  </p> 
+
+ <p align="center">
+ <a href="https://github.com/sosauce/CuteMusic/releases">
+   <image src="https://i.ibb.co/q0mdc4Z/get-it-on-github.png" height="80"/>
+ </a>
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/com.sosauce.cutemusic">
+   <image src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"/>
+ </a>
+   <a href="https://f-droid.org/en/packages/com.sosauce.cutemusic/">
+   <image src="https://f-droid.org/badge/get-it-on.png" height="80"/>
+ </a>
+ 
+</p>
+
+<p align=center>
+
+<image src="https://i.postimg.cc/tJS44wR7/1.png" height="512" />
+ <image src="https://i.postimg.cc/wxZK99gL/2.png" height="512" />
+ <image src="https://i.postimg.cc/4NvTPrRc/3.png" height="512" />
+</p>
   
 <h1>👀 Overview</h1>
 
@@ -24,14 +44,6 @@
 - Import songs from anywhere using the [S.A.F](https://developer.android.com/guide/topics/providers/document-provider)
 - Android Auto (Dear Google, Media3 desperately needs easy integration with Auto)
 - Widget(s?)
-
----
-<p align=center>
-
-<image src="https://i.ibb.co/XV2XXSv/1.png" height="512" />
- <image src="https://i.ibb.co/ky22L6p/2.png" height="512" />
- <image src="https://i.ibb.co/Hp2tg6x/3.png" height="512" />
-</p>
    
 ---
 <h1>💬 Contact Me</h1>
