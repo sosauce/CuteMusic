@@ -29,14 +29,13 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.formatToReadableTime
 import me.saket.squiggles.SquigglySlider
 
 @Composable
 fun MusicSlider(
-    viewModel: MusicViewModel,
-    musicState: MusicState
+    musicState: MusicState,
+    onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
     val useClassicSlider by rememberUseClassicSlider()
@@ -77,10 +76,13 @@ fun MusicSlider(
                 onValueChange = { tempSliderValue = it },
                 onValueChangeFinished = {
                     tempSliderValue?.let {
-                        viewModel.handlePlayerActions(PlayerActions.UpdateCurrentPosition(it.toLong()))
-                        viewModel.handlePlayerActions(PlayerActions.SeekToSlider(it.toLong()))
+                        onHandlePlayerActions(
+                            PlayerActions.UpdateCurrentPosition(it.toLong())
+                        )
+                        onHandlePlayerActions(
+                            PlayerActions.SeekToSlider(it.toLong())
+                        )
                     }
-
                     tempSliderValue = null
                 },
                 valueRange = 0f..musicState.currentMusicDuration.toFloat(),
@@ -106,8 +108,12 @@ fun MusicSlider(
                 onValueChange = { tempSliderValue = it },
                 onValueChangeFinished = {
                     tempSliderValue?.let {
-                        viewModel.handlePlayerActions(PlayerActions.UpdateCurrentPosition(it.toLong()))
-                        viewModel.handlePlayerActions(PlayerActions.SeekToSlider(it.toLong()))
+                        onHandlePlayerActions(
+                            PlayerActions.UpdateCurrentPosition(it.toLong())
+                        )
+                        onHandlePlayerActions(
+                            PlayerActions.SeekToSlider(it.toLong())
+                        )
                     }
 
                     tempSliderValue = null

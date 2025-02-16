@@ -12,22 +12,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -48,13 +46,10 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
-import com.sosauce.cutemusic.ui.shared_components.NavigationItem
-import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
-import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
-import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
@@ -63,15 +58,14 @@ fun SharedTransitionScope.ArtistsScreen(
     currentlyPlaying: String,
     onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    selectedIndex: Int,
+    currentScreen: String,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
+    onNavigationItemClicked: (Screen) -> Unit,
 ) {
 
     var query by remember { mutableStateOf("") }
-    var screenSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
     val float by animateFloatAsState(
         targetValue = if (isSortedByASC) 45f else 135f,
@@ -94,33 +88,34 @@ fun SharedTransitionScope.ArtistsScreen(
         }
     }
 
-    Scaffold { values ->
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { paddingValues ->
         Box {
             if (displayArtists.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(values)
+                        .padding(paddingValues)
                 ) {
                     CuteText(
                         text = stringResource(id = R.string.no_artists_found),
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-
-                        )
+                        textAlign = TextAlign.Center
+                    )
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(values),
+                        .fillMaxSize(),
+                    contentPadding = paddingValues
                 ) {
                     items(
                         items = displayArtists,
                         key = { it.id }
-                    ) {
+                    ) { artist ->
                         Column(
                             modifier = Modifier
                                 .animateItem()
@@ -129,9 +124,12 @@ fun SharedTransitionScope.ArtistsScreen(
                                     horizontal = 4.dp
                                 )
                         ) {
-                            ArtistInfoList(it) {
-                                onChargeArtistLists(it.name)
-                                onNavigate(Screen.ArtistsDetails(it.id))
+                            ArtistInfoList(
+                                artist = artist,
+                                animatedVisibilityScope = animatedVisibilityScope
+                            ) {
+                                onChargeArtistLists(artist.name)
+                                onNavigate(Screen.ArtistsDetails(artist.id))
                             }
                         }
                     }
@@ -140,42 +138,7 @@ fun SharedTransitionScope.ArtistsScreen(
             CuteSearchbar(
                 query = query,
                 onQueryChange = { query = it },
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .fillMaxWidth(rememberSearchbarMaxFloatValue())
-                    .padding(
-                        bottom = 5.dp,
-                        end = rememberSearchbarRightPadding()
-                    )
-                    .align(rememberSearchbarAlignment()),
-                placeholder = {
-                    CuteText(
-                        text = stringResource(id = R.string.search_artists),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                    )
-                },
-                leadingIcon = {
-                    IconButton(onClick = { screenSelectionExpanded = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.artist_rounded),
-                            contentDescription = null
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = screenSelectionExpanded,
-                        onDismissRequest = { screenSelectionExpanded = false },
-                        modifier = Modifier
-                            .width(180.dp)
-                            .background(color = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        ScreenSelection(
-                            onNavigationItemClicked = onNavigationItemClicked,
-                            selectedIndex = selectedIndex
-                        )
-                    }
-                },
+                modifier = Modifier.align(rememberSearchbarAlignment()),
                 trailingIcon = {
                     Row {
                         IconButton(
@@ -203,7 +166,16 @@ fun SharedTransitionScope.ArtistsScreen(
                 animatedVisibilityScope = animatedVisibilityScope,
                 isPlayerReady = isPlayerReady,
                 onNavigate = { onNavigate(Screen.NowPlaying) },
-                onClickFAB = { onHandlePlayerActions(PlayerActions.PlayRandom) }
+                onNavigationItemClicked = onNavigationItemClicked,
+                currentScreen = currentScreen,
+                fab = {
+                    CuteActionButton(
+                        modifier = Modifier.sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "fab"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                    ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
+                }
             )
         }
     }
@@ -212,12 +184,14 @@ fun SharedTransitionScope.ArtistsScreen(
 
 
 @Composable
-fun ArtistInfoList(
+fun SharedTransitionScope.ArtistInfoList(
+    modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     artist: Artist,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() },
@@ -228,6 +202,10 @@ fun ArtistInfoList(
             Box(
                 modifier = Modifier
                     .padding(start = 10.dp)
+                    .sharedElement(
+                        state = rememberSharedContentState(key = artist.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
                     .size(45.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFFFAB3AA)),
@@ -246,7 +224,12 @@ fun ArtistInfoList(
                 CuteText(
                     text = artist.name,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier
+                        .basicMarquee()
+                        .sharedElement(
+                            state = rememberSharedContentState(key = artist.name + artist.id),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        )
                 )
 
             }

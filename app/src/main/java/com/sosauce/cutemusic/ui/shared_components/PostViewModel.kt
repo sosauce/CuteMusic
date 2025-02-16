@@ -12,9 +12,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
-import com.sosauce.cutemusic.domain.repository.SafManager
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.filter
@@ -26,7 +25,6 @@ class PostViewModel(
 ) : ViewModel() {
 
 
-
 //    @SuppressLint("UnsafeOptInUsageError")
 //    var musics = combine(safTracks, mediaStoreHelper.fetchLatestMusics()) { safList, trackList ->
 //        safList + trackList
@@ -35,6 +33,14 @@ class PostViewModel(
 //        SharingStarted.WhileSubscribed(5000),
 //        mediaStoreHelper.musics
 //    )
+
+    val testing = merge(
+        mediaStoreHelper.fetchLatestMusics()
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
     val musics = mediaStoreHelper.fetchLatestMusics().stateIn(
         viewModelScope,

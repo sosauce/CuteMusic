@@ -1,21 +1,26 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.screens.album
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,98 +29,104 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.screens.main.MusicListItem
+import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
-fun AlbumDetailsLandscape(
+fun SharedTransitionScope.AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
     postViewModel: PostViewModel,
     viewModel: MusicViewModel,
-    musicState: MusicState
+    musicState: MusicState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
 
     val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
 
-    Scaffold(
-        modifier = Modifier.padding(45.dp)
-    ) { _ ->
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(
-                        onClick = { onNavigateUp() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            modifier = Modifier.size(25.dp)
-                        )
-                    }
-                    CuteText(
-                        text = album.name + " · ",
-                        fontSize = 22.sp
-                    )
-                    CuteText(
-                        text = album.artist + " · ",
-
-                        fontSize = 22.sp
-                    )
-                }
-                CuteText(
-                    text = albumSongs.size.toString() + " songs",
-
-                    fontSize = 22.sp
-                )
-
-            }
-            Row(
-                modifier = Modifier.fillMaxSize()
-            ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .displayCutoutPadding()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column {
                 AsyncImage(
                     model = ImageUtils.getAlbumArt(album.id),
                     stringResource(R.string.artwork),
                     modifier = Modifier
-                        .size(280.dp)
+                        .statusBarsPadding()
+                        .size(200.dp)
+                        .sharedElement(
+                            state = rememberSharedContentState(key = album.id),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        )
                         .clip(RoundedCornerShape(10)),
                     contentScale = ContentScale.Crop
                 )
+                Spacer(Modifier.height(10.dp))
+                CuteText(
+                    text = album.name,
+                    modifier = Modifier.sharedElement(
+                        state = rememberSharedContentState(key = album.name + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                )
+                CuteText(
+                    text = album.artist,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
+                    modifier = Modifier.sharedElement(
+                        state = rememberSharedContentState(key = album.artist + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                )
+                CuteText(pluralStringResource(R.plurals.songs, albumSongs.size, albumSongs.size))
                 Spacer(modifier = Modifier.width(5.dp))
-                LazyColumn {
-                    items(albumSongs, key = { it.mediaId }) { music ->
-                        MusicListItem(
-                            music = music,
-                            currentMusicUri = musicState.currentMusicUri,
-                            onShortClick = {
-                                viewModel.handlePlayerActions(
-                                    PlayerActions.StartPlayback(
-                                        it
-                                    )
+            }
+
+            LazyColumn {
+                itemsIndexed(
+                    items = albumSongs,
+                    key = { _, music -> music.mediaId }
+                ) { index, music ->
+                    MusicListItem(
+                        modifier = Modifier
+                            .thenIf(index == 0) { Modifier.statusBarsPadding() }
+                            .padding(horizontal = 5.dp),
+                        music = music,
+                        currentMusicUri = musicState.currentMusicUri,
+                        onShortClick = {
+                            viewModel.handlePlayerActions(
+                                PlayerActions.StartPlayback(
+                                    it
                                 )
-                            },
-                            isPlayerReady = musicState.isPlayerReady
-                        )
-                    }
+                            )
+                        },
+                        isPlayerReady = musicState.isPlayerReady
+                    )
                 }
             }
         }
+
+        CuteNavigationButton(
+            modifier = Modifier.align(Alignment.BottomStart)
+        ) { onNavigateUp() }
     }
+
 }

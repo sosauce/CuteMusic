@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
     private val dao: PlaylistDao
-): ViewModel() {
+) : ViewModel() {
 
 
     val allPlaylists = dao.getPlaylists()
@@ -37,12 +37,13 @@ class PlaylistViewModel(
 
 
     fun handlePlaylistActions(action: PlaylistActions) {
-        when(action) {
+        when (action) {
             is PlaylistActions.DeletePlaylist -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     dao.deletePlaylist(action.playlist)
                 }
             }
+
             is PlaylistActions.CreatePlaylist -> {
                 // When creating a playlist, user cannot add musics, they need to do it afterwards
                 val name = if (state.value.name.value.isBlank()) {
@@ -66,6 +67,7 @@ class PlaylistViewModel(
                     )
                 }
             }
+
             is PlaylistActions.UpsertPlaylist -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     dao.upsertPlaylist(action.playlist)

@@ -18,55 +18,45 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,7 +67,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
@@ -95,24 +84,20 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
-import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.ShareOptionsContent
+import com.sosauce.cutemusic.ui.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
+import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicDetailsDialog
-import com.sosauce.cutemusic.ui.shared_components.NavigationItem
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
-import com.sosauce.cutemusic.ui.shared_components.ScreenSelection
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
-import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
-import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
-import com.sosauce.cutemusic.utils.thenIf
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -123,8 +108,8 @@ fun SharedTransitionScope.MainScreen(
     isCurrentlyPlaying: Boolean,
     onNavigate: (Screen) -> Unit,
     onShortClick: (String) -> Unit,
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
-    selectedIndex: Int,
+    onNavigationItemClicked: (Screen) -> Unit,
+    currentScreen: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     isPlayerReady: Boolean,
@@ -136,12 +121,7 @@ fun SharedTransitionScope.MainScreen(
 ) {
     var query by remember { mutableStateOf("") }
     val state = rememberLazyListState()
-    var screenSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
-//    val float by animateFloatAsState(
-//        targetValue = if (isSortedByASC) 45f else 135f,
-//        label = "Arrow Icon Animation"
-//    )
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var groupByFolders by rememberGroupByFolders()
     val showCuteSearchbar by remember {
@@ -149,7 +129,6 @@ fun SharedTransitionScope.MainScreen(
             if (musics.isEmpty()) {
                 true
             } else if (
-
             // Are both the first and last element visible ?
                 state.layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
                 state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == musics.size - 1
@@ -177,45 +156,88 @@ fun SharedTransitionScope.MainScreen(
         }
     }
 
-
-    Box(Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = state
-        ) {
-            if (groupByFolders) {
-                displayMusics.groupBy { File(it.mediaMetadata.extras?.getString("folder") ?: "").name }
-                    .onEachIndexed { index, (folderName, allMusics) ->
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .thenIf(index == 0) {
-                                        Modifier.statusBarsPadding()
-                                    }
-                            ) {
-                                Row(
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { paddingValues ->
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = state,
+                contentPadding = paddingValues
+            ) {
+                if (groupByFolders) {
+                    displayMusics.groupBy {
+                        File(
+                            it.mediaMetadata.extras?.getString("folder") ?: ""
+                        ).name
+                    }
+                        .forEach { folderName, allMusics ->
+                            item {
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.95f)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            shape = RoundedCornerShape(10.dp)
-                                        )
-                                        .align(Alignment.Center)
-                                        .padding(vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .fillMaxWidth()
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.folder_rounded),
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(start = 5.dp)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.95f)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                                shape = RoundedCornerShape(10.dp)
+                                            )
+                                            .align(Alignment.Center)
+                                            .padding(vertical = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.folder_rounded),
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(start = 5.dp)
+                                        )
+                                        Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
+                                        CuteText(folderName)
+                                    }
+                                }
+                            }
+                            items(
+                                items = allMusics,
+                                key = { it.mediaId }
+                            ) { music ->
+                                Column(
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .padding(
+                                            vertical = 2.dp,
+                                            horizontal = 4.dp
+                                        )
+                                ) {
+                                    MusicListItem(
+                                        onShortClick = { onShortClick(music.mediaId) },
+                                        music = music,
+                                        onNavigate = { onNavigate(it) },
+                                        currentMusicUri = currentMusicUri,
+                                        onLoadMetadata = onLoadMetadata,
+                                        showBottomSheet = true,
+                                        onDeleteMusic = onDeleteMusic,
+                                        onChargeAlbumSongs = onChargeAlbumSongs,
+                                        onChargeArtistLists = onChargeArtistLists,
+                                        isPlayerReady = isPlayerReady
                                     )
-                                    Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                                    CuteText(folderName)
                                 }
                             }
                         }
+                } else {
+                    if (displayMusics.isEmpty()) {
+                        item {
+                            CuteText(
+                                text = stringResource(id = R.string.no_musics_found),
+                                modifier = Modifier
+                                    .padding(paddingValues)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    } else {
                         items(
-                            items = allMusics,
+                            items = displayMusics,
                             key = { it.mediaId }
                         ) { music ->
                             Column(
@@ -241,210 +263,62 @@ fun SharedTransitionScope.MainScreen(
                             }
                         }
                     }
-            } else {
-                if (displayMusics.isEmpty()) {
-                    item {
-                        CuteText(
-                            text = stringResource(id = R.string.no_musics_found),
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    itemsIndexed(
-                        items = displayMusics,
-                        key = { _, music -> music.mediaId }
-                    ) { index, music ->
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
-                        ) {
-                            MusicListItem(
-                                onShortClick = { onShortClick(music.mediaId) },
-                                music = music,
-                                onNavigate = { onNavigate(it) },
-                                currentMusicUri = currentMusicUri,
-                                onLoadMetadata = onLoadMetadata,
-                                showBottomSheet = true,
-                                onDeleteMusic = onDeleteMusic,
-                                onChargeAlbumSongs = onChargeAlbumSongs,
-                                onChargeArtistLists = onChargeArtistLists,
-                                modifier = Modifier
-                                    .thenIf(index == 0) {
-                                        Modifier.statusBarsPadding()
-                                    },
-                                isPlayerReady = isPlayerReady
-                            )
-                        }
-                    }
                 }
             }
-        }
 
-        // TODO : How do you make it NOT scroll to the first item when sorting changes !!!!!
-        Crossfade(
-            targetState = showCuteSearchbar,
-            label = "",
-            modifier = Modifier.align(rememberSearchbarAlignment())
-        ) { visible ->
-            if (visible) {
-                val transition = rememberInfiniteTransition(label = "Infinite Color Change")
-                val color by transition.animateColor(
-                    initialValue = LocalContentColor.current,
-                    targetValue = MaterialTheme.colorScheme.errorContainer,
-                    animationSpec = infiniteRepeatable(
-                        tween(500),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = ""
-                )
-                var hasSeenTip by rememberHasSeenTip()
-
-
-                CuteSearchbar(
-                    query = query,
-                    onQueryChange = { query = it },
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .fillMaxWidth(rememberSearchbarMaxFloatValue())
-                        .padding(
-                            bottom = 5.dp,
-                            end = rememberSearchbarRightPadding()
-                        ),
-                    placeholder = {
-                        CuteText(
-                            text = stringResource(id = R.string.search_tracks),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-
-                            )
-                    },
-                    leadingIcon = {
-                        IconButton(
-                            onClick = {
-                                screenSelectionExpanded = true
-                                if (!hasSeenTip) {
-                                    hasSeenTip = true
-                                }
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.music_note_rounded),
-                                contentDescription = null,
-                                tint = if (!hasSeenTip) color else LocalContentColor.current
-                            )
-                        }
-
-
-                        DropdownMenu(
-                            expanded = screenSelectionExpanded,
-                            onDismissRequest = { screenSelectionExpanded = false },
-                            modifier = Modifier
-                                .width(180.dp)
-                                .background(color = MaterialTheme.colorScheme.surface),
-                            shape = RoundedCornerShape(24.dp)
-                        ) {
-                            ScreenSelection(
-                                onNavigationItemClicked = onNavigationItemClicked,
-                                selectedIndex = selectedIndex
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        Row {
-                            IconButton(
-                                onClick = { sortMenuExpanded = true }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = { onNavigate(Screen.Settings) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
-                                )
-                            }
-
-                            DropdownMenu(
-                                expanded = sortMenuExpanded,
-                                onDismissRequest = { sortMenuExpanded = false },
-                                shape = RoundedCornerShape(24.dp),
-                                modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(5.dp)
+            Crossfade(
+                targetState = showCuteSearchbar,
+                label = "",
+                modifier = Modifier.align(rememberSearchbarAlignment())
+            ) { visible ->
+                if (visible) {
+                    CuteSearchbar(
+                        query = query,
+                        onQueryChange = { query = it },
+                        trailingIcon = {
+                            Row {
+                                IconButton(
+                                    onClick = { sortMenuExpanded = true }
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(15.dp)
-                                    ) {
-                                        Checkbox(
-                                            modifier = Modifier.size(20.dp), // https://stackoverflow.com/a/77142600/28577483
-                                            checked = groupByFolders,
-                                            onCheckedChange = { groupByFolders = it }
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText("Group tracks by folders")
-                                    }
-                                    HorizontalDivider(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .wrapContentWidth()
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                        contentDescription = null
                                     )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .clickable { isSortedByASC = true }
-                                            .padding(10.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = isSortedByASC,
-                                            onClick = null,
-
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText(stringResource(R.string.ascending))
-                                    }
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .clickable { isSortedByASC = false }
-                                            .padding(10.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = !isSortedByASC,
-                                            onClick = null
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        CuteText(stringResource(R.string.descending))
-                                    }
-
                                 }
+                                IconButton(
+                                    onClick = { onNavigate(Screen.Settings) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Settings,
+                                        contentDescription = null
+                                    )
+                                }
+                                SortingDropdownMenu(
+                                    expanded = sortMenuExpanded,
+                                    onDismissRequest = { sortMenuExpanded = false },
+                                    isSortedByASC = isSortedByASC,
+                                    onChangeSorting = { isSortedByASC = it }
+                                )
                             }
+                        },
+                        currentlyPlaying = currentlyPlaying,
+                        onHandlePlayerActions = onHandlePlayerAction,
+                        isPlaying = isCurrentlyPlaying,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        isPlayerReady = isPlayerReady,
+                        onNavigate = { onNavigate(Screen.NowPlaying) },
+                        onNavigationItemClicked = onNavigationItemClicked,
+                        currentScreen = currentScreen,
+                        fab = {
+                            CuteActionButton(
+                                modifier = Modifier.sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = "fab"),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                            ) { onHandlePlayerAction(PlayerActions.PlayRandom) }
                         }
-                    },
-                    currentlyPlaying = currentlyPlaying,
-                    onHandlePlayerActions = onHandlePlayerAction,
-                    isPlaying = isCurrentlyPlaying,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    isPlayerReady = isPlayerReady,
-                    onNavigate = { onNavigate(Screen.NowPlaying) },
-                    onClickFAB = { onHandlePlayerAction(PlayerActions.PlayRandom) }
-                )
+                    )
+                }
             }
         }
     }
@@ -472,7 +346,7 @@ fun MusicListItem(
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showShareOptions by remember { mutableStateOf(false) }
     val uri = remember { Uri.parse(music.mediaMetadata.extras?.getString("uri")) }
-    val path = remember { music.mediaMetadata.extras?.getString("path")  ?: "" }
+    val path = remember { music.mediaMetadata.extras?.getString("path") ?: "" }
     val isPlaying = currentMusicUri == uri.toString()
     val bgColor by animateColorAsState(
         targetValue = if (isPlaying && isPlayerReady) {
@@ -560,13 +434,18 @@ fun MusicListItem(
                         allowEditAction = false,
                         onClickPlaylist = {
                             if (playlist.musics.contains(music.mediaId)) {
-                                Toast.makeText(context, context.getString(R.string.alrdy_in_playlist), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.alrdy_in_playlist),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             } else {
                                 val playlist = Playlist(
                                     id = playlist.id,
                                     name = playlist.name,
                                     emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList().apply { add(music.mediaId) }
+                                    musics = playlist.musics.toMutableList()
+                                        .apply { add(music.mediaId) }
                                 )
                                 playlistViewModel.handlePlaylistActions(
                                     PlaylistActions.UpsertPlaylist(playlist)
@@ -676,9 +555,8 @@ fun MusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.ErrorOutline,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(180f)
+                                painter = painterResource(R.drawable.info_rounded),
+                                contentDescription = null
                             )
                         }
                     )
@@ -686,7 +564,7 @@ fun MusicListItem(
                         DropdownMenuItem(
                             onClick = {
                                 isDropDownExpanded = false
-                                onLoadMetadata(path ?: "", uri)
+                                onLoadMetadata(path, uri)
                                 onNavigate(Screen.MetadataEditor(music.mediaId))
                             },
                             text = {

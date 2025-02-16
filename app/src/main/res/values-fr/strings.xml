@@ -16,6 +16,7 @@
     <string name="next_button">Prochaine musique</string>
     <string name="no_artists_found">Pas d\'artistes trouvés!</string>
     <string name="artwork">Art</string>
+    <string name="pls_restart">Veuillez redémarrer l\'app pour prendre effet !</string>
     <string name="use_sys_font">Utiliser la police système</string>
     <string name="artists">Artistes</string>
     <string name="music">Musiques</string>
@@ -73,4 +74,27 @@
     <string name="manage_shown_tabs">Gérer les onglets visibles</string>
     <string name="set_sleep_timer">Fixer un temps de veille</string>
     <string name="go_to">Aller à:</string>
+    <string name="no_lyrics_note">Pas de paroles trouvées !</string>
+    <string name="open_eq">Égaliseur</string>
+    <string name="from_saf">Cette musiques proviens du S.A.F</string>
+    <string name="open_saf">Ouvrir le S.A.F pour ajouter des musiques</string>
+    <string name="blacklisted">Blacklister</string>
+    <string name="not_blacklisted">Pas blacklister</string>
+    <string name="saf_manager">S.A.F manageur</string>
+    <string name="search_tracks">Rechercher une musique</string>
+    <string name="search_albums">Rechercher un album</string>
+    <string name="search_artists">Rechercher un artiste</string>
+    <string name="search_playlists">Rechercher une playlist</string>
+    <string name="no_playlists">Vous n\'avez pas de playlist! Créez en une pour rendre votre expérience encore meilleure!</string>
+    <string name="alrdy_in_playlist">La musique est déjà dans cette playlist!</string>
+    <string name="del_playlist">Supprimer la playlist</string>
+    <string name="modify">Modifier</string>
+    <string name="modify_playlist">Modifier la playlist</string>
+    <string name="create_playlist">Créer une playlist</string>
+    <string name="create">Créer</string>
+    <string name="playlist">Playlist</string>
+    <string name="add_to_playlist">Ajouter à une playlist</string>
+    <string name="art_description">Le thème de l\'app sera basé sur la cover de la musique en cours.</string>
+    <string name="group_tracks">Regrouper les musiques par leurs dossiers</string>
+    <string name="file_name">Nom du fichier</string>
 </resources>

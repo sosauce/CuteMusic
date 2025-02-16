@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -26,14 +28,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun ScreenSelection(
-    onNavigationItemClicked: (Int, NavigationItem) -> Unit,
-    selectedIndex: Int
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onNavigationItemClicked: (Screen) -> Unit,
+    currentScreen: String
 ) {
 
     val context = LocalContext.current
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
     val items = listOf(
         NavigationItem(
             title = context.getString(R.string.music),
@@ -58,48 +64,52 @@ fun ScreenSelection(
 
     )
 
-
-
-    Column(
-        verticalArrangement = Arrangement.Center
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier.width(180.dp),
+        shape = RoundedCornerShape(24.dp),
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
-        items.forEachIndexed { index, navigationItem ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(5.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { onNavigationItemClicked(index, navigationItem) }
-                    .then(
-                        if (index == selectedIndex) {
+        Column(
+            verticalArrangement = Arrangement.Center
+        ) {
+            items.forEach { navigationItem ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(5.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onNavigationItemClicked(navigationItem.navigateTo) }
+                        .thenIf(navigationItem.navigateTo.toString() == currentScreen) {
                             Modifier.background(
-                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                color = surfaceContainer,
                                 shape = RoundedCornerShape(12.dp)
                             )
-                        } else {
-                            Modifier
-                        }
-                    ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = navigationItem.icon,
-                    contentDescription = navigationItem.title,
-                    modifier = Modifier.padding(start = 15.dp)
-                )
-                CuteText(
-                    text = navigationItem.title,
-                    modifier = Modifier.padding(start = 15.dp)
-                )
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = navigationItem.icon,
+                        contentDescription = navigationItem.title,
+                        modifier = Modifier.padding(start = 15.dp)
+                    )
+                    CuteText(
+                        text = navigationItem.title,
+                        modifier = Modifier.padding(start = 15.dp)
+                    )
+                }
             }
         }
     }
+
+
 }
 
 @Immutable
 data class NavigationItem(
     val title: String,
     val navigateTo: Screen,
-    val icon: Painter
+    val icon: Painter,
 )

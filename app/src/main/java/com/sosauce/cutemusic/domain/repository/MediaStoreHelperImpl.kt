@@ -21,14 +21,9 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
 import com.sosauce.cutemusic.utils.observe
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 @SuppressLint("UnsafeOptInUsageError")

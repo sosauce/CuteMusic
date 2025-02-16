@@ -11,6 +11,6 @@ import com.sosauce.cutemusic.domain.model.Playlist
     version = 1
 )
 @TypeConverters(MediaItemConverter::class)
-abstract class PlaylistDatabase: RoomDatabase() {
+abstract class PlaylistDatabase : RoomDatabase() {
     abstract val dao: PlaylistDao
 }

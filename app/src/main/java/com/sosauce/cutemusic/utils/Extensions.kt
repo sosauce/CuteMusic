@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.navigation.NavHostController
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import kotlinx.coroutines.channels.awaitClose
@@ -85,11 +86,13 @@ fun Player.playFromAlbum(
     musics: List<MediaItem>
 ) {
     clearMediaItems()
-    musics.forEach {
-        if (it.mediaMetadata.albumTitle.toString() == albumName) {
-            addMediaItem(it)
-        }
-    }
+    musics.filter { music -> music.mediaMetadata.albumTitle.toString() == albumName }
+        .sortedWith(compareBy(
+            { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
+            { it.mediaMetadata.trackNumber }
+        ))
+        .also { addMediaItems(it) }
+
 
     if (mediaId == null) {
         playRandom()
@@ -104,11 +107,8 @@ fun Player.playFromArtist(
     musics: List<MediaItem>
 ) {
     clearMediaItems()
-    musics.forEach {
-        if (it.mediaMetadata.artist.toString() == artistsName) {
-            addMediaItem(it)
-        }
-    }
+    musics.filter { music -> music.mediaMetadata.artist.toString() == artistsName }
+        .also { addMediaItems(it) }
 
     if (mediaId == null) {
         playRandom()
@@ -117,16 +117,19 @@ fun Player.playFromArtist(
     }
 }
 
-fun Player.applyLoop() {
-    repeatMode = when (repeatMode) {
-        Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ONE
-        Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
-        else -> Player.REPEAT_MODE_OFF
+fun Player.applyLoop(
+    shouldLoop: Boolean
+) {
+    repeatMode = when (shouldLoop) {
+        true -> Player.REPEAT_MODE_ONE
+        false -> Player.REPEAT_MODE_OFF
     }
 }
 
-fun Player.applyShuffle() {
-    shuffleModeEnabled = !shuffleModeEnabled
+fun Player.applyShuffle(
+    shouldShuffle: Boolean
+) {
+    shuffleModeEnabled = shouldShuffle
 }
 
 fun Player.applyPlaybackSpeed(
@@ -243,6 +246,9 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
         unregisterContentObserver(observer)
     }
 }
+
+fun <T : Any> NavHostController.navigateSingleTop(route: T) =
+    navigate(route) { launchSingleTop = true }
 
 @Composable
 fun rememberSearchbarAlignment(

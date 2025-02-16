@@ -24,6 +24,7 @@ import com.sosauce.cutemusic.utils.toPropertyMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -192,10 +193,12 @@ class MetadataViewModel(
 
             is MetadataActions.LoadSong -> {
                 viewModelScope.launch {
-                    _metadata.value = _metadata.value.copy(
-                        songPath = action.path,
-                        songUri = action.uri
-                    )
+                    _metadata.update {
+                        it.copy(
+                            songPath = action.path,
+                            songUri = action.uri
+                        )
+                    }
                     loadMetadata()
                 }
             }
@@ -205,9 +208,9 @@ class MetadataViewModel(
             }
 
             is MetadataActions.RemoveArtwork -> {
-                _metadata.value = _metadata.value.copy(
-                    art = null
-                )
+                _metadata.update {
+                    it.copy(art = null)
+                }
             }
         }
     }

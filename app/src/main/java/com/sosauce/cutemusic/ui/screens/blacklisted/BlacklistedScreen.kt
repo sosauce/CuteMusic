@@ -6,11 +6,15 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -35,111 +39,113 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.domain.model.Folder
-import com.sosauce.cutemusic.ui.shared_components.AppBar
+import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import java.io.File
 
 @Composable
 fun BlacklistedScreen(
-    navController: NavController,
     folders: List<Folder>,
+    onPopBackstack: () -> Unit
 ) {
 
     var blacklistedFolders by rememberAllBlacklistedFolders()
 
     Scaffold(
-        topBar = {
-            AppBar(
-                title = stringResource(id = R.string.blacklisted_folders),
-                showBackArrow = true,
-                onPopBackStack = navController::navigateUp
-            )
-        }
-    ) { values ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(values)
-        ) {
-            folders.sortedBy { it.name }
-                .groupBy { it.path in blacklistedFolders }
-                .toSortedMap(compareByDescending { it })
-                .forEach { (isBlacklisted, allFolders) ->
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    horizontal = 34.dp,
-                                    vertical = 8.dp
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { paddingValues ->
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = paddingValues
+            ) {
+                folders.sortedBy { it.name }
+                    .groupBy { it.path in blacklistedFolders }
+                    .toSortedMap(compareByDescending { it })
+                    .forEach { (isBlacklisted, allFolders) ->
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = 34.dp,
+                                        vertical = 8.dp
+                                    )
+                            ) {
+                                CuteText(
+                                    text = if (isBlacklisted) stringResource(R.string.blacklisted) else stringResource(
+                                        R.string.not_blacklisted
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
                                 )
-                        ) {
-                            CuteText(
-                                text = if (isBlacklisted) stringResource(R.string.blacklisted) else stringResource(
-                                    R.string.not_blacklisted
-                                ),
-                                color = MaterialTheme.colorScheme.primary
+                            }
+                        }
+
+                        itemsIndexed(
+                            items = allFolders,
+                            key = { _, folder -> folder.path }
+                        ) { index, folder ->
+                            val topDp by animateDpAsState(
+                                targetValue = if (index == 0) 24.dp else 4.dp,
+                                label = "Top Dp"
+                            )
+                            val bottomDp by animateDpAsState(
+                                targetValue = if (index == allFolders.size - 1) 24.dp else 4.dp,
+                                label = "Bottom Dp"
+                            )
+
+                            FolderItem(
+                                folder = folder.path,
+                                topDp = topDp,
+                                bottomDp = bottomDp,
+                                modifier = Modifier.animateItem(),
+                                actionButton = {
+                                    if (isBlacklisted) {
+                                        IconButton(
+                                            onClick = {
+                                                blacklistedFolders =
+                                                    blacklistedFolders.toMutableSet().apply {
+                                                        remove(folder.path)
+                                                    }
+                                            }
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.trash_rounded_filled),
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    } else {
+                                        IconButton(
+                                            onClick = {
+                                                blacklistedFolders =
+                                                    blacklistedFolders.toMutableSet().apply {
+                                                        add(folder.path)
+                                                    }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Add,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
+            }
 
-                    itemsIndexed(
-                        items = allFolders,
-                        key = { _, folder -> folder.path }
-                    ) { index, folder ->
-                        val topDp by animateDpAsState(
-                            targetValue = if (index == 0) 24.dp else 4.dp,
-                            label = "Top Dp"
-                        )
-                        val bottomDp by animateDpAsState(
-                            targetValue = if (index == allFolders.size - 1) 24.dp else 4.dp,
-                            label = "Bottom Dp"
-                        )
-
-                        FolderItem(
-                            folder = folder.path,
-                            topDp = topDp,
-                            bottomDp = bottomDp,
-                            modifier = Modifier.animateItem(),
-                            actionButton = {
-                                if (isBlacklisted) {
-                                    IconButton(
-                                        onClick = {
-                                            blacklistedFolders =
-                                                blacklistedFolders.toMutableSet().apply {
-                                                    remove(folder.path)
-                                                }
-                                        }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.trash_rounded_filled),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                } else {
-                                    IconButton(
-                                        onClick = {
-                                            blacklistedFolders =
-                                                blacklistedFolders.toMutableSet().apply {
-                                                    add(folder.path)
-                                                }
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Add,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
+            CuteNavigationButton(
+                modifier = Modifier
+                    .padding(start = 15.dp)
+                    .align(Alignment.BottomStart)
+                    .navigationBarsPadding()
+            ) { onPopBackstack() }
         }
     }
 }

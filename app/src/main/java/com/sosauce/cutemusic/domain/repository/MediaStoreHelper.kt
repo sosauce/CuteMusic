@@ -8,7 +8,6 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.domain.model.Folder
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface MediaStoreHelper {
 

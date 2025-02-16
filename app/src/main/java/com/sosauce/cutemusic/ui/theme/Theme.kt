@@ -159,7 +159,9 @@ fun CuteMusicTheme(
         }
 
         val state = rememberDynamicMaterialThemeState(
-            seedColor = Color(themeProcessingViewModel.palette?.swatches?.first()?.rgb ?: 0), // I've found this to have the best color accuracy !?
+            seedColor = Color(
+                themeProcessingViewModel.palette?.swatches?.first()?.rgb ?: 0
+            ), // I've found this to have the best color accuracy !?
             //seedColor = themeProcessingViewModel.dominantColor,
             isDark = isSystemInDarkTheme() || useDarkMode,
             isAmoled = useAmoledMode
@@ -182,7 +184,7 @@ fun CuteMusicTheme(
 val GlobalFont = FontFamily(Font(R.font.nunito))
 
 
-class ThemeProcessingViewModel: ViewModel() {
+class ThemeProcessingViewModel : ViewModel() {
 
 
     var palette by mutableStateOf<Palette?>(null)
@@ -190,7 +192,7 @@ class ThemeProcessingViewModel: ViewModel() {
 
     private fun createPaletteAsync(bitmap: Bitmap) {
         Palette.from(bitmap).generate { generatedPalette ->
-             palette = generatedPalette
+            palette = generatedPalette
         }
     }
 

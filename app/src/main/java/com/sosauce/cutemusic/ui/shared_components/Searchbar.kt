@@ -14,27 +14,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +39,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -49,12 +47,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
+import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
+import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -64,61 +69,71 @@ fun SharedTransitionScope.CuteSearchbar(
     modifier: Modifier = Modifier,
     query: String = "",
     onQueryChange: (String) -> Unit = {},
-    leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null,
-    currentlyPlaying: String = "Meow",
+    currentlyPlaying: String = "",
     onHandlePlayerActions: (PlayerActions) -> Unit = {},
     isPlaying: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean = true,
     onNavigate: () -> Unit = {},
     showSearchField: Boolean = true,
-    isPlaylist: Boolean = false,
-    onClickFAB: () -> Unit = {}
+    fab: @Composable (() -> Unit)? = null,
+    navigationIcon: @Composable (() -> Unit)? = null,
+    currentScreen: String = "",
+    onNavigationItemClicked: (Screen) -> Unit = {}
 ) {
 
     val focusManager = LocalFocusManager.current
-    val roundedShape = remember { 24.dp }
     val leftIconOffsetX = remember { Animatable(0f) }
     val rightIconOffsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     var showXButton by rememberShowXButton()
     var showShuffleButton by rememberShowShuffleButton()
+    val screenToPlaceholder = remember {
+        hashMapOf(
+            Screen.Main.toString() to R.string.search_tracks,
+            Screen.Albums.toString() to R.string.search_albums,
+            Screen.Artists.toString() to R.string.search_artists,
+            Screen.Playlists.toString() to R.string.search_playlists,
+        )
+    }
+    val screenToLeadingIcon = remember {
+        hashMapOf(
+            Screen.Main.toString() to R.drawable.music_note_rounded,
+            Screen.Albums.toString() to androidx.media3.session.R.drawable.media3_icon_album,
+            Screen.Artists.toString() to R.drawable.artist_rounded,
+            Screen.Playlists.toString() to R.drawable.queue_music_rounded,
+        )
+    }
 
     Column(
-        modifier = modifier.imePadding()
+        modifier = modifier
+            .navigationBarsPadding()
+            .fillMaxWidth(rememberSearchbarMaxFloatValue())
+            .padding(
+                bottom = 5.dp,
+                end = rememberSearchbarRightPadding()
+            )
+            .imePadding()
     ) {
-        if (showShuffleButton || isPlaylist) {
-            FloatingActionButton(
-                onClick = onClickFAB,
-                modifier = Modifier
-                    .defaultMinSize(
-                        minWidth = 45.dp,
-                        minHeight = 45.dp
-                    )
-                    .align(Alignment.End)
-                    .sharedBounds(
-                        sharedContentState = rememberSharedContentState(key = "fab"),
-                        animatedVisibilityScope = animatedVisibilityScope
-                    ),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Icon(
-                    imageVector = if (!isPlaylist) Icons.Rounded.Shuffle else Icons.Rounded.Add,
-                    contentDescription = null
-                )
+        Row(
+            horizontalArrangement = if (navigationIcon != null) Arrangement.SpaceBetween else Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            navigationIcon?.invoke()
+            if (showShuffleButton) {
+                fab?.invoke()
             }
         }
-        Spacer(Modifier.height(5.dp))
+        //Spacer(Modifier.height(5.dp))
         Column(
             modifier = Modifier
-                .clip(RoundedCornerShape(roundedShape))
+                .clip(RoundedCornerShape(24.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(roundedShape)
+                    shape = RoundedCornerShape(24.dp)
                 )
                 .clickable(isPlayerReady) {
                     onNavigate()
@@ -257,9 +272,42 @@ fun SharedTransitionScope.CuteSearchbar(
                         errorIndicatorColor = Color.Transparent
                     ),
                     shape = RoundedCornerShape(50.dp),
-                    leadingIcon = leadingIcon,
+                    leadingIcon = {
+                        var screenSelectionExpanded by remember { mutableStateOf(false) }
+
+                        IconButton(
+                            onClick = {
+                                screenSelectionExpanded = true
+//                                if (!hasSeenTip) {
+//                                    hasSeenTip = true
+//                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = if (screenToLeadingIcon[currentScreen] != null) painterResource(
+                                    screenToLeadingIcon[currentScreen]!!
+                                ) else rememberVectorPainter(Icons.Rounded.QuestionMark),
+                                contentDescription = null,
+                                //tint = if (!hasSeenTip) color else LocalContentColor.current
+                            )
+                        }
+                        ScreenSelection(
+                            expanded = screenSelectionExpanded,
+                            onDismissRequest = { screenSelectionExpanded = false },
+                            onNavigationItemClicked = onNavigationItemClicked,
+                            currentScreen = currentScreen
+                        )
+                    },
                     trailingIcon = trailingIcon,
-                    placeholder = placeholder,
+                    placeholder = {
+                        CuteText(
+                            text = stringResource(
+                                screenToPlaceholder[currentScreen] ?: R.string.nothing
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                            maxLines = 1
+                        )
+                    },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()

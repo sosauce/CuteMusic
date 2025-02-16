@@ -98,6 +98,7 @@ class SafManager(
             TagLib.getMetadata(fd)
         }
     }
+
     private suspend fun loadAudioArt(songFd: ParcelFileDescriptor): Picture? {
         val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
 
@@ -105,7 +106,6 @@ class SafManager(
             TagLib.getFrontCover(fd)
         }
     }
-
 
 
     @UnstableApi

@@ -48,7 +48,7 @@
             android:enabled="true"
             tools:ignore="ExportedService">
             <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService"/>
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
@@ -68,10 +68,11 @@
                 <category android:name="android.intent.category.APP_MUSIC" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
-
-
-
 
 
         <activity
@@ -80,6 +81,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -90,8 +92,10 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.SHARE_TARGET" />
+
                 <data android:mimeType="audio/*" />
 
             </intent-filter>
@@ -106,13 +110,11 @@
             </intent-filter>
         </receiver>
 
-        <meta-data android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc"/>
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
 
     </application>
-
-
-
 
 
 </manifest>

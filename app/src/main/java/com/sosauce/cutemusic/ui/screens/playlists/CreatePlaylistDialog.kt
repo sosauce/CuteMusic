@@ -2,19 +2,23 @@
 
 package com.sosauce.cutemusic.ui.screens.playlists
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
@@ -56,11 +60,9 @@ fun CreatePlaylistDialog(
             AndroidView(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
                     .verticalScroll(rememberScrollState()),
                 factory = { ctx ->
                     EmojiPickerView(ctx).apply {
-                        //setBackgroundColor(emojiBg.toArgb())
                         setOnEmojiPickedListener(onEmojiPickedListener = {
                             playlistState.emoji.value = it.emoji
                         })
@@ -76,7 +78,10 @@ fun CreatePlaylistDialog(
         title = { CuteText(stringResource(R.string.create_playlist)) },
         confirmButton = {
             TextButton(
-                onClick = { playlistViewModel.handlePlaylistActions(PlaylistActions.CreatePlaylist) }
+                onClick = {
+                    playlistViewModel.handlePlaylistActions(PlaylistActions.CreatePlaylist)
+                    onDismissRequest()
+                }
             ) {
                 CuteText(stringResource(R.string.create))
             }
@@ -90,28 +95,43 @@ fun CreatePlaylistDialog(
         },
         text = {
             Column {
+                IconButton(
+                    onClick = { playlistState.emoji.value = "" },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = null
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .size(100.dp)
                         .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(5))
+                        .clip(RoundedCornerShape(10))
                         .clickable {
                             showEmojiPicker = true
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    if (playlistState.emoji.value.isNotBlank()) {
-                        CuteText(
-                            text = playlistState.emoji.value,
-                            fontSize = 40.sp
-                        )
-                    } else {
-                        Icon (
-                            painter = painterResource(R.drawable.add_emoji_rounded),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
+                    Crossfade(
+                        targetState = playlistState.emoji.value.isNotBlank()
+                    ) { hasEmoji ->
+                        if (hasEmoji) {
+                            AnimatedContent(playlistState.emoji.value) {
+                                CuteText(
+                                    text = it,
+                                    fontSize = 40.sp
+                                )
+                            }
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.add_emoji_rounded),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
                     }
                 }
                 OutlinedTextField(

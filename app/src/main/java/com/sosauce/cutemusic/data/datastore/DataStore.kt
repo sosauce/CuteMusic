@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_SHUFFLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
@@ -43,6 +44,7 @@ private data object PreferencesKeys {
     val KILL_SERVICE = booleanPreferencesKey("kill_service")
     val USE_ART_THEME = booleanPreferencesKey("use_art_theme")
     val APPLY_LOOP = booleanPreferencesKey("apply_loop")
+    val APPLY_SHUFFLE = booleanPreferencesKey("apply_shuffle")
     val USE_CLASSIC_SLIDER = booleanPreferencesKey("use_classic_slider")
     val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
     val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
@@ -82,11 +84,13 @@ fun rememberSnapSpeedAndPitch() =
 fun rememberUseArtTheme() =
     rememberPreference(key = USE_ART_THEME, defaultValue = false)
 
-//fun rememberKillService(context: Context) =
-//    rememberNonComposablePreference(key = KILL_SERVICE, defaultValue = true, context = context)
 @Composable
 fun rememberShouldApplyLoop() =
     rememberPreference(key = APPLY_LOOP, defaultValue = false)
+
+@Composable
+fun rememberShouldApplyShuffle() =
+    rememberPreference(key = APPLY_SHUFFLE, defaultValue = false)
 
 @Composable
 fun rememberUseClassicSlider() =
@@ -95,6 +99,7 @@ fun rememberUseClassicSlider() =
 @Composable
 fun rememberShowXButton() =
     rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
+
 @Composable
 fun rememberShowShuffleButton() =
     rememberPreference(key = SHOW_SHUFFLE_BUTTON, defaultValue = true)
@@ -106,6 +111,18 @@ fun rememberAllSafTracks() =
 @Composable
 fun rememberGroupByFolders() =
     rememberPreference(key = GROUP_BY_FOLDERS, defaultValue = false)
+
+fun getShouldLoop(context: Context): Flow<Boolean> =
+    context.dataStore.data
+        .map { preference ->
+            preference[APPLY_LOOP] == true
+        }
+
+fun getShouldShuffle(context: Context): Flow<Boolean> =
+    context.dataStore.data
+        .map { preference ->
+            preference[APPLY_SHUFFLE] == true
+        }
 
 
 suspend fun getBlacklistedFolder(context: Context): Set<String> {

@@ -149,13 +149,18 @@ fun QuickActionsRow(
                         allowEditAction = false,
                         onClickPlaylist = {
                             if (playlist.musics.contains(musicState.currentMediaId)) {
-                                Toast.makeText(context, context.getString(R.string.alrdy_in_playlist), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.alrdy_in_playlist),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             } else {
                                 val playlist = Playlist(
                                     id = playlist.id,
                                     name = playlist.name,
                                     emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList().apply { add(musicState.currentMediaId) }
+                                    musics = playlist.musics.toMutableList()
+                                        .apply { add(musicState.currentMediaId) }
                                 )
                                 playlistViewModel.handlePlaylistActions(
                                     PlaylistActions.UpsertPlaylist(playlist)

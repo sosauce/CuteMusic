@@ -8,8 +8,6 @@ sealed interface PlayerActions {
     data object SeekToPreviousMusic : PlayerActions
     data object RestartSong : PlayerActions
     data object PlayRandom : PlayerActions
-    data object ApplyLoop : PlayerActions
-    data object ApplyShuffle : PlayerActions
     data object StopPlayback : PlayerActions
     data class SeekTo(val position: Long) : PlayerActions
     data class SeekToSlider(val position: Long) : PlayerActions

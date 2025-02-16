@@ -107,13 +107,11 @@ class QuickPlayActivity : ComponentActivity() {
                             )
 
                             MusicSlider(
-                                viewModel = viewModel,
-                                musicState = musicState
+                                musicState = musicState,
+                                onHandlePlayerActions = { viewModel.handlePlayerActions(it) }
                             )
                             Spacer(modifier = Modifier.height(7.dp))
                             ActionsButtonsRowQuickPlay(
-                                onClickLoop = { viewModel.handlePlayerActions(PlayerActions.ApplyLoop) },
-                                onClickShuffle = { viewModel.handlePlayerActions(PlayerActions.ApplyShuffle) },
                                 onEvent = { viewModel.handlePlayerActions(it) },
                                 musicState = musicState
                             )
