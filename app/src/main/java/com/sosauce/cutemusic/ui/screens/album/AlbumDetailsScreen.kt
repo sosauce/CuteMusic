@@ -35,6 +35,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
@@ -63,7 +64,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
 ) {
-    val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
+    val albumSongs by postViewModel.albumSongs.collectAsStateWithLifecycle()
 
     if (rememberIsLandscape()) {
         AlbumDetailsLandscape(

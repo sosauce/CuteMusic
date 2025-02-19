@@ -156,14 +156,14 @@ fun SpeedCard(
                                     sliderState = sliderState,
                                     drawStopIndicator = null,
                                     thumbTrackGapSize = 4.dp,
-                                    trackInsideCornerSize = 12.dp,
-                                    modifier = Modifier.height(8.dp)
+                                    modifier = Modifier.height(5.dp),
+                                    trackInsideCornerSize = 3.dp
                                 )
                             },
                             thumb = {
                                 SliderDefaults.Thumb(
                                     interactionSource = interactionSource,
-                                    thumbSize = DpSize(width = 4.dp, height = 25.dp)
+                                    thumbSize = DpSize(width = 4.dp, height = 30.dp)
                                 )
                             },
                             interactionSource = interactionSource
@@ -201,13 +201,14 @@ fun SpeedCard(
                                     sliderState = sliderState,
                                     drawStopIndicator = null,
                                     thumbTrackGapSize = 4.dp,
-                                    modifier = Modifier.height(8.dp)
+                                    modifier = Modifier.height(5.dp),
+                                    trackInsideCornerSize = 3.dp
                                 )
                             },
                             thumb = {
                                 SliderDefaults.Thumb(
                                     interactionSource = interactionSource,
-                                    thumbSize = DpSize(width = 4.dp, height = 25.dp)
+                                    thumbSize = DpSize(width = 4.dp, height = 30.dp)
                                 )
                             },
                             interactionSource = interactionSource

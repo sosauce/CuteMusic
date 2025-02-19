@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
@@ -59,8 +60,8 @@ fun SharedTransitionScope.ArtistDetails(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
-    val artistSongs by remember { mutableStateOf(postViewModel.artistSongs) }
-    val artistAlbums by remember { mutableStateOf(postViewModel.artistAlbums) }
+    val artistSongs by postViewModel.artistSongs.collectAsStateWithLifecycle()
+    val artistAlbums by postViewModel.artistAlbums.collectAsStateWithLifecycle()
 
     if (rememberIsLandscape()) {
         ArtistDetailsLandscape(
@@ -68,8 +69,8 @@ fun SharedTransitionScope.ArtistDetails(
             artistAlbums = artistAlbums,
             artistSongs = artistSongs,
             onClickPlay = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
-            onNavigate = { onNavigate(it) },
-            chargePVMAlbumSongs = { postViewModel.albumSongs(it) },
+            onNavigate = onNavigate,
+            chargePVMAlbumSongs = { postViewModel.loadAlbumSongs(it) },
             artist = artist,
             currentMusicUri = musicState.currentMusicUri,
             isPlayerReady = musicState.isPlayerReady,
@@ -116,7 +117,7 @@ fun SharedTransitionScope.ArtistDetails(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(15.dp))
                                 .clickable {
-                                    postViewModel.albumSongs(album.name)
+                                    postViewModel.loadAlbumSongs(album.name)
                                     onNavigate(Screen.AlbumsDetails(album.id))
                                 },
                             animatedVisibilityScope = animatedVisibilityScope

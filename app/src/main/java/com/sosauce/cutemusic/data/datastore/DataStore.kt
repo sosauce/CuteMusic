@@ -23,6 +23,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_NP_V2
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -50,6 +51,7 @@ private data object PreferencesKeys {
     val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
     val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
     val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
+    val USE_NP_V2 = booleanPreferencesKey("USE_NP_V2")
 }
 
 @Composable
@@ -111,6 +113,10 @@ fun rememberAllSafTracks() =
 @Composable
 fun rememberGroupByFolders() =
     rememberPreference(key = GROUP_BY_FOLDERS, defaultValue = false)
+
+@Composable
+fun rememberUseNpV2() =
+    rememberPreference(key = USE_NP_V2, defaultValue = false)
 
 fun getShouldLoop(context: Context): Flow<Boolean> =
     context.dataStore.data

@@ -14,14 +14,12 @@ data class MusicState(
     val currentPosition: Long = 0L,
     val currentMusicDuration: Long = 0L,
     val currentMusicUri: String = "",
-    val isLooping: Boolean = false,
-    val isShuffling: Boolean = false,
     val currentPath: String = "",
     val currentAlbum: String = "",
     val currentAlbumId: Long = 0,
     val currentSize: Long = 0,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val isPlayerReady: Boolean = false,
-    val sleepTimer: Long = 0,
+    val sleepTimerActive: Boolean = false,
     val currentMediaId: String = ""
 )

@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -55,15 +57,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.GOOGLE_SEARCH
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,7 +77,6 @@ import kotlinx.coroutines.launch
 fun LyricsView(
     lyrics: List<Lyrics>,
     onHideLyrics: () -> Unit,
-    isLandscape: Boolean = false,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
@@ -80,6 +84,7 @@ fun LyricsView(
     val activity = LocalActivity.current
     val uriHandler = LocalUriHandler.current
     val clipboardManager = LocalClipboardManager.current
+    val isLandscape = rememberIsLandscape()
     val scope = rememberCoroutineScope()
     val leftIconOffsetX = remember { Animatable(0f) }
     val rightIconOffsetX = remember { Animatable(0f) }
@@ -106,6 +111,10 @@ fun LyricsView(
         }
     }
 
+    LaunchedEffect(lyrics) {
+        println("CuteLyrics: $lyrics")
+    }
+
 
 
     Scaffold { paddingValues ->
@@ -117,38 +126,35 @@ fun LyricsView(
                 state = lazyListState,
                 contentPadding = paddingValues
             ) {
-                if (lyrics.first().lineLyrics == context.getString(R.string.no_lyrics_note)) {
+                // A bit wonky but works for now
+                if (lyrics.size <= 1 && lyrics.first().lineLyrics.isEmpty()) {
                     item {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            CuteText(
-                                text = lyrics.first().lineLyrics
-                            )
+                            CuteText(stringResource(R.string.no_lyrics_note))
                             Button(
-                                onClick = { uriHandler.openUri("https://www.google.com/search?q=${musicState.currentlyPlaying}+${musicState.currentArtist}+lyrics") }
+                                onClick = { uriHandler.openUri("$GOOGLE_SEARCH${musicState.currentlyPlaying}+${musicState.currentArtist}+lyrics") }
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
                                     contentDescription = null
                                 )
                                 Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                                CuteText("Search for lyrics")
+                                CuteText(stringResource(R.string.search_lyrics))
                             }
                         }
                     }
                 } else {
                     itemsIndexed(
                         items = lyrics,
-                        key = { _, item -> item.timestamp }
+                        key = { _, lyric -> lyric.id }
                     ) { index, lyric ->
 
                         val nextTimestamp = remember(index) {
                             if (index < lyrics.size - 1) {
                                 lyrics[index + 1].timestamp
-                            } else {
-                                0
-                            }
+                            } else 0
                         }
 
                         val isCurrentLyric by remember(musicState.currentPosition) {
@@ -159,7 +165,7 @@ fun LyricsView(
 
 
                         val color by animateColorAsState(
-                            targetValue = if (isCurrentLyric) {
+                            targetValue = if (isCurrentLyric || lyric.timestamp == 0L) {
                                 MaterialTheme.colorScheme.onBackground
                             } else {
                                 MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
@@ -217,7 +223,8 @@ fun LyricsView(
                                 MaterialTheme.colorScheme.background
                             )
                         )
-                    ),
+                    )
+                    .navigationBarsPadding(),
                 horizontalArrangement = if (isLandscape) Arrangement.End else Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {

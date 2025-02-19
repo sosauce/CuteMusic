@@ -97,7 +97,8 @@
     <string name="art_description">App\'s theme will be based on the currently playing song\'s art.</string>
     <string name="group_tracks">Group tracks by folders</string>
     <string name="file_name">File name</string>
-    <string name="nothing">Nothing!</string>
+    <string name="nothing">Nothing to search for</string>
+    <string name="search_lyrics">Search for lyrics</string>
     <plurals name="songs">
         <item quantity="one">%d song</item>
         <item quantity="other">%d songs</item>

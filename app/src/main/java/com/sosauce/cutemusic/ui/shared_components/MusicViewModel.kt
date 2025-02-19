@@ -108,45 +108,6 @@ class MusicViewModel(
             }
         }
 
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            super.onRepeatModeChanged(repeatMode)
-            when (repeatMode) {
-                Player.REPEAT_MODE_ONE -> {
-                    _musicState.update {
-                        it.copy(
-                            isLooping = true
-                        )
-                    }
-                }
-
-                Player.REPEAT_MODE_OFF -> {
-                    _musicState.update {
-                        it.copy(
-                            isLooping = false
-                        )
-                    }
-                }
-
-                else -> {
-                    _musicState.update {
-                        it.copy(
-                            isLooping = false
-                        )
-                    }
-                }
-            }
-        }
-
-        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-            super.onShuffleModeEnabledChanged(shuffleModeEnabled)
-            _musicState.update {
-                it.copy(
-                    isShuffling = shuffleModeEnabled
-                )
-            }
-        }
-
-
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
             viewModelScope.launch {
@@ -271,7 +232,7 @@ class MusicViewModel(
                             Lyrics(millis, lyric)
                         } else {
                             // Since there's no ambiguity to what embedded lyrics could contain, lines not following the .lrc format will be positioned at the beginning
-                            Lyrics(0, line.trim())
+                            Lyrics(0, line)
                         }
                     }
                 }.toList()
@@ -296,8 +257,8 @@ class MusicViewModel(
         val fd = getFileDescriptorFromPath(application, musicState.value.currentPath)
         return fd?.dup()?.detachFd()?.let {
             TagLib.getMetadata(it)?.propertyMap["LYRICS"]?.getOrNull(0)
-                ?: application.getString(R.string.no_lyrics_note)
-        } ?: application.getString(R.string.no_lyrics_note)
+                ?: ""
+        } ?: ""
 
     }
 
@@ -404,14 +365,22 @@ class MusicViewModel(
 
                 sleepCountdownTimer = object : CountDownTimer(totalTimeMillis, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
-                        _musicState.value = _musicState.value.copy(
-                            sleepTimer = millisUntilFinished
-                        )
+                        _musicState.update {
+                            it.copy(
+                                sleepTimerActive = true
+                            )
+                        }
                     }
 
                     override fun onFinish() {
                         mediaController!!.pause()
                         cancel()
+                        sleepCountdownTimer = null
+                        _musicState.update {
+                            it.copy(
+                                sleepTimerActive = false
+                            )
+                        }
                     }
                 }
                 sleepCountdownTimer?.start()

@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -15,23 +17,39 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.palette.graphics.Palette
 import coil3.BitmapImage
 import coil3.ImageLoader
+import coil3.asImage
+import coil3.compose.AsyncImage
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
+import coil3.toBitmap
+import com.kmpalette.color
+import com.kmpalette.loader.rememberPainterLoader
+import com.kmpalette.rememberDominantColorState
+import com.kmpalette.rememberPaletteState
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.themeColors
 import com.materialkolor.rememberDynamicMaterialThemeState
@@ -150,27 +168,37 @@ fun CuteMusicTheme(
         else -> DarkColors
     }
 
-    if (useArtTheme) {
-        val themeProcessingViewModel = viewModel<ThemeProcessingViewModel>()
-        val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(musicState.currentArt) {
-            themeProcessingViewModel.urlToBitmap(musicState.currentArt, context)
-        }
+    if (useArtTheme) {
+        val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
+        val scope = rememberCoroutineScope()
+        val paletteState = rememberDominantColorState()
+
+        AsyncImage(
+            model = musicState.currentArt,
+            contentDescription = null,
+            onSuccess = { painter ->
+                val imageBitmap = painter.result.image.toBitmap().asImageBitmap()
+                scope.launch {
+                    paletteState.updateFrom(imageBitmap)
+                }
+            },
+            onError = { paletteState.reset() }
+        )
 
         val state = rememberDynamicMaterialThemeState(
-            seedColor = Color(
-                themeProcessingViewModel.palette?.swatches?.first()?.rgb ?: 0
-            ), // I've found this to have the best color accuracy !?
-            //seedColor = themeProcessingViewModel.dominantColor,
+            seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color ?: MaterialTheme.colorScheme.primary,
             isDark = isSystemInDarkTheme() || useDarkMode,
             isAmoled = useAmoledMode
         )
 
+
+
         DynamicMaterialTheme(
             state = state,
-            animate = true
-        ) { content() }
+            animate = true,
+            content = content
+        )
     } else {
         MaterialTheme(
             colorScheme = colorSchemeToUse,
@@ -182,46 +210,3 @@ fun CuteMusicTheme(
 }
 
 val GlobalFont = FontFamily(Font(R.font.nunito))
-
-
-class ThemeProcessingViewModel : ViewModel() {
-
-
-    var palette by mutableStateOf<Palette?>(null)
-    var dominantColor by mutableStateOf(Color.Black)
-
-    private fun createPaletteAsync(bitmap: Bitmap) {
-        Palette.from(bitmap).generate { generatedPalette ->
-            palette = generatedPalette
-        }
-    }
-
-
-    fun calculateSeedColor(bitmap: ImageBitmap) {
-        val suitableColors = bitmap.themeColors(fallback = Color.Black)
-        dominantColor = suitableColors.first()
-    }
-
-    fun urlToBitmap(
-        imageUri: Uri?,
-        context: Context,
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val loader = ImageLoader(context)
-            val request = ImageRequest.Builder(context)
-                .data(imageUri)
-                .allowHardware(false) // If set to true it will not work ???
-                .build()
-            val result = loader.execute(request)
-            if (result is SuccessResult) {
-                createPaletteAsync((result.image as BitmapImage).bitmap)
-                // Note: When MaterialKolor supports Bitmap or is faster use it and remove Palette dependency
-                // calculateSeedColor((result.image as BitmapImage).bitmap.asImageBitmap())
-            } else if (result is ErrorResult) {
-                cancel(result.throwable.localizedMessage ?: "CuteError", result.throwable)
-            }
-        }
-    }
-
-
-}

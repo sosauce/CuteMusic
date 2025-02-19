@@ -293,7 +293,8 @@ fun MetadataEditor(
                             text = "Lyrics",
                             modifier = Modifier.basicMarquee()
                         )
-                    }
+                    },
+                    imeAction = ImeAction.Default
                 ) { lyrics ->
                     metadataState.mutablePropertiesMap["LYRICS"] = lyrics
                 }
@@ -327,6 +328,7 @@ private fun EditTextField(
     value: String?,
     verticalPadding: Dp = 5.dp,
     label: (@Composable () -> Unit)? = null,
+    imeAction: ImeAction = ImeAction.Done,
     keyboardType: KeyboardType = KeyboardType.Unspecified,
     returnModifiedValue: (String) -> Unit = {}
 ) {
@@ -335,7 +337,7 @@ private fun EditTextField(
         onValueChange = { returnModifiedValue(it) },
         label = label,
         keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
+            imeAction = imeAction,
             keyboardType = keyboardType
         ),
         modifier = modifier

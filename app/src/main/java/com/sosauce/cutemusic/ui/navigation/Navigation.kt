@@ -16,6 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.sosauce.cutemusic.data.actions.MetadataActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberUseNpV2
+import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.ui.screens.album.AlbumsScreen
 import com.sosauce.cutemusic.ui.screens.artist.ArtistDetails
@@ -25,6 +27,7 @@ import com.sosauce.cutemusic.ui.screens.main.MainScreen
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataEditor
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.screens.playing.NowPlayingScreen
+import com.sosauce.cutemusic.ui.screens.playing.NowPlayingV2
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistDetailsScreen
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistsScreen
 import com.sosauce.cutemusic.ui.screens.settings.SettingsScreen
@@ -96,10 +99,10 @@ fun Nav(
                             intentSender
                         )
                     },
-                    onChargeAlbumSongs = postViewModel::albumSongs,
+                    onChargeAlbumSongs = postViewModel::loadAlbumSongs,
                     onChargeArtistLists = {
-                        postViewModel.artistSongs(it)
-                        postViewModel.artistAlbums(it)
+                        postViewModel.loadArtistSongs(it)
+                        postViewModel.loadArtistAlbums(it)
                     }
                 )
 
@@ -111,7 +114,7 @@ fun Nav(
                     albums = albums,
                     animatedVisibilityScope = this,
                     currentlyPlaying = musicState.currentlyPlaying,
-                    chargePVMAlbumSongs = postViewModel::albumSongs,
+                    chargePVMAlbumSongs = postViewModel::loadAlbumSongs,
                     isPlayerReady = musicState.isPlayerReady,
                     isPlaying = musicState.isCurrentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
@@ -123,25 +126,43 @@ fun Nav(
             composable<Screen.NowPlaying> {
 
                 val lyrics by viewModel.lyrics.collectAsStateWithLifecycle()
+                val useV2 by rememberUseNpV2()
 
-                NowPlayingScreen(
-                    animatedVisibilityScope = this,
-                    musicState = musicState,
-                    onChargeAlbumSongs = postViewModel::albumSongs,
-                    onChargeArtistLists = {
-                        postViewModel.artistSongs(it)
-                        postViewModel.artistAlbums(it)
-                    },
-                    onNavigate = { navController.navigateSingleTop(it) },
-                    onPopBackstack = navController::popBackStack,
-                    onHandlePlayerActions = { viewModel.handlePlayerActions(it) },
-                    lyrics = lyrics
-                )
+                if (useV2) {
+                    NowPlayingV2(
+                        musicState = musicState,
+                        onHandlePlayerActions = viewModel::handlePlayerActions,
+                        onPopBackstack = navController::navigateUp,
+                        onChargeAlbumSongs = postViewModel::loadAlbumSongs,
+                        onChargeArtistLists = {
+                            postViewModel.loadArtistSongs(it)
+                            postViewModel.loadArtistAlbums(it)
+                        },
+                        onNavigate = navController::navigateSingleTop,
+                        lyrics = lyrics
+                    )
+                } else {
+                    NowPlayingScreen(
+                        animatedVisibilityScope = this,
+                        musicState = musicState,
+                        onChargeAlbumSongs = postViewModel::loadAlbumSongs,
+                        onChargeArtistLists = {
+                            postViewModel.loadArtistSongs(it)
+                            postViewModel.loadArtistAlbums(it)
+                        },
+                        onNavigate = { navController.navigateSingleTop(it) },
+                        onPopBackstack = navController::popBackStack,
+                        onHandlePlayerActions = { viewModel.handlePlayerActions(it) },
+                        lyrics = lyrics
+                    )
+                }
+
+
             }
             composable<Screen.Settings> {
                 SettingsScreen(
                     onPopBackStack = navController::navigateUp,
-                    onNavigate = { navController.navigateSingleTop(it) }
+                    onNavigate = navController::navigateSingleTop
                 )
             }
             composable<Screen.AlbumsDetails> {
@@ -167,8 +188,8 @@ fun Nav(
                     onNavigationItemClicked = { screen -> navController.navigateSingleTop(screen) },
                     currentScreen = currentScreen,
                     onChargeArtistLists = {
-                        postViewModel.artistSongs(it)
-                        postViewModel.artistAlbums(it)
+                        postViewModel.loadArtistSongs(it)
+                        postViewModel.loadArtistAlbums(it)
                     },
                     currentlyPlaying = musicState.currentlyPlaying,
                     onHandlePlayerActions = viewModel::handlePlayerActions,
@@ -268,10 +289,10 @@ fun Nav(
                                 intentSender
                             )
                         },
-                        onChargeAlbumSongs = postViewModel::albumSongs,
+                        onChargeAlbumSongs = postViewModel::loadAlbumSongs,
                         onChargeArtistLists = {
-                            postViewModel.artistSongs(it)
-                            postViewModel.artistAlbums(it)
+                            postViewModel.loadArtistSongs(it)
+                            postViewModel.loadArtistAlbums(it)
                         },
                         musics = musics,
                         onPopBackStack = navController::navigateUp

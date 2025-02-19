@@ -7,6 +7,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -14,6 +16,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +44,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,6 +54,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,6 +70,7 @@ import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 
 @Composable
@@ -84,6 +93,7 @@ fun SharedTransitionScope.CuteSearchbar(
 ) {
 
     val focusManager = LocalFocusManager.current
+    val configuration = LocalConfiguration.current
     val leftIconOffsetX = remember { Animatable(0f) }
     val rightIconOffsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -105,15 +115,11 @@ fun SharedTransitionScope.CuteSearchbar(
             Screen.Playlists.toString() to R.drawable.queue_music_rounded,
         )
     }
-
     Column(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxWidth(rememberSearchbarMaxFloatValue())
-            .padding(
-                bottom = 5.dp,
-                end = rememberSearchbarRightPadding()
-            )
+            .padding(end = rememberSearchbarRightPadding())
             .imePadding()
     ) {
         Row(
@@ -284,9 +290,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             }
                         ) {
                             Icon(
-                                painter = if (screenToLeadingIcon[currentScreen] != null) painterResource(
-                                    screenToLeadingIcon[currentScreen]!!
-                                ) else rememberVectorPainter(Icons.Rounded.QuestionMark),
+                                painter = painterResource(screenToLeadingIcon[currentScreen] ?: R.drawable.music_note_rounded),
                                 contentDescription = null,
                                 //tint = if (!hasSeenTip) color else LocalContentColor.current
                             )

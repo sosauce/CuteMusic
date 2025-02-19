@@ -8,6 +8,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
@@ -36,6 +37,7 @@ class PlaybackService : MediaLibraryService(),
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
         mediaLibrarySession
 
+
     @UnstableApi
     override fun onCreate() {
         super.onCreate()
@@ -47,7 +49,9 @@ class PlaybackService : MediaLibraryService(),
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, this)
             .setId(CUTE_MUSIC_ID)
-            .setShowPlayButtonIfPlaybackIsSuppressed(false)
+
+
+
 
 //            .setBitmapLoader(object : BitmapLoader {
 //

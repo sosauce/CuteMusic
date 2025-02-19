@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
@@ -71,6 +72,147 @@ import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
+fun QuickActionsRowV2(
+    musicState: MusicState,
+    onShowLyrics: () -> Unit,
+    onShowSpeedCard: () -> Unit,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+) {
+    val context = LocalContext.current
+    var showDetailsDialog by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val onBackground = MaterialTheme.colorScheme.onBackground
+    var showPlaylistDialog by remember { mutableStateOf(false) }
+    var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
+
+    if (showDetailsDialog) {
+        MusicStateDetailsDialog(
+            musicState = musicState,
+            onDismissRequest = { showDetailsDialog = false }
+        )
+    }
+
+    if (showTimePicker) {
+        CuteTimePicker(
+            onDismissRequest = { showTimePicker = false },
+            onSetTimer = { hours, minutes ->
+                showTimePicker = false
+                onHandlePlayerActions(PlayerActions.SetSleepTimer(hours, minutes))
+            }
+        )
+    }
+
+    if (showPlaylistCreatorDialog) {
+        CreatePlaylistDialog { showPlaylistCreatorDialog = false }
+    }
+
+    if (showPlaylistDialog) {
+        val playlistViewModel = koinViewModel<PlaylistViewModel>()
+        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+
+        ModalBottomSheet(
+            onDismissRequest = { showPlaylistDialog = false }
+        ) {
+            LazyColumn {
+                item {
+                    OutlinedButton(
+                        onClick = { showPlaylistCreatorDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
+                            CuteText(stringResource(R.string.create_playlist))
+                        }
+                    }
+                }
+
+                items(
+                    items = playlists,
+                    key = { it.id }
+                ) { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        allowEditAction = false,
+                        onClickPlaylist = {
+                            if (playlist.musics.contains(musicState.currentMediaId)) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.alrdy_in_playlist),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                val playlist = Playlist(
+                                    id = playlist.id,
+                                    name = playlist.name,
+                                    emoji = playlist.emoji,
+                                    musics = playlist.musics.toMutableList()
+                                        .apply { add(musicState.currentMediaId) }
+                                )
+                                playlistViewModel.handlePlaylistActions(
+                                    PlaylistActions.UpsertPlaylist(playlist)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+
+        IconButton(onClick = onShowLyrics) {
+            Icon(
+                painter = painterResource(R.drawable.lyrics_rounded),
+                contentDescription = "show lyrics"
+            )
+        }
+        IconButton(onClick = onShowSpeedCard) {
+            Icon(
+                painter = painterResource(R.drawable.speed_rounded),
+                contentDescription = "change speed"
+
+            )
+        }
+        ShuffleButton()
+        LoopButton()
+        IconButton(
+            onClick = { showTimePicker = true }
+        ) {
+            Box {
+                Icon(
+                    painter = painterResource(R.drawable.bedtime_outlined),
+                    contentDescription = "set sleep timer"
+                )
+                if (musicState.sleepTimerActive) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .drawBehind { drawCircle(onBackground) }
+                            .size(8.dp)
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
 fun QuickActionsRow(
     musicState: MusicState,
     onShowLyrics: () -> Unit,
@@ -103,8 +245,7 @@ fun QuickActionsRow(
             onSetTimer = { hours, minutes ->
                 showTimePicker = false
                 onHandlePlayerActions(PlayerActions.SetSleepTimer(hours, minutes))
-            },
-            initialMillis = musicState.sleepTimer
+            }
         )
     }
 
@@ -206,7 +347,7 @@ fun QuickActionsRow(
                         painter = painterResource(R.drawable.bedtime_outlined),
                         contentDescription = "set sleep timer"
                     )
-                    if (musicState.sleepTimer > 0) {
+                    if (musicState.sleepTimerActive) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -344,7 +485,7 @@ fun QuickActionsRow(
     }
 }
 
-private fun equalizerActivityContract() = object : ActivityResultContract<Unit, Unit>() {
+fun equalizerActivityContract() = object : ActivityResultContract<Unit, Unit>() {
     override fun createIntent(
         context: Context,
         input: Unit,
@@ -357,6 +498,5 @@ private fun equalizerActivityContract() = object : ActivityResultContract<Unit, 
     override fun parseResult(
         resultCode: Int,
         intent: Intent?,
-    ) {
-    }
+    ) {}
 }

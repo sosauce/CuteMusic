@@ -120,7 +120,6 @@ class MetadataViewModel(
                 null
             )
         } catch (e: Exception) {
-            Log.d("hello", "some error occured")
             e.printStackTrace()
         }
     }

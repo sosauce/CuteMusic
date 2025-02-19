@@ -8,7 +8,10 @@ package com.sosauce.cutemusic.ui.screens.main
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Paint
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -45,6 +48,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.BasicAlertDialog
@@ -58,6 +63,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +106,7 @@ import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import java.util.UUID
 
 @Composable
 fun SharedTransitionScope.MainScreen(
@@ -534,6 +541,15 @@ fun MusicListItem(
         }
 
         if (showBottomSheet) {
+
+//            var isFavorite by remember { mutableStateOf(music.mediaMetadata.extras?.getInt("isFavorite") == 1) }
+//            val favoriteIntent = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+//                if (it.resultCode == Activity.RESULT_OK) {
+//                    // Since MediaItem's extras doesn't seem to make for reactive UI, this is a solution to immediately show favorite changes
+//                    // without needing to restart the app
+//                    isFavorite = !isFavorite
+//                }
+//            }
             Row {
                 IconButton(
                     onClick = { isDropDownExpanded = true }
@@ -658,6 +674,39 @@ fun MusicListItem(
                             )
                         }
                     )
+//                    DropdownMenuItem(
+//                        onClick = {
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                                val intentSender = MediaStore.createFavoriteRequest(
+//                                    context.contentResolver,
+//                                    listOf(uri),
+//                                    music.mediaMetadata.extras?.getInt("isFavorite") != 1
+//                                ).intentSender
+//                                favoriteIntent.launch(IntentSenderRequest.Builder(intentSender).build())
+//                            }
+//                        },
+//                        text = {
+//                            Crossfade(
+//                                targetState = isFavorite
+//                            ) { isFav ->
+//                                CuteText(
+//                                    text = if (isFav) "Un-favorite" else "Favorite",
+//                                    color = MaterialTheme.colorScheme.error
+//                                )
+//                            }
+//                        },
+//                        leadingIcon = {
+//                            Crossfade(
+//                                targetState = isFavorite
+//                            ) { isFav ->
+//                                Icon(
+//                                    imageVector = if (isFav) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+//                                    contentDescription = null,
+//                                    tint = MaterialTheme.colorScheme.error
+//                                )
+//                            }
+//                        }
+//                    )
                     DropdownMenuItem(
                         onClick = {
                             if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {

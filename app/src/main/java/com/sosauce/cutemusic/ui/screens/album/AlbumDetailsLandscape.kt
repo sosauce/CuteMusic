@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -55,7 +56,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
 
-    val albumSongs by remember { mutableStateOf(postViewModel.albumSongs) }
+    val albumSongs by postViewModel.albumSongs.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier

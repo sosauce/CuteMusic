@@ -50,15 +50,15 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    override fun onDestroy() {
-        super.onDestroy()
-        sendBroadcast(
-            Intent(
-                "CM_CUR_PLAY_CHANGED"
-            ).apply {
-                putExtra("currentlyPlaying", "")
-            }
-        )
-    }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        sendBroadcast(
+//            Intent(
+//                "CM_CUR_PLAY_CHANGED"
+//            ).apply {
+//                putExtra("currentlyPlaying", "")
+//            }
+//        )
+//    }
 }
 

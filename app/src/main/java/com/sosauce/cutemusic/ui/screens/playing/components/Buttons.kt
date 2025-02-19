@@ -13,10 +13,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FastForward
@@ -31,8 +33,10 @@ import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,15 +58,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoopButton(isLooping: Boolean) {
+fun LoopButton() {
 
     val rotation = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    var shouldApplyLoop by rememberShouldApplyLoop()
+    var shouldLoop by rememberShouldApplyLoop()
 
     IconButton(
         onClick = {
-            shouldApplyLoop = !isLooping
+            shouldLoop = !shouldLoop
             scope.launch(Dispatchers.Main) {
                 rotation.animateTo(
                     targetValue = -360f,
@@ -74,33 +78,183 @@ fun LoopButton(isLooping: Boolean) {
                     animationSpec = tween(0)
                 )
             }
-        }
+        },
     ) {
         Icon(
             imageVector = Icons.Rounded.Loop,
             contentDescription = "loop button",
-            tint = if (isLooping) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+            tint = if (shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.rotate(rotation.value)
         )
     }
 }
 
 @Composable
-fun ShuffleButton(
-    isShuffling: Boolean
-) {
+fun ShuffleButton() {
     var shouldShuffle by rememberShouldApplyShuffle()
 
     IconButton(
-        onClick = { shouldShuffle = !isShuffling }
+        onClick = { shouldShuffle = !shouldShuffle }
     ) {
         Icon(
             imageVector = Icons.Rounded.Shuffle,
             contentDescription = "shuffle button",
-            tint = if (isShuffling) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+            tint = if (shouldShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
         )
     }
 }
+
+@Composable
+fun ActionButtonsRowV2(
+    musicState: MusicState,
+    onHandlePlayerActions: (PlayerActions) -> Unit
+) {
+
+    val scope = rememberCoroutineScope()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val skipPreviousOffset = remember { Animatable(0f) }
+            IconButton(
+                onClick = {
+                    onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
+                    scope.launch(Dispatchers.Default) {
+                        skipPreviousOffset.animateTo(
+                            targetValue = -25f,
+                            animationSpec = tween(400)
+                        )
+                        skipPreviousOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(400)
+                        )
+                    }
+                },
+                modifier = Modifier.size(60.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.SkipPrevious,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .offset {
+                            IntOffset(
+                                x = skipPreviousOffset.value.toInt(),
+                                y = 0
+                            )
+                        }
+                )
+            }
+
+            val fastRewindOffset = remember { Animatable(0f) }
+            IconButton(
+                onClick = {
+                    onHandlePlayerActions(PlayerActions.RewindTo(5000))
+                    scope.launch(Dispatchers.Default) {
+                        fastRewindOffset.animateTo(
+                            targetValue = -25f,
+                            animationSpec = tween(400)
+                        )
+                        fastRewindOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(400)
+                        )
+                    }
+                },
+                modifier = Modifier.size(60.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.FastRewind,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(35.dp)
+                        .offset {
+                            IntOffset(
+                                x = fastRewindOffset.value.toInt(),
+                                y = 0
+                            )
+                        }
+                )
+            }
+            IconButton(
+                onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
+                modifier = Modifier.size(60.dp)
+            ) {
+                Crossfade(
+                    targetState = musicState.isCurrentlyPlaying,
+                    animationSpec = tween(200)
+                ) { targetState ->
+                    Icon(
+                        imageVector = if (targetState) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+            val fastForwardOffset = remember { Animatable(0f) }
+            IconButton(
+                onClick = {
+                    onHandlePlayerActions(PlayerActions.SeekTo(5000))
+                    scope.launch(Dispatchers.Default) {
+                        fastForwardOffset.animateTo(
+                            targetValue = 25f,
+                            animationSpec = tween(400)
+                        )
+                        fastForwardOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(400)
+                        )
+                    }
+                },
+                modifier = Modifier.size(60.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.FastForward,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(35.dp)
+                        .offset {
+                            IntOffset(
+                                x = fastForwardOffset.value.toInt(),
+                                y = 0
+                            )
+                        }
+                )
+            }
+            val skipNextOffset = remember { Animatable(0f) }
+            IconButton(
+                onClick = {
+                    onHandlePlayerActions(PlayerActions.SeekToNextMusic)
+                    scope.launch(Dispatchers.Default) {
+                        skipNextOffset.animateTo(
+                            targetValue = 25f,
+                            animationSpec = tween(400)
+                        )
+                        skipNextOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(400)
+                        )
+                    }
+                },
+                modifier = Modifier.size(60.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.SkipNext,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .offset {
+                            IntOffset(
+                                x = skipNextOffset.value.toInt(),
+                                y = 0
+                            )
+                        }
+                )
+            }
+        }
+    }
 
 @Composable
 fun SharedTransitionScope.ActionsButtonsRow(
@@ -120,7 +274,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
 
 
     Row(
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
@@ -159,9 +313,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                     }
                 }
             }
-            ShuffleButton(
-                isShuffling = musicState.isShuffling
-            )
+            ShuffleButton()
             IconButton(
                 onClick = {
                     if (musicState.currentPosition >= 10000) {
@@ -276,9 +428,7 @@ fun SharedTransitionScope.ActionsButtonsRow(
                         )
                 )
             }
-            LoopButton(
-                isLooping = musicState.isLooping
-            )
+            LoopButton()
 
             if (showPlusPopup) {
                 Popup(
@@ -366,9 +516,7 @@ fun ActionsButtonsRowQuickPlay(
                         }
                     ) { CuteText("-3") }
                 } else {
-                    ShuffleButton(
-                        isShuffling = musicState.isShuffling
-                    )
+                    ShuffleButton()
                 }
             }
 
@@ -551,9 +699,7 @@ fun ActionsButtonsRowQuickPlay(
                         }
                     ) { CuteText("+10") }
                 } else {
-                    LoopButton(
-                        isLooping = musicState.isLooping
-                    )
+                    LoopButton()
                 }
             }
         }

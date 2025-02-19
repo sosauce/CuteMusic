@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,7 +79,10 @@ fun SettingsCards(
             }
             Switch(
                 checked = checked,
-                onCheckedChange = { onCheckedChange() }
+                onCheckedChange = { onCheckedChange() },
+                colors = SwitchDefaults.colors(
+                    uncheckedBorderColor = Color.Transparent
+                )
             )
         }
     }
