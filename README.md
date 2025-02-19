@@ -39,6 +39,7 @@
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
+- Playlists support !
 - Makes you a cutie!
 
 <h1>👑 2025 Roadmap !!!</h1>
