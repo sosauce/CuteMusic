@@ -17,8 +17,10 @@
    <a href="https://f-droid.org/en/packages/com.sosauce.cutemusic/">
    <image src="https://f-droid.org/badge/get-it-on.png" height="80"/>
  </a>
- 
+<p align="center">I recommend installing from GitHub, as it guarantees access to the latest update.</p>
 </p>
+
+
 
 <p align=center>
 
