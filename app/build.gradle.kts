@@ -14,8 +14,8 @@ android {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 25
-        versionName = "2.5.1"
+        versionCode = 26
+        versionName = "2.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -89,13 +89,15 @@ android {
         implementation(libs.koin.android)
         implementation(libs.koin.androidx.compose)
         implementation(libs.material.kolor)
-        //implementation(libs.androidx.palette.ktx)
         implementation(libs.koin.androidx.startup)
         implementation(libs.taglib)
         debugImplementation(libs.androidx.ui.tooling)
         implementation(libs.androidx.room.ktx)
         implementation(libs.androidx.emoji2.emojipicker)
         implementation(libs.kmpalette.core)
+        implementation(libs.haze)
+        implementation(libs.androidx.glance)
+        implementation(libs.androidx.glance.appwidget)
         ksp(libs.androidx.room.compiler)
     }
 }

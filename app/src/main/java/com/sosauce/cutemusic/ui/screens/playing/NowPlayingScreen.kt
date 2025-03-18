@@ -61,7 +61,7 @@ fun SharedTransitionScope.NowPlayingScreen(
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onPopBackstack: () -> Unit,
+    onNavigateUp: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     lyrics: List<Lyrics>
 ) {
@@ -69,7 +69,7 @@ fun SharedTransitionScope.NowPlayingScreen(
 
     if (rememberIsLandscape()) {
         NowPlayingLandscape(
-            onNavigateUp = onPopBackstack,
+            onNavigateUp = onNavigateUp,
             onHandlePlayerActions = onHandlePlayerActions,
             animatedVisibilityScope = animatedVisibilityScope,
             musicState = musicState,
@@ -93,7 +93,7 @@ fun SharedTransitionScope.NowPlayingScreen(
                 false -> {
                     NowPlayingContent(
                         onHandlePlayerActions = onHandlePlayerActions,
-                        onNavigateUp = onPopBackstack,
+                        onNavigateUp = onNavigateUp,
                         animatedVisibilityScope = animatedVisibilityScope,
                         onShowLyrics = { showFullLyrics = true },
                         musicState = musicState,

@@ -49,7 +49,7 @@ import java.io.File
 @Composable
 fun BlacklistedScreen(
     folders: List<Folder>,
-    onPopBackstack: () -> Unit
+    onNavigateUp: () -> Unit
 ) {
 
     var blacklistedFolders by rememberAllBlacklistedFolders()
@@ -145,7 +145,7 @@ fun BlacklistedScreen(
                     .padding(start = 15.dp)
                     .align(Alignment.BottomStart)
                     .navigationBarsPadding()
-            ) { onPopBackstack() }
+            ) { onNavigateUp() }
         }
     }
 }

@@ -1,15 +1,16 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 
 package com.sosauce.cutemusic.ui.screens.playing
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.launch
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -63,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
@@ -75,8 +77,6 @@ import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionButtonsRowV2
-import com.sosauce.cutemusic.ui.screens.playing.components.ActionsButtonsRow
-import com.sosauce.cutemusic.ui.screens.playing.components.MusicSlider
 import com.sosauce.cutemusic.ui.screens.playing.components.QuickActionsRowV2
 import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.screens.playing.components.equalizerActivityContract
@@ -90,21 +90,22 @@ import me.saket.squiggles.SquigglySlider
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun NowPlayingLandscapeV2(
+fun SharedTransitionScope.NowPlayingLandscapeV2(
     onNavigateUp: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     musicState: MusicState,
     onChargeAlbumSongs: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     onChargeArtistLists: (String) -> Unit,
-    lyrics: List<Lyrics>
+    lyrics: List<Lyrics>,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val context = LocalContext.current
     var showSpeedCard by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(false) }
     var snap by rememberSnapSpeedAndPitch()
     var tempSliderValue by remember { mutableStateOf<Float?>(null) }
-    val uri = remember { Uri.parse(musicState.currentMusicUri) }
+    val uri = remember { musicState.currentMusicUri.toUri() }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
 
@@ -160,7 +161,7 @@ fun NowPlayingLandscapeV2(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                val playlist = Playlist(
+                                val newPlaylist = Playlist(
                                     id = playlist.id,
                                     name = playlist.name,
                                     emoji = playlist.emoji,
@@ -168,7 +169,7 @@ fun NowPlayingLandscapeV2(
                                         .apply { add(musicState.currentMediaId) }
                                 )
                                 playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(playlist)
+                                    PlaylistActions.UpsertPlaylist(newPlaylist)
                                 )
                             }
                         }
@@ -260,8 +261,8 @@ fun NowPlayingLandscapeV2(
                             Column {
 
                                 var isDropDownExpanded by remember { mutableStateOf(false) }
-                                val eqIntent = rememberLauncherForActivityResult(equalizerActivityContract()) { }
-                                var showDetailsDialog by remember { mutableStateOf(false) }
+                                val eqIntent =
+                                    rememberLauncherForActivityResult(equalizerActivityContract()) { }
 
                                 IconButton(onClick = { isDropDownExpanded = true }) {
                                     Icon(
@@ -410,7 +411,7 @@ fun NowPlayingLandscapeV2(
                         Column(
                             modifier = Modifier.padding(horizontal = 15.dp)
                         ) {
-                            Row (
+                            Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -453,7 +454,7 @@ fun NowPlayingLandscapeV2(
                                         )
                                     )
                                 },
-                                thumb = { sliderState ->
+                                thumb = {
                                     Spacer(Modifier.width(4.dp))
                                     SliderDefaults.Thumb(
                                         interactionSource = remember { MutableInteractionSource() },
@@ -465,6 +466,7 @@ fun NowPlayingLandscapeV2(
                             )
                         }
                         ActionButtonsRowV2(
+                            animatedVisibilityScope = animatedVisibilityScope,
                             musicState = musicState,
                             onHandlePlayerActions = onHandlePlayerActions
                         )

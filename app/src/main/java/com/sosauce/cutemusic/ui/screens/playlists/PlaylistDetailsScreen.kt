@@ -16,16 +16,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
 
 @Composable
 fun PlaylistDetailsScreen(
@@ -39,7 +43,7 @@ fun PlaylistDetailsScreen(
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
-    onPopBackStack: () -> Unit,
+    onNavigateUp: () -> Unit,
 ) {
 
     val playlistDisplay = remember {
@@ -73,18 +77,34 @@ fun PlaylistDetailsScreen(
                                     horizontal = 4.dp
                                 )
                         ) {
-                            MusicListItem(
-                                onShortClick = { onShortClick(music.mediaId) },
-                                music = music,
-                                onNavigate = { onNavigate(it) },
-                                currentMusicUri = currentMusicUri,
-                                onLoadMetadata = onLoadMetadata,
-                                showBottomSheet = true,
-                                onDeleteMusic = onDeleteMusic,
-                                onChargeAlbumSongs = onChargeAlbumSongs,
-                                onChargeArtistLists = onChargeArtistLists,
-                                isPlayerReady = isPlayerReady
-                            )
+                            if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                                LocalMusicListItem(
+                                    onShortClick = { onShortClick(music.mediaId) },
+                                    music = music,
+                                    onNavigate = { onNavigate(it) },
+                                    currentMusicUri = currentMusicUri,
+                                    onLoadMetadata = onLoadMetadata,
+                                    showBottomSheet = true,
+                                    onDeleteMusic = onDeleteMusic,
+                                    onChargeAlbumSongs = onChargeAlbumSongs,
+                                    onChargeArtistLists = onChargeArtistLists,
+                                    isPlayerReady = isPlayerReady
+                                )
+                            } else {
+                                var safTracks by rememberAllSafTracks()
+                                SafMusicListItem(
+                                    onShortClick = { onShortClick(music.mediaId) },
+                                    music = music,
+                                    currentMusicUri = currentMusicUri,
+                                    showBottomSheet = true,
+                                    isPlayerReady = isPlayerReady,
+                                    onDeleteFromSaf = {
+                                        safTracks = safTracks.toMutableSet().apply {
+                                            remove(music.mediaMetadata.extras?.getString("uri"))
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -99,7 +119,7 @@ fun PlaylistDetailsScreen(
                     Spacer(Modifier.width(5.dp))
                     CuteText(playlistDisplay)
                 }
-            ) { onPopBackStack() }
+            ) { onNavigateUp() }
         }
     }
 

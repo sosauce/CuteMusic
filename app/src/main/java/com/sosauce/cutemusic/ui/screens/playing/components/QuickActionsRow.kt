@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.playing.components
 import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
@@ -55,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -225,7 +224,7 @@ fun QuickActionsRow(
     val context = LocalContext.current
     var isDropDownExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
-    val uri = remember { Uri.parse(musicState.currentMusicUri) }
+    val uri = remember { musicState.currentMusicUri.toUri() }
     var showTimePicker by remember { mutableStateOf(false) }
     val onBackground = MaterialTheme.colorScheme.onBackground
     val eqIntent = rememberLauncherForActivityResult(equalizerActivityContract()) { }
@@ -498,5 +497,6 @@ fun equalizerActivityContract() = object : ActivityResultContract<Unit, Unit>() 
     override fun parseResult(
         resultCode: Int,
         intent: Intent?,
-    ) {}
+    ) {
+    }
 }

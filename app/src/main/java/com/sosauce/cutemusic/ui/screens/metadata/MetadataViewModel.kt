@@ -45,7 +45,7 @@ class MetadataViewModel(
         _metadata.value.mutablePropertiesMap.clear()
     }
 
-    suspend fun loadMetadata() {
+    private suspend fun loadMetadata() {
         runCatching {
             getFileDescriptorFromPath(application, metadataState.value.songPath)?.use { fd ->
                 val metadata = loadAudioMetadata(fd)

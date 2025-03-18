@@ -4,23 +4,23 @@ import androidx.room.Room
 import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelperImpl
+import com.sosauce.cutemusic.domain.repository.SafManager
+import com.sosauce.cutemusic.main.quickplay.QuickPlayViewModel
 import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val appModule = module {
+
     single<MediaStoreHelper> {
         MediaStoreHelperImpl(androidContext())
     }
-
-//    single {
-//        SafManager(androidContext())
-//    }
 
     single {
         Room.databaseBuilder(
@@ -30,16 +30,11 @@ val appModule = module {
         ).build().dao
     }
 
-    viewModel {
-        PostViewModel(get()/*, get()*/)
-    }
-    viewModel {
-        MusicViewModel(androidApplication(), get() /*, get()*/)
-    }
-    viewModel {
-        MetadataViewModel(androidApplication())
-    }
-    viewModel {
-        PlaylistViewModel(get())
-    }
+
+    singleOf(::SafManager)
+    viewModelOf(::MusicViewModel)
+    viewModelOf(::PostViewModel)
+    viewModelOf(::MetadataViewModel)
+    viewModelOf(::PlaylistViewModel)
+    viewModelOf(::QuickPlayViewModel)
 }

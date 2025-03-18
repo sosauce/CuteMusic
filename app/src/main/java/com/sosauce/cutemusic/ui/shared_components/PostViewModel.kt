@@ -4,61 +4,44 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
+import com.sosauce.cutemusic.domain.repository.SafManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.collections.filter
 
 
 class PostViewModel(
     private val mediaStoreHelper: MediaStoreHelper,
-    //private val safManager: SafManager
+    safManager: SafManager
 ) : ViewModel() {
 
 
-//    @SuppressLint("UnsafeOptInUsageError")
-//    var musics = combine(safTracks, mediaStoreHelper.fetchLatestMusics()) { safList, trackList ->
-//        safList + trackList
-//    }.stateIn(
-//        CoroutineScope(Dispatchers.IO),
-//        SharingStarted.WhileSubscribed(5000),
-//        mediaStoreHelper.musics
-//    )
+    val musics = mediaStoreHelper.fetchLatestMusics()
+        .combine(safManager.fetchLatestSafTracks()) { localMusics, safMusics ->
+            localMusics + safMusics
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            mediaStoreHelper.musics
+        )
 
-    val testing = merge(
-        mediaStoreHelper.fetchLatestMusics()
-    ).stateIn(
+    val safTracks = safManager.fetchLatestSafTracks().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         emptyList()
     )
-
-    val musics = mediaStoreHelper.fetchLatestMusics().stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        mediaStoreHelper.musics
-    )
-
-//    val safTracks = safManager.fetchLatestSafTracks().stateIn(
-//        viewModelScope,
-//        SharingStarted.WhileSubscribed(5000),
-//        emptyList()
-//    )
 
 
     val albums = mediaStoreHelper.fetchLatestAlbums().stateIn(
@@ -78,7 +61,6 @@ class PostViewModel(
         SharingStarted.WhileSubscribed(5000),
         emptyList()
     )
-
 
 
     private companion object {

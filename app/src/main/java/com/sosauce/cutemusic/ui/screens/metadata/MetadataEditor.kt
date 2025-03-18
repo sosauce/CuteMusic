@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,12 +51,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MetadataActions
-import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -65,8 +66,7 @@ import com.sosauce.cutemusic.utils.ImageUtils
 @Composable
 fun MetadataEditor(
     music: MediaItem,
-    onPopBackStack: () -> Unit,
-    onNavigate: (Screen) -> Unit,
+    onNavigateUp: () -> Unit,
     metadataViewModel: MetadataViewModel,
     onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
 ) {
@@ -74,7 +74,7 @@ fun MetadataEditor(
     val metadataState by metadataViewModel.metadataState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
-    val uri = Uri.parse(music.mediaMetadata.extras?.getString("uri"))
+    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
     val photoPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
             metadataViewModel.onHandleMetadataActions(
@@ -305,7 +305,7 @@ fun MetadataEditor(
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
                 .padding(start = 15.dp)
-        ) { onPopBackStack() }
+        ) { onNavigateUp() }
         CuteActionButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)

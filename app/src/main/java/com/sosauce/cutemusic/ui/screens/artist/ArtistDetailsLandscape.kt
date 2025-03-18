@@ -39,9 +39,9 @@ import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.album.AlbumCard
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
@@ -102,7 +102,7 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                     items = artistSongs,
                     key = { _, music -> music.mediaId }
                 ) { index, music ->
-                    MusicListItem(
+                    LocalMusicListItem(
                         music = music,
                         currentMusicUri = currentMusicUri,
                         onShortClick = { onClickPlay(it) },
@@ -162,7 +162,7 @@ private fun SharedTransitionScope.ArtistInfoCard(
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
             )
-            CuteText(pluralStringResource(R.plurals.songs, numberOfSongs, numberOfSongs))
+            CuteText(pluralStringResource(R.plurals.tracks, numberOfSongs, numberOfSongs))
             CuteText(pluralStringResource(R.plurals.albums, numberOfAlbums, numberOfAlbums))
         }
     }

@@ -46,10 +46,8 @@ class PlaylistViewModel(
 
             is PlaylistActions.CreatePlaylist -> {
                 // When creating a playlist, user cannot add musics, they need to do it afterwards
-                val name = if (state.value.name.value.isBlank()) {
+                val name = state.value.name.value.ifBlank {
                     "Playlist ${allPlaylists.value.size + 1}"
-                } else {
-                    state.value.name.value
                 }
                 val playlist = Playlist(
                     emoji = state.value.emoji.value,

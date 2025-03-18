@@ -43,14 +43,6 @@ fun AboutCard() {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-//            Image(
-//                painterResource(id = R.drawable.cute_music_icon),
-//                contentDescription = stringResource(id = R.string.app_icon),
-//                modifier = Modifier
-//                    .size(100.dp)
-//                    .padding(15.dp)
-//                    .clip(RoundedCornerShape(15))
-//            )
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -92,20 +84,6 @@ fun AboutCard() {
             ) {
                 CuteText(text = stringResource(id = R.string.update))
             }
-//                Spacer(modifier = Modifier.width(2.dp))
-//                Button(
-//                    onClick = { uriHandler.openUri("https://bit.ly/sosaucePayPal") },
-//                    shape = RoundedCornerShape(
-//                        topStart = 4.dp,
-//                        bottomStart = 4.dp,
-//                        topEnd = 24.dp,
-//                        bottomEnd = 24.dp
-//                    ),
-//                    modifier = Modifier.weight(1f)
-//                ) {
-//                    CuteText(text = stringResource(id = R.string.support))
-//
-//                }
         }
     }
 }

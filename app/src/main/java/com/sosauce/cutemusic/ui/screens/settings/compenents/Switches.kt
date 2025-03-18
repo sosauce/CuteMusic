@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.sosauce.cutemusic.ui.screens.settings.compenents
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -17,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +35,6 @@ fun Misc(
     onNavigate: (Screen) -> Unit
 ) {
     //var killService by remember { rememberKillService(context) }
-    val context = LocalContext.current
 
     Column {
         CuteText(
@@ -58,21 +53,21 @@ fun Misc(
                 )
                 .fillMaxWidth(),
             topDp = 24.dp,
+            bottomDp = 4.dp
+        )
+        TextSettingsCards(
+            text = stringResource(id = R.string.saf_manager),
+            onClick = { onNavigate(Screen.Saf) },
+            modifier = Modifier
+                .padding(
+                    top = 25.dp,
+                    start = 15.dp,
+                    bottom = 25.dp
+                )
+                .fillMaxWidth(),
+            topDp = 4.dp,
             bottomDp = 24.dp
         )
-//        TextSettingsCards(
-//            text = stringResource(id = R.string.saf_manager),
-//            onClick = { onNavigate(Screen.Saf) },
-//            modifier = Modifier
-//                .padding(
-//                    top = 25.dp,
-//                    start = 15.dp,
-//                    bottom = 25.dp
-//                )
-//                .fillMaxWidth(),
-//            topDp = 4.dp,
-//            bottomDp = 24.dp
-//        )
 //        SettingsCards(
 //            checked = killService,
 //            onCheckedChange = { killService = !killService },

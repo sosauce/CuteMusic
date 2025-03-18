@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class AutoPlaybackService : MediaBrowserService() {
 
 
-    val mediaStoreHelper by lazy { MediaStoreHelperImpl(this) }
+    private val mediaStoreHelper by lazy { MediaStoreHelperImpl(this) }
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
@@ -28,7 +28,7 @@ class AutoPlaybackService : MediaBrowserService() {
         clientPackageName: String,
         clientUid: Int,
         rootHints: Bundle?
-    ): BrowserRoot? = BrowserRoot(ROOT_ID, null)
+    ): BrowserRoot = BrowserRoot(ROOT_ID, null)
 
     override fun onLoadChildren(
         parentId: String,

@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 fun CuteNavigationButton(
     modifier: Modifier = Modifier,
     playlistName: (@Composable () -> Unit)? = null,
-    onPopBackstack: () -> Unit
+    onNavigateUp: () -> Unit
 ) {
     SmallFloatingActionButton(
-        onClick = onPopBackstack,
+        onClick = onNavigateUp,
         modifier = modifier,
         shape = RoundedCornerShape(14.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer

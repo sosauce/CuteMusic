@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -123,7 +124,11 @@ fun PlaylistItem(
                     modifier = Modifier.basicMarquee()
                 )
                 CuteText(
-                    text = "${playlist.musics.size} songs",
+                    text = pluralStringResource(
+                        R.plurals.tracks,
+                        playlist.musics.size,
+                        playlist.musics.size
+                    ),
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
@@ -183,13 +188,13 @@ private fun EditPlaylist(
         confirmButton = {
             TextButton(
                 onClick = {
-                    val playlist = Playlist(
+                    val newPlaylist = Playlist(
                         id = playlist.id,
                         name = name,
                         emoji = emoji,
                         musics = playlist.musics
                     )
-                    onUpsertPlaylist(playlist)
+                    onUpsertPlaylist(newPlaylist)
                     onDismissRequest()
                 }
             ) {

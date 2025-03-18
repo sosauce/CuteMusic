@@ -24,8 +24,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,11 +42,11 @@ import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -59,7 +57,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     album: Album,
     viewModel: MusicViewModel,
     postViewModel: PostViewModel,
-    onPopBackStack: () -> Unit,
+    onNavigateUp: () -> Unit,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
@@ -69,7 +67,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     if (rememberIsLandscape()) {
         AlbumDetailsLandscape(
             album = album,
-            onNavigateUp = onPopBackStack,
+            onNavigateUp = onNavigateUp,
             postViewModel = postViewModel,
             viewModel = viewModel,
             musicState = musicState,
@@ -79,7 +77,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
         AlbumDetailsContent(
             album = album,
             viewModel = viewModel,
-            onPopBackStack = onPopBackStack,
+            onNavigateUp = onNavigateUp,
             albumSongs = albumSongs,
             musicState = musicState,
             animatedVisibilityScope = animatedVisibilityScope,
@@ -93,7 +91,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
 private fun SharedTransitionScope.AlbumDetailsContent(
     album: Album,
     viewModel: MusicViewModel,
-    onPopBackStack: () -> Unit,
+    onNavigateUp: () -> Unit,
     albumSongs: List<MediaItem>,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -156,7 +154,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                         )
                         CuteText(
                             text = pluralStringResource(
-                                R.plurals.songs,
+                                R.plurals.tracks,
                                 albumSongs.size,
                                 albumSongs.size
                             ),
@@ -167,12 +165,13 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                 }
                 Spacer(Modifier.height(10.dp))
                 Column {
-                    albumSongs.sortedWith(compareBy(
+                    albumSongs.sortedWith(
+                        compareBy(
                         { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
                         { it.mediaMetadata.trackNumber }
                     ))
                         .forEach { music ->
-                            MusicListItem(
+                            LocalMusicListItem(
                                 music = music,
                                 onShortClick = {
                                     viewModel.handlePlayerActions(
@@ -200,7 +199,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier.align(rememberSearchbarAlignment()),
             showSearchField = false,
-            onNavigate = { onNavigate(Screen.NowPlaying) },
+            onNavigate = onNavigate,
             fab = {
                 CuteActionButton(
                     modifier = Modifier.sharedBounds(
@@ -218,7 +217,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
             },
             navigationIcon = {
                 CuteNavigationButton(
-                    onPopBackstack = onPopBackStack
+                    onNavigateUp = onNavigateUp
                 )
             }
         )

@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,6 +40,7 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 
+
 @Composable
 fun SpeedCard(
     onDismiss: () -> Unit,
@@ -49,66 +51,11 @@ fun SpeedCard(
 ) {
     var speed by remember { mutableFloatStateOf(musicState.playbackParameters.speed) }
     var pitch by remember { mutableFloatStateOf(musicState.playbackParameters.pitch) }
-    var showSpeedAndPitchChangerDialog by remember { mutableStateOf(false) }
-    var showSpeedChangerDialog by remember { mutableStateOf(false) }
-    var showPitchChangerDialog by remember { mutableStateOf(false) }
+    var speedCardContent by remember { mutableStateOf(SpeedCardContent.DEFAULT) }
     val interactionSource = remember {
         MutableInteractionSource()
     }
 
-    if (showSpeedAndPitchChangerDialog) {
-        RateAdjustmentDialog(
-            rate = speed,
-            onSetNewRate = {
-                speed = it
-                pitch = it
-                onHandlePlayerAction(
-                    PlayerActions.ApplyPlaybackSpeed(
-                        speed = speed,
-                        pitch = pitch
-                    )
-                )
-                showSpeedAndPitchChangerDialog = false
-            },
-            titleText = stringResource(id = R.string.set_sap),
-            onDismissRequest = { showSpeedAndPitchChangerDialog = false }
-        )
-    }
-
-    if (showSpeedChangerDialog) {
-        RateAdjustmentDialog(
-            rate = speed,
-            onSetNewRate = {
-                speed = it
-                onHandlePlayerAction(
-                    PlayerActions.ApplyPlaybackSpeed(
-                        speed = speed,
-                        pitch = pitch
-                    )
-                )
-                showSpeedChangerDialog = false
-            },
-            titleText = stringResource(id = R.string.set_speed),
-            onDismissRequest = { showSpeedChangerDialog = false })
-    }
-
-    if (showPitchChangerDialog) {
-        RateAdjustmentDialog(
-            rate = pitch,
-            onSetNewRate = {
-                speed = it
-                onHandlePlayerAction(
-                    PlayerActions.ApplyPlaybackSpeed(
-                        speed = speed,
-                        pitch = pitch
-                    )
-                )
-                showPitchChangerDialog = false
-            },
-            titleText = stringResource(id = R.string.set_pitch),
-            onDismissRequest = { showPitchChangerDialog = false }
-        )
-    }
 
 
     AlertDialog(
@@ -118,164 +65,256 @@ fun SpeedCard(
                 CuteText(text = stringResource(id = R.string.okay))
             }
         },
-        title = { CuteText(stringResource(id = R.string.playback_speed)) },
+        title = {
+            AnimatedContent(
+                targetState = speedCardContent
+            ) {
+                when (it) {
+                    SpeedCardContent.DEFAULT -> {
+                        CuteText(stringResource(id = R.string.playback_speed))
+                    }
+
+                    SpeedCardContent.RATE -> {
+                        CuteText(stringResource(id = R.string.set_sap))
+                    }
+
+                    SpeedCardContent.SPEED -> {
+                        CuteText(stringResource(id = R.string.set_speed))
+                    }
+
+                    SpeedCardContent.PITCH -> {
+                        CuteText(stringResource(id = R.string.set_pitch))
+                    }
+                }
+            }
+        },
         text = {
-            Box {
-                Column {
-                    Spacer(Modifier.height(5.dp))
-                    if (!shouldSnap) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                .clickable { showSpeedChangerDialog = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            CuteText(
-                                text = "${stringResource(id = R.string.speed)}: " + "%.2f".format(
-                                    speed
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 15.sp
-                            )
-                        }
-                        Slider(
-                            value = speed,
-                            onValueChange = {
-                                speed = it
-                                onHandlePlayerAction(
-                                    PlayerActions.ApplyPlaybackSpeed(
-                                        speed = speed,
-                                        pitch = pitch
-                                    )
-                                )
-                            },
-                            valueRange = 0.5f..2f,
-                            track = { sliderState ->
-                                SliderDefaults.Track(
-                                    sliderState = sliderState,
-                                    drawStopIndicator = null,
-                                    thumbTrackGapSize = 4.dp,
-                                    modifier = Modifier.height(5.dp),
-                                    trackInsideCornerSize = 3.dp
-                                )
-                            },
-                            thumb = {
-                                SliderDefaults.Thumb(
-                                    interactionSource = interactionSource,
-                                    thumbSize = DpSize(width = 4.dp, height = 30.dp)
-                                )
-                            },
-                            interactionSource = interactionSource
-                        )
-                        Spacer(Modifier.height(15.dp))
-                        //
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                .clickable { showPitchChangerDialog = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            CuteText(
-                                text = "${stringResource(id = R.string.pitch)}: " + "%.2f".format(
-                                    pitch
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        Slider(
-                            value = pitch,
-                            onValueChange = {
-                                pitch = it
-                                onHandlePlayerAction(
-                                    PlayerActions.ApplyPlaybackSpeed(
-                                        speed = speed,
-                                        pitch = pitch
-                                    )
-                                )
-                            },
-                            valueRange = 0.5f..2f,
-                            track = { sliderState ->
-                                SliderDefaults.Track(
-                                    sliderState = sliderState,
-                                    drawStopIndicator = null,
-                                    thumbTrackGapSize = 4.dp,
-                                    modifier = Modifier.height(5.dp),
-                                    trackInsideCornerSize = 3.dp
-                                )
-                            },
-                            thumb = {
-                                SliderDefaults.Thumb(
-                                    interactionSource = interactionSource,
-                                    thumbSize = DpSize(width = 4.dp, height = 30.dp)
-                                )
-                            },
-                            interactionSource = interactionSource
-                        )
-                    } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Slider(
-                                value = speed,
-                                onValueChange = {
-                                    speed = it
-                                    pitch = it
-                                    onHandlePlayerAction(
-                                        PlayerActions.ApplyPlaybackSpeed(
-                                            speed = speed,
-                                            pitch = pitch
+            AnimatedContent(
+                targetState = speedCardContent
+            ) {
+                when (it) {
+                    SpeedCardContent.DEFAULT -> {
+                        Box {
+                            Column {
+                                Spacer(Modifier.height(5.dp))
+                                if (!shouldSnap) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(11.dp))
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                            .clickable { speedCardContent = SpeedCardContent.SPEED }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        CuteText(
+                                            text = "${stringResource(id = R.string.speed)}: " + "%.2f".format(
+                                                speed
+                                            ),
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            fontSize = 15.sp
                                         )
+                                    }
+                                    Slider(
+                                        value = speed,
+                                        onValueChange = {
+                                            speed = it
+                                            onHandlePlayerAction(
+                                                PlayerActions.ApplyPlaybackSpeed(
+                                                    speed = speed,
+                                                    pitch = pitch
+                                                )
+                                            )
+                                        },
+                                        valueRange = 0.5f..2f,
+                                        track = { sliderState ->
+                                            SliderDefaults.Track(
+                                                sliderState = sliderState,
+                                                drawStopIndicator = null,
+                                                thumbTrackGapSize = 4.dp,
+                                                modifier = Modifier.height(5.dp),
+                                                trackInsideCornerSize = 3.dp
+                                            )
+                                        },
+                                        thumb = {
+                                            SliderDefaults.Thumb(
+                                                interactionSource = interactionSource,
+                                                thumbSize = DpSize(width = 4.dp, height = 30.dp)
+                                            )
+                                        },
+                                        interactionSource = interactionSource
                                     )
-                                },
-                                valueRange = 0.5f..2f,
-                                track = { sliderState ->
-                                    SliderDefaults.Track(
-                                        sliderState = sliderState,
-                                        drawStopIndicator = null,
-                                        thumbTrackGapSize = 4.dp,
-                                        modifier = Modifier.height(5.dp),
-                                        trackInsideCornerSize = 3.dp
+                                    Spacer(Modifier.height(15.dp))
+                                    //
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(11.dp))
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                            .clickable { speedCardContent = SpeedCardContent.PITCH }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        CuteText(
+                                            text = "${stringResource(id = R.string.pitch)}: " + "%.2f".format(
+                                                pitch
+                                            ),
+                                            color = MaterialTheme.colorScheme.onBackground
+                                        )
+                                    }
+                                    Slider(
+                                        value = pitch,
+                                        onValueChange = {
+                                            pitch = it
+                                            onHandlePlayerAction(
+                                                PlayerActions.ApplyPlaybackSpeed(
+                                                    speed = speed,
+                                                    pitch = pitch
+                                                )
+                                            )
+                                        },
+                                        valueRange = 0.5f..2f,
+                                        track = { sliderState ->
+                                            SliderDefaults.Track(
+                                                sliderState = sliderState,
+                                                drawStopIndicator = null,
+                                                thumbTrackGapSize = 4.dp,
+                                                modifier = Modifier.height(5.dp),
+                                                trackInsideCornerSize = 3.dp
+                                            )
+                                        },
+                                        thumb = {
+                                            SliderDefaults.Thumb(
+                                                interactionSource = interactionSource,
+                                                thumbSize = DpSize(width = 4.dp, height = 30.dp)
+                                            )
+                                        },
+                                        interactionSource = interactionSource
                                     )
-                                },
-                                thumb = {
-                                    SliderDefaults.Thumb(
-                                        interactionSource = interactionSource,
-                                        thumbSize = DpSize(width = 4.dp, height = 30.dp)
+                                } else {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Slider(
+                                            value = speed,
+                                            onValueChange = {
+                                                speed = it
+                                                pitch = it
+                                                onHandlePlayerAction(
+                                                    PlayerActions.ApplyPlaybackSpeed(
+                                                        speed = speed,
+                                                        pitch = pitch
+                                                    )
+                                                )
+                                            },
+                                            valueRange = 0.5f..2f,
+                                            track = { sliderState ->
+                                                SliderDefaults.Track(
+                                                    sliderState = sliderState,
+                                                    drawStopIndicator = null,
+                                                    thumbTrackGapSize = 4.dp,
+                                                    modifier = Modifier.height(5.dp),
+                                                    trackInsideCornerSize = 3.dp
+                                                )
+                                            },
+                                            thumb = {
+                                                SliderDefaults.Thumb(
+                                                    interactionSource = interactionSource,
+                                                    thumbSize = DpSize(width = 4.dp, height = 30.dp)
+                                                )
+                                            },
+                                            interactionSource = interactionSource
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(11.dp))
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary.copy(
+                                                        alpha = 0.1f
+                                                    )
+                                                )
+                                                .clickable {
+                                                    speedCardContent = SpeedCardContent.RATE
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                                        ) {
+                                            CuteText(
+                                                text = "%.2f".format(speed),
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                            )
+                                        }
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    Checkbox(
+                                        checked = shouldSnap,
+                                        onCheckedChange = { onChangeSnap() }
                                     )
-                                },
-                                interactionSource = interactionSource
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(11.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                    .clickable { showSpeedAndPitchChangerDialog = true }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                            ) {
-                                CuteText(
-                                    text = "%.2f".format(speed),
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                )
+                                    CuteText(
+                                        text = stringResource(id = R.string.snap)
+                                    )
+                                }
                             }
                         }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Checkbox(
-                            checked = shouldSnap,
-                            onCheckedChange = { onChangeSnap() }
+
+                    SpeedCardContent.RATE -> {
+                        RateAdjustmentDialog(
+                            rate = speed,
+                            onSetNewRate = { rate ->
+                                speed = rate
+                                pitch = rate
+                                onHandlePlayerAction(
+                                    PlayerActions.ApplyPlaybackSpeed(
+                                        speed = speed,
+                                        pitch = pitch
+                                    )
+                                )
+                                speedCardContent = SpeedCardContent.DEFAULT
+                            },
                         )
-                        CuteText(
-                            text = stringResource(id = R.string.snap)
+                    }
+
+                    SpeedCardContent.SPEED -> {
+                        RateAdjustmentDialog(
+                            rate = speed,
+                            onSetNewRate = { rate ->
+                                speed = rate
+                                onHandlePlayerAction(
+                                    PlayerActions.ApplyPlaybackSpeed(
+                                        speed = speed,
+                                        pitch = pitch
+                                    )
+                                )
+                                speedCardContent = SpeedCardContent.DEFAULT
+                            },
+                        )
+                    }
+
+                    SpeedCardContent.PITCH -> {
+                        RateAdjustmentDialog(
+                            rate = speed,
+                            onSetNewRate = { rate ->
+                                pitch = rate
+                                onHandlePlayerAction(
+                                    PlayerActions.ApplyPlaybackSpeed(
+                                        speed = speed,
+                                        pitch = pitch
+                                    )
+                                )
+                                speedCardContent = SpeedCardContent.DEFAULT
+                            },
                         )
                     }
                 }
             }
         }
     )
+}
+
+enum class SpeedCardContent {
+    DEFAULT,
+    RATE,
+    SPEED,
+    PITCH
 }

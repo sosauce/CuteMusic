@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package com.sosauce.cutemusic.utils
 
 import android.content.ContentResolver
@@ -5,11 +7,21 @@ import android.content.Context
 import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -18,11 +30,18 @@ import androidx.media3.common.Player
 import androidx.navigation.NavHostController
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.ui.navigation.Screen
+import dev.chrisbanes.haze.HazeEffectScope
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun Modifier.thenIf(
     condition: Boolean,
@@ -59,11 +78,6 @@ fun Long.formatBinarySize(): String {
     }
 }
 
-
-fun Long.toReadableMinutes(): Int {
-    return (this / 1000 / 60).toInt()
-}
-
 fun Player.playAtIndex(
     mediaId: String
 ) {
@@ -87,7 +101,8 @@ fun Player.playFromAlbum(
 ) {
     clearMediaItems()
     musics.filter { music -> music.mediaMetadata.albumTitle.toString() == albumName }
-        .sortedWith(compareBy(
+        .sortedWith(
+            compareBy(
             { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
             { it.mediaMetadata.trackNumber }
         ))
@@ -144,7 +159,7 @@ fun Player.applyPlaybackSpeed(
 
 
 fun ByteArray.getUriFromByteArray(context: Context): Uri {
-    val albumArtFile = File(context.cacheDir, "album_art_${this.hashCode()}.jpg")
+    val albumArtFile = File(context.cacheDir, "albumArt_${this.hashCode()}_${Uuid.random()}.jpg")
     try {
         FileOutputStream(albumArtFile).use { os ->
             os.write(this)
@@ -192,6 +207,10 @@ fun PropertyMap.toModifiableMap(separator: String = ", "): MutableMap<String, St
 
 fun String?.formatForField(separator: String = ","): Array<String> {
     return this?.split(separator)?.map { it.trim() }?.toTypedArray() ?: arrayOf(this ?: "")
+}
+
+object CurrentScreen {
+    var screen by mutableStateOf(Screen.Main.toString())
 }
 
 
@@ -249,6 +268,34 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 
 fun <T : Any> NavHostController.navigateSingleTop(route: T) =
     navigate(route) { launchSingleTop = true }
+
+@Composable
+fun Modifier.cuteHazeEffect(
+    state: HazeState,
+    intensity: Dp = 15.dp,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    block: (HazeEffectScope.() -> Unit)? = null,
+) = hazeEffect(
+    state = state,
+    style = HazeStyle(
+        backgroundColor = backgroundColor,
+        tints = emptyList(),
+        blurRadius = intensity,
+        noiseFactor = 0f
+    ),
+    block = block
+)
+
+
+@Composable
+fun animateAlignmentAsState(
+    targetAlignment: Alignment,
+): State<Alignment> {
+    val biased = targetAlignment as BiasAlignment
+    val horizontal by animateFloatAsState(biased.horizontalBias, tween(400))
+    val vertical by animateFloatAsState(biased.verticalBias, tween(400))
+    return remember { derivedStateOf { BiasAlignment(horizontal, vertical) } }
+}
 
 @Composable
 fun rememberSearchbarAlignment(

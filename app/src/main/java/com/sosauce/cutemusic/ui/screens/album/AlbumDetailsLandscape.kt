@@ -23,8 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,9 +36,9 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -97,7 +95,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
                 )
-                CuteText(pluralStringResource(R.plurals.songs, albumSongs.size, albumSongs.size))
+                CuteText(pluralStringResource(R.plurals.tracks, albumSongs.size, albumSongs.size))
                 Spacer(modifier = Modifier.width(5.dp))
             }
 
@@ -106,7 +104,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                     items = albumSongs,
                     key = { _, music -> music.mediaId }
                 ) { index, music ->
-                    MusicListItem(
+                    LocalMusicListItem(
                         modifier = Modifier
                             .thenIf(index == 0) { Modifier.statusBarsPadding() }
                             .padding(horizontal = 5.dp),

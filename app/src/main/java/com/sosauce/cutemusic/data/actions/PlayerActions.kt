@@ -1,7 +1,5 @@
 package com.sosauce.cutemusic.data.actions
 
-import android.net.Uri
-
 sealed interface PlayerActions {
     data object PlayOrPause : PlayerActions
     data object SeekToNextMusic : PlayerActions
@@ -30,10 +28,6 @@ sealed interface PlayerActions {
 
     data class UpdateCurrentPosition(
         val position: Long
-    ) : PlayerActions
-
-    data class QuickPlay(
-        val uri: Uri
     ) : PlayerActions
 
     data class SetSleepTimer(

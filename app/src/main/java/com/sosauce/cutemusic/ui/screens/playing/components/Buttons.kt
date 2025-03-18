@@ -13,7 +13,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -33,10 +32,8 @@ import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -105,156 +102,171 @@ fun ShuffleButton() {
 }
 
 @Composable
-fun ActionButtonsRowV2(
+fun SharedTransitionScope.ActionButtonsRowV2(
     musicState: MusicState,
-    onHandlePlayerActions: (PlayerActions) -> Unit
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
 
     val scope = rememberCoroutineScope()
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val skipPreviousOffset = remember { Animatable(0f) }
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
-                    scope.launch(Dispatchers.Default) {
-                        skipPreviousOffset.animateTo(
-                            targetValue = -25f,
-                            animationSpec = tween(400)
-                        )
-                        skipPreviousOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(400)
-                        )
-                    }
-                },
-                modifier = Modifier.size(60.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.SkipPrevious,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .offset {
-                            IntOffset(
-                                x = skipPreviousOffset.value.toInt(),
-                                y = 0
-                            )
-                        }
-                )
-            }
-
-            val fastRewindOffset = remember { Animatable(0f) }
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(PlayerActions.RewindTo(5000))
-                    scope.launch(Dispatchers.Default) {
-                        fastRewindOffset.animateTo(
-                            targetValue = -25f,
-                            animationSpec = tween(400)
-                        )
-                        fastRewindOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(400)
-                        )
-                    }
-                },
-                modifier = Modifier.size(60.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.FastRewind,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(35.dp)
-                        .offset {
-                            IntOffset(
-                                x = fastRewindOffset.value.toInt(),
-                                y = 0
-                            )
-                        }
-                )
-            }
-            IconButton(
-                onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
-                modifier = Modifier.size(60.dp)
-            ) {
-                Crossfade(
-                    targetState = musicState.isCurrentlyPlaying,
-                    animationSpec = tween(200)
-                ) { targetState ->
-                    Icon(
-                        imageVector = if (targetState) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val skipPreviousOffset = remember { Animatable(0f) }
+        IconButton(
+            onClick = {
+                onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
+                scope.launch(Dispatchers.Default) {
+                    skipPreviousOffset.animateTo(
+                        targetValue = -25f,
+                        animationSpec = tween(400)
+                    )
+                    skipPreviousOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(400)
                     )
                 }
-            }
-            val fastForwardOffset = remember { Animatable(0f) }
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(PlayerActions.SeekTo(5000))
-                    scope.launch(Dispatchers.Default) {
-                        fastForwardOffset.animateTo(
-                            targetValue = 25f,
-                            animationSpec = tween(400)
-                        )
-                        fastForwardOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(400)
-                        )
-                    }
-                },
-                modifier = Modifier.size(60.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.FastForward,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(35.dp)
-                        .offset {
-                            IntOffset(
-                                x = fastForwardOffset.value.toInt(),
-                                y = 0
-                            )
-                        }
-                )
-            }
-            val skipNextOffset = remember { Animatable(0f) }
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(PlayerActions.SeekToNextMusic)
-                    scope.launch(Dispatchers.Default) {
-                        skipNextOffset.animateTo(
-                            targetValue = 25f,
-                            animationSpec = tween(400)
-                        )
-                        skipNextOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(400)
+            },
+            modifier = Modifier.size(60.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SkipPrevious,
+                contentDescription = null,
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState(key = "skipPreviousButton"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .size(40.dp)
+                    .offset {
+                        IntOffset(
+                            x = skipPreviousOffset.value.toInt(),
+                            y = 0
                         )
                     }
-                },
-                modifier = Modifier.size(60.dp)
-            ) {
+            )
+        }
+
+        val fastRewindOffset = remember { Animatable(0f) }
+        IconButton(
+            onClick = {
+                onHandlePlayerActions(PlayerActions.RewindTo(5000))
+                scope.launch(Dispatchers.Default) {
+                    fastRewindOffset.animateTo(
+                        targetValue = -25f,
+                        animationSpec = tween(400)
+                    )
+                    fastRewindOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(400)
+                    )
+                }
+            },
+            modifier = Modifier.size(60.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.FastRewind,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(35.dp)
+                    .offset {
+                        IntOffset(
+                            x = fastRewindOffset.value.toInt(),
+                            y = 0
+                        )
+                    }
+            )
+        }
+        IconButton(
+            onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
+            modifier = Modifier.size(60.dp)
+        ) {
+            Crossfade(
+                targetState = musicState.isCurrentlyPlaying,
+                animationSpec = tween(200)
+            ) { targetState ->
                 Icon(
-                    imageVector = Icons.Rounded.SkipNext,
+                    imageVector = if (targetState) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier
+                        .sharedElement(
+                            state = rememberSharedContentState(key = "playPauseIcon"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
                         .size(40.dp)
-                        .offset {
-                            IntOffset(
-                                x = skipNextOffset.value.toInt(),
-                                y = 0
-                            )
-                        }
+
                 )
             }
         }
+        val fastForwardOffset = remember { Animatable(0f) }
+        IconButton(
+            onClick = {
+                onHandlePlayerActions(PlayerActions.SeekTo(5000))
+                scope.launch(Dispatchers.Default) {
+                    fastForwardOffset.animateTo(
+                        targetValue = 25f,
+                        animationSpec = tween(400)
+                    )
+                    fastForwardOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(400)
+                    )
+                }
+            },
+            modifier = Modifier.size(60.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.FastForward,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(35.dp)
+                    .offset {
+                        IntOffset(
+                            x = fastForwardOffset.value.toInt(),
+                            y = 0
+                        )
+                    }
+            )
+        }
+        val skipNextOffset = remember { Animatable(0f) }
+        IconButton(
+            onClick = {
+                onHandlePlayerActions(PlayerActions.SeekToNextMusic)
+                scope.launch(Dispatchers.Default) {
+                    skipNextOffset.animateTo(
+                        targetValue = 25f,
+                        animationSpec = tween(400)
+                    )
+                    skipNextOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(400)
+                    )
+                }
+            },
+            modifier = Modifier.size(60.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SkipNext,
+                contentDescription = null,
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState(key = "skipNextButton"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .size(40.dp)
+                    .offset {
+                        IntOffset(
+                            x = skipNextOffset.value.toInt(),
+                            y = 0
+                        )
+                    }
+            )
+        }
     }
+}
 
 @Composable
 fun SharedTransitionScope.ActionsButtonsRow(

@@ -6,13 +6,17 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.launch
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,16 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
-import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
-import com.sosauce.cutemusic.ui.shared_components.AppBar
+import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
 
 @Composable
 fun SafScreen(
     onNavigateUp: () -> Unit,
     latestSafTracks: List<MediaItem>,
-    onNavigate: (Screen) -> Unit,
     onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String,
@@ -56,6 +58,7 @@ fun SafScreen(
             add(it.toString())
         }
 
+
         context.contentResolver.takePersistableUriPermission(
             it ?: Uri.EMPTY,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -63,42 +66,39 @@ fun SafScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            AppBar(
-                title = stringResource(R.string.saf_manager),
-                showBackArrow = true,
-                onPopBackStack = onNavigateUp
-            )
-        }
-    ) { values ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(values)
+    Scaffold { values ->
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Card(
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = {
-                    safAudioPicker.launch()
-                }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = values
             ) {
-                Row(
-                    modifier = Modifier.padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
-                        contentDescription = null
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    CuteText(stringResource(R.string.open_saf))
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(),
+                        onClick = {
+                            safAudioPicker.launch()
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            CuteText(stringResource(R.string.open_saf))
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
                 }
-            }
-            Spacer(Modifier.height(10.dp))
-            LazyColumn {
+
                 items(
                     items = latestSafTracks.toList(),
                     key = { it.mediaId }
@@ -112,14 +112,13 @@ fun SafScreen(
                                 horizontal = 4.dp
                             )
                     ) {
-                        MusicListItem(
+                        SafMusicListItem(
                             onShortClick = { onShortClick(safTrack.mediaId) },
                             music = safTrack,
-                            onNavigate = { onNavigate(it) },
                             currentMusicUri = currentMusicUri,
                             showBottomSheet = true,
                             isPlayerReady = isPlayerReady,
-                            onDeleteSafTrack = {
+                            onDeleteFromSaf = {
                                 safTracks = safTracks.toMutableSet().apply {
                                     remove(safTrack.mediaMetadata.extras?.getString("uri"))
                                 }
@@ -129,11 +128,15 @@ fun SafScreen(
 
                 }
             }
+
+            CuteNavigationButton(
+                modifier = Modifier
+                    .padding(start = 15.dp)
+                    .align(Alignment.BottomStart)
+                    .navigationBarsPadding()
+            ) { onNavigateUp() }
         }
-
-
     }
-
 }
 
 private fun safActivityContract() = object : ActivityResultContract<Unit, Uri?>() {

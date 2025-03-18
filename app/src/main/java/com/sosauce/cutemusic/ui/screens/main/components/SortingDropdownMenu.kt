@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.ui.screens.main.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,12 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,14 +37,14 @@ fun SortingDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
+        //modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(5.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(15.dp)
+                modifier = Modifier.padding(12.dp)
             ) {
                 Checkbox(
                     modifier = Modifier.size(20.dp), // https://stackoverflow.com/a/77142600/28577483
@@ -58,11 +54,6 @@ fun SortingDropdownMenu(
                 Spacer(Modifier.width(10.dp))
                 CuteText(stringResource(R.string.group_tracks))
             }
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth()
-            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

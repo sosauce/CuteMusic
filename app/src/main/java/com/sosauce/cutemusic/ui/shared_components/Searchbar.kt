@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
 
 package com.sosauce.cutemusic.ui.shared_components
 
@@ -7,18 +7,14 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Icon
@@ -44,7 +39,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,9 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,11 +57,11 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.utils.CurrentScreen
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 
 @Composable
@@ -84,21 +75,18 @@ fun SharedTransitionScope.CuteSearchbar(
     isPlaying: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean = true,
-    onNavigate: () -> Unit = {},
+    onNavigate: (Screen) -> Unit = {},
     showSearchField: Boolean = true,
     fab: @Composable (() -> Unit)? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
-    currentScreen: String = "",
-    onNavigationItemClicked: (Screen) -> Unit = {}
 ) {
 
     val focusManager = LocalFocusManager.current
-    val configuration = LocalConfiguration.current
     val leftIconOffsetX = remember { Animatable(0f) }
     val rightIconOffsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    var showXButton by rememberShowXButton()
-    var showShuffleButton by rememberShowShuffleButton()
+    val showXButton by rememberShowXButton()
+    val showShuffleButton by rememberShowShuffleButton()
     val screenToPlaceholder = remember {
         hashMapOf(
             Screen.Main.toString() to R.string.search_tracks,
@@ -115,12 +103,14 @@ fun SharedTransitionScope.CuteSearchbar(
             Screen.Playlists.toString() to R.drawable.queue_music_rounded,
         )
     }
+
     Column(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxWidth(rememberSearchbarMaxFloatValue())
             .padding(end = rememberSearchbarRightPadding())
             .imePadding()
+
     ) {
         Row(
             horizontalArrangement = if (navigationIcon != null) Arrangement.SpaceBetween else Arrangement.End,
@@ -131,7 +121,6 @@ fun SharedTransitionScope.CuteSearchbar(
                 fab?.invoke()
             }
         }
-        //Spacer(Modifier.height(5.dp))
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(24.dp))
@@ -141,9 +130,9 @@ fun SharedTransitionScope.CuteSearchbar(
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = RoundedCornerShape(24.dp)
                 )
-                .clickable(isPlayerReady) {
-                    onNavigate()
-                }
+                .clickable(
+                    enabled = isPlayerReady
+                ) { onNavigate(Screen.NowPlaying) }
         ) {
             AnimatedVisibility(
                 visible = isPlayerReady,
@@ -290,7 +279,10 @@ fun SharedTransitionScope.CuteSearchbar(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(screenToLeadingIcon[currentScreen] ?: R.drawable.music_note_rounded),
+                                painter = painterResource(
+                                    screenToLeadingIcon[CurrentScreen.screen]
+                                        ?: R.drawable.music_note_rounded
+                                ),
                                 contentDescription = null,
                                 //tint = if (!hasSeenTip) color else LocalContentColor.current
                             )
@@ -298,15 +290,15 @@ fun SharedTransitionScope.CuteSearchbar(
                         ScreenSelection(
                             expanded = screenSelectionExpanded,
                             onDismissRequest = { screenSelectionExpanded = false },
-                            onNavigationItemClicked = onNavigationItemClicked,
-                            currentScreen = currentScreen
-                        )
+                            onNavigate = onNavigate,
+
+                            )
                     },
                     trailingIcon = trailingIcon,
                     placeholder = {
                         CuteText(
                             text = stringResource(
-                                screenToPlaceholder[currentScreen] ?: R.string.nothing
+                                screenToPlaceholder[CurrentScreen.screen] ?: R.string.nothing
                             ),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                             maxLines = 1
@@ -325,6 +317,7 @@ fun SharedTransitionScope.CuteSearchbar(
         }
     }
 }
+
 
 
 

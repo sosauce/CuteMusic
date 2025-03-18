@@ -34,7 +34,7 @@ private const val PREFERENCES_NAME = "settings"
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(PREFERENCES_NAME)
 
-private data object PreferencesKeys {
+data object PreferencesKeys {
     val USE_DARK_MODE = booleanPreferencesKey("use_dark_mode")
     val USE_AMOLED_MODE = booleanPreferencesKey("use_amoled_mode")
     val FOLLOW_SYS = booleanPreferencesKey("follow_sys")
@@ -53,6 +53,7 @@ private data object PreferencesKeys {
     val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
     val USE_NP_V2 = booleanPreferencesKey("USE_NP_V2")
 }
+
 
 @Composable
 fun rememberUseDarkMode() =

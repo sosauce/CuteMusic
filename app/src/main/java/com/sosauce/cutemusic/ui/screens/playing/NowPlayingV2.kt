@@ -1,32 +1,22 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 
 package com.sosauce.cutemusic.ui.screens.playing
 
 import android.content.Intent
-import android.net.Uri
-import android.transition.Slide
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.launch
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateValue
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,30 +24,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,39 +48,26 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
@@ -114,7 +81,6 @@ import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionButtonsRowV2
-import com.sosauce.cutemusic.ui.screens.playing.components.QuickActionsRow
 import com.sosauce.cutemusic.ui.screens.playing.components.QuickActionsRowV2
 import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.screens.playing.components.equalizerActivityContract
@@ -124,19 +90,18 @@ import com.sosauce.cutemusic.ui.shared_components.MusicStateDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.formatToReadableTime
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.saket.squiggles.SquigglySlider
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun NowPlayingV2(
+fun SharedTransitionScope.NowPlayingV2(
+    animatedVisibilityScope: AnimatedVisibilityScope,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onPopBackstack: () -> Unit,
+    onNavigateUp: () -> Unit,
     lyrics: List<Lyrics>
 ) {
     var showFullLyrics by remember { mutableStateOf(false) }
@@ -149,8 +114,9 @@ fun NowPlayingV2(
             onChargeAlbumSongs = onChargeAlbumSongs,
             onChargeArtistLists = onChargeArtistLists,
             onNavigate = onNavigate,
-            onNavigateUp = onPopBackstack,
-            lyrics = lyrics
+            onNavigateUp = onNavigateUp,
+            lyrics = lyrics,
+            animatedVisibilityScope = animatedVisibilityScope
         )
     } else {
         AnimatedContent(showFullLyrics) { targetState ->
@@ -168,8 +134,9 @@ fun NowPlayingV2(
                     onChargeAlbumSongs = onChargeAlbumSongs,
                     onChargeArtistLists = onChargeArtistLists,
                     onNavigate = onNavigate,
-                    onPopBackstack = onPopBackstack,
-                    onShowLyrics = { showFullLyrics = true }
+                    onNavigateUp = onNavigateUp,
+                    onShowLyrics = { showFullLyrics = true },
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             }
 
@@ -180,20 +147,22 @@ fun NowPlayingV2(
 }
 
 @Composable
-fun NowPlayingV2Content(
+private fun SharedTransitionScope.NowPlayingV2Content(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onPopBackstack: () -> Unit,
-    onShowLyrics: () -> Unit
+    onNavigateUp: () -> Unit,
+    onShowLyrics: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     var tempSliderValue by remember { mutableStateOf<Float?>(null) }
     var showSpeedCard by remember { mutableStateOf(false) }
     var snap by rememberSnapSpeedAndPitch()
-    val uri = remember { Uri.parse(musicState.currentMusicUri) }
+    val uri = remember { musicState.currentMusicUri.toUri() }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
@@ -249,7 +218,7 @@ fun NowPlayingV2Content(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                val playlist = Playlist(
+                                val newPlaylist = Playlist(
                                     id = playlist.id,
                                     name = playlist.name,
                                     emoji = playlist.emoji,
@@ -257,7 +226,7 @@ fun NowPlayingV2Content(
                                         .apply { add(musicState.currentMediaId) }
                                 )
                                 playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(playlist)
+                                    PlaylistActions.UpsertPlaylist(newPlaylist)
                                 )
                             }
                         }
@@ -280,6 +249,7 @@ fun NowPlayingV2Content(
         )
     }
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -295,7 +265,7 @@ fun NowPlayingV2Content(
             horizontalArrangement = Arrangement.Start
         ) {
             IconButton(
-                onClick = onPopBackstack,
+                onClick = onNavigateUp,
             ) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
@@ -312,8 +282,7 @@ fun NowPlayingV2Content(
                 modifier = Modifier
                     .size(340.dp)
                     .clip(RoundedCornerShape(5)),
-                contentScale = ContentScale.Crop,
-                onSuccess = {it.painter}
+                contentScale = ContentScale.Crop
             )
         }
         Spacer(Modifier.height(20.dp))
@@ -334,13 +303,18 @@ fun NowPlayingV2Content(
                     fontSize = 25.sp,
                     modifier = Modifier
                         .basicMarquee()
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "currentlyPlaying"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
                 )
                 Spacer(Modifier.width(15.dp))
 
                 Column {
 
                     var isDropDownExpanded by remember { mutableStateOf(false) }
-                    val eqIntent = rememberLauncherForActivityResult(equalizerActivityContract()) { }
+                    val eqIntent =
+                        rememberLauncherForActivityResult(equalizerActivityContract()) { }
 
                     IconButton(onClick = { isDropDownExpanded = true }) {
                         Icon(
@@ -478,7 +452,7 @@ fun NowPlayingV2Content(
         Column(
             modifier = Modifier.padding(horizontal = 15.dp)
         ) {
-            Row (
+            Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -521,7 +495,7 @@ fun NowPlayingV2Content(
                         )
                     )
                 },
-                thumb = { sliderState ->
+                thumb = {
                     Spacer(Modifier.width(4.dp))
                     SliderDefaults.Thumb(
                         interactionSource = remember { MutableInteractionSource() },
@@ -535,6 +509,7 @@ fun NowPlayingV2Content(
         Spacer(modifier = Modifier.height(10.dp))
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
             ActionButtonsRowV2(
+                animatedVisibilityScope = animatedVisibilityScope,
                 musicState = musicState,
                 onHandlePlayerActions = onHandlePlayerActions
             )
@@ -548,4 +523,5 @@ fun NowPlayingV2Content(
         }
 
     }
+
 }

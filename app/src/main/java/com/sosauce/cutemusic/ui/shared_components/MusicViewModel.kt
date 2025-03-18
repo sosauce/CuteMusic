@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -23,13 +22,13 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.kyant.taglib.TagLib
-import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.getShouldLoop
 import com.sosauce.cutemusic.data.datastore.getShouldShuffle
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
+import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.main.PlaybackService
 import com.sosauce.cutemusic.utils.applyLoop
 import com.sosauce.cutemusic.utils.applyPlaybackSpeed
@@ -39,23 +38,21 @@ import com.sosauce.cutemusic.utils.playFromAlbum
 import com.sosauce.cutemusic.utils.playFromArtist
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileNotFoundException
 
-@OptIn(FlowPreview::class)
-@SuppressLint("UnsafeOptInUsageError")
 class MusicViewModel(
     private val application: Application,
     private val mediaStoreHelper: MediaStoreHelper,
-    //private val safManager: SafManager
+    private val safManager: SafManager
 ) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
@@ -64,6 +61,11 @@ class MusicViewModel(
     val musicState = _musicState.asStateFlow()
 
     var sleepCountdownTimer: CountDownTimer? = null
+
+    private val allTracks = combine(
+        mediaStoreHelper.fetchLatestMusics(),
+        safManager.fetchLatestSafTracks()
+    ) { local, saf -> local + saf }
 
 
     private val playerListener = @UnstableApi
@@ -76,7 +78,7 @@ class MusicViewModel(
                     currentlyPlaying = mediaMetadata.title.toString(),
                     currentArtist = mediaMetadata.artist.toString(),
                     currentMediaId = mediaMetadata.extras?.getString("mediaId")
-                        ?: ("No Id found!" + System.currentTimeMillis()),
+                        ?: (System.currentTimeMillis().toString()),
                     currentArtistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
                     currentArt = mediaMetadata.artworkUri,
                     currentPath = mediaMetadata.extras?.getString("path") ?: "No path found!",
@@ -88,6 +90,7 @@ class MusicViewModel(
                 )
             }
             parseLyrics()
+
         }
 
         override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
@@ -168,42 +171,34 @@ class MusicViewModel(
                     {
                         mediaController = get()
                         mediaController!!.addListener(playerListener)
-                        mediaController!!.setMediaItems(mediaStoreHelper.musics)
+
+                        if (mediaController!!.mediaItemCount == 0) {
+                            viewModelScope.launch {
+                                allTracks.collectLatest { mediaItems ->
+                                    mediaController!!.setMediaItems(mediaItems)
+                                }
+                            }
+                        }
+
+
                         viewModelScope.launch {
                             getShouldLoop(application).collectLatest { shouldLoop ->
                                 mediaController!!.applyLoop(shouldLoop)
                             }
                         }
+
                         viewModelScope.launch {
                             getShouldShuffle(application).collectLatest { shouldShuffle ->
                                 mediaController!!.applyShuffle(shouldShuffle)
                             }
 
                         }
-//                        viewModelScope.launch {
-//                            combine(
-//                                mediaStoreHelper.fetchLatestMusics(),
-//                                safManager.fetchLatestSafTracks()
-//                            ) { musics, safTracks ->
-//                                val combinedList = musics + safTracks
-//                                combinedList
-//                            }
-//                                .debounce(500)
-//                                .collectLatest { combinedList ->
-//                                    Log.d("helpme", combinedList.size.toString())
-//                                    mediaController!!.replaceMediaItems(
-//                                        0,
-//                                        combinedList.size - 1,
-//                                        combinedList
-//                                    )
-//                                }
-//                        }
-
                     },
                     MoreExecutors.directExecutor()
                 )
 
             }
+
     }
 
 
@@ -221,34 +216,30 @@ class MusicViewModel(
         val regex = Regex("""\[(\d{2}):(\d{2})\.(\d{2})]""")
 
         viewModelScope.launch(Dispatchers.IO) {
-            val newLyrics = if (file == null) {
-                loadEmbeddedLyrics().lineSequence().map { line ->
-                    regex.find(line).let { matchResult ->
-                        if (matchResult != null) {
-                            val (minutes, seconds, hundredths) = matchResult.destructured
-                            val millis =
-                                minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                            val lyric = line.substring(matchResult.range.last + 1).trim()
-                            Lyrics(millis, lyric)
-                        } else {
-                            // Since there's no ambiguity to what embedded lyrics could contain, lines not following the .lrc format will be positioned at the beginning
-                            Lyrics(0, line)
-                        }
+            val newLyrics = file?.bufferedReader()?.useLines { lines ->
+                lines.mapNotNull { line ->
+                    regex.find(line)?.let { matchResult ->
+                        val (minutes, seconds, hundredths) = matchResult.destructured
+                        val millis =
+                            minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
+                        val lyric = line.substring(matchResult.range.last + 1).trim()
+                        Lyrics(millis, lyric)
                     }
                 }.toList()
-            } else {
-                file.bufferedReader().useLines { lines ->
-                    lines.mapNotNull { line ->
-                        regex.find(line)?.let { matchResult ->
-                            val (minutes, seconds, hundredths) = matchResult.destructured
-                            val millis =
-                                minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                            val lyric = line.substring(matchResult.range.last + 1).trim()
-                            Lyrics(millis, lyric)
-                        }
-                    }.toList()
+            } ?: loadEmbeddedLyrics().lineSequence().map { line ->
+                regex.find(line).let { matchResult ->
+                    if (matchResult != null) {
+                        val (minutes, seconds, hundredths) = matchResult.destructured
+                        val millis =
+                            minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
+                        val lyric = line.substring(matchResult.range.last + 1).trim()
+                        Lyrics(millis, lyric)
+                    } else {
+                        // Since there's no ambiguity to what embedded lyrics could contain, lines not following the .lrc format will be positioned at the beginning
+                        Lyrics(0, line)
+                    }
                 }
-            }
+            }.toList()
             _lyrics.value = newLyrics
         }
     }
@@ -256,7 +247,7 @@ class MusicViewModel(
     private fun loadEmbeddedLyrics(): String {
         val fd = getFileDescriptorFromPath(application, musicState.value.currentPath)
         return fd?.dup()?.detachFd()?.let {
-            TagLib.getMetadata(it)?.propertyMap["LYRICS"]?.getOrNull(0)
+            TagLib.getMetadata(it)?.propertyMap?.get("LYRICS")?.getOrNull(0)
                 ?: ""
         } ?: ""
 
@@ -330,28 +321,23 @@ class MusicViewModel(
 
             is PlayerActions.StartPlayback -> {
                 // If a user started album/artist playback, we need to make sure all songs are re-fed to Exoplayer when they want to play from anywhere else
-                if (mediaController!!.mediaItemCount != mediaStoreHelper.musics.size) {
-                    mediaController!!.setMediaItems(mediaStoreHelper.musics)
-                    mediaController!!.playAtIndex(action.mediaId)
-                } else {
-                    mediaController!!.playAtIndex(action.mediaId)
+                viewModelScope.launch {
+                    allTracks.collectLatest { mediaItems ->
+                        if (mediaController!!.mediaItemCount != mediaItems.size) {
+                            mediaController!!.setMediaItems(mediaItems)
+                            mediaController!!.playAtIndex(action.mediaId)
+                        } else {
+                            mediaController!!.playAtIndex(action.mediaId)
+                        }
+                    }
                 }
             }
 
             is PlayerActions.UpdateCurrentPosition -> {
-                _musicState.value = _musicState.value.copy(
-                    currentPosition = action.position
-                )
-            }
-
-            is PlayerActions.QuickPlay -> {
-                if (mediaController != null) {
-                    mediaController!!.clearMediaItems()
-                    mediaController!!.setMediaItem(
-                        MediaItem.fromUri(action.uri)
+                _musicState.update {
+                    it.copy(
+                        currentPosition = action.position
                     )
-                    mediaController!!.prepare()
-                    mediaController!!.play()
                 }
             }
 
@@ -365,10 +351,14 @@ class MusicViewModel(
 
                 sleepCountdownTimer = object : CountDownTimer(totalTimeMillis, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
-                        _musicState.update {
-                            it.copy(
-                                sleepTimerActive = true
-                            )
+
+                        // Only set it once, no need to use resources just to set it to true again and again
+                        if (!musicState.value.sleepTimerActive) {
+                            _musicState.update {
+                                it.copy(
+                                    sleepTimerActive = true
+                                )
+                            }
                         }
                     }
 

@@ -4,6 +4,8 @@ import android.content.ContentUris
 import android.content.Context
 import androidx.core.net.toUri
 import coil3.request.crossfade
+import coil3.request.transformations
+import coil3.transform.RoundedCornersTransformation
 import java.io.FileNotFoundException
 import coil3.request.ImageRequest as ImageRequest3
 
@@ -14,6 +16,20 @@ object ImageUtils {
             .crossfade(true)
             .diskCacheKey(img.toString())
             .memoryCacheKey(img.toString())
+            .build()
+
+        return request
+    }
+
+    fun widgetImageRequester(img: Any?, context: Context): ImageRequest3 {
+        val request = ImageRequest3.Builder(context)
+            .data(img)
+            .crossfade(true)
+            .diskCacheKey(img.toString())
+            .memoryCacheKey(img.toString())
+            .transformations(
+                RoundedCornersTransformation(5f)
+            )
             .build()
 
         return request

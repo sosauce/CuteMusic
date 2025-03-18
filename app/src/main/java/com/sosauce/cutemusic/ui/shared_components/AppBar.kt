@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 fun AppBar(
     title: String,
     showBackArrow: Boolean,
-    onPopBackStack: (() -> Unit)? = null,
+    onNavigateUp: (() -> Unit)? = null,
 ) {
     TopAppBar(
         title = {
@@ -25,7 +25,7 @@ fun AppBar(
         },
         navigationIcon = {
             if (showBackArrow) {
-                IconButton(onClick = { onPopBackStack?.invoke() }) {
+                IconButton(onClick = { onNavigateUp?.invoke() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                         contentDescription = "Back arrow"

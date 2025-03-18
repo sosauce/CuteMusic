@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -54,7 +53,6 @@ fun SharedTransitionScope.PlaylistsScreen(
     isCurrentlyPlaying: Boolean,
     onNavigate: (Screen) -> Unit,
     onNavigationItemClicked: (Screen) -> Unit,
-    currentScreen: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean,
     onHandlePlayerAction: (PlayerActions) -> Unit,
@@ -76,7 +74,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                     it.name.contains(
                         other = query,
                         ignoreCase = true
-                    ) == true
+                    )
                 }
             } else {
                 if (isSortedByASC) playlists
@@ -103,7 +101,6 @@ fun SharedTransitionScope.PlaylistsScreen(
                         CuteText(
                             text = stringResource(id = R.string.no_playlists),
                             modifier = Modifier
-                                .statusBarsPadding()
                                 .padding(16.dp)
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
@@ -164,9 +161,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                 isPlaying = isCurrentlyPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
                 isPlayerReady = isPlayerReady,
-                onNavigate = { onNavigate(Screen.NowPlaying) },
-                onNavigationItemClicked = onNavigationItemClicked,
-                currentScreen = currentScreen,
+                onNavigate = onNavigate,
                 fab = {
                     CuteActionButton(
                         modifier = Modifier.sharedBounds(

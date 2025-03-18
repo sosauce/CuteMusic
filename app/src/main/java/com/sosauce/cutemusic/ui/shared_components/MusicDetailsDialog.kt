@@ -2,7 +2,6 @@ package com.sosauce.cutemusic.ui.shared_components
 
 import android.net.Uri
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,19 +17,16 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
@@ -38,27 +34,14 @@ import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.formatBinarySize
 import com.sosauce.cutemusic.utils.formatToReadableTime
 import com.sosauce.cutemusic.utils.getBitrate
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import coil3.toBitmap
-import com.kmpalette.color
-import com.kmpalette.rememberDominantColorState
-import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.rememberDynamicMaterialThemeState
-import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
-import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
-import kotlinx.coroutines.launch
 
-@UnstableApi
 @Composable
 fun MusicDetailsDialog(
     music: MediaItem,
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
-    val uri = remember { Uri.parse(music.mediaMetadata.extras?.getString("uri")) }
+    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
     val fileBitrate = uri.getBitrate(context)
     val fileType = context.contentResolver.getType(uri)
 
@@ -161,7 +144,7 @@ fun MusicStateDetailsDialog(
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
-    val uri = remember { Uri.parse(musicState.currentMusicUri) }
+    val uri = remember { musicState.currentMusicUri.toUri() }
     val fileBitrate = uri.getBitrate(context)
     val fileType = context.contentResolver.getType(uri)
 

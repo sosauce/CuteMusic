@@ -26,8 +26,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
@@ -40,11 +38,11 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.album.AlbumCard
-import com.sosauce.cutemusic.ui.screens.main.MusicListItem
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
@@ -55,7 +53,7 @@ fun SharedTransitionScope.ArtistDetails(
     viewModel: MusicViewModel,
     postViewModel: PostViewModel,
     onNavigate: (Screen) -> Unit,
-    onPopBackstack: () -> Unit,
+    onNavigateUp: () -> Unit,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -65,7 +63,7 @@ fun SharedTransitionScope.ArtistDetails(
 
     if (rememberIsLandscape()) {
         ArtistDetailsLandscape(
-            onNavigateUp = onPopBackstack,
+            onNavigateUp = onNavigateUp,
             artistAlbums = artistAlbums,
             artistSongs = artistSongs,
             onClickPlay = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
@@ -141,14 +139,14 @@ fun SharedTransitionScope.ArtistDetails(
                 Spacer(modifier = Modifier.height(10.dp))
                 CuteText(
                     text = pluralStringResource(
-                        R.plurals.songs,
+                        R.plurals.tracks,
                         artistSongs.size,
                         artistSongs.size
                     ),
                     modifier = Modifier.padding(start = 10.dp)
                 )
                 artistSongs.forEach { music ->
-                    MusicListItem(
+                    LocalMusicListItem(
                         music = music,
                         onShortClick = {
                             viewModel.handlePlayerActions(
@@ -171,7 +169,7 @@ fun SharedTransitionScope.ArtistDetails(
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier.align(rememberSearchbarAlignment()),
                 showSearchField = false,
-                onNavigate = { onNavigate(Screen.NowPlaying) },
+                onNavigate = onNavigate,
                 fab = {
                     CuteActionButton(
                         modifier = Modifier.sharedBounds(
@@ -187,7 +185,7 @@ fun SharedTransitionScope.ArtistDetails(
                         )
                     }
                 },
-                navigationIcon = { CuteNavigationButton { onPopBackstack() } }
+                navigationIcon = { CuteNavigationButton { onNavigateUp() } }
             )
         }
     }

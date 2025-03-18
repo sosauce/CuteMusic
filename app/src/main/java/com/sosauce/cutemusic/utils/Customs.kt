@@ -34,8 +34,3 @@ fun CuteIconButton(
         contentAlignment = Alignment.Center
     ) { content() }
 }
-
-@Composable
-inline fun <K, V> Map<out K, V>.ComposeForEach(action: (Map.Entry<K, V>) -> Unit): Unit {
-    for (element in this) action(element)
-}

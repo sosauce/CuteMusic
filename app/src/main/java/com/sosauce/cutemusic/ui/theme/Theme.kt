@@ -1,12 +1,7 @@
 package com.sosauce.cutemusic.ui.theme
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -14,44 +9,19 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.BitmapImage
-import coil3.ImageLoader
-import coil3.asImage
 import coil3.compose.AsyncImage
-import coil3.request.ErrorResult
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
-import coil3.request.allowHardware
 import coil3.toBitmap
 import com.kmpalette.color
-import com.kmpalette.loader.rememberPainterLoader
 import com.kmpalette.rememberDominantColorState
-import com.kmpalette.rememberPaletteState
 import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.ktx.themeColors
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
@@ -59,9 +29,9 @@ import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 
 private val LightColors = lightColorScheme(
@@ -133,7 +103,7 @@ private val DarkColors = darkColorScheme(
 fun CuteMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    musicViewModel: MusicViewModel,
+    musicViewModel: MusicViewModel = koinViewModel<MusicViewModel>(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -187,10 +157,13 @@ fun CuteMusicTheme(
         )
 
         val state = rememberDynamicMaterialThemeState(
-            seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color ?: MaterialTheme.colorScheme.primary,
+            seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color
+                ?: MaterialTheme.colorScheme.primary,
             isDark = isSystemInDarkTheme() || useDarkMode,
             isAmoled = useAmoledMode
         )
+
+        koinInject<MusicViewModel>()
 
 
 

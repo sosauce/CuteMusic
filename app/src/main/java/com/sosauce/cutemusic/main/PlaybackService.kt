@@ -1,25 +1,32 @@
 package com.sosauce.cutemusic.main
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.ui.widgets.WidgetBroadcastReceiver
+import com.sosauce.cutemusic.ui.widgets.WidgetCallback
 import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
+import com.sosauce.cutemusic.utils.PACKAGE
+import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
+import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
 
 
-class PlaybackService : MediaLibraryService(),
-    MediaLibrarySession.Callback,
-    Player.Listener {
+class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Player.Listener,
+    WidgetCallback {
 
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val audioAttributes = AudioAttributes
@@ -28,16 +35,37 @@ class PlaybackService : MediaLibraryService(),
         .setUsage(C.USAGE_MEDIA)
         .build()
 
+    private val widgetReceiver = WidgetBroadcastReceiver()
+
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         super.onMediaMetadataChanged(mediaMetadata)
-        sendMusicBroadcast(mediaMetadata.title.toString())
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
+            putExtra(WIDGET_NEW_DATA, WIDGET_NEW_DATA)
+            putExtra("title", mediaMetadata.title.toString())
+            putExtra("artist", mediaMetadata.artist.toString())
+            putExtra("artUri", mediaMetadata.artworkUri.toString())
+        }
+
+        sendBroadcast(intent)
+    }
+
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        super.onIsPlayingChanged(isPlaying)
+
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
+            putExtra(WIDGET_NEW_DATA, WIDGET_NEW_IS_PLAYING)
+            putExtra("isPlaying", isPlaying)
+        }
+
+        sendBroadcast(intent)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
         mediaLibrarySession
 
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @UnstableApi
     override fun onCreate() {
         super.onCreate()
@@ -49,47 +77,6 @@ class PlaybackService : MediaLibraryService(),
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, this)
             .setId(CUTE_MUSIC_ID)
-
-
-
-
-//            .setBitmapLoader(object : BitmapLoader {
-//
-//                override fun supportsMimeType(mimeType: String): Boolean = true
-//
-//                override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
-//                    throw UnsupportedOperationException()
-//
-//                override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> = throw UnsupportedOperationException()
-//
-//                override fun loadBitmapFromMetadata(metadata: MediaMetadata): ListenableFuture<Bitmap>? {
-//                    val completer = SettableFuture.create<Bitmap>()
-//                    val request = ImageRequest.Builder(this@PlaybackService)
-//                        .data(
-//                            if (metadata.artworkUri == Uri.parse("content://media/external/audio/media/1000000397/albumart")) {
-//                                R.drawable.artist
-//                            } else {
-//                                metadata.artworkUri
-//                            }
-//                        )
-//                        .target(
-//                            onSuccess = { result ->
-//                                completer.set((result as BitmapImage).bitmap)
-//                            },
-//                            onError = { _ ->
-//                                completer.setException(Exception("Error"))
-//                            }
-//                        )
-//                        .build()
-//                    println("Art URI: ${metadata.artworkUri}")
-//                    ImageLoader(this@PlaybackService).enqueue(request)
-//
-//                    return completer
-//                }
-//
-//                }
-
-//)
             .setSessionActivity(
                 PendingIntent.getActivity(
                     this,
@@ -99,6 +86,20 @@ class PlaybackService : MediaLibraryService(),
                 )
             )
             .build()
+
+        IntentFilter(PACKAGE).also {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(
+                    widgetReceiver,
+                    it,
+                    RECEIVER_EXPORTED
+                )
+            } else {
+                registerReceiver(widgetReceiver, it)
+            }
+        }
+        widgetReceiver.startCallback(this)
+
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this).build().apply {
                 setSmallIcon(R.drawable.music_note_rounded)
@@ -117,12 +118,25 @@ class PlaybackService : MediaLibraryService(),
             mediaLibrarySession = null
         }
         stopSelf()
+        widgetReceiver.also {
+            it.stopCallback()
+            unregisterReceiver(it)
+        }
         super.onDestroy()
     }
 
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        mediaLibrarySession?.run {
+            player.release()
+            release()
+            mediaLibrarySession = null
+        }
+        widgetReceiver.also {
+            it.stopCallback()
+            unregisterReceiver(it)
+        }
         stopSelf()
     }
 
@@ -131,14 +145,22 @@ class PlaybackService : MediaLibraryService(),
         private const val CURRENTLY_PLAYING_CHANGED = "CM_CUR_PLAY_CHANGED"
     }
 
-    private fun sendMusicBroadcast(
-        currentlyPlaying: String
-    ) {
-        Intent(CURRENTLY_PLAYING_CHANGED).apply {
-            putExtra("currentlyPlaying", currentlyPlaying)
-            sendBroadcast(this)
+
+    override fun skipToNext() {
+        println("Bout to skip2next")
+        mediaLibrarySession?.player?.seekToNextMediaItem()
+    }
+
+    override fun playOrPause() {
+
+        if (mediaLibrarySession?.player?.isPlaying == true) {
+            mediaLibrarySession?.player?.pause()
+        } else {
+            mediaLibrarySession?.player?.play()
         }
     }
 
-
+    override fun skipToPrevious() {
+        mediaLibrarySession?.player?.seekToPrevious()
+    }
 }

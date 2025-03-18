@@ -93,15 +93,17 @@
     <string name="create_playlist">Create playlist</string>
     <string name="create">Create</string>
     <string name="playlist">Playlist</string>
+    <string name="playlists">Playlists</string>
     <string name="add_to_playlist">Add to playlist</string>
     <string name="art_description">App\'s theme will be based on the currently playing song\'s art.</string>
     <string name="group_tracks">Group tracks by folders</string>
     <string name="file_name">File name</string>
     <string name="nothing">Nothing to search for</string>
     <string name="search_lyrics">Search for lyrics</string>
-    <plurals name="songs">
-        <item quantity="one">%d song</item>
-        <item quantity="other">%d songs</item>
+    <string name="song_loading">Song loading...</string>
+    <plurals name="tracks">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
     </plurals>
     <plurals name="albums">
         <item quantity="one">%d album</item>

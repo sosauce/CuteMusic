@@ -63,11 +63,9 @@ fun SharedTransitionScope.AlbumsScreen(
     currentlyPlaying: String,
     chargePVMAlbumSongs: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    currentScreen: String,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
-    onNavigationItemClicked: (Screen) -> Unit,
 ) {
     val isLandscape = rememberIsLandscape()
     var query by remember { mutableStateOf("") }
@@ -87,7 +85,7 @@ fun SharedTransitionScope.AlbumsScreen(
                     it.name.contains(
                         other = query,
                         ignoreCase = true
-                    ) == true
+                    )
                 }
             } else {
                 if (isSortedByASC) albums
@@ -170,9 +168,7 @@ fun SharedTransitionScope.AlbumsScreen(
                 isPlaying = isPlaying,
                 animatedVisibilityScope = animatedVisibilityScope,
                 isPlayerReady = isPlayerReady,
-                onNavigate = { onNavigate(Screen.NowPlaying) },
-                onNavigationItemClicked = onNavigationItemClicked,
-                currentScreen = currentScreen,
+                onNavigate = onNavigate,
                 fab = {
                     CuteActionButton(
                         modifier = Modifier.sharedBounds(

@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -116,7 +117,7 @@ class MediaStoreHelperImpl(
                     id
                 )
 
-                val artUri = Uri.parse("$uri/albumart")
+                val artUri = "$uri/albumart".toUri()
                 val mediaId = id.toString()
 
 
