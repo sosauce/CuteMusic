@@ -100,7 +100,7 @@
     <string name="file_name">File name</string>
     <string name="nothing">Nothing to search for</string>
     <string name="search_lyrics">Search for lyrics</string>
-    <string name="song_loading">Song loading...</string>
+    <string name="song_loading">Song loading…</string>
     <plurals name="tracks">
         <item quantity="one">%d track</item>
         <item quantity="other">%d tracks</item>
