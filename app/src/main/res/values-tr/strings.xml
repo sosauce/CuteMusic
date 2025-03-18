@@ -68,7 +68,7 @@
     <string name="snap">Hız ve perdeyi sabitle</string>
     <string name="new_rate">0.5 ile 2 arasında yeni bir oran girin</string>
     <string name="share">Paylaş</string>
-    <string name="show_close_button">CuteSearchbar'da kapat düğmesini göster</string>
+    <string name="show_close_button">CuteSearchbar\'da kapat düğmesini göster</string>
     <string name="duration">Süre</string>
     <string name="folders">Klasörler</string>
     <string name="manage_shown_tabs">Gösterilen sekmeleri yönet</string>
@@ -76,8 +76,8 @@
     <string name="go_to">Şuraya git:</string>
     <string name="no_lyrics_note">Şarkı sözü bulunamadı!</string>
     <string name="open_eq">Ekolayzeri aç</string>
-    <string name="from_saf">Bu parça S.A.F'den geliyor</string>
-    <string name="open_saf">Parça eklemek için S.A.F'yi aç</string>
+    <string name="from_saf">Bu parça S.A.F\'den geliyor</string>
+    <string name="open_saf">Parça eklemek için S.A.F\'yi aç</string>
     <string name="blacklisted">Kara listeye alındı</string>
     <string name="not_blacklisted">Kara listede değil</string>
     <string name="saf_manager">S.A.F yöneticisi</string>
