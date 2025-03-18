@@ -99,7 +99,7 @@
     <string name="file_name">Dosya adı</string>
     <string name="nothing">Aranacak bir şey yok</string>
     <string name="search_lyrics">Şarkı sözlerini ara</string>
-    <plurals name="songs">
+    <plurals name="tracks">
         <item quantity="one">%d şarkı</item>
         <item quantity="other">%d şarkı</item>
     </plurals>
