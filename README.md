@@ -7,7 +7,7 @@
    <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
  </p> 
  <p align="center">
-   <a href="https://github.com/nubesurrealista/CuteMusic/blob/main/README_ES.MD">
+   <a href="https://github.com/sosauce/CuteMusic/blob/main/README_ES.MD">
      <img src="https://img.shields.io/badge/Disponible_en-español-blue?style=for-the-badge" alt="Disponible en español"/>
    </a>
 </p>
