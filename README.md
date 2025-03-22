@@ -6,7 +6,11 @@
    <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
    <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
  </p> 
-
+ <p align="center">
+   <a href="https://github.com/sosauce/CuteMusic/blob/main/README_ES.MD">
+     <img src="https://img.shields.io/badge/Disponible_en-español-blue?style=for-the-badge" alt="Disponible en español"/>
+   </a>
+</p>
  <p align="center">
  <a href="https://github.com/sosauce/CuteMusic/releases">
    <image src="https://i.ibb.co/q0mdc4Z/get-it-on-github.png" height="80"/>
