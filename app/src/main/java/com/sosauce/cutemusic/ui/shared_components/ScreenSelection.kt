@@ -61,9 +61,7 @@ fun ScreenSelection(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        //modifier = Modifier.width(180.dp),
         shape = RoundedCornerShape(24.dp),
-        //containerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
             verticalArrangement = Arrangement.Center
@@ -73,6 +71,7 @@ fun ScreenSelection(
                 val backgroundColor by animateColorAsState(
                     targetValue = if (navigationItem.navigateTo.toString() == CurrentScreen.screen) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent
                 )
+
 
                 DropdownMenuItem(
                     onClick = { onNavigate(navigationItem.navigateTo) },

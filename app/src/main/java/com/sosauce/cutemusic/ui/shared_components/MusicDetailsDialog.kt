@@ -58,7 +58,9 @@ fun MusicDetailsDialog(
             }
         },
         title = {
-            CuteText(stringResource(R.string.details))
+            CuteText(
+                text = stringResource(R.string.details)
+            )
         },
         text = {
             Column {
@@ -72,10 +74,7 @@ fun MusicDetailsDialog(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
-                            model = ImageUtils.imageRequester(
-                                img = music.mediaMetadata.artworkUri,
-                                context = context
-                            ),
+                            model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(100.dp)
@@ -144,7 +143,7 @@ fun MusicStateDetailsDialog(
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
-    val uri = remember { musicState.currentMusicUri.toUri() }
+    val uri = remember { musicState.uri.toUri() }
     val fileBitrate = uri.getBitrate(context)
     val fileType = context.contentResolver.getType(uri)
 
@@ -158,7 +157,9 @@ fun MusicStateDetailsDialog(
             }
         },
         title = {
-            CuteText(stringResource(R.string.details))
+            CuteText(
+                text = stringResource(R.string.details)
+            )
         },
         text = {
             Column {
@@ -172,10 +173,7 @@ fun MusicStateDetailsDialog(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
-                            model = ImageUtils.imageRequester(
-                                img = musicState.currentArt,
-                                context = context
-                            ),
+                            model = ImageUtils.imageRequester(musicState.art),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(100.dp)
@@ -186,12 +184,12 @@ fun MusicStateDetailsDialog(
                         )
                         Column {
                             CuteText(
-                                text = musicState.currentlyPlaying,
+                                text = musicState.title,
                                 modifier = Modifier
                                     .basicMarquee()
                             )
                             CuteText(
-                                text = musicState.currentArtist,
+                                text = musicState.artist,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                                 modifier = Modifier.basicMarquee()
                             )
@@ -201,7 +199,7 @@ fun MusicStateDetailsDialog(
                 Spacer(Modifier.height(10.dp))
                 CuteText(
                     text = "${stringResource(id = R.string.size)}: ${
-                        musicState.currentSize.formatBinarySize()
+                        musicState.size.formatBinarySize()
                     }",
                     modifier = Modifier.padding(bottom = 5.dp)
                 )

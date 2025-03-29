@@ -2,10 +2,13 @@
 
 package com.sosauce.cutemusic.ui.screens.artist
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -20,6 +23,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
@@ -49,7 +53,9 @@ import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.showCuteSearchbar
 
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
@@ -65,6 +71,7 @@ fun SharedTransitionScope.ArtistsScreen(
 
     var query by remember { mutableStateOf("") }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
+    val state = rememberLazyListState()
     val float by animateFloatAsState(
         targetValue = if (isSortedByASC) 45f else 135f,
         label = "Arrow Icon Animation"
@@ -108,7 +115,8 @@ fun SharedTransitionScope.ArtistsScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentPadding = paddingValues
+                    contentPadding = paddingValues,
+                    state = state
                 ) {
                     items(
                         items = displayArtists,
@@ -133,46 +141,52 @@ fun SharedTransitionScope.ArtistsScreen(
                     }
                 }
             }
-            CuteSearchbar(
-                query = query,
-                onQueryChange = { query = it },
+            AnimatedVisibility(
+                visible = state.showCuteSearchbar,
                 modifier = Modifier.align(rememberSearchbarAlignment()),
-                trailingIcon = {
-                    Row {
-                        IconButton(
-                            onClick = { isSortedByASC = !isSortedByASC }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowUpward,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(float)
-                            )
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                CuteSearchbar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    trailingIcon = {
+                        Row {
+                            IconButton(
+                                onClick = { isSortedByASC = !isSortedByASC }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ArrowUpward,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(float)
+                                )
+                            }
+                            IconButton(
+                                onClick = { onNavigate(Screen.Settings) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null
+                                )
+                            }
                         }
-                        IconButton(
-                            onClick = { onNavigate(Screen.Settings) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = null
+                    },
+                    currentlyPlaying = currentlyPlaying,
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    isPlaying = isPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    isPlayerReady = isPlayerReady,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
-                        }
+                        ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
                     }
-                },
-                currentlyPlaying = currentlyPlaying,
-                onHandlePlayerActions = onHandlePlayerActions,
-                isPlaying = isPlaying,
-                animatedVisibilityScope = animatedVisibilityScope,
-                isPlayerReady = isPlayerReady,
-                onNavigate = onNavigate,
-                fab = {
-                    CuteActionButton(
-                        modifier = Modifier.sharedBounds(
-                            sharedContentState = rememberSharedContentState(key = "fab"),
-                            animatedVisibilityScope = animatedVisibilityScope
-                        )
-                    ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
-                }
-            )
+                )
+            }
         }
     }
 

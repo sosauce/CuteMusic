@@ -1,33 +1,33 @@
 [versions]
-agp = "8.9.0"
+agp = "8.9.1"
 emoji2Emojipicker = "1.5.0"
 glance = "1.1.1"
-haze = "1.5.0"
-koinAndroid = "4.0.1"
-koinAndroidxCompose = "4.0.1"
+haze = "1.5.2"
+koinAndroid = "4.0.2"
+koinAndroidxCompose = "4.0.2"
 koinAndroidxStartup = "4.0.0"
-kotlin = "2.1.10"
+kotlin = "2.1.20"
 activityCompose = "1.10.1"
 coilCompose = "3.0.4"
-composeBom = "2025.03.00"
+composeBom = "2025.03.01"
 composeAnimation = "1.7.8"
 coreKtx = "1.15.0"
 coreSplashscreen = "1.0.1"
-datastorePreferences = "1.1.3"
+datastorePreferences = "1.1.4"
 kotlinxSerializationJson = "1.8.0"
-lifecycleViewmodelCompose = "2.8.7"
-materialKolor = "2.0.2"
-media3Common = "1.5.1"
-media3Exoplayer = "1.5.1"
-media3Session = "1.5.1"
+materialKolor = "2.1.1"
+media3Common = "1.6.0"
+media3Exoplayer = "1.6.0"
+media3Session = "1.6.0"
 navigationCompose = "2.8.9"
 squigglyslider = "1.0.0"
 serialization = "2.0.20"
 taglib = "1.0.0-alpha25"
-roomCompiler = "2.7.0-rc02"
-roomKtx = "2.7.0-rc02"
-ksp = "2.1.10-1.0.31"
+roomCompiler = "2.7.0-rc03"
+roomKtx = "2.7.0-rc03"
+ksp = "2.1.20-1.0.31"
 kmpalette = "3.1.0"
+material3 = "1.4.0-alpha11"
 
 
 [libraries]
@@ -41,9 +41,8 @@ androidx-emoji2-emojipicker = { module = "androidx.emoji2:emoji2-emojipicker", v
 androidx-glance = { module = "androidx.glance:glance", version.ref = "glance" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose" }
-androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-androidx-material3 = { module = "androidx.compose.material3:material3" }
+androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 androidx-media3-common = { module = "androidx.media3:media3-common", version.ref = "media3Common" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Session" }

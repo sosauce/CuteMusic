@@ -14,8 +14,8 @@ android {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 35
-        versionCode = 26
-        versionName = "2.6.0"
+        versionCode = 27
+        versionName = "2.7.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -65,6 +65,8 @@ android {
 //                isUniversalApk = true
 //            }
 //        }
+
+
     }
 
     dependencies {
@@ -83,7 +85,6 @@ android {
         implementation(libs.androidx.media3.exoplayer)
         implementation(libs.androidx.media3.session)
         implementation(libs.squigglyslider)
-        implementation(libs.androidx.lifecycle.viewmodel.compose)
         implementation(libs.androidx.compose.animation)
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.koin.android)

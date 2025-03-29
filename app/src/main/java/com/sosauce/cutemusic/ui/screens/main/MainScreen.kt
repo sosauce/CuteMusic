@@ -8,10 +8,12 @@ package com.sosauce.cutemusic.ui.screens.main
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -61,6 +63,9 @@ import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
+import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.showCuteSearchbar
 import java.io.File
 
 @Composable
@@ -84,21 +89,6 @@ fun SharedTransitionScope.MainScreen(
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
     var sortMenuExpanded by remember { mutableStateOf(false) }
     val groupByFolders by rememberGroupByFolders()
-    val showCuteSearchbar by remember {
-        derivedStateOf {
-            if (musics.isEmpty()) {
-                true
-            } else if (
-            // Are both the first and last element visible ?
-                state.layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
-                state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == musics.size - 1
-            ) {
-                true
-            } else {
-                state.layoutInfo.visibleItemsInfo.lastOrNull()?.index != musics.size - 1
-            }
-        }
-    }
     val displayMusics by remember(isSortedByASC, musics, query) {
         derivedStateOf {
             if (query.isNotEmpty()) {
@@ -179,7 +169,8 @@ fun SharedTransitionScope.MainScreen(
                                         onDeleteMusic = onDeleteMusic,
                                         onChargeAlbumSongs = onChargeAlbumSongs,
                                         onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady
+                                        isPlayerReady = isPlayerReady,
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
                                 }
                             }
@@ -219,7 +210,8 @@ fun SharedTransitionScope.MainScreen(
                                         onDeleteMusic = onDeleteMusic,
                                         onChargeAlbumSongs = onChargeAlbumSongs,
                                         onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady
+                                        isPlayerReady = isPlayerReady,
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
                                 } else {
                                     var safTracks by rememberAllSafTracks()
@@ -243,57 +235,56 @@ fun SharedTransitionScope.MainScreen(
                 }
             }
 
-            Crossfade(
-                targetState = showCuteSearchbar,
-                label = "",
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) { visible ->
-                if (visible) {
-                    CuteSearchbar(
-                        query = query,
-                        onQueryChange = { query = it },
-                        trailingIcon = {
-                            Row {
-                                IconButton(
-                                    onClick = { sortMenuExpanded = true }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                        contentDescription = null
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { onNavigate(Screen.Settings) }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Settings,
-                                        contentDescription = null
-                                    )
-                                }
-                                SortingDropdownMenu(
-                                    expanded = sortMenuExpanded,
-                                    onDismissRequest = { sortMenuExpanded = false },
-                                    isSortedByASC = isSortedByASC,
-                                    onChangeSorting = { isSortedByASC = it }
+            AnimatedVisibility(
+                visible = state.showCuteSearchbar,
+                modifier = Modifier.align(rememberSearchbarAlignment()),
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                CuteSearchbar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    trailingIcon = {
+                        Row {
+                            IconButton(
+                                onClick = { sortMenuExpanded = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                    contentDescription = null
                                 )
                             }
-                        },
-                        currentlyPlaying = currentlyPlaying,
-                        onHandlePlayerActions = onHandlePlayerAction,
-                        isPlaying = isCurrentlyPlaying,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        isPlayerReady = isPlayerReady,
-                        onNavigate = onNavigate,
-                        fab = {
-                            CuteActionButton(
-                                modifier = Modifier.sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = "fab"),
-                                    animatedVisibilityScope = animatedVisibilityScope
+                            IconButton(
+                                onClick = { onNavigate(Screen.Settings) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null
                                 )
-                            ) { onHandlePlayerAction(PlayerActions.PlayRandom) }
-                        },
-                    )
-                }
+                            }
+                            SortingDropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false },
+                                isSortedByASC = isSortedByASC,
+                                onChangeSorting = { isSortedByASC = it }
+                            )
+                        }
+                    },
+                    currentlyPlaying = currentlyPlaying,
+                    onHandlePlayerActions = onHandlePlayerAction,
+                    isPlaying = isCurrentlyPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    isPlayerReady = isPlayerReady,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                        ) { onHandlePlayerAction(PlayerActions.PlayRandom) }
+                    },
+                )
             }
         }
     }

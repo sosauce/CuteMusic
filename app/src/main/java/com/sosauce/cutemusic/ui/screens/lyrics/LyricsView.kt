@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.lyrics
 import android.view.WindowManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -68,6 +67,7 @@ import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.GOOGLE_SEARCH
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import com.sosauce.cutemusic.utils.rememberAnimatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -83,8 +83,8 @@ fun LyricsView(
     val clipboardManager = LocalClipboardManager.current
     val isLandscape = rememberIsLandscape()
     val scope = rememberCoroutineScope()
-    val leftIconOffsetX = remember { Animatable(0f) }
-    val rightIconOffsetX = remember { Animatable(0f) }
+    val leftIconOffsetX = rememberAnimatable()
+    val rightIconOffsetX = rememberAnimatable()
     var currentLyric by remember { mutableStateOf(Lyrics()) }
     val lazyListState = rememberLazyListState(
         initialFirstVisibleItemIndex = if (lyrics.indexOf(currentLyric) != -1) lyrics.indexOf(
@@ -131,7 +131,7 @@ fun LyricsView(
                         ) {
                             CuteText(stringResource(R.string.no_lyrics_note))
                             Button(
-                                onClick = { uriHandler.openUri("$GOOGLE_SEARCH${musicState.currentlyPlaying}+${musicState.currentArtist}+lyrics") }
+                                onClick = { uriHandler.openUri("$GOOGLE_SEARCH${musicState.title}+${musicState.artist}+lyrics") }
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
@@ -154,9 +154,9 @@ fun LyricsView(
                             } else 0
                         }
 
-                        val isCurrentLyric by remember(musicState.currentPosition) {
+                        val isCurrentLyric by remember(musicState.position) {
                             derivedStateOf {
-                                musicState.currentPosition in lyric.timestamp until nextTimestamp
+                                musicState.position in lyric.timestamp until nextTimestamp
                             }
                         }
 
@@ -256,7 +256,7 @@ fun LyricsView(
                     onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }
                 ) {
                     Icon(
-                        imageVector = if (musicState.isCurrentlyPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        imageVector = if (musicState.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                         contentDescription = null
                     )
                 }

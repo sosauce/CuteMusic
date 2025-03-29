@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberCarousel
 import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
@@ -25,7 +26,6 @@ import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseClassicSlider
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
-import com.sosauce.cutemusic.data.datastore.rememberUseNpV2
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -133,7 +133,7 @@ fun UISettings() {
     var showXButton by rememberShowXButton()
     var showShuffleButton by rememberShowShuffleButton()
     var useArtTheme by rememberUseArtTheme()
-    var useNpV2 by rememberUseNpV2()
+    var useCarousel by rememberCarousel()
 
 
     Column {
@@ -165,19 +165,11 @@ fun UISettings() {
             }
         )
         SettingsCards(
-            checked = useNpV2,
-            onCheckedChange = { useNpV2 = !useNpV2 },
+            checked = useCarousel,
+            onCheckedChange = { useCarousel = !useCarousel },
             topDp = 4.dp,
             bottomDp = 4.dp,
-            text = "Now Playing V2",
-            optionalDescription = {
-                CuteText(
-                    text = "This is experimental, you can report issues on GitHub. Updates may change things.",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-                    fontSize = 12.sp
-
-                )
-            }
+            text = stringResource(id = R.string.use_carousel)
         )
         SettingsCards(
             checked = showXButton,

@@ -44,22 +44,21 @@ import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PostViewModel
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 
 @Composable
 fun SharedTransitionScope.ArtistDetails(
     artist: Artist,
     viewModel: MusicViewModel,
-    postViewModel: PostViewModel,
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
-    val artistSongs by postViewModel.artistSongs.collectAsStateWithLifecycle()
-    val artistAlbums by postViewModel.artistAlbums.collectAsStateWithLifecycle()
+    val artistSongs by viewModel.artistSongs.collectAsStateWithLifecycle()
+    val artistAlbums by viewModel.artistAlbums.collectAsStateWithLifecycle()
 
     if (rememberIsLandscape()) {
         ArtistDetailsLandscape(
@@ -68,9 +67,9 @@ fun SharedTransitionScope.ArtistDetails(
             artistSongs = artistSongs,
             onClickPlay = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
             onNavigate = onNavigate,
-            chargePVMAlbumSongs = { postViewModel.loadAlbumSongs(it) },
+            chargePVMAlbumSongs = { viewModel.loadAlbumSongs(it) },
             artist = artist,
-            currentMusicUri = musicState.currentMusicUri,
+            currentMusicUri = musicState.uri,
             isPlayerReady = musicState.isPlayerReady,
             animatedVisibilityScope = animatedVisibilityScope
         )
@@ -115,7 +114,7 @@ fun SharedTransitionScope.ArtistDetails(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(15.dp))
                                 .clickable {
-                                    postViewModel.loadAlbumSongs(album.name)
+                                    viewModel.loadAlbumSongs(album.name)
                                     onNavigate(Screen.AlbumsDetails(album.id))
                                 },
                             animatedVisibilityScope = animatedVisibilityScope
@@ -156,15 +155,16 @@ fun SharedTransitionScope.ArtistDetails(
                                 )
                             )
                         },
-                        currentMusicUri = musicState.currentMusicUri,
-                        isPlayerReady = musicState.isPlayerReady
+                        currentMusicUri = musicState.uri,
+                        isPlayerReady = musicState.isPlayerReady,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
             CuteSearchbar(
-                currentlyPlaying = musicState.currentlyPlaying,
+                currentlyPlaying = musicState.title,
                 isPlayerReady = musicState.isPlayerReady,
-                isPlaying = musicState.isCurrentlyPlaying,
+                isPlaying = musicState.isPlaying,
                 onHandlePlayerActions = viewModel::handlePlayerActions,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier.align(rememberSearchbarAlignment()),
@@ -173,7 +173,7 @@ fun SharedTransitionScope.ArtistDetails(
                 fab = {
                     CuteActionButton(
                         modifier = Modifier.sharedBounds(
-                            sharedContentState = rememberSharedContentState(key = "fab"),
+                            sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
                     ) {

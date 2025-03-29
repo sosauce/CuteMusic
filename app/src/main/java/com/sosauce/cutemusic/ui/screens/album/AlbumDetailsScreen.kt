@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -48,27 +47,25 @@ import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 
 @Composable
 fun SharedTransitionScope.AlbumDetailsScreen(
     album: Album,
     viewModel: MusicViewModel,
-    postViewModel: PostViewModel,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
 ) {
-    val albumSongs by postViewModel.albumSongs.collectAsStateWithLifecycle()
+    val albumSongs by viewModel.albumSongs.collectAsStateWithLifecycle()
 
     if (rememberIsLandscape()) {
         AlbumDetailsLandscape(
             album = album,
             onNavigateUp = onNavigateUp,
-            postViewModel = postViewModel,
             viewModel = viewModel,
             musicState = musicState,
             animatedVisibilityScope = animatedVisibilityScope
@@ -97,7 +94,6 @@ private fun SharedTransitionScope.AlbumDetailsContent(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
 ) {
-    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,10 +109,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                         .statusBarsPadding()
                 ) {
                     AsyncImage(
-                        model = ImageUtils.imageRequester(
-                            img = ImageUtils.getAlbumArt(album.id),
-                            context = context
-                        ),
+                        model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id)),
                         contentDescription = stringResource(R.string.artwork),
                         modifier = Modifier
                             .size(150.dp)
@@ -152,24 +145,23 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                 )
                                 .basicMarquee()
                         )
-                        CuteText(
-                            text = pluralStringResource(
-                                R.plurals.tracks,
-                                albumSongs.size,
-                                albumSongs.size
-                            ),
-                            fontSize = 22.sp,
-                            modifier = Modifier.basicMarquee()
-                        )
                     }
                 }
                 Spacer(Modifier.height(10.dp))
+                CuteText(
+                    text = pluralStringResource(
+                        R.plurals.tracks,
+                        albumSongs.size,
+                        albumSongs.size
+                    ),
+                    modifier = Modifier.padding(start = 10.dp)
+                )
                 Column {
                     albumSongs.sortedWith(
                         compareBy(
-                        { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
-                        { it.mediaMetadata.trackNumber }
-                    ))
+                            { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
+                            { it.mediaMetadata.trackNumber }
+                        ))
                         .forEach { music ->
                             LocalMusicListItem(
                                 music = music,
@@ -181,9 +173,10 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                         )
                                     )
                                 },
-                                currentMusicUri = musicState.currentMusicUri,
+                                currentMusicUri = musicState.uri,
                                 isPlayerReady = musicState.isPlayerReady,
-                                showTrackNumber = true
+                                showTrackNumber = true,
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
                         }
                 }
@@ -192,9 +185,9 @@ private fun SharedTransitionScope.AlbumDetailsContent(
 
 
         CuteSearchbar(
-            currentlyPlaying = musicState.currentlyPlaying,
+            currentlyPlaying = musicState.title,
             isPlayerReady = musicState.isPlayerReady,
-            isPlaying = musicState.isCurrentlyPlaying,
+            isPlaying = musicState.isPlaying,
             onHandlePlayerActions = viewModel::handlePlayerActions,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier.align(rememberSearchbarAlignment()),
@@ -203,7 +196,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
             fab = {
                 CuteActionButton(
                     modifier = Modifier.sharedBounds(
-                        sharedContentState = rememberSharedContentState(key = "fab"),
+                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
                 ) {

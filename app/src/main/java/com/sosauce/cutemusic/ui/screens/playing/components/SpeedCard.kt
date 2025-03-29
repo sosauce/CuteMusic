@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.playing.components
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,26 +36,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberPitch
+import com.sosauce.cutemusic.data.datastore.rememberSpeed
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 
 @Composable
 fun SpeedCard(
     onDismiss: () -> Unit,
     shouldSnap: Boolean,
-    onChangeSnap: () -> Unit,
-    musicState: MusicState,
-    onHandlePlayerAction: (PlayerActions) -> Unit
+    onChangeSnap: () -> Unit
 ) {
-    var speed by remember { mutableFloatStateOf(musicState.playbackParameters.speed) }
-    var pitch by remember { mutableFloatStateOf(musicState.playbackParameters.pitch) }
+    var speed by rememberSpeed()
+    var pitch by rememberPitch()
     var speedCardContent by remember { mutableStateOf(SpeedCardContent.DEFAULT) }
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
-
-
+    val interactionSource = rememberInteractionSource()
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -115,15 +111,7 @@ fun SpeedCard(
                                     }
                                     Slider(
                                         value = speed,
-                                        onValueChange = {
-                                            speed = it
-                                            onHandlePlayerAction(
-                                                PlayerActions.ApplyPlaybackSpeed(
-                                                    speed = speed,
-                                                    pitch = pitch
-                                                )
-                                            )
-                                        },
+                                        onValueChange = { speed = it },
                                         valueRange = 0.5f..2f,
                                         track = { sliderState ->
                                             SliderDefaults.Track(
@@ -160,15 +148,7 @@ fun SpeedCard(
                                     }
                                     Slider(
                                         value = pitch,
-                                        onValueChange = {
-                                            pitch = it
-                                            onHandlePlayerAction(
-                                                PlayerActions.ApplyPlaybackSpeed(
-                                                    speed = speed,
-                                                    pitch = pitch
-                                                )
-                                            )
-                                        },
+                                        onValueChange = { pitch = it },
                                         valueRange = 0.5f..2f,
                                         track = { sliderState ->
                                             SliderDefaults.Track(
@@ -196,12 +176,6 @@ fun SpeedCard(
                                             onValueChange = {
                                                 speed = it
                                                 pitch = it
-                                                onHandlePlayerAction(
-                                                    PlayerActions.ApplyPlaybackSpeed(
-                                                        speed = speed,
-                                                        pitch = pitch
-                                                    )
-                                                )
                                             },
                                             valueRange = 0.5f..2f,
                                             track = { sliderState ->
@@ -264,12 +238,6 @@ fun SpeedCard(
                             onSetNewRate = { rate ->
                                 speed = rate
                                 pitch = rate
-                                onHandlePlayerAction(
-                                    PlayerActions.ApplyPlaybackSpeed(
-                                        speed = speed,
-                                        pitch = pitch
-                                    )
-                                )
                                 speedCardContent = SpeedCardContent.DEFAULT
                             },
                         )
@@ -280,12 +248,6 @@ fun SpeedCard(
                             rate = speed,
                             onSetNewRate = { rate ->
                                 speed = rate
-                                onHandlePlayerAction(
-                                    PlayerActions.ApplyPlaybackSpeed(
-                                        speed = speed,
-                                        pitch = pitch
-                                    )
-                                )
                                 speedCardContent = SpeedCardContent.DEFAULT
                             },
                         )
@@ -296,12 +258,6 @@ fun SpeedCard(
                             rate = speed,
                             onSetNewRate = { rate ->
                                 pitch = rate
-                                onHandlePlayerAction(
-                                    PlayerActions.ApplyPlaybackSpeed(
-                                        speed = speed,
-                                        pitch = pitch
-                                    )
-                                )
                                 speedCardContent = SpeedCardContent.DEFAULT
                             },
                         )

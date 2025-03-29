@@ -8,13 +8,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.sosauce.cutemusic.ui.navigation.Nav
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
-import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,14 +37,16 @@ class MainActivity : ComponentActivity() {
             0
         )
         setContent {
-            val musicViewModel = koinViewModel<MusicViewModel>()
+            var artImageBitmap by remember { mutableStateOf<ImageBitmap>(ImageBitmap(1, 1)) }
 
-            CuteMusicTheme(musicViewModel = musicViewModel) {
+            CuteMusicTheme(artImageBitmap = artImageBitmap) {
                 Scaffold(
                     modifier = Modifier
                         .fillMaxSize()
                 ) { _ ->
-                    Nav(musicViewModel)
+                    Nav { imageBitmap ->
+                        artImageBitmap = imageBitmap
+                    }
                 }
             }
         }

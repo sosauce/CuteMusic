@@ -2,24 +2,25 @@ package com.sosauce.cutemusic.data.states
 
 import android.net.Uri
 import androidx.compose.runtime.Stable
-import androidx.media3.common.PlaybackParameters
 
 @Stable
 data class MusicState(
-    val currentlyPlaying: String = "",
-    val currentArtist: String = "",
-    val currentArtistId: Long = 0,
-    val currentArt: Uri? = null,
-    val isCurrentlyPlaying: Boolean = false,
-    val currentPosition: Long = 0L,
-    val currentMusicDuration: Long = 0L,
-    val currentMusicUri: String = "",
-    val currentPath: String = "",
-    val currentAlbum: String = "",
-    val currentAlbumId: Long = 0,
-    val currentSize: Long = 0,
-    val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+    val title: String = "",
+    val artist: String = "",
+    val artistId: Long = 0,
+    val art: Uri? = null,
+    val isPlaying: Boolean = false,
+    val position: Long = 0L,
+    val duration: Long = 0L,
+    val uri: String = "",
+    val path: String = "",
+    val album: String = "",
+    val albumId: Long = 0,
+    val size: Long = 0,
+    val speed: Float = 1.0f,
+    val pitch: Float = 1.0f,
     val isPlayerReady: Boolean = false,
     val sleepTimerActive: Boolean = false,
-    val currentMediaId: String = ""
+    val mediaId: String = "",
+    val mediaIndex: Int = 0
 )

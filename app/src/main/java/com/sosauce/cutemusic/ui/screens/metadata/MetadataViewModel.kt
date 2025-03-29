@@ -30,7 +30,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 
-// Inspired by Metadator and TagLib !
 
 class MetadataViewModel(
     private val application: Application
@@ -52,11 +51,13 @@ class MetadataViewModel(
                 val audioProperties = loadAudioProperties(fd)
                 val audioArt = loadAudioArt(fd)
 
-                _metadata.value = _metadata.value.copy(
-                    metadata = metadata,
-                    audioProperties = audioProperties,
-                    art = audioArt
-                )
+                _metadata.update {
+                    it.copy(
+                        metadata = metadata,
+                        audioProperties = audioProperties,
+                        art = audioArt
+                    )
+                }
 
             }
         }.onSuccess {
@@ -148,9 +149,12 @@ class MetadataViewModel(
             mimeType = mimeType ?: "image/jpeg"
         )
 
-        _metadata.value = _metadata.value.copy(
-            art = picture
-        )
+        _metadata.update {
+            it.copy(
+                art = picture
+            )
+        }
+
     }
 
     @SuppressLint("Range")

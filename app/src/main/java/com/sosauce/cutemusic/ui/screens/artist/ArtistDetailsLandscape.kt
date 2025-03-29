@@ -107,7 +107,8 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                         currentMusicUri = currentMusicUri,
                         onShortClick = { onClickPlay(it) },
                         isPlayerReady = isPlayerReady,
-                        modifier = Modifier.thenIf(index == 0) { statusBarsPadding() }
+                        modifier = Modifier.thenIf(index == 0) { statusBarsPadding() },
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }

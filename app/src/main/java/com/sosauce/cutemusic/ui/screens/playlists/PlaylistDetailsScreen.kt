@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.sosauce.cutemusic.ui.screens.playlists
 
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,7 +37,7 @@ import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
 
 @Composable
-fun PlaylistDetailsScreen(
+fun SharedTransitionScope.PlaylistDetailsScreen(
     playlist: Playlist,
     musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
@@ -44,6 +49,7 @@ fun PlaylistDetailsScreen(
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
     onNavigateUp: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val playlistDisplay = remember {
@@ -88,7 +94,8 @@ fun PlaylistDetailsScreen(
                                     onDeleteMusic = onDeleteMusic,
                                     onChargeAlbumSongs = onChargeAlbumSongs,
                                     onChargeArtistLists = onChargeArtistLists,
-                                    isPlayerReady = isPlayerReady
+                                    isPlayerReady = isPlayerReady,
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 )
                             } else {
                                 var safTracks by rememberAllSafTracks()

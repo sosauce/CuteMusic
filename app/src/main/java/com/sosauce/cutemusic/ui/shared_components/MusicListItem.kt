@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@file:OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class
+)
 
 package com.sosauce.cutemusic.ui.shared_components
 
@@ -11,6 +14,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -76,7 +82,7 @@ import com.sosauce.cutemusic.utils.ImageUtils
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun LocalMusicListItem(
+fun SharedTransitionScope.LocalMusicListItem(
     modifier: Modifier = Modifier,
     music: MediaItem,
     onShortClick: (albumName: String) -> Unit,
@@ -88,7 +94,8 @@ fun LocalMusicListItem(
     onChargeAlbumSongs: (String) -> Unit = {},
     onChargeArtistLists: (String) -> Unit = {},
     isPlayerReady: Boolean,
-    showTrackNumber: Boolean = false
+    showTrackNumber: Boolean = false,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val context = LocalContext.current
@@ -96,6 +103,7 @@ fun LocalMusicListItem(
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showShareOptions by remember { mutableStateOf(false) }
     val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
+    val mediaId = remember { music.mediaId }
     val path = remember { music.mediaMetadata.extras?.getString("path") ?: "" }
     val isPlaying = currentMusicUri == uri.toString()
     val bgColor by animateColorAsState(
@@ -229,14 +237,10 @@ fun LocalMusicListItem(
             modifier = Modifier.weight(1f)
         ) {
             AsyncImage(
-                model = ImageUtils.imageRequester(
-                    img = music.mediaMetadata.artworkUri,
-                    context = context
-                ),
-                stringResource(R.string.artwork),
+                model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri),
+                contentDescription = stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)
-                    .size(45.dp)
                     .drawWithContent {
                         drawContent()
                         if (showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
@@ -259,6 +263,11 @@ fun LocalMusicListItem(
                             )
                         }
                     }
+//                    .sharedElement(
+//                        state = rememberSharedContentState(key = SharedTransitionKeys.MUSIC_ARTWORK + mediaId),
+//                        animatedVisibilityScope = animatedVisibilityScope
+//                    )
+                    .size(45.dp)
                     .clip(RoundedCornerShape(5.dp)),
                 contentScale = ContentScale.Crop,
             )
@@ -274,7 +283,13 @@ fun LocalMusicListItem(
                 CuteText(
                     text = music.mediaMetadata.artist.toString(),
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
+//                    modifier = Modifier
+//                        .sharedElement(
+//                            state = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + mediaId),
+//                            animatedVisibilityScope = animatedVisibilityScope
+//
+//                        )
                 )
             }
         }
@@ -598,10 +613,7 @@ fun SafMusicListItem(
             modifier = Modifier.weight(1f)
         ) {
             AsyncImage(
-                model = ImageUtils.imageRequester(
-                    img = music.mediaMetadata.artworkUri,
-                    context = context
-                ),
+                model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri),
                 stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)

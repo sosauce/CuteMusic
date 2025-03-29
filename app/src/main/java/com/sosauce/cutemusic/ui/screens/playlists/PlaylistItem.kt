@@ -90,6 +90,7 @@ fun PlaylistItem(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
@@ -99,7 +100,7 @@ fun PlaylistItem(
                     .padding(start = 10.dp)
                     .size(45.dp)
                     .clip(RoundedCornerShape(5.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer.copy(0.5f)),
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
                 contentAlignment = Alignment.Center
             ) {
                 if (playlist.emoji.isNotBlank()) {

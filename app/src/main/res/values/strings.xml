@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">CuteMusic</string>
+    <string name="empty" translatable="false" />
     <string name="theme">Theme</string>
     <string name="settings">Settings</string>
     <string name="dark_mode">Dark mode</string>
@@ -101,6 +102,7 @@
     <string name="nothing">Nothing to search for</string>
     <string name="search_lyrics">Search for lyrics</string>
     <string name="song_loading">Song loading…</string>
+    <string name="use_carousel">Use carousel</string>
     <plurals name="tracks">
         <item quantity="one">%d track</item>
         <item quantity="other">%d tracks</item>

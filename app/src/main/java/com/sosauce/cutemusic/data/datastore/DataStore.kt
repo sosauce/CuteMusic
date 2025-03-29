@@ -7,23 +7,26 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_SHUFFLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SPEED
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_AMOLED_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_NP_V2
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -51,7 +54,9 @@ data object PreferencesKeys {
     val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
     val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
     val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
-    val USE_NP_V2 = booleanPreferencesKey("USE_NP_V2")
+    val CAROUSEL = booleanPreferencesKey("CAROUSEL")
+    val SPEED = floatPreferencesKey("SPEED")
+    val PITCH = floatPreferencesKey("PITCH")
 }
 
 
@@ -116,8 +121,16 @@ fun rememberGroupByFolders() =
     rememberPreference(key = GROUP_BY_FOLDERS, defaultValue = false)
 
 @Composable
-fun rememberUseNpV2() =
-    rememberPreference(key = USE_NP_V2, defaultValue = false)
+fun rememberCarousel() =
+    rememberPreference(key = CAROUSEL, defaultValue = false)
+
+@Composable
+fun rememberSpeed() =
+    rememberPreference(key = SPEED, defaultValue = 1.0f)
+
+@Composable
+fun rememberPitch() =
+    rememberPreference(key = PITCH, defaultValue = 1.0f)
 
 fun getShouldLoop(context: Context): Flow<Boolean> =
     context.dataStore.data
@@ -129,6 +142,18 @@ fun getShouldShuffle(context: Context): Flow<Boolean> =
     context.dataStore.data
         .map { preference ->
             preference[APPLY_SHUFFLE] == true
+        }
+
+fun getSpeed(context: Context): Flow<Float> =
+    context.dataStore.data
+        .map { preference ->
+            preference[SPEED] ?: 1.0f
+        }
+
+fun getPitch(context: Context): Flow<Float> =
+    context.dataStore.data
+        .map { preference ->
+            preference[SPEED] ?: 1.0f
         }
 
 

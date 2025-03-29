@@ -2,10 +2,13 @@
 
 package com.sosauce.cutemusic.ui.screens.playlists
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowUpward
@@ -43,7 +47,9 @@ import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.showCuteSearchbar
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -52,7 +58,6 @@ fun SharedTransitionScope.PlaylistsScreen(
     currentlyPlaying: String,
     isCurrentlyPlaying: Boolean,
     onNavigate: (Screen) -> Unit,
-    onNavigationItemClicked: (Screen) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean,
     onHandlePlayerAction: (PlayerActions) -> Unit,
@@ -61,6 +66,7 @@ fun SharedTransitionScope.PlaylistsScreen(
     val playlistViewModel = koinViewModel<PlaylistViewModel>()
     val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
+    val state = rememberLazyListState()
     var query by remember { mutableStateOf("") }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
     val float by animateFloatAsState(
@@ -94,7 +100,8 @@ fun SharedTransitionScope.PlaylistsScreen(
         Box(Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = paddingValues
+                contentPadding = paddingValues,
+                state = state
             ) {
                 if (playlists.isEmpty()) {
                     item {
@@ -131,47 +138,55 @@ fun SharedTransitionScope.PlaylistsScreen(
                 }
             }
 
-            CuteSearchbar(
-                query = query,
-                onQueryChange = { query = it },
+            AnimatedVisibility(
+                visible = state.showCuteSearchbar,
                 modifier = Modifier.align(rememberSearchbarAlignment()),
-                trailingIcon = {
-                    Row {
-                        IconButton(
-                            onClick = { isSortedByASC = !isSortedByASC }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowUpward,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(float)
-                            )
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                CuteSearchbar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    modifier = Modifier.align(rememberSearchbarAlignment()),
+                    trailingIcon = {
+                        Row {
+                            IconButton(
+                                onClick = { isSortedByASC = !isSortedByASC }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ArrowUpward,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(float)
+                                )
+                            }
+                            IconButton(
+                                onClick = { onNavigate(Screen.Settings) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null
+                                )
+                            }
                         }
-                        IconButton(
-                            onClick = { onNavigate(Screen.Settings) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = null
-                            )
-                        }
+                    },
+                    currentlyPlaying = currentlyPlaying,
+                    onHandlePlayerActions = onHandlePlayerAction,
+                    isPlaying = isCurrentlyPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    isPlayerReady = isPlayerReady,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            ),
+                            imageVector = Icons.Rounded.Add
+                        ) { showPlaylistCreatorDialog = true }
                     }
-                },
-                currentlyPlaying = currentlyPlaying,
-                onHandlePlayerActions = onHandlePlayerAction,
-                isPlaying = isCurrentlyPlaying,
-                animatedVisibilityScope = animatedVisibilityScope,
-                isPlayerReady = isPlayerReady,
-                onNavigate = onNavigate,
-                fab = {
-                    CuteActionButton(
-                        modifier = Modifier.sharedBounds(
-                            sharedContentState = rememberSharedContentState(key = "fab"),
-                            animatedVisibilityScope = animatedVisibilityScope
-                        ),
-                        imageVector = Icons.Rounded.Add
-                    ) { showPlaylistCreatorDialog = true }
-                }
-            )
+                )
+            }
+
         }
     }
 }

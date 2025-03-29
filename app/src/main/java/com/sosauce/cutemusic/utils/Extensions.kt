@@ -7,23 +7,27 @@ import android.content.Context
 import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -103,9 +107,9 @@ fun Player.playFromAlbum(
     musics.filter { music -> music.mediaMetadata.albumTitle.toString() == albumName }
         .sortedWith(
             compareBy(
-            { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
-            { it.mediaMetadata.trackNumber }
-        ))
+                { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
+                { it.mediaMetadata.trackNumber }
+            ))
         .also { addMediaItems(it) }
 
 
@@ -147,26 +151,38 @@ fun Player.applyShuffle(
     shuffleModeEnabled = shouldShuffle
 }
 
-fun Player.applyPlaybackSpeed(
-    speed: Float = 1f,
-    pitch: Float = 1f,
-) {
+fun Player.applyPlaybackSpeed(speed: Float = 1f) {
     playbackParameters = PlaybackParameters(
         speed,
+        playbackParameters.pitch
+    )
+}
+
+fun Player.applyPlaybackPitch(pitch: Float = 1f) {
+    playbackParameters = PlaybackParameters(
+        playbackParameters.speed,
         pitch
     )
 }
 
+//fun Player.getLoadedMedias(): Flow<List<MediaItem>> {
+//    return flow {
+//        emit(
+//            (0 until mediaItemCount).map { getMediaItemAt(it) }
+//        )
+//    }
+//}
+
 
 fun ByteArray.getUriFromByteArray(context: Context): Uri {
     val albumArtFile = File(context.cacheDir, "albumArt_${this.hashCode()}_${Uuid.random()}.jpg")
-    try {
+    return try {
         FileOutputStream(albumArtFile).use { os ->
             os.write(this)
         }
-        return Uri.fromFile(albumArtFile)
+        Uri.fromFile(albumArtFile)
     } catch (e: Exception) {
-        return Uri.EMPTY
+        Uri.EMPTY
     }
 }
 
@@ -208,6 +224,45 @@ fun PropertyMap.toModifiableMap(separator: String = ", "): MutableMap<String, St
 fun String?.formatForField(separator: String = ","): Array<String> {
     return this?.split(separator)?.map { it.trim() }?.toTypedArray() ?: arrayOf(this ?: "")
 }
+
+val LazyListState.showCuteSearchbar
+    get() =
+        if (layoutInfo.totalItemsCount == 0) {
+            true
+        } else if (
+            layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
+            layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+        ) {
+            true
+        } else {
+            layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
+        }
+
+val LazyGridState.showCuteSearchbar
+    get() =
+        if (layoutInfo.totalItemsCount == 0) {
+            true
+        } else if (
+            layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
+            layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+        ) {
+            true
+        } else {
+            layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
+        }
+
+fun Modifier.ignoreParentPadding(): Modifier =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.offset(
+                30.dp.roundToPx()
+            )
+        )
+        layout(
+            placeable.width,
+            placeable.height
+        ) { placeable.place(0, 0) }
+    }
 
 object CurrentScreen {
     var screen by mutableStateOf(Screen.Main.toString())
@@ -286,16 +341,26 @@ fun Modifier.cuteHazeEffect(
     block = block
 )
 
+@Composable
+fun rememberInteractionSource(): MutableInteractionSource {
+    return remember { MutableInteractionSource() }
+}
 
 @Composable
-fun animateAlignmentAsState(
-    targetAlignment: Alignment,
-): State<Alignment> {
-    val biased = targetAlignment as BiasAlignment
-    val horizontal by animateFloatAsState(biased.horizontalBias, tween(400))
-    val vertical by animateFloatAsState(biased.verticalBias, tween(400))
-    return remember { derivedStateOf { BiasAlignment(horizontal, vertical) } }
+fun rememberAnimatable(): Animatable<Float, AnimationVector1D> {
+    return remember { Animatable(0f) }
 }
+
+
+//@Composable
+//fun animateAlignmentAsState(
+//    targetAlignment: Alignment,
+//): State<Alignment> {
+//    val biased = targetAlignment as BiasAlignment
+//    val horizontal by animateFloatAsState(biased.horizontalBias, tween(400))
+//    val vertical by animateFloatAsState(biased.verticalBias, tween(400))
+//    return remember { derivedStateOf { BiasAlignment(horizontal, vertical) } }
+//}
 
 @Composable
 fun rememberSearchbarAlignment(

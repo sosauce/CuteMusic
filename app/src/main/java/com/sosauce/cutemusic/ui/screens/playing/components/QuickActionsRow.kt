@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -24,13 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -71,11 +66,14 @@ import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun QuickActionsRowV2(
+fun QuickActionsRow(
     musicState: MusicState,
     onShowLyrics: () -> Unit,
     onShowSpeedCard: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
+    onNavigate: (Screen) -> Unit = {},
 ) {
     val context = LocalContext.current
     var showDetailsDialog by remember { mutableStateOf(false) }
@@ -83,6 +81,8 @@ fun QuickActionsRowV2(
     val onBackground = MaterialTheme.colorScheme.onBackground
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
+    val uri = remember { musicState.uri.toUri() }
+
 
     if (showDetailsDialog) {
         MusicStateDetailsDialog(
@@ -141,7 +141,7 @@ fun QuickActionsRowV2(
                         playlist = playlist,
                         allowEditAction = false,
                         onClickPlaylist = {
-                            if (playlist.musics.contains(musicState.currentMediaId)) {
+                            if (playlist.musics.contains(musicState.mediaId)) {
                                 Toast.makeText(
                                     context,
                                     context.getString(R.string.alrdy_in_playlist),
@@ -153,7 +153,7 @@ fun QuickActionsRowV2(
                                     name = playlist.name,
                                     emoji = playlist.emoji,
                                     musics = playlist.musics.toMutableList()
-                                        .apply { add(musicState.currentMediaId) }
+                                        .apply { add(musicState.mediaId) }
                                 )
                                 playlistViewModel.handlePlaylistActions(
                                     PlaylistActions.UpsertPlaylist(playlist)
@@ -207,280 +207,133 @@ fun QuickActionsRowV2(
                 }
             }
         }
+        Column {
 
-    }
-}
+            var isDropDownExpanded by remember { mutableStateOf(false) }
+            val eqIntent =
+                rememberLauncherForActivityResult(equalizerActivityContract()) { }
 
-@Composable
-fun QuickActionsRow(
-    musicState: MusicState,
-    onShowLyrics: () -> Unit,
-    onShowSpeedCard: () -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onNavigate: (Screen) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-) {
-    val context = LocalContext.current
-    var isDropDownExpanded by remember { mutableStateOf(false) }
-    var showDetailsDialog by remember { mutableStateOf(false) }
-    val uri = remember { musicState.currentMusicUri.toUri() }
-    var showTimePicker by remember { mutableStateOf(false) }
-    val onBackground = MaterialTheme.colorScheme.onBackground
-    val eqIntent = rememberLauncherForActivityResult(equalizerActivityContract()) { }
-    var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
-
-    if (showDetailsDialog) {
-        MusicStateDetailsDialog(
-            musicState = musicState,
-            onDismissRequest = { showDetailsDialog = false }
-        )
-    }
-
-    if (showTimePicker) {
-        CuteTimePicker(
-            onDismissRequest = { showTimePicker = false },
-            onSetTimer = { hours, minutes ->
-                showTimePicker = false
-                onHandlePlayerActions(PlayerActions.SetSleepTimer(hours, minutes))
-            }
-        )
-    }
-
-    if (showPlaylistCreatorDialog) {
-        CreatePlaylistDialog { showPlaylistCreatorDialog = false }
-    }
-
-    if (showPlaylistDialog) {
-        val playlistViewModel = koinViewModel<PlaylistViewModel>()
-        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-        ModalBottomSheet(
-            onDismissRequest = { showPlaylistDialog = false }
-        ) {
-            LazyColumn {
-                item {
-                    OutlinedButton(
-                        onClick = { showPlaylistCreatorDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = null
-                            )
-                            Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                            CuteText(stringResource(R.string.create_playlist))
-                        }
-                    }
-                }
-
-                items(
-                    items = playlists,
-                    key = { it.id }
-                ) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        allowEditAction = false,
-                        onClickPlaylist = {
-                            if (playlist.musics.contains(musicState.currentMediaId)) {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.alrdy_in_playlist),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                val playlist = Playlist(
-                                    id = playlist.id,
-                                    name = playlist.name,
-                                    emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList()
-                                        .apply { add(musicState.currentMediaId) }
-                                )
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(playlist)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
-
-    }
-
-
-
-    Column {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-        ) {
-
-            IconButton(onClick = onShowLyrics) {
+            IconButton(onClick = { isDropDownExpanded = true }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.Article,
-                    contentDescription = "show lyrics"
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = "more"
                 )
             }
-
-            IconButton(onClick = onShowSpeedCard) {
-                Icon(
-                    imageVector = Icons.Rounded.Speed,
-                    contentDescription = "change speed"
-                )
-            }
-            IconButton(
-                onClick = { showTimePicker = true }
+            DropdownMenu(
+                expanded = isDropDownExpanded,
+                onDismissRequest = { isDropDownExpanded = false },
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Box {
-                    Icon(
-                        painter = painterResource(R.drawable.bedtime_outlined),
-                        contentDescription = "set sleep timer"
-                    )
-                    if (musicState.sleepTimerActive) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .drawBehind { drawCircle(onBackground) }
-                                .size(8.dp)
+                DropdownMenuItem(
+                    onClick = {
+                        try {
+                            eqIntent.launch()
+                        } catch (e: Exception) {
+                            Log.d(
+                                "CuteError",
+                                "Couldn't open EQ: ${e.stackTrace}, ${e.message}"
+                            )
+                        }
+                    },
+                    text = {
+                        CuteText(stringResource(R.string.open_eq))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                            contentDescription = null
                         )
                     }
-                }
-            }
-            Row {
-                IconButton(onClick = { isDropDownExpanded = true }) {
-                    Icon(
-                        imageVector = Icons.Rounded.MoreVert,
-                        contentDescription = "more"
-                    )
-                }
-
-
-                DropdownMenu(
-                    expanded = isDropDownExpanded,
-                    onDismissRequest = { isDropDownExpanded = false },
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    DropdownMenuItem(
-                        onClick = {
-                            try {
-                                eqIntent.launch()
-                            } catch (e: Exception) {
-                                Log.d(
-                                    "CuteError",
-                                    "Couldn't open EQ: ${e.stackTrace}, ${e.message}"
-                                )
-                            }
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.open_eq))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
-                                contentDescription = null
+                )
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .align(Alignment.CenterHorizontally)
+                )
+                DropdownMenuItem(
+                    onClick = { showDetailsDialog = true },
+                    text = {
+                        CuteText(stringResource(R.string.details))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.info_rounded),
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        isDropDownExpanded = false
+                        onChargeAlbumSongs(musicState.album)
+                        onNavigate(Screen.AlbumsDetails(musicState.albumId))
+                    },
+                    text = {
+                        CuteText("${stringResource(R.string.go_to)} ${musicState.album}")
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        isDropDownExpanded = false
+                        onChargeArtistLists(musicState.artist)
+                        onNavigate(Screen.ArtistsDetails(musicState.artistId))
+                    },
+                    text = {
+                        CuteText("${stringResource(R.string.go_to)} ${musicState.artist}")
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.artist_rounded),
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = { showPlaylistDialog = true },
+                    text = {
+                        CuteText(stringResource(R.string.add_to_playlist))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        context.startActivity(
+                            Intent.createChooser(
+                                Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    type = "audio/*"
+                                }, null
                             )
-                        }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .align(Alignment.CenterHorizontally)
-                    )
-                    DropdownMenuItem(
-                        onClick = { showDetailsDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.details))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.ErrorOutline,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(180f)
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onChargeAlbumSongs(musicState.currentAlbum)
-                            onNavigate(Screen.AlbumsDetails(musicState.currentAlbumId))
-                        },
-                        text = {
-                            CuteText("${stringResource(R.string.go_to)} ${musicState.currentAlbum}")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onChargeArtistLists(musicState.currentArtist)
-                            onNavigate(Screen.ArtistsDetails(musicState.currentArtistId))
-                        },
-                        text = {
-                            CuteText("${stringResource(R.string.go_to)} ${musicState.currentArtist}")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.artist_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = { showPlaylistDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.add_to_playlist))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            context.startActivity(
-                                Intent.createChooser(
-                                    Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_STREAM, uri)
-                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        type = "audio/*"
-                                    }, null
-                                )
-                            )
-                        },
-                        text = {
-                            CuteText(
-                                text = stringResource(R.string.share)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
+                        )
+                    },
+                    text = {
+                        CuteText(
+                            text = stringResource(R.string.share)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
+                            contentDescription = null
+                        )
+                    }
+                )
             }
         }
+
     }
 }
 

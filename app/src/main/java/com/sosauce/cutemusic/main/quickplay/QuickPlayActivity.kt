@@ -10,12 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,6 +51,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -63,11 +63,14 @@ import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import coil3.toBitmap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.formatToReadableTime
+import com.sosauce.cutemusic.utils.rememberAnimatable
+import com.sosauce.cutemusic.utils.rememberInteractionSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.saket.squiggles.SquigglySlider
@@ -85,12 +88,13 @@ class QuickPlayActivity : ComponentActivity() {
 
         setContent {
             val viewModel = koinViewModel<QuickPlayViewModel>()
+            var artImageBitmap by remember { mutableStateOf<ImageBitmap>(ImageBitmap(1, 1)) }
 
             LaunchedEffect(uri) {
                 viewModel.loadSong(uri)
             }
 
-            CuteMusicTheme {
+            CuteMusicTheme(artImageBitmap = artImageBitmap) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { paddingValues ->
@@ -139,7 +143,10 @@ class QuickPlayActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .size(340.dp)
                                     .clip(RoundedCornerShape(5)),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                onSuccess = { state ->
+                                    artImageBitmap = state.result.image.toBitmap().asImageBitmap()
+                                }
                             )
                             Spacer(Modifier.height(20.dp))
                             Column(
@@ -203,7 +210,7 @@ class QuickPlayActivity : ComponentActivity() {
                                             targetValue = if (state.isPlaying) 5.dp else 0.dp
                                         )
                                         SquigglySlider.Track(
-                                            interactionSource = remember { MutableInteractionSource() },
+                                            interactionSource = rememberInteractionSource(),
                                             colors = SliderDefaults.colors(),
                                             enabled = true,
                                             sliderState = sliderState,
@@ -216,7 +223,7 @@ class QuickPlayActivity : ComponentActivity() {
                                     thumb = {
                                         Spacer(Modifier.width(4.dp))
                                         SliderDefaults.Thumb(
-                                            interactionSource = remember { MutableInteractionSource() },
+                                            interactionSource = rememberInteractionSource(),
                                             thumbSize = DpSize(width = 4.dp, height = 22.dp),
                                         )
                                         Spacer(Modifier.width(4.dp))
@@ -232,7 +239,7 @@ class QuickPlayActivity : ComponentActivity() {
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    val fastRewindOffset = remember { Animatable(0f) }
+                                    val fastRewindOffset = rememberAnimatable()
                                     IconButton(
                                         onClick = {
                                             viewModel.handlePlayerAction(PlayerActions.RewindTo(5000))
@@ -277,7 +284,7 @@ class QuickPlayActivity : ComponentActivity() {
                                             )
                                         }
                                     }
-                                    val fastForwardOffset = remember { Animatable(0f) }
+                                    val fastForwardOffset = rememberAnimatable()
                                     IconButton(
                                         onClick = {
                                             viewModel.handlePlayerAction(PlayerActions.SeekTo(5000))

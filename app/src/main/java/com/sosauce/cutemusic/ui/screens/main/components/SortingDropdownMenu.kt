@@ -1,21 +1,15 @@
 package com.sosauce.cutemusic.ui.screens.main.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -32,60 +26,52 @@ fun SortingDropdownMenu(
     onChangeSorting: (Boolean) -> Unit
 ) {
     var groupByFolders by rememberGroupByFolders()
-
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         shape = RoundedCornerShape(24.dp),
-        //modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier.padding(5.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(12.dp)
-            ) {
+        DropdownMenuItem(
+            onClick = { groupByFolders = !groupByFolders },
+            text = { CuteText(stringResource(R.string.group_tracks)) },
+            leadingIcon = {
                 Checkbox(
-                    modifier = Modifier.size(20.dp), // https://stackoverflow.com/a/77142600/28577483
                     checked = groupByFolders,
-                    onCheckedChange = { groupByFolders = it }
+                    onCheckedChange = null
                 )
-                Spacer(Modifier.width(10.dp))
-                CuteText(stringResource(R.string.group_tracks))
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { onChangeSorting(true) }
-                    .padding(10.dp)
-            ) {
+            },
+            modifier = Modifier
+                .height(56.dp)
+                .padding(5.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+        DropdownMenuItem(
+            onClick = { onChangeSorting(true) },
+            text = { CuteText(stringResource(R.string.ascending)) },
+            leadingIcon = {
                 RadioButton(
                     selected = isSortedByASC,
-                    onClick = null,
-
-                    )
-                Spacer(Modifier.width(10.dp))
-                CuteText(stringResource(R.string.ascending))
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { onChangeSorting(false) }
-                    .padding(10.dp)
-            ) {
+                    onClick = null
+                )
+            },
+            modifier = Modifier
+                .height(56.dp)
+                .padding(5.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+        DropdownMenuItem(
+            onClick = { onChangeSorting(false) },
+            text = { CuteText(stringResource(R.string.descending)) },
+            leadingIcon = {
                 RadioButton(
                     selected = !isSortedByASC,
                     onClick = null
                 )
-                Spacer(Modifier.width(10.dp))
-                CuteText(stringResource(R.string.descending))
-            }
-
-        }
+            },
+            modifier = Modifier
+                .height(56.dp)
+                .padding(5.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
     }
 }

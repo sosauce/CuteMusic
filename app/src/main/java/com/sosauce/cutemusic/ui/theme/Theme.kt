@@ -9,16 +9,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import coil3.toBitmap
 import com.kmpalette.color
 import com.kmpalette.rememberDominantColorState
 import com.materialkolor.DynamicMaterialTheme
@@ -28,10 +25,6 @@ import com.sosauce.cutemusic.data.datastore.rememberFollowSys
 import com.sosauce.cutemusic.data.datastore.rememberUseAmoledMode
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseDarkMode
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 
 
 private val LightColors = lightColorScheme(
@@ -103,7 +96,7 @@ private val DarkColors = darkColorScheme(
 fun CuteMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    musicViewModel: MusicViewModel = koinViewModel<MusicViewModel>(),
+    artImageBitmap: ImageBitmap,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -140,21 +133,11 @@ fun CuteMusicTheme(
 
 
     if (useArtTheme) {
-        val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
-        val scope = rememberCoroutineScope()
         val paletteState = rememberDominantColorState()
 
-        AsyncImage(
-            model = musicState.currentArt,
-            contentDescription = null,
-            onSuccess = { painter ->
-                val imageBitmap = painter.result.image.toBitmap().asImageBitmap()
-                scope.launch {
-                    paletteState.updateFrom(imageBitmap)
-                }
-            },
-            onError = { paletteState.reset() }
-        )
+        LaunchedEffect(artImageBitmap) {
+            paletteState.updateFrom(artImageBitmap)
+        }
 
         val state = rememberDynamicMaterialThemeState(
             seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color
@@ -162,10 +145,6 @@ fun CuteMusicTheme(
             isDark = isSystemInDarkTheme() || useDarkMode,
             isAmoled = useAmoledMode
         )
-
-        koinInject<MusicViewModel>()
-
-
 
         DynamicMaterialTheme(
             state = state,

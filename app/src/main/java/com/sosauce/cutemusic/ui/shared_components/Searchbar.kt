@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
+@file:OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.sosauce.cutemusic.ui.shared_components
 
@@ -6,7 +9,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -25,17 +27,17 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -58,6 +60,8 @@ import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.utils.CurrentScreen
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
+import com.sosauce.cutemusic.utils.rememberAnimatable
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import kotlinx.coroutines.Dispatchers
@@ -82,8 +86,8 @@ fun SharedTransitionScope.CuteSearchbar(
 ) {
 
     val focusManager = LocalFocusManager.current
-    val leftIconOffsetX = remember { Animatable(0f) }
-    val rightIconOffsetX = remember { Animatable(0f) }
+    val leftIconOffsetX = rememberAnimatable()
+    val rightIconOffsetX = rememberAnimatable()
     val scope = rememberCoroutineScope()
     val showXButton by rememberShowXButton()
     val showShuffleButton by rememberShowShuffleButton()
@@ -165,11 +169,11 @@ fun SharedTransitionScope.CuteSearchbar(
                             text = currentlyPlaying,
                             modifier = Modifier
                                 .padding(start = 5.dp)
-                                .basicMarquee()
-                                .sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = "currentlyPlaying"),
+                                .sharedElement(
+                                    state = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
                                     animatedVisibilityScope = animatedVisibilityScope
                                 )
+                                .basicMarquee()
                         )
                     }
                     Row {
@@ -199,7 +203,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                         )
                                     }
                                     .sharedElement(
-                                        state = rememberSharedContentState(key = "skipPreviousButton"),
+                                        state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
@@ -210,10 +214,11 @@ fun SharedTransitionScope.CuteSearchbar(
                             Icon(
                                 imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                                 contentDescription = null,
-                                modifier = Modifier.sharedElement(
-                                    state = rememberSharedContentState(key = "playPauseIcon"),
-                                    animatedVisibilityScope = animatedVisibilityScope
-                                )
+                                modifier = Modifier
+                                    .sharedElement(
+                                        state = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
                             )
                         }
                         IconButton(
@@ -242,7 +247,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                         )
                                     }
                                     .sharedElement(
-                                        state = rememberSharedContentState(key = "skipNextButton"),
+                                        state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
@@ -251,67 +256,50 @@ fun SharedTransitionScope.CuteSearchbar(
                 }
             }
             if (showSearchField) {
-                TextField(
-                    value = query,
-                    onValueChange = onQueryChange,
+                SearchBarDefaults.InputField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = {},
+                    expanded = true,
+                    onExpandedChange = {},
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                            0.5f
-                        ),
-                        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                            0.5f
-                        ),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
                         disabledIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        errorIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent
                     ),
-                    shape = RoundedCornerShape(50.dp),
                     leadingIcon = {
                         var screenSelectionExpanded by remember { mutableStateOf(false) }
 
                         IconButton(
-                            onClick = {
-                                screenSelectionExpanded = true
-//                                if (!hasSeenTip) {
-//                                    hasSeenTip = true
-//                                }
-                            }
+                            onClick = { screenSelectionExpanded = true }
                         ) {
                             Icon(
                                 painter = painterResource(
                                     screenToLeadingIcon[CurrentScreen.screen]
                                         ?: R.drawable.music_note_rounded
                                 ),
-                                contentDescription = null,
-                                //tint = if (!hasSeenTip) color else LocalContentColor.current
+                                contentDescription = null
                             )
                         }
                         ScreenSelection(
                             expanded = screenSelectionExpanded,
                             onDismissRequest = { screenSelectionExpanded = false },
-                            onNavigate = onNavigate,
-
-                            )
+                            onNavigate = onNavigate
+                        )
                     },
                     trailingIcon = trailingIcon,
                     placeholder = {
                         CuteText(
                             text = stringResource(
-                                screenToPlaceholder[CurrentScreen.screen] ?: R.string.nothing
+                                screenToPlaceholder[CurrentScreen.screen] ?: R.string.empty
                             ),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                             maxLines = 1
                         )
                     },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(6.dp),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }
-                    )
-
+                    modifier = Modifier.padding(6.dp)
                 )
             }
         }

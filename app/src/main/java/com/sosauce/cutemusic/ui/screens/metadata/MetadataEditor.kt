@@ -128,10 +128,7 @@ fun MetadataEditor(
                 }
                 if (metadataState.art != null) {
                     AsyncImage(
-                        model = ImageUtils.imageRequester(
-                            img = metadataState.art?.data,
-                            context = context
-                        ),
+                        model = ImageUtils.imageRequester(metadataState.art?.data),
                         contentDescription = stringResource(id = R.string.artwork),
                         modifier = Modifier
                             .size(200.dp)

@@ -126,6 +126,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     }
 
 
+    @UnstableApi
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         mediaLibrarySession?.run {
@@ -137,7 +138,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             it.stopCallback()
             unregisterReceiver(it)
         }
-        stopSelf()
+        pauseAllPlayersAndStopSelf()
     }
 
 
@@ -147,7 +148,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
 
 
     override fun skipToNext() {
-        println("Bout to skip2next")
         mediaLibrarySession?.player?.seekToNextMediaItem()
     }
 

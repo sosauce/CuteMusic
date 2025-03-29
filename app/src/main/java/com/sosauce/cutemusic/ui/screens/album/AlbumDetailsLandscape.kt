@@ -40,7 +40,6 @@ import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PostViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.thenIf
 
@@ -48,13 +47,12 @@ import com.sosauce.cutemusic.utils.thenIf
 fun SharedTransitionScope.AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
-    postViewModel: PostViewModel,
     viewModel: MusicViewModel,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
 
-    val albumSongs by postViewModel.albumSongs.collectAsStateWithLifecycle()
+    val albumSongs by viewModel.albumSongs.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
@@ -109,7 +107,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                             .thenIf(index == 0) { Modifier.statusBarsPadding() }
                             .padding(horizontal = 5.dp),
                         music = music,
-                        currentMusicUri = musicState.currentMusicUri,
+                        currentMusicUri = musicState.uri,
                         onShortClick = {
                             viewModel.handlePlayerActions(
                                 PlayerActions.StartPlayback(
@@ -117,7 +115,8 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                                 )
                             )
                         },
-                        isPlayerReady = musicState.isPlayerReady
+                        isPlayerReady = musicState.isPlayerReady,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }

@@ -2,10 +2,13 @@
 
 package com.sosauce.cutemusic.ui.screens.album
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -22,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
@@ -40,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,7 +57,9 @@ import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.showCuteSearchbar
 
 @Composable
 fun SharedTransitionScope.AlbumsScreen(
@@ -77,7 +82,7 @@ fun SharedTransitionScope.AlbumsScreen(
     val numberOfGrids = remember {
         if (isLandscape) 4 else 2
     }
-
+    val state = rememberLazyGridState()
     val displayAlbums by remember(isSortedByASC, albums, query) {
         derivedStateOf {
             if (query.isNotEmpty()) {
@@ -118,7 +123,8 @@ fun SharedTransitionScope.AlbumsScreen(
                     columns = GridCells.Fixed(numberOfGrids),
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentPadding = paddingValues
+                    contentPadding = paddingValues,
+                    state = state
                 ) {
                     items(
                         items = displayAlbums,
@@ -138,46 +144,53 @@ fun SharedTransitionScope.AlbumsScreen(
                     }
                 }
             }
-            CuteSearchbar(
-                query = query,
-                onQueryChange = { query = it },
+
+            AnimatedVisibility(
+                visible = state.showCuteSearchbar,
                 modifier = Modifier.align(rememberSearchbarAlignment()),
-                trailingIcon = {
-                    Row {
-                        IconButton(
-                            onClick = { isSortedByASC = !isSortedByASC }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowUpward,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(float)
-                            )
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                CuteSearchbar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    trailingIcon = {
+                        Row {
+                            IconButton(
+                                onClick = { isSortedByASC = !isSortedByASC }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ArrowUpward,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(float)
+                                )
+                            }
+                            IconButton(
+                                onClick = { onNavigate(Screen.Settings) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null
+                                )
+                            }
                         }
-                        IconButton(
-                            onClick = { onNavigate(Screen.Settings) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = null
+                    },
+                    currentlyPlaying = currentlyPlaying,
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    isPlaying = isPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    isPlayerReady = isPlayerReady,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            modifier = Modifier.sharedElement(
+                                state = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
-                        }
+                        ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
                     }
-                },
-                currentlyPlaying = currentlyPlaying,
-                onHandlePlayerActions = onHandlePlayerActions,
-                isPlaying = isPlaying,
-                animatedVisibilityScope = animatedVisibilityScope,
-                isPlayerReady = isPlayerReady,
-                onNavigate = onNavigate,
-                fab = {
-                    CuteActionButton(
-                        modifier = Modifier.sharedBounds(
-                            sharedContentState = rememberSharedContentState(key = "fab"),
-                            animatedVisibilityScope = animatedVisibilityScope
-                        )
-                    ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
-                }
-            )
+                )
+            }
         }
     }
 }
@@ -189,16 +202,13 @@ fun SharedTransitionScope.AlbumCard(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier = modifier
             .padding(20.dp)
     ) {
         AsyncImage(
             model = ImageUtils.imageRequester(
-                img = ImageUtils.getAlbumArt(album.id) ?: R.drawable.ic_launcher_foreground,
-                context = context
+                ImageUtils.getAlbumArt(album.id) ?: R.drawable.ic_launcher_foreground
             ),
             contentDescription = stringResource(id = R.string.artwork),
             modifier = Modifier
