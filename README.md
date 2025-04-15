@@ -29,7 +29,7 @@
 <p align=center>
 
 <image src="https://i.postimg.cc/tJS44wR7/1.png" height="512" />
- <image src="https://i.postimg.cc/wxZK99gL/2.png" height="512" />
+ <image src="https://i.ibb.co/jkqv5DfC/np.png" height="512" />
  <image src="https://i.postimg.cc/4NvTPrRc/3.png" height="512" />
 </p>
   
