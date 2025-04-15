@@ -3,6 +3,7 @@
 package com.sosauce.cutemusic.ui.screens.playing.components
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,9 @@ fun CuteSlider(
     val interactionSource = rememberInteractionSource()
     val isDragging by interactionSource.collectIsDraggedAsState()
     var tempSliderValue by remember { mutableStateOf<Float?>(null) }
+    val value by animateFloatAsState(
+        targetValue = tempSliderValue ?: musicState.position.toFloat()
+    )
 
 
     Column(
@@ -52,15 +56,15 @@ fun CuteSlider(
         ) {
             CuteText(
                 text = musicState.position.formatToReadableTime(),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             CuteText(
                 text = musicState.duration.formatToReadableTime(),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
         Slider(
-            value = tempSliderValue ?: musicState.position.toFloat(),
+            value = value,
             onValueChange = { tempSliderValue = it },
             onValueChangeFinished = {
                 tempSliderValue?.let {

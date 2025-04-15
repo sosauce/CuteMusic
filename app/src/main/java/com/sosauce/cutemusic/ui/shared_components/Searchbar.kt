@@ -49,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -85,7 +84,6 @@ fun SharedTransitionScope.CuteSearchbar(
     navigationIcon: @Composable (() -> Unit)? = null,
 ) {
 
-    val focusManager = LocalFocusManager.current
     val leftIconOffsetX = rememberAnimatable()
     val rightIconOffsetX = rememberAnimatable()
     val scope = rememberCoroutineScope()
@@ -169,8 +167,8 @@ fun SharedTransitionScope.CuteSearchbar(
                             text = currentlyPlaying,
                             modifier = Modifier
                                 .padding(start = 5.dp)
-                                .sharedElement(
-                                    state = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
+                                .sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
                                     animatedVisibilityScope = animatedVisibilityScope
                                 )
                                 .basicMarquee()
@@ -263,8 +261,12 @@ fun SharedTransitionScope.CuteSearchbar(
                     expanded = true,
                     onExpandedChange = {},
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
-                        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                            0.5f
+                        ),
+                        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                            0.5f
+                        ),
                         disabledIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent

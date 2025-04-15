@@ -165,12 +165,10 @@ fun SharedTransitionScope.MainScreen(
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
-                                        showBottomSheet = true,
                                         onDeleteMusic = onDeleteMusic,
                                         onChargeAlbumSongs = onChargeAlbumSongs,
                                         onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady,
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        isPlayerReady = isPlayerReady
                                     )
                                 }
                             }
@@ -206,12 +204,10 @@ fun SharedTransitionScope.MainScreen(
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
-                                        showBottomSheet = true,
                                         onDeleteMusic = onDeleteMusic,
                                         onChargeAlbumSongs = onChargeAlbumSongs,
                                         onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady,
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        isPlayerReady = isPlayerReady
                                     )
                                 } else {
                                     var safTracks by rememberAllSafTracks()

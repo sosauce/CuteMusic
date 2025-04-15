@@ -142,7 +142,7 @@ fun CuteMusicTheme(
         val state = rememberDynamicMaterialThemeState(
             seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color
                 ?: MaterialTheme.colorScheme.primary,
-            isDark = isSystemInDarkTheme() || useDarkMode,
+            isDark = if (followSys) isSystemInDarkTheme() else useDarkMode,
             isAmoled = useAmoledMode
         )
 

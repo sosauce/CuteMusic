@@ -2,6 +2,9 @@
 
 package com.sosauce.cutemusic.ui.screens.album
 
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -36,6 +39,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Album
+import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
@@ -47,9 +51,14 @@ import com.sosauce.cutemusic.utils.thenIf
 fun SharedTransitionScope.AlbumDetailsLandscape(
     album: Album,
     onNavigateUp: () -> Unit,
+    onNavigate: (Screen) -> Unit,
     viewModel: MusicViewModel,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
+    onChargeAlbumSongs: (String) -> Unit = {},
+    onChargeArtistLists: (String) -> Unit = {},
 ) {
 
     val albumSongs by viewModel.albumSongs.collectAsStateWithLifecycle()
@@ -104,7 +113,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                 ) { index, music ->
                     LocalMusicListItem(
                         modifier = Modifier
-                            .thenIf(index == 0) { Modifier.statusBarsPadding() }
+                            .thenIf(index == 0) { statusBarsPadding() }
                             .padding(horizontal = 5.dp),
                         music = music,
                         currentMusicUri = musicState.uri,
@@ -116,7 +125,11 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                             )
                         },
                         isPlayerReady = musicState.isPlayerReady,
-                        animatedVisibilityScope = animatedVisibilityScope
+                        onLoadMetadata = onLoadMetadata,
+                        onChargeArtistLists = onChargeArtistLists,
+                        onChargeAlbumSongs = onChargeAlbumSongs,
+                        onDeleteMusic = onDeleteMusic,
+                        onNavigate = onNavigate
                     )
                 }
             }

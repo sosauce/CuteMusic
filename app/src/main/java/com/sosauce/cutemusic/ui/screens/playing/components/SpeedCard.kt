@@ -3,13 +3,15 @@
 package com.sosauce.cutemusic.ui.screens.playing.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,35 +19,37 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberPitch
 import com.sosauce.cutemusic.data.datastore.rememberSpeed
-import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 
 @Composable
 fun SpeedCard(
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
     shouldSnap: Boolean,
     onChangeSnap: () -> Unit
 ) {
@@ -53,11 +57,21 @@ fun SpeedCard(
     var pitch by rememberPitch()
     var speedCardContent by remember { mutableStateOf(SpeedCardContent.DEFAULT) }
     val interactionSource = rememberInteractionSource()
+    val speedValue by animateFloatAsState(speed)
+    val pitchValue by animateFloatAsState(pitch)
+    val speedTint by animateColorAsState(
+        targetValue = if (speed != 1.0f) LocalContentColor.current else Color.Transparent,
+        animationSpec = tween(500)
+    )
+    val pitchTint by animateColorAsState(
+        targetValue = if (pitch != 1.0f) LocalContentColor.current else Color.Transparent,
+        animationSpec = tween(500)
+    )
 
     AlertDialog(
-        onDismissRequest = { onDismiss() },
+        onDismissRequest = { onDismissRequest() },
         confirmButton = {
-            TextButton(onClick = { onDismiss() }) {
+            TextButton(onClick = { onDismissRequest() }) {
                 CuteText(text = stringResource(id = R.string.okay))
             }
         },
@@ -92,25 +106,44 @@ fun SpeedCard(
                     SpeedCardContent.DEFAULT -> {
                         Box {
                             Column {
-                                Spacer(Modifier.height(5.dp))
                                 if (!shouldSnap) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(11.dp))
-                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                            .clickable { speedCardContent = SpeedCardContent.SPEED }
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        CuteText(
-                                            text = "${stringResource(id = R.string.speed)}: " + "%.2f".format(
-                                                speed
-                                            ),
-                                            color = MaterialTheme.colorScheme.onBackground,
-                                            fontSize = 15.sp
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(11.dp))
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary.copy(
+                                                        alpha = 0.1f
+                                                    )
+                                                )
+                                                .clickable {
+                                                    speedCardContent = SpeedCardContent.SPEED
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            CuteText(
+                                                text = "${stringResource(id = R.string.speed)}: " + "%.2f".format(
+                                                    speed
+                                                ),
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { speed = 1.0f },
+                                            enabled = speed != 1.0f
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.reset),
+                                                contentDescription = null,
+                                                tint = speedTint
+                                            )
+                                        }
                                     }
                                     Slider(
-                                        value = speed,
+                                        value = speedValue,
                                         onValueChange = { speed = it },
                                         valueRange = 0.5f..2f,
                                         track = { sliderState ->
@@ -130,24 +163,44 @@ fun SpeedCard(
                                         },
                                         interactionSource = interactionSource
                                     )
-                                    Spacer(Modifier.height(15.dp))
                                     //
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(11.dp))
-                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                            .clickable { speedCardContent = SpeedCardContent.PITCH }
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        CuteText(
-                                            text = "${stringResource(id = R.string.pitch)}: " + "%.2f".format(
-                                                pitch
-                                            ),
-                                            color = MaterialTheme.colorScheme.onBackground
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(11.dp))
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary.copy(
+                                                        alpha = 0.1f
+                                                    )
+                                                )
+                                                .clickable {
+                                                    speedCardContent = SpeedCardContent.PITCH
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            CuteText(
+                                                text = "${stringResource(id = R.string.pitch)}: " + "%.2f".format(
+                                                    pitch
+                                                ),
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { pitch = 1.0f },
+                                            enabled = pitch != 1.0f
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.reset),
+                                                contentDescription = null,
+                                                tint = pitchTint
+                                            )
+                                        }
                                     }
                                     Slider(
-                                        value = pitch,
+                                        value = pitchValue,
                                         onValueChange = { pitch = it },
                                         valueRange = 0.5f..2f,
                                         track = { sliderState ->
@@ -168,11 +221,46 @@ fun SpeedCard(
                                         interactionSource = interactionSource
                                     )
                                 } else {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
+                                    Column {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(11.dp))
+                                                    .background(
+                                                        MaterialTheme.colorScheme.primary.copy(
+                                                            alpha = 0.1f
+                                                        )
+                                                    )
+                                                    .clickable {
+                                                        speedCardContent = SpeedCardContent.RATE
+                                                    }
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                            ) {
+                                                CuteText(
+                                                    text = "${stringResource(id = R.string.rate)}: " + "%.2f".format(
+                                                        speed
+                                                    ),
+                                                    color = MaterialTheme.colorScheme.onBackground,
+                                                )
+                                            }
+                                            IconButton(
+                                                onClick = {
+                                                    speed = 1.0f
+                                                    pitch = 1.0f
+                                                },
+                                                enabled = speed != 1.0f
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.reset),
+                                                    contentDescription = null,
+                                                    tint = speedTint
+                                                )
+                                            }
+                                        }
                                         Slider(
-                                            value = speed,
+                                            value = speedValue,
                                             onValueChange = {
                                                 speed = it
                                                 pitch = it
@@ -195,24 +283,6 @@ fun SpeedCard(
                                             },
                                             interactionSource = interactionSource
                                         )
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(11.dp))
-                                                .background(
-                                                    MaterialTheme.colorScheme.primary.copy(
-                                                        alpha = 0.1f
-                                                    )
-                                                )
-                                                .clickable {
-                                                    speedCardContent = SpeedCardContent.RATE
-                                                }
-                                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                                        ) {
-                                            CuteText(
-                                                text = "%.2f".format(speed),
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                            )
-                                        }
                                     }
                                 }
                                 Row(
@@ -255,7 +325,7 @@ fun SpeedCard(
 
                     SpeedCardContent.PITCH -> {
                         RateAdjustmentDialog(
-                            rate = speed,
+                            rate = pitch,
                             onSetNewRate = { rate ->
                                 pitch = rate
                                 speedCardContent = SpeedCardContent.DEFAULT

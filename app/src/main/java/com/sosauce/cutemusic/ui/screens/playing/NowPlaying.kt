@@ -8,7 +8,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,7 +69,6 @@ import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.ignoreParentPadding
-import com.sosauce.cutemusic.utils.rememberInteractionSource
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -150,9 +148,6 @@ private fun SharedTransitionScope.NowPlayingContent(
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
-    val interactionSource = rememberInteractionSource()
-    val isDragging by interactionSource.collectIsDraggedAsState()
-
 
 
     if (showDetailsDialog) {
@@ -230,7 +225,7 @@ private fun SharedTransitionScope.NowPlayingContent(
 
     if (showSpeedCard) {
         SpeedCard(
-            onDismiss = { showSpeedCard = false },
+            onDismissRequest = { showSpeedCard = false },
             shouldSnap = snap,
             onChangeSnap = { snap = !snap }
         )
@@ -289,7 +284,7 @@ private fun SharedTransitionScope.NowPlayingContent(
             )
             CuteText(
                 text = musicState.artist,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.85f),
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(0.85f),
                 fontSize = 20.sp,
                 modifier = Modifier
                     .sharedElement(
@@ -307,22 +302,22 @@ private fun SharedTransitionScope.NowPlayingContent(
             onHandlePlayerActions = onHandlePlayerActions
         )
         Spacer(modifier = Modifier.height(10.dp))
+        ActionButtonsRow(
+            animatedVisibilityScope = animatedVisibilityScope,
+            musicState = musicState,
+            onHandlePlayerActions = onHandlePlayerActions
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        QuickActionsRow(
+            musicState = musicState,
+            onShowLyrics = onShowLyrics,
+            onShowSpeedCard = { showSpeedCard = true },
+            onHandlePlayerActions = onHandlePlayerActions,
+            onNavigate = onNavigate,
+            onChargeAlbumSongs = onChargeAlbumSongs,
+            onChargeArtistLists = onChargeArtistLists
+        )
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
-            ActionButtonsRow(
-                animatedVisibilityScope = animatedVisibilityScope,
-                musicState = musicState,
-                onHandlePlayerActions = onHandlePlayerActions
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            QuickActionsRow(
-                musicState = musicState,
-                onShowLyrics = onShowLyrics,
-                onShowSpeedCard = { showSpeedCard = true },
-                onHandlePlayerActions = onHandlePlayerActions,
-                onNavigate = onNavigate,
-                onChargeAlbumSongs = onChargeAlbumSongs,
-                onChargeArtistLists = onChargeArtistLists
-            )
         }
 
     }

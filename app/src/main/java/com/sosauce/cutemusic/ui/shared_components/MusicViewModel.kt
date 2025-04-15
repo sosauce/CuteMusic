@@ -21,12 +21,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.getMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.data.datastore.getPitch
 import com.sosauce.cutemusic.data.datastore.getShouldLoop
 import com.sosauce.cutemusic.data.datastore.getShouldShuffle
@@ -62,7 +62,7 @@ import java.io.FileNotFoundException
 class MusicViewModel(
     private val application: Application,
     private val mediaStoreHelper: MediaStoreHelper,
-    private val safManager: SafManager
+    safManager: SafManager
 ) : AndroidViewModel(application) {
 
     private var mediaController: MediaController? by mutableStateOf(null)
@@ -119,105 +119,101 @@ class MusicViewModel(
     val artistSongs: StateFlow<List<MediaItem>> = _artistSongs.asStateFlow()
 
 
-    private val playerListener = @UnstableApi
-    object : Player.Listener {
-        @UnstableApi
-        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            super.onMediaMetadataChanged(mediaMetadata)
-            _musicState.update {
-                it.copy(
-                    title = mediaMetadata.title.toString(),
-                    artist = mediaMetadata.artist.toString(),
-                    mediaId = mediaMetadata.extras?.getString("mediaId")
-                        ?: (System.currentTimeMillis().toString()),
-                    artistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
-                    art = mediaMetadata.artworkUri,
-                    path = mediaMetadata.extras?.getString("path") ?: "No path found!",
-                    uri = mediaMetadata.extras?.getString("uri") ?: "No uri found!",
-                    album = mediaMetadata.albumTitle.toString(),
-                    albumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
-                    size = mediaMetadata.extras?.getLong("size") ?: 0,
-                    duration = mediaMetadata.durationMs ?: 0,
-                )
+    private val playerListener =
+        object : Player.Listener {
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                super.onMediaMetadataChanged(mediaMetadata)
+                _musicState.update {
+                    it.copy(
+                        title = mediaMetadata.title.toString(),
+                        artist = mediaMetadata.artist.toString(),
+                        mediaId = mediaMetadata.extras?.getString("mediaId")
+                            ?: (System.currentTimeMillis().toString()),
+                        artistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
+                        art = mediaMetadata.artworkUri,
+                        path = mediaMetadata.extras?.getString("path") ?: "No path found!",
+                        uri = mediaMetadata.extras?.getString("uri") ?: "No uri found!",
+                        album = mediaMetadata.albumTitle.toString(),
+                        albumId = mediaMetadata.extras?.getLong("album_id") ?: 0,
+                        size = mediaMetadata.extras?.getLong("size") ?: 0,
+                        duration = mediaMetadata.durationMs ?: 0,
+                    )
+                }
+                parseLyrics()
             }
-            parseLyrics()
 
-        }
-
-        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
-            super.onPlaybackParametersChanged(playbackParameters)
-            _musicState.update {
-                it.copy(
-                    speed = playbackParameters.speed,
-                    pitch = playbackParameters.pitch
-                )
-            }
-        }
-
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            super.onIsPlayingChanged(isPlaying)
-            _musicState.update {
-                it.copy(
-                    isPlaying = isPlaying
-                )
-            }
-        }
-
-        override fun onEvents(player: Player, events: Player.Events) {
-            super.onEvents(player, events)
-            viewModelScope.launch {
-                while (player.isPlaying) {
-                    _musicState.update {
-                        it.copy(
-                            duration = player.duration,
-                            position = player.currentPosition
-                        )
-                    }
-                    delay(500)
+            override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                super.onPlaybackParametersChanged(playbackParameters)
+                _musicState.update {
+                    it.copy(
+                        speed = playbackParameters.speed,
+                        pitch = playbackParameters.pitch
+                    )
                 }
             }
-        }
 
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            super.onPlaybackStateChanged(playbackState)
-            when (playbackState) {
-                Player.STATE_IDLE -> {
-                    _musicState.update {
-                        it.copy(
-                            isPlayerReady = false
-                        )
-                    }
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                super.onIsPlayingChanged(isPlaying)
+                _musicState.update {
+                    it.copy(
+                        isPlaying = isPlaying
+                    )
                 }
+            }
 
-                Player.STATE_READY -> {
-                    _musicState.update {
-                        it.copy(
-                            isPlayerReady = true
-                        )
-                    }
-                }
-
-                else -> {
-                    _musicState.update {
-                        it.copy(
-                            isPlayerReady = true
-                        )
+            override fun onEvents(player: Player, events: Player.Events) {
+                super.onEvents(player, events)
+                viewModelScope.launch {
+                    while (player.isPlaying) {
+                        _musicState.update {
+                            it.copy(
+                                duration = player.duration,
+                                position = player.currentPosition
+                            )
+                        }
+                        delay(500)
                     }
                 }
             }
-        }
 
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            super.onMediaItemTransition(mediaItem, reason)
-            _musicState.update {
-                it.copy(
-                    mediaIndex = mediaController!!.currentMediaItemIndex
-                )
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+                when (playbackState) {
+                    Player.STATE_IDLE -> {
+                        _musicState.update {
+                            it.copy(
+                                isPlayerReady = false
+                            )
+                        }
+                    }
+
+                    Player.STATE_READY -> {
+                        _musicState.update {
+                            it.copy(
+                                isPlayerReady = true
+                            )
+                        }
+                    }
+
+                    else -> {
+                        _musicState.update {
+                            it.copy(
+                                isPlayerReady = true
+                            )
+                        }
+                    }
+                }
             }
 
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                super.onMediaItemTransition(mediaItem, reason)
+                _musicState.update {
+                    it.copy(
+                        mediaIndex = mediaController!!.currentMediaItemIndex
+                    )
+                }
+            }
         }
-
-    }
 
     init {
         MediaController
@@ -238,6 +234,7 @@ class MusicViewModel(
                             viewModelScope.launch {
                                 allTracks.collectLatest { mediaItems ->
                                     mediaController!!.setMediaItems(mediaItems)
+                                    seekToLastPlayedOrNot()
 
 
                                     val list = mutableListOf<MediaItem>()
@@ -273,7 +270,6 @@ class MusicViewModel(
                     },
                     MoreExecutors.directExecutor()
                 )
-
             }
     }
 
@@ -286,6 +282,23 @@ class MusicViewModel(
 
     private val _lyrics = MutableStateFlow<List<Lyrics>>(emptyList())
     val lyrics: StateFlow<List<Lyrics>> = _lyrics.asStateFlow()
+
+    private fun seekToLastPlayedOrNot() {
+        viewModelScope.launch {
+            getMediaIndexToMediaIdMap(application).collectLatest { (id, position) ->
+
+                val index = (0 until mediaController!!.mediaItemCount).firstOrNull { i ->
+                    mediaController!!.getMediaItemAt(i).mediaId == id
+                } ?: -1
+
+                if (index != -1) {
+                    mediaController!!.prepare()
+                    mediaController!!.seekTo(index, position)
+                }
+
+            }
+        }
+    }
 
     fun parseLyrics() {
         val file = getLrcFile()
@@ -459,17 +472,11 @@ class MusicViewModel(
         }
     }
 
-    fun loadArtistSongs(artistName: String) {
+    fun loadArtistData(artistName: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _artistSongs.update {
                 allTracks.value.fastFilter { it.mediaMetadata.artist == artistName }
             }
-        }
-
-    }
-
-    fun loadArtistAlbums(artistName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
             _artistAlbums.update {
                 albums.value.fastFilter { it.artist == artistName }
             }

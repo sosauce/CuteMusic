@@ -66,6 +66,7 @@
     <string name="set_pitch">Set pitch</string>
     <string name="speed">Speed</string>
     <string name="pitch">Pitch</string>
+    <string name="rate">Rate</string>
     <string name="snap">Snap speed and pitch</string>
     <string name="new_rate">Enter new rate between 0.5 and 2</string>
     <string name="share">Share</string>

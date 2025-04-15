@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -27,12 +26,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.rememberFocusRequester
 
 @Composable
 fun RateAdjustmentDialog(
     rate: Float,
     onSetNewRate: (Float) -> Unit,
 ) {
+
+    val focusRequest = rememberFocusRequester()
+    LaunchedEffect(Unit) { focusRequest.requestFocus() }
 
     var newRate by remember { mutableStateOf("%.2f".format(rate)) }
     var textFieldValue by remember {
@@ -43,9 +46,7 @@ fun RateAdjustmentDialog(
             )
         )
     }
-    val focusRequest = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) { focusRequest.requestFocus() }
 
     Column {
         CuteText(stringResource(id = R.string.new_rate))

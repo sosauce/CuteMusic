@@ -2,6 +2,9 @@
 
 package com.sosauce.cutemusic.ui.screens.artist
 
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -54,7 +57,11 @@ fun SharedTransitionScope.ArtistDetails(
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
 
     val artistSongs by viewModel.artistSongs.collectAsStateWithLifecycle()
@@ -71,8 +78,13 @@ fun SharedTransitionScope.ArtistDetails(
             artist = artist,
             currentMusicUri = musicState.uri,
             isPlayerReady = musicState.isPlayerReady,
-            animatedVisibilityScope = animatedVisibilityScope
-        )
+            animatedVisibilityScope = animatedVisibilityScope,
+            onLoadMetadata = onLoadMetadata,
+            onDeleteMusic = onDeleteMusic,
+            onChargeAlbumSongs = onChargeAlbumSongs,
+            onChargeArtistLists = onChargeArtistLists,
+
+            )
     } else {
         Box(
             modifier = Modifier
@@ -157,7 +169,11 @@ fun SharedTransitionScope.ArtistDetails(
                         },
                         currentMusicUri = musicState.uri,
                         isPlayerReady = musicState.isPlayerReady,
-                        animatedVisibilityScope = animatedVisibilityScope
+                        onLoadMetadata = onLoadMetadata,
+                        onDeleteMusic = onDeleteMusic,
+                        onChargeAlbumSongs = onChargeAlbumSongs,
+                        onChargeArtistLists = onChargeArtistLists,
+                        onNavigate = onNavigate
                     )
                 }
             }

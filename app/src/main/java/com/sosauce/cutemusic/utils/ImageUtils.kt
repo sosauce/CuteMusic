@@ -15,7 +15,6 @@ import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.toBitmap
-import coil3.transform.RoundedCornersTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException

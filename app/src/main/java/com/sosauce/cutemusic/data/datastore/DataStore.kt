@@ -1,13 +1,12 @@
 package com.sosauce.cutemusic.data.datastore
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_LOOP
@@ -17,6 +16,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.FOLLOW_SYS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
@@ -28,10 +28,8 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_DARK_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import com.sosauce.cutemusic.utils.LastPlayed
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 private const val PREFERENCES_NAME = "settings"
 
@@ -57,6 +55,7 @@ data object PreferencesKeys {
     val CAROUSEL = booleanPreferencesKey("CAROUSEL")
     val SPEED = floatPreferencesKey("SPEED")
     val PITCH = floatPreferencesKey("PITCH")
+    val MEDIA_INDEX_TO_MEDIA_ID = stringPreferencesKey("MEDIA_INDEX_TO_MEDIA_ID")
 }
 
 
@@ -132,45 +131,35 @@ fun rememberSpeed() =
 fun rememberPitch() =
     rememberPreference(key = PITCH, defaultValue = 1.0f)
 
-fun getShouldLoop(context: Context): Flow<Boolean> =
-    context.dataStore.data
-        .map { preference ->
-            preference[APPLY_LOOP] == true
-        }
+fun getShouldLoop(context: Context) =
+    getPreference(key = APPLY_LOOP, defaultValue = false, context = context)
 
-fun getShouldShuffle(context: Context): Flow<Boolean> =
-    context.dataStore.data
-        .map { preference ->
-            preference[APPLY_SHUFFLE] == true
-        }
+fun getShouldShuffle(context: Context) =
+    getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
 
-fun getSpeed(context: Context): Flow<Float> =
-    context.dataStore.data
-        .map { preference ->
-            preference[SPEED] ?: 1.0f
-        }
 
-fun getPitch(context: Context): Flow<Float> =
-    context.dataStore.data
-        .map { preference ->
-            preference[SPEED] ?: 1.0f
-        }
+fun getSpeed(context: Context) =
+    getPreference(key = SPEED, defaultValue = 1.0f, context = context)
+
+fun getPitch(context: Context) =
+    getPreference(key = PITCH, defaultValue = 1.0f, context = context)
+
+fun getSafTracks(context: Context) =
+    getPreference(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
+
+suspend fun saveMediaIndexToMediaIdMap(pair: LastPlayed, context: Context) =
+    saveCustomPreference(value = pair, key = MEDIA_INDEX_TO_MEDIA_ID, context = context)
+
+fun getMediaIndexToMediaIdMap(context: Context) =
+    getCustomPreference(
+        key = MEDIA_INDEX_TO_MEDIA_ID,
+        defaultValue = LastPlayed("", 0L),
+        context = context
+    )
 
 
 suspend fun getBlacklistedFolder(context: Context): Set<String> {
     val preferences = context.dataStore.data.first()
     return preferences[BLACKLISTED_FOLDERS] ?: emptySet()
 }
-
-fun getSafTracks(context: Context): Flow<Set<String>> =
-
-    context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                Log.d("CuteError", "getSafTracks: ${exception.message}")
-            } else throw exception
-        }
-        .map { preference ->
-            preference[SAF_TRACKS] ?: emptySet()
-        }
 

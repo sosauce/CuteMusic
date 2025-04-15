@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.playlists
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
@@ -48,8 +47,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
     onChargeAlbumSongs: (String) -> Unit,
     onChargeArtistLists: (String) -> Unit,
-    onNavigateUp: () -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    onNavigateUp: () -> Unit
 ) {
 
     val playlistDisplay = remember {
@@ -90,12 +88,10 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     onNavigate = { onNavigate(it) },
                                     currentMusicUri = currentMusicUri,
                                     onLoadMetadata = onLoadMetadata,
-                                    showBottomSheet = true,
                                     onDeleteMusic = onDeleteMusic,
                                     onChargeAlbumSongs = onChargeAlbumSongs,
                                     onChargeArtistLists = onChargeArtistLists,
                                     isPlayerReady = isPlayerReady,
-                                    animatedVisibilityScope = animatedVisibilityScope
                                 )
                             } else {
                                 var safTracks by rememberAllSafTracks()

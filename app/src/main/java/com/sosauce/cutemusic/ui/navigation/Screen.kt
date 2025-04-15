@@ -3,7 +3,7 @@ package com.sosauce.cutemusic.ui.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Screen {
+sealed class Screen(val name: String = "") {
     @Serializable
     data object Main : Screen()
 
@@ -31,7 +31,7 @@ sealed class Screen {
     @Serializable
     data class AlbumsDetails(
         val id: Long
-    ) : Screen()
+    ) : Screen("AlbumDetails")
 
     @Serializable
     data class ArtistsDetails(

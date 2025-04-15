@@ -2,6 +2,9 @@
 
 package com.sosauce.cutemusic.ui.screens.artist
 
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -56,6 +59,10 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
     currentMusicUri: String,
     isPlayerReady: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
 
     Box(
@@ -108,7 +115,11 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                         onShortClick = { onClickPlay(it) },
                         isPlayerReady = isPlayerReady,
                         modifier = Modifier.thenIf(index == 0) { statusBarsPadding() },
-                        animatedVisibilityScope = animatedVisibilityScope
+                        onLoadMetadata = onLoadMetadata,
+                        onDeleteMusic = onDeleteMusic,
+                        onChargeAlbumSongs = onChargeAlbumSongs,
+                        onChargeArtistLists = onChargeArtistLists,
+                        onNavigate = onNavigate
                     )
                 }
             }

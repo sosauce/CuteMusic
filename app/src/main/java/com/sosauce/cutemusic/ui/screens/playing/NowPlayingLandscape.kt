@@ -166,7 +166,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
 
     if (showSpeedCard) {
         SpeedCard(
-            onDismiss = { showSpeedCard = false },
+            onDismissRequest = { showSpeedCard = false },
             shouldSnap = snap,
             onChangeSnap = { snap = !snap }
         )

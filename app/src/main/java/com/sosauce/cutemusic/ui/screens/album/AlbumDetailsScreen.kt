@@ -2,6 +2,9 @@
 
 package com.sosauce.cutemusic.ui.screens.album
 
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -59,6 +62,10 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
     val albumSongs by viewModel.albumSongs.collectAsStateWithLifecycle()
 
@@ -68,7 +75,12 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             onNavigateUp = onNavigateUp,
             viewModel = viewModel,
             musicState = musicState,
-            animatedVisibilityScope = animatedVisibilityScope
+            animatedVisibilityScope = animatedVisibilityScope,
+            onLoadMetadata = onLoadMetadata,
+            onDeleteMusic = onDeleteMusic,
+            onChargeAlbumSongs = onChargeAlbumSongs,
+            onChargeArtistLists = onChargeArtistLists,
+            onNavigate = onNavigate
         )
     } else {
         AlbumDetailsContent(
@@ -79,6 +91,10 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             musicState = musicState,
             animatedVisibilityScope = animatedVisibilityScope,
             onNavigate = onNavigate,
+            onLoadMetadata = onLoadMetadata,
+            onDeleteMusic = onDeleteMusic,
+            onChargeAlbumSongs = onChargeAlbumSongs,
+            onChargeArtistLists = onChargeArtistLists,
         )
     }
 
@@ -93,6 +109,10 @@ private fun SharedTransitionScope.AlbumDetailsContent(
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
+    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
+    onChargeAlbumSongs: (String) -> Unit,
+    onChargeArtistLists: (String) -> Unit,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
     Box(
         modifier = Modifier
@@ -175,8 +195,12 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                 },
                                 currentMusicUri = musicState.uri,
                                 isPlayerReady = musicState.isPlayerReady,
-                                showTrackNumber = true,
-                                animatedVisibilityScope = animatedVisibilityScope
+                                onLoadMetadata = onLoadMetadata,
+                                onDeleteMusic = onDeleteMusic,
+                                onChargeAlbumSongs = onChargeAlbumSongs,
+                                onChargeArtistLists = onChargeArtistLists,
+                                onNavigate = onNavigate,
+                                showTrackNumber = true
                             )
                         }
                 }

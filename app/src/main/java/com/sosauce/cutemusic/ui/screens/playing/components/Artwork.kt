@@ -34,6 +34,7 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberCarousel
+import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
@@ -51,6 +52,7 @@ fun SharedTransitionScope.Artwork(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val useCarousel by rememberCarousel()
+    val useShuffle by rememberShouldApplyShuffle()
     val pagerState =
         rememberPagerState(initialPage = loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) { loadedMedias.size }
 
@@ -58,11 +60,14 @@ fun SharedTransitionScope.Artwork(
         var lastPage by remember { mutableIntStateOf(loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) }
 
         LaunchedEffect(pagerState.settledPage) {
+            if (musicState.mediaIndex == pagerState.settledPage) return@LaunchedEffect
             if (pagerState.settledPage != lastPage) {
                 snapshotFlow { pagerState.isScrollInProgress }
                     .filter { !it }
                     .first()
-                onHandlePlayerActions(PlayerActions.SeekToMusicIndex(pagerState.settledPage))
+                if (useShuffle) {
+                    onHandlePlayerActions(PlayerActions.PlayRandom)
+                } else onHandlePlayerActions(PlayerActions.SeekToMusicIndex(pagerState.settledPage))
                 lastPage = pagerState.settledPage
             }
         }

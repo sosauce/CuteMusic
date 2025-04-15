@@ -6,7 +6,6 @@ import android.media.browse.MediaBrowser
 import android.net.Uri
 import android.os.Bundle
 import android.service.media.MediaBrowserService
-import androidx.media3.common.util.UnstableApi
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelperImpl
 import com.sosauce.cutemusic.utils.ROOT_ID
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +14,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@UnstableApi
 class AutoPlaybackService : MediaBrowserService() {
 
 

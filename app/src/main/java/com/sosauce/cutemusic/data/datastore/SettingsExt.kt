@@ -1,5 +1,6 @@
 package com.sosauce.cutemusic.data.datastore
 
+import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -11,8 +12,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 @Composable
 fun <T> rememberPreference(
@@ -42,6 +46,38 @@ fun <T> rememberPreference(
             override fun component2(): (T) -> Unit = { value = it }
         }
     }
+}
+
+fun <T> getPreference(
+    key: Preferences.Key<T>,
+    defaultValue: T,
+    context: Context
+): Flow<T> =
+    context.dataStore.data
+        .map { preference ->
+            preference[key] ?: defaultValue
+        }
+
+suspend inline fun <reified T> saveCustomPreference(
+    value: T,
+    key: Preferences.Key<String>,
+    context: Context
+) {
+    val json = Json.encodeToString(value)
+    context.dataStore.edit { prefs ->
+        prefs[key] = json
+    }
+}
+
+inline fun <reified T> getCustomPreference(
+    key: Preferences.Key<String>,
+    defaultValue: T,
+    context: Context
+): Flow<T> {
+    return context.dataStore.data.map { preferences ->
+        val json = preferences[key] ?: return@map defaultValue
+        Json.decodeFromString<T>(json)
+    }.distinctUntilChanged()
 }
 
 

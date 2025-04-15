@@ -10,8 +10,6 @@ import android.net.Uri
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.MaterialTheme
@@ -23,14 +21,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
@@ -152,26 +151,14 @@ fun Player.applyShuffle(
 }
 
 fun Player.applyPlaybackSpeed(speed: Float = 1f) {
-    playbackParameters = PlaybackParameters(
-        speed,
-        playbackParameters.pitch
-    )
+    playbackParameters = playbackParameters.withSpeed(speed)
 }
 
+// Yes Google, a copy & paste of another function REALLY needed an unstable api...
+@UnstableApi
 fun Player.applyPlaybackPitch(pitch: Float = 1f) {
-    playbackParameters = PlaybackParameters(
-        playbackParameters.speed,
-        pitch
-    )
+    playbackParameters = playbackParameters.withPitch(pitch)
 }
-
-//fun Player.getLoadedMedias(): Flow<List<MediaItem>> {
-//    return flow {
-//        emit(
-//            (0 until mediaItemCount).map { getMediaItemAt(it) }
-//        )
-//    }
-//}
 
 
 fun ByteArray.getUriFromByteArray(context: Context): Uri {
@@ -307,6 +294,8 @@ fun AudioFileMetadata.toPropertyMap(): PropertyMap {
     )
 }
 
+typealias LastPlayed = Pair<String, Long>
+
 fun ContentResolver.observe(uri: Uri) = callbackFlow {
     val observer = object : ContentObserver(null) {
         override fun onChange(selfChange: Boolean) {
@@ -324,22 +313,22 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 fun <T : Any> NavHostController.navigateSingleTop(route: T) =
     navigate(route) { launchSingleTop = true }
 
-@Composable
-fun Modifier.cuteHazeEffect(
-    state: HazeState,
-    intensity: Dp = 15.dp,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    block: (HazeEffectScope.() -> Unit)? = null,
-) = hazeEffect(
-    state = state,
-    style = HazeStyle(
-        backgroundColor = backgroundColor,
-        tints = emptyList(),
-        blurRadius = intensity,
-        noiseFactor = 0f
-    ),
-    block = block
-)
+//@Composable
+//fun Modifier.cuteHazeEffect(
+//    state: HazeState,
+//    intensity: Dp = 15.dp,
+//    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+//    block: (HazeEffectScope.() -> Unit)? = null,
+//) = hazeEffect(
+//    state = state,
+//    style = HazeStyle(
+//        backgroundColor = backgroundColor,
+//        tints = emptyList(),
+//        blurRadius = intensity,
+//        noiseFactor = 0f
+//    ),
+//    block = block
+//)
 
 @Composable
 fun rememberInteractionSource(): MutableInteractionSource {
@@ -349,6 +338,11 @@ fun rememberInteractionSource(): MutableInteractionSource {
 @Composable
 fun rememberAnimatable(): Animatable<Float, AnimationVector1D> {
     return remember { Animatable(0f) }
+}
+
+@Composable
+fun rememberFocusRequester(): FocusRequester {
+    return remember { FocusRequester() }
 }
 
 

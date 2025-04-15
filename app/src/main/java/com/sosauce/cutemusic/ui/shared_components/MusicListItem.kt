@@ -14,7 +14,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
@@ -77,6 +76,7 @@ import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.main.components.ShareOptionsContent
 import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
+import com.sosauce.cutemusic.utils.CurrentScreen
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.ImageUtils
 import org.koin.androidx.compose.koinViewModel
@@ -86,16 +86,14 @@ fun SharedTransitionScope.LocalMusicListItem(
     modifier: Modifier = Modifier,
     music: MediaItem,
     onShortClick: (albumName: String) -> Unit,
-    onNavigate: (Screen) -> Unit = {},
+    onNavigate: (Screen) -> Unit,
     currentMusicUri: String,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
-    showBottomSheet: Boolean = false,
     onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
     onChargeAlbumSongs: (String) -> Unit = {},
     onChargeArtistLists: (String) -> Unit = {},
     isPlayerReady: Boolean,
     showTrackNumber: Boolean = false,
-    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val context = LocalContext.current
@@ -103,7 +101,6 @@ fun SharedTransitionScope.LocalMusicListItem(
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showShareOptions by remember { mutableStateOf(false) }
     val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
-    val mediaId = remember { music.mediaId }
     val path = remember { music.mediaMetadata.extras?.getString("path") ?: "" }
     val isPlaying = currentMusicUri == uri.toString()
     val bgColor by animateColorAsState(
@@ -283,69 +280,53 @@ fun SharedTransitionScope.LocalMusicListItem(
                 CuteText(
                     text = music.mediaMetadata.artist.toString(),
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-//                    modifier = Modifier
-//                        .sharedElement(
-//                            state = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + mediaId),
-//                            animatedVisibilityScope = animatedVisibilityScope
-//
-//                        )
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
             }
         }
-
-        if (showBottomSheet) {
-
-//            var isFavorite by remember { mutableStateOf(music.mediaMetadata.extras?.getInt("isFavorite") == 1) }
-//            val favoriteIntent = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-//                if (it.resultCode == Activity.RESULT_OK) {
-//                    // Since MediaItem's extras doesn't seem to make for reactive UI, this is a solution to immediately show favorite changes
-//                    // without needing to restart the app
-//                    isFavorite = !isFavorite
-//                }
-//            }
-            Row {
-                IconButton(
-                    onClick = { isDropDownExpanded = true }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.MoreVert,
-                        contentDescription = null
-                    )
-                }
-                DropdownMenu(
-                    expanded = isDropDownExpanded,
-                    onDismissRequest = { isDropDownExpanded = false },
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    DropdownMenuItem(
-                        onClick = { showDetailsDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.details))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.info_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onLoadMetadata(path, uri)
-                            onNavigate(Screen.MetadataEditor(music.mediaId))
-                        },
-                        text = {
-                            CuteText(stringResource(R.string.edit))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.edit_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
+        Row {
+            IconButton(
+                onClick = { isDropDownExpanded = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = null
+                )
+            }
+            DropdownMenu(
+                expanded = isDropDownExpanded,
+                onDismissRequest = { isDropDownExpanded = false },
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                DropdownMenuItem(
+                    onClick = { showDetailsDialog = true },
+                    text = {
+                        CuteText(stringResource(R.string.details))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.info_rounded),
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        isDropDownExpanded = false
+                        onLoadMetadata(path, uri)
+                        onNavigate(Screen.MetadataEditor(music.mediaId))
+                    },
+                    text = {
+                        CuteText(stringResource(R.string.edit))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.edit_rounded),
+                            contentDescription = null
+                        )
+                    }
+                )
+                if (CurrentScreen.screen != Screen.AlbumsDetails.toString()) {
                     DropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
@@ -366,6 +347,8 @@ fun SharedTransitionScope.LocalMusicListItem(
                             )
                         }
                     )
+                }
+                if (CurrentScreen.screen != Screen.ArtistsDetails.toString()) {
                     DropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
@@ -386,96 +369,63 @@ fun SharedTransitionScope.LocalMusicListItem(
                             )
                         }
                     )
-                    DropdownMenuItem(
-                        onClick = { showPlaylistDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.add_to_playlist))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        onClick = {
-                            val shareIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                type = "audio/*"
-                            }
-
-                            context.startActivity(
-                                Intent.createChooser(
-                                    shareIntent,
-                                    null
-                                )
-                            )
-                        },
-                        text = {
-                            CuteText(
-                                text = stringResource(R.string.share)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
-                                contentDescription = null
-                            )
-                        }
-                    )
-//                    DropdownMenuItem(
-//                        onClick = {
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                                val intentSender = MediaStore.createFavoriteRequest(
-//                                    context.contentResolver,
-//                                    listOf(uri),
-//                                    music.mediaMetadata.extras?.getInt("isFavorite") != 1
-//                                ).intentSender
-//                                favoriteIntent.launch(IntentSenderRequest.Builder(intentSender).build())
-//                            }
-//                        },
-//                        text = {
-//                            Crossfade(
-//                                targetState = isFavorite
-//                            ) { isFav ->
-//                                CuteText(
-//                                    text = if (isFav) "Un-favorite" else "Favorite",
-//                                    color = MaterialTheme.colorScheme.error
-//                                )
-//                            }
-//                        },
-//                        leadingIcon = {
-//                            Crossfade(
-//                                targetState = isFavorite
-//                            ) { isFav ->
-//                                Icon(
-//                                    imageVector = if (isFav) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-//                                    contentDescription = null,
-//                                    tint = MaterialTheme.colorScheme.error
-//                                )
-//                            }
-//                        }
-//                    )
-                    DropdownMenuItem(
-                        onClick = { onDeleteMusic(listOf(uri), deleteSongLauncher) },
-                        text = {
-                            CuteText(
-                                text = stringResource(R.string.delete),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.trash_rounded),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    )
                 }
+                DropdownMenuItem(
+                    onClick = { showPlaylistDialog = true },
+                    text = {
+                        CuteText(stringResource(R.string.add_to_playlist))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            type = "audio/*"
+                        }
+
+                        context.startActivity(
+                            Intent.createChooser(
+                                shareIntent,
+                                null
+                            )
+                        )
+                    },
+                    text = {
+                        CuteText(
+                            text = stringResource(R.string.share)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    onClick = { onDeleteMusic(listOf(uri), deleteSongLauncher) },
+                    text = {
+                        CuteText(
+                            text = stringResource(R.string.delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.trash_rounded),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                )
             }
         }
     }

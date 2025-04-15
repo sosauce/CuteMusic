@@ -17,12 +17,15 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.saveMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.ui.widgets.WidgetBroadcastReceiver
 import com.sosauce.cutemusic.ui.widgets.WidgetCallback
 import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
+import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.PACKAGE
 import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
 import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
+import kotlinx.coroutines.runBlocking
 
 
 class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Player.Listener,
@@ -130,6 +133,17 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         mediaLibrarySession?.run {
+
+            runBlocking {
+                saveMediaIndexToMediaIdMap(
+                    pair = LastPlayed(
+                        player.mediaMetadata.extras?.getString("mediaId") ?: "",
+                        player.currentPosition
+                    ),
+                    context = application
+                )
+            }
+
             player.release()
             release()
             mediaLibrarySession = null
