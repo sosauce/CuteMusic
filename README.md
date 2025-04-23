@@ -1,6 +1,9 @@
 <p align=center><image src="https://i.ibb.co/SdMsJs7/cute-music-icon.png" height="200" /></p>
 <h1 align="center">CuteMusic</h1>
 <p align="center">CuteMusic is a simple,lightweight and open-source offline music player app for Android written in Jetpack Compose & Media3</p>
+
+[!CAUTION]
+The Google Play Store release is a fake and stolen one. CuteMusic is NOT officialy available on the Google Play Store !!!
  <p align="center">
    <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9"/>
    <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
