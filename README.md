@@ -46,7 +46,9 @@
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
-- Playlists support !
+- Playlists support!
+- Load and persist songs from anywhere using Android's S.A.F!
+- Part of the CuteApps ecosystem!
 - Makes you a cutie!
    
 ---
