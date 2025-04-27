@@ -48,11 +48,6 @@
 - Tag Editor!
 - Playlists support !
 - Makes you a cutie!
-
-<h1>👑 2025 Roadmap !!!</h1>
-
-- Android Auto (Dear Google, Media3 desperately needs easy integration with Auto)
-- Widget(s?)
    
 ---
 <h1>💬 Contact Me</h1>
@@ -68,7 +63,7 @@
 ---
 <h1>⚠️ Copyright</h1>
 
-<p>Copyright (c)2024 sosauce
+<p>Copyright (c)2025 sosauce
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
