@@ -2,6 +2,9 @@
 
 package com.sosauce.cutemusic.ui.screens.playlists
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -10,6 +13,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,31 +23,42 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.provider.DocumentsContractCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
+import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
@@ -51,6 +66,7 @@ import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.showCuteSearchbar
 import org.koin.androidx.compose.koinViewModel
+import java.io.File
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -62,16 +78,19 @@ fun SharedTransitionScope.PlaylistsScreen(
     isPlayerReady: Boolean,
     onHandlePlayerAction: (PlayerActions) -> Unit,
 ) {
-
+    val context = LocalContext.current
     val playlistViewModel = koinViewModel<PlaylistViewModel>()
     val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
+    var showPlaylistActionsDialog by remember { mutableStateOf(false) }
+    val buttonOrientation by animateFloatAsState(
+        targetValue = if (showPlaylistActionsDialog) 45f else 0f
+    )
     val state = rememberLazyListState()
     var query by remember { mutableStateOf("") }
-    var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
+    var isSortedByASC by rememberSaveable { mutableStateOf(true) }
     val float by animateFloatAsState(
-        targetValue = if (isSortedByASC) 45f else 135f,
-        label = "Arrow Icon Animation"
+        targetValue = if (isSortedByASC) 45f else 135f
     )
     val displayPlaylists by remember(isSortedByASC, playlists, query) {
         derivedStateOf {
@@ -88,6 +107,24 @@ fun SharedTransitionScope.PlaylistsScreen(
             }
 
         }
+    }
+
+    val importPlaylistLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            if (!it.toString().endsWith(".m3u")) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.not_m3u_file),
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                playlistViewModel.handlePlaylistActions(
+                    PlaylistActions.ImportM3uPlaylist(it)
+                )
+                showPlaylistActionsDialog = false
+            }
+        }
+
     }
 
     if (showPlaylistCreatorDialog) {
@@ -119,19 +156,9 @@ fun SharedTransitionScope.PlaylistsScreen(
                         key = { it.id }
                     ) { playlist ->
                         PlaylistItem(
-                            modifier = Modifier
-                                .animateItem(),
+                            modifier = Modifier.animateItem(),
                             playlist = playlist,
-                            onDeletePlaylist = {
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.DeletePlaylist(playlist)
-                                )
-                            },
-                            onUpsertPlaylist = {
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(it)
-                                )
-                            },
+                            onHandlePlaylistActions = playlistViewModel::handlePlaylistActions,
                             onClickPlaylist = { onNavigate(Screen.PlaylistDetails(playlist.id)) }
                         )
                     }
@@ -176,17 +203,54 @@ fun SharedTransitionScope.PlaylistsScreen(
                     isPlayerReady = isPlayerReady,
                     onNavigate = onNavigate,
                     fab = {
-                        CuteActionButton(
-                            modifier = Modifier.sharedBounds(
-                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            ),
-                            imageVector = Icons.Rounded.Add
-                        ) { showPlaylistCreatorDialog = true }
+                        Column {
+                            SmallFloatingActionButton(
+                                onClick = { showPlaylistActionsDialog = true },
+                                modifier = Modifier.sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                ),
+                                shape = RoundedCornerShape(14.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(buttonOrientation)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showPlaylistActionsDialog,
+                                onDismissRequest = { showPlaylistActionsDialog = false },
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                CuteDropdownMenuItem(
+                                    onClick = { importPlaylistLauncher.launch(arrayOf("*/*")) },
+                                    text = { CuteText(stringResource(R.string.import_playlist)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.resource_import),
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
+                                CuteDropdownMenuItem(
+                                    onClick = {
+                                        showPlaylistCreatorDialog = true
+                                        showPlaylistActionsDialog = false
+                                    },
+                                    text = { CuteText(stringResource(R.string.create_playlist)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                 )
             }
-
         }
     }
 }

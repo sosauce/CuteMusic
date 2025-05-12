@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">CuteMusic</string>
+    <string name="app_name" translatable="false">CuteMusic</string>
     <string name="empty" translatable="false" />
     <string name="theme">Theme</string>
     <string name="settings">Settings</string>
-    <string name="dark_mode">Dark mode</string>
-    <string name="amoled_mode">Amoled mode</string>
+    <string name="dark_mode">Dark</string>
+    <string name="light_mode">Light</string>
+    <string name="amoled_mode">Amoled</string>
     <string name="version">Version</string>
     <string name="support">Support</string>
     <string name="update">Check updates</string>
@@ -35,6 +36,7 @@
     <string name="misc">Misc</string>
     <string name="no_albums_found">No albums found !</string>
     <string name="follow_sys">Follow system</string>
+    <string name="system">System</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="playback_speed">Set playback speed</string>
@@ -83,10 +85,6 @@
     <string name="blacklisted">Blacklisted</string>
     <string name="not_blacklisted">Not blacklisted</string>
     <string name="saf_manager">S.A.F manager</string>
-    <string name="search_tracks">Search tracks</string>
-    <string name="search_albums">Search albums</string>
-    <string name="search_artists">Search artists</string>
-    <string name="search_playlists">Search playlists</string>
     <string name="no_playlists">You have no playlists ! Make your listening experience fun by creating one !</string>
     <string name="alrdy_in_playlist">Track already in playlist!</string>
     <string name="del_playlist">Delete playlist</string>
@@ -104,6 +102,14 @@
     <string name="search_lyrics">Search for lyrics</string>
     <string name="song_loading">Song loading…</string>
     <string name="use_carousel">Use carousel</string>
+    <string name="search_here">Search here</string>
+    <string name="no_of_grids">Number of grids</string>
+    <string name="show_shuffle_btn">Show shuffle button</string>
+    <string name="not_m3u_file">Not a m3u file!</string>
+    <string name="m3u_saved_good">m3u file saved successfully!</string>
+    <string name="import_playlist">Import playlist</string>
+    <string name="export_playlist">Export playlist</string>
+    <string name="edit_playlist">Edit playlist</string>
     <plurals name="tracks">
         <item quantity="one">%d track</item>
         <item quantity="other">%d tracks</item>

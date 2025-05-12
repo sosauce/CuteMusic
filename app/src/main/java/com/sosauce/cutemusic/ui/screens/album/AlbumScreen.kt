@@ -16,20 +16,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,16 +48,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberAlbumGrids
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.screens.main.components.AlbumSortingDropdownMenu
+import com.sosauce.cutemusic.ui.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
+import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -66,7 +78,6 @@ fun SharedTransitionScope.AlbumsScreen(
     albums: List<Album>,
     animatedVisibilityScope: AnimatedVisibilityScope,
     currentlyPlaying: String,
-    chargePVMAlbumSongs: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
@@ -74,13 +85,12 @@ fun SharedTransitionScope.AlbumsScreen(
 ) {
     val isLandscape = rememberIsLandscape()
     var query by remember { mutableStateOf("") }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
+    var gridSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
-    val float by animateFloatAsState(
-        targetValue = if (isSortedByASC) 45f else 135f,
-        label = "Arrow Icon Animation"
-    )
-    val numberOfGrids = remember {
-        if (isLandscape) 4 else 2
+    var numberOfAlbumGrids by rememberAlbumGrids()
+    val numberOfGrids = remember(numberOfAlbumGrids) {
+        if (isLandscape) 4 else numberOfAlbumGrids
     }
     val state = rememberLazyGridState()
     val displayAlbums by remember(isSortedByASC, albums, query) {
@@ -136,7 +146,6 @@ fun SharedTransitionScope.AlbumsScreen(
                                 .animateItem()
                                 .clip(RoundedCornerShape(15.dp))
                                 .clickable {
-                                    chargePVMAlbumSongs(album.name)
                                     onNavigate(Screen.AlbumsDetails(album.id))
                                 },
                             animatedVisibilityScope = animatedVisibilityScope
@@ -155,14 +164,15 @@ fun SharedTransitionScope.AlbumsScreen(
                     query = query,
                     onQueryChange = { query = it },
                     trailingIcon = {
+                        val numberOfGrids = setOf(2, 3, 4)
+
                         Row {
                             IconButton(
-                                onClick = { isSortedByASC = !isSortedByASC }
+                                onClick = { sortMenuExpanded = true }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.ArrowUpward,
-                                    contentDescription = null,
-                                    modifier = Modifier.rotate(float)
+                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                    contentDescription = null
                                 )
                             }
                             IconButton(
@@ -172,6 +182,34 @@ fun SharedTransitionScope.AlbumsScreen(
                                     imageVector = Icons.Rounded.Settings,
                                     contentDescription = null
                                 )
+                            }
+                            AlbumSortingDropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false },
+                                isSortedByASC = isSortedByASC,
+                                onChangeSorting = { isSortedByASC = it },
+                                onGridSelectionExpanded = { gridSelectionExpanded = !gridSelectionExpanded }
+                            )
+                            DropdownMenu(
+                                expanded = gridSelectionExpanded,
+                                onDismissRequest = { gridSelectionExpanded = false },
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                numberOfGrids.forEach { number ->
+                                    CuteDropdownMenuItem(
+                                        onClick = {
+                                            numberOfAlbumGrids = number
+                                            gridSelectionExpanded = false
+                                        },
+                                        text = { CuteText(number.toString()) },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.grid_view),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     },
@@ -183,8 +221,8 @@ fun SharedTransitionScope.AlbumsScreen(
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
-                            modifier = Modifier.sharedElement(
-                                state = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
                         ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
@@ -204,21 +242,21 @@ fun SharedTransitionScope.AlbumCard(
 ) {
     Column(
         modifier = modifier
-            .padding(20.dp)
+            .padding(15.dp)
     ) {
         AsyncImage(
             model = ImageUtils.imageRequester(
-                ImageUtils.getAlbumArt(album.id) ?: R.drawable.ic_launcher_foreground
+                ImageUtils.getAlbumArt(album.id) ?: androidx.media3.session.R.drawable.media3_icon_album
             ),
             contentDescription = stringResource(id = R.string.artwork),
             modifier = Modifier
-                .size(160.dp)
                 .sharedElement(
-                    state = rememberSharedContentState(key = album.id),
+                    sharedContentState = rememberSharedContentState(key = album.id),
                     animatedVisibilityScope = animatedVisibilityScope,
                 )
+                .sizeIn(maxHeight = 160.dp)
                 .clip(RoundedCornerShape(24.dp)),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Fit
         )
         Spacer(Modifier.height(10.dp))
         Column {
@@ -227,8 +265,8 @@ fun SharedTransitionScope.AlbumCard(
                 maxLines = 1,
                 modifier = Modifier
                     .sharedElement(
-                        state = rememberSharedContentState(key = album.name + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope,
+                        sharedContentState = rememberSharedContentState(key = album.name + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                     .basicMarquee()
             )
@@ -237,8 +275,8 @@ fun SharedTransitionScope.AlbumCard(
                 color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                 modifier = Modifier
                     .sharedElement(
-                        state = rememberSharedContentState(key = album.artist + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope,
+                        sharedContentState = rememberSharedContentState(key = album.artist + album.id),
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                     .basicMarquee()
             )

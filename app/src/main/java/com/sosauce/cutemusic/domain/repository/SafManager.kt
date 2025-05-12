@@ -13,6 +13,7 @@ import com.sosauce.cutemusic.data.datastore.getSafTracks
 import com.sosauce.cutemusic.utils.getUriFromByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -41,7 +42,7 @@ class SafManager(
                 val artUri =
                     TagLib.getFrontCover(fd.dup().detachFd())?.data?.getUriFromByteArray(context)
 
-                return@withContext MediaItem
+                MediaItem
                     .Builder()
                     .setUri(uri)
                     .setMediaId(uri.hashCode().toString())
@@ -65,7 +66,6 @@ class SafManager(
                                         putLong("album_id", 0)
                                         putLong("artist_id", 0)
                                         putBoolean("is_saf", true)
-                                        // putInt("isFavorite", isFavorite)
                                     }).build()
                     )
                     .build()

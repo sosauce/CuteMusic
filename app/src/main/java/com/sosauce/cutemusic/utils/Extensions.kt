@@ -7,12 +7,18 @@ import android.content.Context
 import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -24,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
@@ -55,32 +62,6 @@ fun Modifier.thenIf(
     } else this
 }
 
-fun Long.formatBinarySize(): String {
-    val kiloByteAsByte = 1.0 * 1024.0
-    val megaByteAsByte = 1.0 * 1024.0 * 1024.0
-    val gigaByteAsByte = 1.0 * 1024.0 * 1024.0 * 1024.0
-    return when {
-        this < kiloByteAsByte -> "${this.toDouble()} B"
-        this >= kiloByteAsByte && this < megaByteAsByte -> "${
-            String.format(
-                Locale.getDefault(),
-                "%.2f",
-                (this / kiloByteAsByte)
-            )
-        } KB"
-
-        this >= megaByteAsByte && this < gigaByteAsByte -> "${
-            String.format(
-                Locale.getDefault(),
-                "%.2f",
-                (this / megaByteAsByte)
-            )
-        } MB"
-
-        else -> "Too Big!"
-    }
-}
-
 fun Player.playAtIndex(
     mediaId: String
 ) {
@@ -92,8 +73,8 @@ fun Player.playAtIndex(
 }
 
 fun Player.playRandom() {
-    val range = 0..mediaItemCount
-    seekTo(range.random(), 0)
+    val index = (0 until mediaItemCount).random()
+    seekTo(index, 0)
     play()
 }
 
@@ -135,6 +116,22 @@ fun Player.playFromArtist(
     }
 }
 
+fun Player.playFromPlaylist(
+    playlistSongsId: List<String>,
+    mediaId: String? = null,
+    musics: List<MediaItem>
+) {
+    clearMediaItems()
+    musics.filter { music -> music.mediaId in playlistSongsId }
+        .also { addMediaItems(it) }
+
+    if (mediaId == null) {
+        playRandom()
+    } else {
+        playAtIndex(mediaId)
+    }
+}
+
 fun Player.applyLoop(
     shouldLoop: Boolean
 ) {
@@ -162,7 +159,7 @@ fun Player.applyPlaybackPitch(pitch: Float = 1f) {
 
 
 fun ByteArray.getUriFromByteArray(context: Context): Uri {
-    val albumArtFile = File(context.cacheDir, "albumArt_${this.hashCode()}_${Uuid.random()}.jpg")
+    val albumArtFile = File(context.cacheDir, "albumArt_${Uuid.random()}.jpg")
     return try {
         FileOutputStream(albumArtFile).use { os ->
             os.write(this)
@@ -177,8 +174,7 @@ fun Uri.getBitrate(context: Context): String {
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, this)
-        val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
-        bitrate?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
+        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
     } catch (e: Exception) {
         e.stackTrace
         "Error parsing bitrate!"
@@ -294,6 +290,15 @@ fun AudioFileMetadata.toPropertyMap(): PropertyMap {
     )
 }
 
+inline fun <E> List<E>.copyMutate(block: MutableList<E>.() -> Unit): List<E> {
+    return toMutableList().apply(block)
+}
+
+inline fun <E> Set<E>.copyMutate(block: MutableSet<E>.() -> Unit): Set<E> {
+    return toMutableSet().apply(block)
+}
+
+
 typealias LastPlayed = Pair<String, Long>
 
 fun ContentResolver.observe(uri: Uri) = callbackFlow {
@@ -313,22 +318,22 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 fun <T : Any> NavHostController.navigateSingleTop(route: T) =
     navigate(route) { launchSingleTop = true }
 
-//@Composable
-//fun Modifier.cuteHazeEffect(
-//    state: HazeState,
-//    intensity: Dp = 15.dp,
-//    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-//    block: (HazeEffectScope.() -> Unit)? = null,
-//) = hazeEffect(
-//    state = state,
-//    style = HazeStyle(
-//        backgroundColor = backgroundColor,
-//        tints = emptyList(),
-//        blurRadius = intensity,
-//        noiseFactor = 0f
-//    ),
-//    block = block
-//)
+@Composable
+fun Modifier.cuteHazeEffect(
+    state: HazeState,
+    intensity: Dp = 15.dp,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    block: (HazeEffectScope.() -> Unit)? = null,
+) = hazeEffect(
+    state = state,
+    style = HazeStyle(
+        backgroundColor = backgroundColor,
+        tints = emptyList(),
+        blurRadius = intensity,
+        noiseFactor = 0f
+    ),
+    block = block
+)
 
 @Composable
 fun rememberInteractionSource(): MutableInteractionSource {
@@ -398,5 +403,30 @@ fun rememberSearchbarRightPadding(
         } else {
             0.dp
         }
+    }
+}
+
+@Composable
+fun rememberHazeState(): HazeState = remember { HazeState() }
+
+@Composable
+fun anyLightColorScheme(): ColorScheme {
+    val context = LocalContext.current
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicLightColorScheme(context)
+    } else {
+        lightColorScheme()
+    }
+}
+
+@Composable
+fun anyDarkColorScheme(): ColorScheme {
+    val context = LocalContext.current
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicDarkColorScheme(context)
+    } else {
+        darkColorScheme()
     }
 }

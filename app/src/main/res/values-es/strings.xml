@@ -75,16 +75,12 @@
     <string name="set_sleep_timer">Ajustar temporizador para dormir</string>
     <string name="go_to">Ir a:</string>
     <string name="no_lyrics_note">¡No se encontraron letras！</string>
-    <string name="open_eq">Equalizador</string>
+    <string name="open_eq">Ecualizador</string>
     <string name="from_saf">Esta pista viene de S.A.F</string>
     <string name="open_saf">Abrir S.A.F para añadir pistas</string>
     <string name="blacklisted">Lista negra</string>
     <string name="not_blacklisted">No en la lista negra</string>
     <string name="saf_manager">Administrador S.A.F</string>
-    <string name="search_tracks">Buscar pistas</string>
-    <string name="search_albums">Buscar álbumes</string>
-    <string name="search_artists">Buscar artistas</string>
-    <string name="search_playlists">Buscar listas de reproducción</string>
     <string name="no_playlists">¡No tienes listas de reproducción! Haz tu experiencia de escucha más divertida creando una.</string>
     <string name="alrdy_in_playlist">¡La pista ya está en la lista de reproducción!</string>
     <string name="del_playlist">Eliminar lista de reproducción</string>

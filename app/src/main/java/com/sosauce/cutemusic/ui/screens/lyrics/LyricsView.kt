@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.ui.screens.lyrics
 
+import android.content.ClipData
 import android.view.WindowManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.animateColorAsState
@@ -52,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -80,7 +83,7 @@ fun LyricsView(
 ) {
     val activity = LocalActivity.current
     val uriHandler = LocalUriHandler.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboardManager = LocalClipboard.current
     val isLandscape = rememberIsLandscape()
     val scope = rememberCoroutineScope()
     val leftIconOffsetX = rememberAnimatable()
@@ -190,11 +193,16 @@ fun LyricsView(
                                         )
                                     },
                                     onLongClick = {
-                                        clipboardManager.setText(
-                                            AnnotatedString(
-                                                text = lyric.lineLyrics
+                                        scope.launch {
+                                            clipboardManager.setClipEntry(
+                                                ClipEntry(
+                                                    ClipData.newPlainText(
+                                                        "Lyrics",
+                                                        lyric.lineLyrics
+                                                    )
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 )
                         ) {

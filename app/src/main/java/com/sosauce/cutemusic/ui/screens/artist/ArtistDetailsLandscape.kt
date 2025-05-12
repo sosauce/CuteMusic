@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.MediaItemActions
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
@@ -49,19 +52,16 @@ import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.ArtistDetailsLandscape(
+    musics: List<MediaItem>,
+    albums: List<Album>,
     onNavigateUp: () -> Unit,
-    artistAlbums: List<Album>,
-    artistSongs: List<MediaItem>,
-    onClickPlay: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    chargePVMAlbumSongs: (String) -> Unit,
     artist: Artist,
     currentMusicUri: String,
     isPlayerReady: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
+    onHandlePlayerAction: (PlayerActions) -> Unit,
+    onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
 
@@ -78,8 +78,8 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                     ArtistInfoCard(
                         artist = artist,
                         animatedVisibilityScope = animatedVisibilityScope,
-                        numberOfSongs = artistSongs.size,
-                        numberOfAlbums = artistAlbums.size,
+                        numberOfSongs = musics.size,
+                        numberOfAlbums = albums.size,
                         modifier = Modifier
                             .statusBarsPadding()
                             .padding(horizontal = 5.dp, vertical = 5.dp)
@@ -87,40 +87,37 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                     )
                 }
                 items(
-                    items = artistAlbums,
+                    items = albums,
                     key = { it.id }
                 ) { album ->
                     AlbumCard(
                         album = album,
                         modifier = Modifier
-                            .padding(horizontal = 5.dp, vertical = 5.dp)
                             .clip(RoundedCornerShape(15.dp))
-                            .clickable {
-                                chargePVMAlbumSongs(album.name)
-                                onNavigate(Screen.AlbumsDetails(album.id))
-                            },
+                            .clickable { onNavigate(Screen.AlbumsDetails(album.id)) },
                         animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
             Spacer(modifier = Modifier.width(5.dp))
-            LazyColumn {
-                itemsIndexed(
-                    items = artistSongs,
-                    key = { _, music -> music.mediaId }
-                ) { index, music ->
-                    LocalMusicListItem(
-                        music = music,
-                        currentMusicUri = currentMusicUri,
-                        onShortClick = { onClickPlay(it) },
-                        isPlayerReady = isPlayerReady,
-                        modifier = Modifier.thenIf(index == 0) { statusBarsPadding() },
-                        onLoadMetadata = onLoadMetadata,
-                        onDeleteMusic = onDeleteMusic,
-                        onChargeAlbumSongs = onChargeAlbumSongs,
-                        onChargeArtistLists = onChargeArtistLists,
-                        onNavigate = onNavigate
-                    )
+            Scaffold { paddingValues ->
+                LazyColumn(
+                    contentPadding = paddingValues
+                ) {
+                    items(
+                        items = musics,
+                        key = { it.mediaId }
+                    ) { music ->
+                        LocalMusicListItem(
+                            music = music,
+                            currentMusicUri = currentMusicUri,
+                            onShortClick = { onHandlePlayerAction(PlayerActions.StartPlayback(it)) },
+                            isPlayerReady = isPlayerReady,
+                            onLoadMetadata = onLoadMetadata,
+                            onHandleMediaItemAction = onHandleMediaItemAction,
+                            onNavigate = onNavigate
+                        )
+                    }
                 }
             }
         }
@@ -149,7 +146,7 @@ private fun SharedTransitionScope.ArtistInfoCard(
             modifier = Modifier
                 .padding(start = 10.dp)
                 .sharedElement(
-                    state = rememberSharedContentState(key = artist.id),
+                    sharedContentState = rememberSharedContentState(key = artist.id),
                     animatedVisibilityScope = animatedVisibilityScope,
                 )
                 .size(140.dp)
@@ -170,7 +167,7 @@ private fun SharedTransitionScope.ArtistInfoCard(
                 maxLines = 1,
                 modifier = Modifier
                     .sharedElement(
-                        state = rememberSharedContentState(key = artist.name + artist.id),
+                        sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
             )

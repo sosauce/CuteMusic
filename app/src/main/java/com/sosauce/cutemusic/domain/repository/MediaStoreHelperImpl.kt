@@ -75,8 +75,7 @@ class MediaStoreHelperImpl(
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.TRACK,
-            MediaStore.Audio.Media.IS_FAVORITE,
+            MediaStore.Audio.Media.TRACK
         )
 
 
@@ -97,7 +96,6 @@ class MediaStoreHelperImpl(
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val trackNbColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
-            val isFavColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_FAVORITE)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -111,7 +109,6 @@ class MediaStoreHelperImpl(
                 val size = cursor.getLong(sizeColumn)
                 val duration = cursor.getLong(durationColumn)
                 val trackNumber = cursor.getInt(trackNbColumn)
-                val isFavorite = cursor.getInt(isFavColumn) // 1 = is favorite, 0 = no
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
@@ -148,7 +145,6 @@ class MediaStoreHelperImpl(
                                             putLong("artist_id", artistId)
                                             putBoolean("is_saf", false)
                                             putString("mediaId", mediaId)
-                                            putInt("isFavorite", isFavorite)
                                         }).build()
                         )
                         .build()

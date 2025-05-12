@@ -75,8 +75,12 @@ inline fun <reified T> getCustomPreference(
     context: Context
 ): Flow<T> {
     return context.dataStore.data.map { preferences ->
-        val json = preferences[key] ?: return@map defaultValue
-        Json.decodeFromString<T>(json)
+        val jsonString = preferences[key]
+
+        jsonString?.let { string ->
+            Json.decodeFromString<T>(string)
+        } ?: defaultValue
+
     }.distinctUntilChanged()
 }
 

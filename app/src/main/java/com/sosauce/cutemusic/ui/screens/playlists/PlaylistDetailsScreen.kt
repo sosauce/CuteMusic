@@ -5,8 +5,12 @@ package com.sosauce.cutemusic.ui.screens.playlists
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +22,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,27 +32,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import com.sosauce.cutemusic.data.actions.MediaItemActions
+import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
+import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
+import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import com.sosauce.cutemusic.utils.SharedTransitionKeys
+import com.sosauce.cutemusic.utils.copyMutate
+import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
+import com.sosauce.cutemusic.utils.showCuteSearchbar
 
 @Composable
 fun SharedTransitionScope.PlaylistDetailsScreen(
     playlist: Playlist,
+    musicState: MusicState,
     musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
-    onShortClick: (String) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
+    onLoadMetadata: (String, Uri) -> Unit = {_, _ ->},
+    onHandlePlayerAction: (PlayerActions) -> Unit = {},
     isPlayerReady: Boolean,
     currentMusicUri: String,
-    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
-    onNavigateUp: () -> Unit
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onNavigateUp: () -> Unit,
+    onHandleMediaItemAction: (MediaItemActions) -> Unit,
 ) {
 
     val playlistDisplay = remember {
@@ -58,6 +73,15 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
         }
     }
 
+    val playlistMusic = remember(playlist.musics) {
+        val idSet = playlist.musics.toSet() // O(1) or do we just lose time/performance converting?
+        musics
+            .filter { it.mediaId in idSet }
+            .sortedBy { it.mediaMetadata.title.toString() }
+    }
+
+    val listState = rememberLazyListState()
+
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing
     ) { paddingValues ->
@@ -66,63 +90,104 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = paddingValues
+                contentPadding = paddingValues,
+                state = listState
             ) {
                 items(
-                    items = playlist.musics,
-                    key = { it.hashCode() }
-                ) { id ->
-                    musics.find { it.mediaId == id }?.let { music ->
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
-                        ) {
-                            if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
-                                LocalMusicListItem(
-                                    onShortClick = { onShortClick(music.mediaId) },
-                                    music = music,
-                                    onNavigate = { onNavigate(it) },
-                                    currentMusicUri = currentMusicUri,
-                                    onLoadMetadata = onLoadMetadata,
-                                    onDeleteMusic = onDeleteMusic,
-                                    onChargeAlbumSongs = onChargeAlbumSongs,
-                                    onChargeArtistLists = onChargeArtistLists,
-                                    isPlayerReady = isPlayerReady,
-                                )
-                            } else {
-                                var safTracks by rememberAllSafTracks()
-                                SafMusicListItem(
-                                    onShortClick = { onShortClick(music.mediaId) },
-                                    music = music,
-                                    currentMusicUri = currentMusicUri,
-                                    showBottomSheet = true,
-                                    isPlayerReady = isPlayerReady,
-                                    onDeleteFromSaf = {
-                                        safTracks = safTracks.toMutableSet().apply {
-                                            remove(music.mediaMetadata.extras?.getString("uri"))
-                                        }
-                                    }
-                                )
-                            }
+                    items = playlistMusic,
+                    key = { it.mediaId }
+                ) { music ->
+                    Column(
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(
+                                vertical = 2.dp,
+                                horizontal = 4.dp
+                            )
+                    ) {
+                        if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                            LocalMusicListItem(
+                                onShortClick = {
+                                    onHandlePlayerAction(
+                                        PlayerActions.StartPlaylistPlayback(
+                                            playlist.musics,
+                                            music.mediaId
+                                        )
+                                    )
+                                },
+                                music = music,
+                                onNavigate = { onNavigate(it) },
+                                currentMusicUri = currentMusicUri,
+                                onLoadMetadata = onLoadMetadata,
+                                isPlayerReady = isPlayerReady,
+                                onHandleMediaItemAction = onHandleMediaItemAction
+                            )
+                        } else {
+                            var safTracks by rememberAllSafTracks()
+                            SafMusicListItem(
+                                onShortClick = {
+                                    onHandlePlayerAction(
+                                        PlayerActions.StartPlaylistPlayback(
+                                            playlist.musics,
+                                            music.mediaId
+                                        )
+                                    )
+                                },
+                                music = music,
+                                currentMusicUri = currentMusicUri,
+                                isPlayerReady = isPlayerReady,
+                                onDeleteFromSaf = {
+                                    safTracks = safTracks.copyMutate { remove(music.mediaMetadata.extras?.getString("uri")) }
+                                }
+                            )
                         }
                     }
                 }
             }
 
-            CuteNavigationButton(
-                modifier = Modifier
-                    .padding(start = 15.dp)
-                    .navigationBarsPadding()
-                    .align(Alignment.BottomStart),
-                playlistName = {
-                    Spacer(Modifier.width(5.dp))
-                    CuteText(playlistDisplay)
-                }
-            ) { onNavigateUp() }
+            AnimatedVisibility(
+                visible = listState.showCuteSearchbar,
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it },
+                modifier = Modifier.align(rememberSearchbarAlignment()),
+            ) {
+                CuteSearchbar(
+                    currentlyPlaying = musicState.title,
+                    isPlayerReady = musicState.isPlayerReady,
+                    isPlaying = musicState.isPlaying,
+                    onHandlePlayerActions = onHandlePlayerAction,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    showSearchField = false,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                        ) {
+                            onHandlePlayerAction(
+                                PlayerActions.StartPlaylistPlayback(
+                                    playlist.musics,
+                                    null
+                                )
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        CuteNavigationButton(
+                            modifier = Modifier
+                                .padding(start = 15.dp)
+                                .navigationBarsPadding(),
+                            playlistName = {
+                                Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
+                                CuteText(playlistDisplay)
+                            }
+                        ) { onNavigateUp() }
+                    }
+                )
+            }
+
         }
     }
 

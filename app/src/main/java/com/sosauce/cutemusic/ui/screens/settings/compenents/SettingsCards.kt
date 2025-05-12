@@ -1,11 +1,21 @@
 package com.sosauce.cutemusic.ui.screens.settings.compenents
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Info
@@ -13,30 +23,34 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 
 @Composable
 fun SettingsCards(
-    hasInfoDialog: Boolean = false,
     checked: Boolean,
     topDp: Dp,
     bottomDp: Dp,
     text: String,
     onCheckedChange: () -> Unit,
-    onClick: () -> Unit = {},
-    optionalDescription: @Composable () -> Unit = {}
+    optionalDescription: (@Composable () -> Unit)? = null,
 ) {
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
@@ -64,17 +78,7 @@ fun SettingsCards(
                     CuteText(
                         text = text
                     )
-                    optionalDescription()
-                }
-                if (hasInfoDialog) {
-                    IconButton(
-                        onClick = { onClick() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = "Info Button"
-                        )
-                    }
+                    optionalDescription?.invoke()
                 }
             }
             Switch(
@@ -90,9 +94,7 @@ fun SettingsCards(
 
 @Composable
 fun TextSettingsCards(
-    modifier: Modifier = Modifier,
     text: String,
-    tipText: String? = null,
     onClick: () -> Unit,
     topDp: Dp,
     bottomDp: Dp,
@@ -121,21 +123,13 @@ fun TextSettingsCards(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier
+            modifier = Modifier
+                .padding(
+                    vertical = 25.dp,
+                    horizontal = 15.dp
+                )
         ) {
-            Column(verticalArrangement = Arrangement.Center) {
-                CuteText(
-                    text = text,
-
-                    )
-                tipText?.let {
-                    CuteText(
-                        text = it,
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
+            CuteText(text)
         }
     }
 }
@@ -183,5 +177,42 @@ fun SettingCategoryCards(
                 modifier = Modifier.padding(start = 5.dp)
             )
         }
+    }
+}
+
+@Composable
+fun ThemeSelector(
+    onClick: () -> Unit,
+    backgroundColor: Color,
+    icon: @Composable () -> Unit,
+    text: String,
+    isThemeSelected: Boolean
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(10.dp)
+            .height(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(10.dp)
+                .size(50.dp)
+                .clip(CircleShape)
+                .border(
+                    width = 2.dp,
+                    color = if (isThemeSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
+                    shape = CircleShape
+                )
+                .background(backgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            icon()
+        }
+        Spacer(Modifier.weight(1f))
+        CuteText(text)
     }
 }

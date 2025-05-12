@@ -21,3 +21,10 @@ object SharedTransitionKeys {
     const val SKIP_PREVIOUS_BUTTON = "SKIP_PREVIOUS_BUTTON"
     const val MUSIC_ARTWORK = "MUSIC_ARTWORK"
 }
+
+object CuteTheme {
+    const val SYSTEM = "SYSTEM"
+    const val DARK = "DARK"
+    const val LIGHT = "LIGHT"
+    const val AMOLED = "AMOLED"
+}

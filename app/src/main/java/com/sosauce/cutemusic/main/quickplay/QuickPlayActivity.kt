@@ -15,9 +15,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -66,6 +69,7 @@ import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.ui.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.formatToReadableTime
@@ -99,11 +103,10 @@ class QuickPlayActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) { paddingValues ->
 
-                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    val state by viewModel.musicState.collectAsStateWithLifecycle()
                     val context = LocalContext.current
-                    var tempSliderValue by remember { mutableStateOf<Float?>(null) }
 
-                    if (!state.isSongLoaded) {
+                    if (!viewModel.isSongLoaded) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,13 +121,16 @@ class QuickPlayActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .background(MaterialTheme.colorScheme.background)
                                 .padding(paddingValues)
-                                .padding(horizontal = 15.dp),
+                                .padding(horizontal = 10.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(15.dp),
+                                    .padding(
+                                        start = 10.dp,
+                                        top = 10.dp
+                                    ),
                                 horizontalArrangement = Arrangement.Start
                             ) {
                                 IconButton(
@@ -137,18 +143,23 @@ class QuickPlayActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                            AsyncImage(
-                                model = remember { viewModel.loadAlbumArt(context, uri) },
-                                contentDescription = stringResource(R.string.artwork),
+                            Box(
                                 modifier = Modifier
-                                    .size(340.dp)
-                                    .clip(RoundedCornerShape(5)),
-                                contentScale = ContentScale.Crop,
-                                onSuccess = { state ->
-                                    artImageBitmap = state.result.image.toBitmap().asImageBitmap()
-                                }
-                            )
-                            Spacer(Modifier.height(20.dp))
+                                    .aspectRatio(1f)
+                                    .wrapContentSize()
+                            ) {
+                                AsyncImage(
+                                    model = remember { viewModel.loadAlbumArt(context, uri) },
+                                    contentDescription = stringResource(R.string.artwork),
+                                    modifier = Modifier
+                                        .fillMaxSize(0.9f)
+                                        .clip(RoundedCornerShape(5)),
+                                    contentScale = ContentScale.Crop,
+                                    onSuccess = { state ->
+                                        artImageBitmap = state.result.image.toBitmap().asImageBitmap()
+                                    }
+                                )
+                            }
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -163,74 +174,16 @@ class QuickPlayActivity : ComponentActivity() {
                                 )
                                 CuteText(
                                     text = state.artist,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.85f),
+                                    color = MaterialTheme.colorScheme.secondary,
                                     fontSize = 20.sp,
                                     modifier = Modifier.basicMarquee()
                                 )
                             }
                             Spacer(Modifier.height(24.dp))
-
-                            Column(
-                                modifier = Modifier.padding(horizontal = 15.dp)
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    CuteText(
-                                        text = state.currentPosition.formatToReadableTime(),
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                    CuteText(
-                                        text = state.duration.formatToReadableTime(),
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                                Slider(
-                                    value = tempSliderValue ?: state.currentPosition.toFloat(),
-                                    onValueChange = { tempSliderValue = it },
-                                    onValueChangeFinished = {
-                                        tempSliderValue?.let {
-                                            viewModel.handlePlayerAction(
-                                                PlayerActions.UpdateCurrentPosition(
-                                                    it.toLong()
-                                                )
-                                            )
-                                            viewModel.handlePlayerAction(
-                                                PlayerActions.SeekToSlider(
-                                                    it.toLong()
-                                                )
-                                            )
-                                        }
-                                        tempSliderValue = null
-                                    },
-                                    track = { sliderState ->
-
-                                        val amplitude by animateDpAsState(
-                                            targetValue = if (state.isPlaying) 5.dp else 0.dp
-                                        )
-                                        SquigglySlider.Track(
-                                            interactionSource = rememberInteractionSource(),
-                                            colors = SliderDefaults.colors(),
-                                            enabled = true,
-                                            sliderState = sliderState,
-                                            squigglesSpec = SquigglySlider.SquigglesSpec(
-                                                amplitude = amplitude,
-                                                wavelength = 45.dp
-                                            )
-                                        )
-                                    },
-                                    thumb = {
-                                        Spacer(Modifier.width(4.dp))
-                                        SliderDefaults.Thumb(
-                                            interactionSource = rememberInteractionSource(),
-                                            thumbSize = DpSize(width = 4.dp, height = 22.dp),
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                    },
-                                    valueRange = 0f..state.duration.toFloat(),
-                                )
-                            }
+                            CuteSlider(
+                                musicState = state,
+                                onHandlePlayerActions = viewModel::handlePlayerAction
+                            )
                             Spacer(Modifier.height(10.dp))
                             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
                                 val scope = rememberCoroutineScope()

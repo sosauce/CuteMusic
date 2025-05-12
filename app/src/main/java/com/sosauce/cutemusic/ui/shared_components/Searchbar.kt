@@ -5,13 +5,21 @@
 
 package com.sosauce.cutemusic.ui.shared_components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -26,6 +34,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -66,7 +75,6 @@ import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun SharedTransitionScope.CuteSearchbar(
     modifier: Modifier = Modifier,
@@ -74,11 +82,11 @@ fun SharedTransitionScope.CuteSearchbar(
     onQueryChange: (String) -> Unit = {},
     trailingIcon: @Composable (() -> Unit)? = null,
     currentlyPlaying: String = "",
-    onHandlePlayerActions: (PlayerActions) -> Unit = {},
+    onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlaying: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean = true,
-    onNavigate: (Screen) -> Unit = {},
+    onNavigate: (Screen) -> Unit,
     showSearchField: Boolean = true,
     fab: @Composable (() -> Unit)? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
@@ -89,14 +97,6 @@ fun SharedTransitionScope.CuteSearchbar(
     val scope = rememberCoroutineScope()
     val showXButton by rememberShowXButton()
     val showShuffleButton by rememberShowShuffleButton()
-    val screenToPlaceholder = remember {
-        hashMapOf(
-            Screen.Main.toString() to R.string.search_tracks,
-            Screen.Albums.toString() to R.string.search_albums,
-            Screen.Artists.toString() to R.string.search_artists,
-            Screen.Playlists.toString() to R.string.search_playlists,
-        )
-    }
     val screenToLeadingIcon = remember {
         hashMapOf(
             Screen.Main.toString() to R.drawable.music_note_rounded,
@@ -119,7 +119,7 @@ fun SharedTransitionScope.CuteSearchbar(
             modifier = Modifier.fillMaxWidth()
         ) {
             navigationIcon?.invoke()
-            if (showShuffleButton) {
+            if (showShuffleButton || CurrentScreen.screen == Screen.Playlists.toString()) {
                 fab?.invoke()
             }
         }
@@ -178,7 +178,7 @@ fun SharedTransitionScope.CuteSearchbar(
                         IconButton(
                             onClick = {
                                 onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
-                                scope.launch(Dispatchers.Main) {
+                                scope.launch {
                                     leftIconOffsetX.animateTo(
                                         targetValue = -20f,
                                         animationSpec = tween(250)
@@ -201,7 +201,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                         )
                                     }
                                     .sharedElement(
-                                        state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
+                                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
@@ -214,7 +214,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .sharedElement(
-                                        state = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
+                                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
@@ -222,7 +222,7 @@ fun SharedTransitionScope.CuteSearchbar(
                         IconButton(
                             onClick = {
                                 onHandlePlayerActions(PlayerActions.SeekToNextMusic)
-                                scope.launch(Dispatchers.Main) {
+                                scope.launch {
                                     rightIconOffsetX.animateTo(
                                         targetValue = 20f,
                                         animationSpec = tween(250)
@@ -245,7 +245,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                         )
                                     }
                                     .sharedElement(
-                                        state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
+                                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
                             )
@@ -294,14 +294,17 @@ fun SharedTransitionScope.CuteSearchbar(
                     trailingIcon = trailingIcon,
                     placeholder = {
                         CuteText(
-                            text = stringResource(
-                                screenToPlaceholder[CurrentScreen.screen] ?: R.string.empty
-                            ),
+//                            text = stringResource(
+//                                screenToPlaceholder[CurrentScreen.screen] ?: R.string.empty
+//                            ),
+                            text = stringResource(R.string.search_here),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                             maxLines = 1
                         )
                     },
-                    modifier = Modifier.padding(6.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(6.dp)
                 )
             }
         }

@@ -21,9 +21,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,8 +36,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Album
@@ -49,24 +53,21 @@ import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.AlbumDetailsLandscape(
+    musics: List<MediaItem>,
     album: Album,
     onNavigateUp: () -> Unit,
     onNavigate: (Screen) -> Unit,
-    viewModel: MusicViewModel,
     musicState: MusicState,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
-    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit = { _, _ -> },
-    onChargeAlbumSongs: (String) -> Unit = {},
-    onChargeArtistLists: (String) -> Unit = {},
+    onHandleMediaItemAction: (MediaItemActions) -> Unit,
 ) {
 
-    val albumSongs by viewModel.albumSongs.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .navigationBarsPadding()
             .displayCutoutPadding()
     ) {
         Row(
@@ -80,7 +81,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                         .statusBarsPadding()
                         .size(200.dp)
                         .sharedElement(
-                            state = rememberSharedContentState(key = album.id),
+                            sharedContentState = rememberSharedContentState(key = album.id),
                             animatedVisibilityScope = animatedVisibilityScope,
                         )
                         .clip(RoundedCornerShape(10)),
@@ -90,7 +91,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                 CuteText(
                     text = album.name,
                     modifier = Modifier.sharedElement(
-                        state = rememberSharedContentState(key = album.name + album.id),
+                        sharedContentState = rememberSharedContentState(key = album.name + album.id),
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
                 )
@@ -98,45 +99,47 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                     text = album.artist,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
                     modifier = Modifier.sharedElement(
-                        state = rememberSharedContentState(key = album.artist + album.id),
+                        sharedContentState = rememberSharedContentState(key = album.artist + album.id),
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
                 )
-                CuteText(pluralStringResource(R.plurals.tracks, albumSongs.size, albumSongs.size))
+                CuteText(pluralStringResource(R.plurals.tracks, musics.size, musics.size))
                 Spacer(modifier = Modifier.width(5.dp))
             }
-
-            LazyColumn {
-                itemsIndexed(
-                    items = albumSongs,
-                    key = { _, music -> music.mediaId }
-                ) { index, music ->
-                    LocalMusicListItem(
-                        modifier = Modifier
-                            .thenIf(index == 0) { statusBarsPadding() }
-                            .padding(horizontal = 5.dp),
-                        music = music,
-                        currentMusicUri = musicState.uri,
-                        onShortClick = {
-                            viewModel.handlePlayerActions(
-                                PlayerActions.StartPlayback(
-                                    it
+            Scaffold { paddingValues ->
+                LazyColumn(
+                    contentPadding = paddingValues
+                ) {
+                    items(
+                        items = musics,
+                        key = { it.mediaId }
+                    ) { music ->
+                        LocalMusicListItem(
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp),
+                            music = music,
+                            currentMusicUri = musicState.uri,
+                            onShortClick = {
+                                onHandlePlayerActions(
+                                    PlayerActions.StartPlayback(
+                                        it
+                                    )
                                 )
-                            )
-                        },
-                        isPlayerReady = musicState.isPlayerReady,
-                        onLoadMetadata = onLoadMetadata,
-                        onChargeArtistLists = onChargeArtistLists,
-                        onChargeAlbumSongs = onChargeAlbumSongs,
-                        onDeleteMusic = onDeleteMusic,
-                        onNavigate = onNavigate
-                    )
+                            },
+                            isPlayerReady = musicState.isPlayerReady,
+                            onLoadMetadata = onLoadMetadata,
+                            onHandleMediaItemAction = onHandleMediaItemAction,
+                            onNavigate = onNavigate
+                        )
+                    }
                 }
             }
         }
 
         CuteNavigationButton(
-            modifier = Modifier.align(Alignment.BottomStart)
+            modifier = Modifier
+                .navigationBarsPadding()
+                .align(Alignment.BottomStart)
         ) { onNavigateUp() }
     }
 

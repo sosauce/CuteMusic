@@ -65,6 +65,7 @@
     <string name="set_pitch">Fixer le tempo</string>
     <string name="speed">Vitesse</string>
     <string name="pitch">Tempo</string>
+    <string name="rate">Taux</string>
     <string name="snap">Assembler la vitesse et le tempo</string>
     <string name="new_rate">Entrer un nouveau taux entre 0.5 et 2</string>
     <string name="share">Partager</string>
@@ -81,10 +82,6 @@
     <string name="blacklisted">Blacklister</string>
     <string name="not_blacklisted">Pas blacklister</string>
     <string name="saf_manager">S.A.F manageur</string>
-    <string name="search_tracks">Rechercher une musique</string>
-    <string name="search_albums">Rechercher un album</string>
-    <string name="search_artists">Rechercher un artiste</string>
-    <string name="search_playlists">Rechercher une playlist</string>
     <string name="no_playlists">Vous n\'avez pas de playlist! Créez en une pour rendre votre expérience encore meilleure!</string>
     <string name="alrdy_in_playlist">La musique est déjà dans cette playlist!</string>
     <string name="del_playlist">Supprimer la playlist</string>
@@ -93,8 +90,14 @@
     <string name="create_playlist">Créer une playlist</string>
     <string name="create">Créer</string>
     <string name="playlist">Playlist</string>
+    <string name="playlists">Playlistes</string>
     <string name="add_to_playlist">Ajouter à une playlist</string>
     <string name="art_description">Le thème de l\'app sera basé sur la cover de la musique en cours.</string>
     <string name="group_tracks">Regrouper les musiques par leurs dossiers</string>
     <string name="file_name">Nom du fichier</string>
+    <string name="use_carousel">Utiliser la vue caroussel</string>
+    <string name="search_here">Rechercher ici</string>
+    <string name="search_lyrics">Rechercher des paroles</string>
+    <string name="song_loading">La musique est entrain de charger…</string>
+    <string name="no_of_grids">Nombre de grilles</string>
 </resources>

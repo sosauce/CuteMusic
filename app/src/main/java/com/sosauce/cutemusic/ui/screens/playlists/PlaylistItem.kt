@@ -2,6 +2,8 @@
 
 package com.sosauce.cutemusic.ui.screens.playlists
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
@@ -28,7 +30,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,28 +59,42 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.emoji2.emojipicker.EmojiPickerView
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.domain.model.Playlist
+import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import kotlin.text.ifEmpty
 
 @Composable
 fun PlaylistItem(
     modifier: Modifier = Modifier,
     playlist: Playlist,
-    onDeletePlaylist: () -> Unit = {},
-    onUpsertPlaylist: (Playlist) -> Unit = {},
+    onHandlePlaylistActions: (PlaylistActions) -> Unit,
     allowEditAction: Boolean = true,
-    onClickPlaylist: () -> Unit = {}
+    onClickPlaylist: () -> Unit
 ) {
 
+    var isDropdownExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+
+    val exportPlaylistLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+        uri?.let {
+            onHandlePlaylistActions(
+                PlaylistActions.ExportM3uPlaylist(
+                    uri = it,
+                    tracks = playlist.musics
+                )
+            )
+        }
+
+    }
 
     if (showEditDialog) {
         EditPlaylist(
             playlist = playlist,
             onDismissRequest = { showEditDialog = false },
-            onDeletePlaylist = onDeletePlaylist,
-            onUpsertPlaylist = onUpsertPlaylist
+            onHandlePlaylistActions = onHandlePlaylistActions
         )
     }
 
@@ -89,8 +108,6 @@ fun PlaylistItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
@@ -138,11 +155,58 @@ fun PlaylistItem(
         if (allowEditAction) {
             Row {
                 IconButton(
-                    onClick = { showEditDialog = true }
+                    onClick = { isDropdownExpanded = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Edit,
+                        imageVector = Icons.Rounded.MoreVert,
                         contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { isDropdownExpanded = false },
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    CuteDropdownMenuItem(
+                        onClick = { showEditDialog = true },
+                        text = { CuteText(stringResource(R.string.edit_playlist)) },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.edit_rounded),
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    CuteDropdownMenuItem(
+                        onClick = { exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u") },
+                        text = { CuteText(stringResource(R.string.export_playlist)) },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.export),
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    CuteDropdownMenuItem(
+                        onClick = {
+                            onHandlePlaylistActions(
+                                PlaylistActions.DeletePlaylist(playlist)
+                            )
+                        },
+                        text = {
+                            CuteText(
+                                text = stringResource(R.string.del_playlist),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.trash_rounded),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     )
                 }
             }
@@ -154,8 +218,7 @@ fun PlaylistItem(
 private fun EditPlaylist(
     playlist: Playlist,
     onDismissRequest: () -> Unit,
-    onDeletePlaylist: () -> Unit,
-    onUpsertPlaylist: (Playlist) -> Unit
+    onHandlePlaylistActions: (PlaylistActions) -> Unit,
 ) {
 
     var name by remember { mutableStateOf(playlist.name) }
@@ -195,7 +258,9 @@ private fun EditPlaylist(
                         emoji = emoji,
                         musics = playlist.musics
                     )
-                    onUpsertPlaylist(newPlaylist)
+                    onHandlePlaylistActions(
+                        PlaylistActions.UpsertPlaylist(newPlaylist)
+                    )
                     onDismissRequest()
                 }
             ) {
@@ -229,23 +294,19 @@ private fun EditPlaylist(
                         .clickable { showEmojiPicker = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Crossfade(
-                        targetState = emoji.isNotBlank()
-                    ) { hasEmoji ->
-                        if (hasEmoji) {
-                            AnimatedContent(emoji) {
-                                CuteText(
-                                    text = it,
-                                    fontSize = 40.sp
-                                )
-                            }
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.add_emoji_rounded),
-                                contentDescription = null,
-                                modifier = Modifier.size(40.dp)
+                    if (emoji.isNotBlank()) {
+                        AnimatedContent(emoji) {
+                            CuteText(
+                                text = it,
+                                fontSize = 40.sp
                             )
                         }
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.add_emoji_rounded),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
                     }
                 }
                 OutlinedTextField(
@@ -255,28 +316,6 @@ private fun EditPlaylist(
                         imeAction = ImeAction.Done
                     )
                 )
-                Spacer(Modifier.height(25.dp))
-                OutlinedButton(
-                    onClick = onDeletePlaylist,
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.trash_rounded),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                        CuteText(
-                            text = stringResource(R.string.del_playlist),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
             }
         }
     )

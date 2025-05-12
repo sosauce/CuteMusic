@@ -64,7 +64,7 @@ fun CreatePlaylistDialog(
                 factory = { ctx ->
                     EmojiPickerView(ctx).apply {
                         setOnEmojiPickedListener(onEmojiPickedListener = {
-                            playlistState.emoji.value = it.emoji
+                            playlistViewModel.handlePlaylistActions(PlaylistActions.UpdateStateEmoji(it.emoji))
                         })
                     }
                 }
@@ -96,7 +96,7 @@ fun CreatePlaylistDialog(
         text = {
             Column {
                 IconButton(
-                    onClick = { playlistState.emoji.value = "" },
+                    onClick = { playlistViewModel.handlePlaylistActions(PlaylistActions.UpdateStateEmoji("")) },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
@@ -115,28 +115,24 @@ fun CreatePlaylistDialog(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Crossfade(
-                        targetState = playlistState.emoji.value.isNotBlank()
-                    ) { hasEmoji ->
-                        if (hasEmoji) {
-                            AnimatedContent(playlistState.emoji.value) {
-                                CuteText(
-                                    text = it,
-                                    fontSize = 40.sp
-                                )
-                            }
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.add_emoji_rounded),
-                                contentDescription = null,
-                                modifier = Modifier.size(40.dp)
+                    if (playlistState.emoji.isNotBlank()) {
+                        AnimatedContent(playlistState.emoji) {
+                            CuteText(
+                                text = it,
+                                fontSize = 40.sp
                             )
                         }
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.add_emoji_rounded),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
                     }
                 }
                 OutlinedTextField(
-                    value = playlistState.name.value,
-                    onValueChange = { playlistState.name.value = it },
+                    value = playlistState.name,
+                    onValueChange = { playlistViewModel.handlePlaylistActions(PlaylistActions.UpdateStateName(it)) },
                     placeholder = {
                         CuteText("${stringResource(R.string.playlist)} ${playlists.size + 1}")
                     }

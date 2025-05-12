@@ -1,23 +1,34 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import android.app.Application
+import android.content.Context
+import android.provider.MediaStore
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.util.fastForEach
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.data.playlist.PlaylistDao
 import com.sosauce.cutemusic.data.playlist.PlaylistState
 import com.sosauce.cutemusic.domain.model.Playlist
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.sequences.forEach
 
 class PlaylistViewModel(
+    private val application: Application,
     private val dao: PlaylistDao
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
 
     val allPlaylists = dao.getPlaylists()
@@ -28,12 +39,10 @@ class PlaylistViewModel(
         )
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
-//
-//    val state = combine(_state, allPlaylists) { innerState, playlists ->
-//        innerState.copy(
-//
-//        )
-//    }
+
+
+
+
 
 
     fun handlePlaylistActions(action: PlaylistActions) {
@@ -45,14 +54,13 @@ class PlaylistViewModel(
             }
 
             is PlaylistActions.CreatePlaylist -> {
-                // When creating a playlist, user cannot add musics, they need to do it afterwards
-                val name = state.value.name.value.ifBlank {
+                val name = state.value.name.ifBlank {
                     "Playlist ${allPlaylists.value.size + 1}"
                 }
                 val playlist = Playlist(
-                    emoji = state.value.emoji.value,
+                    emoji = state.value.emoji,
                     name = name,
-                    musics = listOf()
+                    musics = emptyList()
                 )
                 viewModelScope.launch(Dispatchers.IO) {
                     dao.upsertPlaylist(playlist)
@@ -60,8 +68,8 @@ class PlaylistViewModel(
 
                 _state.update {
                     it.copy(
-                        emoji = mutableStateOf(""),
-                        name = mutableStateOf("")
+                        emoji = "",
+                        name = ""
                     )
                 }
             }
@@ -71,6 +79,110 @@ class PlaylistViewModel(
                     dao.upsertPlaylist(action.playlist)
                 }
             }
+
+            is PlaylistActions.ImportM3uPlaylist -> {
+
+                val tracksFromFile = mutableListOf<String>()
+
+                viewModelScope.launch(Dispatchers.IO) {
+                    ensureActive()
+                    application.contentResolver.openInputStream(action.uri)?.bufferedReader()?.useLines { lines ->
+                        for (line in lines) {
+                            if (!line.startsWith('/')) continue
+                            tracksFromFile.add(getMediaIdFromFilePath(line))
+                        }
+
+                    }
+
+
+                    val playlist = Playlist(
+                        emoji = "",
+                        name = "Imported playlist",
+                        musics = tracksFromFile
+                    )
+
+                    dao.upsertPlaylist(playlist)
+                }
+            }
+
+            is PlaylistActions.ExportM3uPlaylist -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    ensureActive()
+                    application.contentResolver.openOutputStream(action.uri)?.bufferedWriter()?.use { writer ->
+                        action.tracks.fastForEach { track ->
+                            writer.write("${getFilePathFromMediaId(track)}\n")
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            application,
+                            application.getString(R.string.m3u_saved_good),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+
+            is PlaylistActions.UpdateStateEmoji -> {
+                _state.update { it.copy(emoji = action.emoji) }
+            }
+
+            is PlaylistActions.UpdateStateName -> {
+                _state.update { it.copy(name = action.name) }
+            }
         }
     }
+
+    private fun getMediaIdFromFilePath(filePath: String): String {
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA
+        )
+
+        val selection = "${MediaStore.Audio.Media.DATA} = ?"
+        val selectionArgs = arrayOf(filePath)
+
+        application.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                val id = cursor.getLong(idColumn)
+                return id.toString()
+            }
+        }
+
+        return ""
+    }
+
+    private fun getFilePathFromMediaId(mediaId: String): String {
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA
+        )
+
+        val selection = "${MediaStore.Audio.Media._ID} = ?"
+        val selectionArgs = arrayOf(mediaId)
+
+        application.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                val path = cursor.getString(pathColumn)
+                return path
+            }
+        }
+
+        return ""
+    }
+
 }

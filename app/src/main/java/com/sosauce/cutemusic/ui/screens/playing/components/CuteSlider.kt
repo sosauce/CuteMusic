@@ -56,11 +56,11 @@ fun CuteSlider(
         ) {
             CuteText(
                 text = musicState.position.formatToReadableTime(),
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = MaterialTheme.colorScheme.primary
             )
             CuteText(
                 text = musicState.duration.formatToReadableTime(),
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = MaterialTheme.colorScheme.primary
             )
         }
         Slider(

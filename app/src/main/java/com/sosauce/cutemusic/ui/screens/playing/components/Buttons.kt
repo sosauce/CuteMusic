@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
@@ -20,12 +22,18 @@ import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Loop
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -42,6 +51,7 @@ import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberAnimatable
+import com.sosauce.cutemusic.utils.thenIf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -51,6 +61,7 @@ fun LoopButton() {
     val rotation = rememberAnimatable()
     val scope = rememberCoroutineScope()
     var shouldLoop by rememberShouldApplyLoop()
+
 
     IconButton(
         onClick = {
@@ -71,8 +82,8 @@ fun LoopButton() {
         Icon(
             imageVector = Icons.Rounded.Loop,
             contentDescription = "loop button",
-            tint = if (shouldLoop) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.rotate(rotation.value)
+            modifier = Modifier.rotate(rotation.value),
+            tint = if (shouldLoop) MaterialTheme.colorScheme.primary else LocalContentColor.current,
         )
     }
 }
@@ -87,7 +98,7 @@ fun ShuffleButton() {
         Icon(
             imageVector = Icons.Rounded.Shuffle,
             contentDescription = "shuffle button",
-            tint = if (shouldShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
+            tint = if (shouldShuffle) MaterialTheme.colorScheme.primary else LocalContentColor.current,
         )
     }
 }
@@ -100,6 +111,7 @@ fun SharedTransitionScope.ActionButtonsRow(
 ) {
 
     val scope = rememberCoroutineScope()
+    val previousButtonSharedState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -126,41 +138,24 @@ fun SharedTransitionScope.ActionButtonsRow(
             modifier = Modifier.size(60.dp)
         ) {
             AnimatedContent(musicState.position >= 10000) {
-                if (it) {
-                    Icon(
-                        imageVector = Icons.Rounded.RestartAlt,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .sharedElement(
-                                state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
+                Icon(
+                    imageVector = if (it) Icons.Rounded.Replay else Icons.Rounded.SkipPrevious,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .thenIf(!it) {
+                            sharedElement(
+                                sharedContentState = previousButtonSharedState,
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
-                            .size(35.dp)
-                            .offset {
-                                IntOffset(
-                                    x = skipPreviousOffset.value.toInt(),
-                                    y = 0
-                                )
-                            }
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .sharedElement(
-                                state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
-                                animatedVisibilityScope = animatedVisibilityScope
+                        }
+                        .size(40.dp)
+                        .offset {
+                            IntOffset(
+                                x = skipPreviousOffset.value.toInt(),
+                                y = 0
                             )
-                            .size(40.dp)
-                            .offset {
-                                IntOffset(
-                                    x = skipPreviousOffset.value.toInt(),
-                                    y = 0
-                                )
-                            }
-                    )
-                }
+                        }
+                )
             }
         }
 
@@ -207,7 +202,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                     contentDescription = null,
                     modifier = Modifier
                         .sharedElement(
-                            state = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
+                            sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
                         .size(40.dp)
@@ -267,7 +262,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                 contentDescription = null,
                 modifier = Modifier
                     .sharedElement(
-                        state = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
+                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
                     .size(40.dp)

@@ -70,7 +70,7 @@
     <string name="snap">Hız ve perdeyi sabitle</string>
     <string name="new_rate">0.5 ile 2 arasında yeni bir oran girin</string>
     <string name="share">Paylaş</string>
-    <string name="show_close_button">CuteSearchbar'da kapat düğmesini göster</string>
+    <string name="show_close_button">CuteSearchbar\'da kapat düğmesini göster</string>
     <string name="duration">Süre</string>
     <string name="folders">Klasörler</string>
     <string name="manage_shown_tabs">Gösterilen sekmeleri yönet</string>
@@ -78,15 +78,12 @@
     <string name="go_to">Git:</string>
     <string name="no_lyrics_note">Sözler bulunamadı!</string>
     <string name="open_eq">Ekolayzer</string>
-    <string name="from_saf">Bu parça S.A.F'den geliyor</string>
-    <string name="open_saf">Parça eklemek için S.A.F'yi aç</string>
+    <string name="from_saf">Bu parça S.A.F\'den geliyor</string>
+    <string name="open_saf">Parça eklemek için S.A.F\'yi aç</string>
     <string name="blacklisted">Kara listeye alınan</string>
     <string name="not_blacklisted">Kara listeye alınmamış</string>
     <string name="saf_manager">S.A.F yöneticisi</string>
-    <string name="search_tracks">Parçaları ara</string>
-    <string name="search_albums">Albümleri ara</string>
-    <string name="search_artists">Sanatçıları ara</string>
-    <string name="search_playlists">Çalma listelerini ara</string>
+    <string name="search_here">ara</string>
     <string name="no_playlists">Hiç çalma listeniz yok! Bir tane oluşturarak dinleme deneyiminizi eğlenceli hale getirin!</string>
     <string name="alrdy_in_playlist">Parça zaten çalma listesinde!</string>
     <string name="del_playlist">Çalma listesini sil</string>

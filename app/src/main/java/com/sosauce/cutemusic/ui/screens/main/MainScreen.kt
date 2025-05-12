@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
@@ -80,9 +81,7 @@ fun SharedTransitionScope.MainScreen(
     isPlayerReady: Boolean,
     currentMusicUri: String,
     onHandlePlayerAction: (PlayerActions) -> Unit,
-    onDeleteMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
+    onHandleMediaItemAction: (MediaItemActions) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
     val state = rememberLazyListState()
@@ -122,29 +121,24 @@ fun SharedTransitionScope.MainScreen(
                     }
                         .forEach { (folderName, allMusics) ->
                             item {
-                                Box(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.95f)
-                                            .background(
-                                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                                shape = RoundedCornerShape(10.dp)
-                                            )
-                                            .align(Alignment.Center)
-                                            .padding(vertical = 5.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.folder_rounded),
-                                            contentDescription = null,
-                                            modifier = Modifier.padding(start = 5.dp)
+                                        .padding(
+                                            horizontal = 25.dp,
+                                            vertical = 8.dp
                                         )
-                                        Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                                        CuteText(folderName)
-                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.folder_rounded),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
+                                    CuteText(
+                                        text = folderName,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
                             items(
@@ -165,10 +159,8 @@ fun SharedTransitionScope.MainScreen(
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
-                                        onDeleteMusic = onDeleteMusic,
-                                        onChargeAlbumSongs = onChargeAlbumSongs,
-                                        onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady
+                                        isPlayerReady = isPlayerReady,
+                                        onHandleMediaItemAction = onHandleMediaItemAction
                                     )
                                 }
                             }
@@ -204,10 +196,8 @@ fun SharedTransitionScope.MainScreen(
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
-                                        onDeleteMusic = onDeleteMusic,
-                                        onChargeAlbumSongs = onChargeAlbumSongs,
-                                        onChargeArtistLists = onChargeArtistLists,
-                                        isPlayerReady = isPlayerReady
+                                        isPlayerReady = isPlayerReady,
+                                        onHandleMediaItemAction = onHandleMediaItemAction
                                     )
                                 } else {
                                     var safTracks by rememberAllSafTracks()
@@ -216,7 +206,6 @@ fun SharedTransitionScope.MainScreen(
                                         onShortClick = { onShortClick(music.mediaId) },
                                         music = music,
                                         currentMusicUri = currentMusicUri,
-                                        showBottomSheet = true,
                                         isPlayerReady = isPlayerReady,
                                         onDeleteFromSaf = {
                                             safTracks = safTracks.toMutableSet().apply {

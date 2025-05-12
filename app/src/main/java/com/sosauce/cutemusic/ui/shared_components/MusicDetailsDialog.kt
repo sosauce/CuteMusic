@@ -1,6 +1,7 @@
 package com.sosauce.cutemusic.ui.shared_components
 
 import android.net.Uri
+import android.text.format.Formatter
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +32,6 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.formatBinarySize
 import com.sosauce.cutemusic.utils.formatToReadableTime
 import com.sosauce.cutemusic.utils.getBitrate
 
@@ -99,9 +99,10 @@ fun MusicDetailsDialog(
                 Spacer(Modifier.height(10.dp))
                 CuteText(
                     text = "${stringResource(id = R.string.size)}: ${
-                        music.mediaMetadata.extras?.getLong(
-                            "size"
-                        )?.formatBinarySize()
+                        Formatter.formatFileSize(
+                            context,
+                            music.mediaMetadata.extras?.getLong("size") ?: 0
+                        )
                     }",
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -199,7 +200,7 @@ fun MusicStateDetailsDialog(
                 Spacer(Modifier.height(10.dp))
                 CuteText(
                     text = "${stringResource(id = R.string.size)}: ${
-                        musicState.size.formatBinarySize()
+                        Formatter.formatFileSize(context, musicState.size)
                     }",
                     modifier = Modifier.padding(bottom = 5.dp)
                 )

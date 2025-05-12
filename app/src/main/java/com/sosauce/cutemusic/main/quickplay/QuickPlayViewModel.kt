@@ -6,6 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.AudioAttributes
@@ -15,6 +18,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.states.MusicState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,18 +38,18 @@ class QuickPlayViewModel(
     private val listener = object : Player.Listener {
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             super.onMediaMetadataChanged(mediaMetadata)
-            _uiState.update {
+            _musicState.update {
                 it.copy(
                     title = mediaMetadata.title.toString(),
                     artist = mediaMetadata.artist.toString(),
-                    artUri = mediaMetadata.artworkUri.toString(),
+                    art = mediaMetadata.artworkUri,
                 )
             }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
-            _uiState.update {
+            _musicState.update {
                 it.copy(
                     isPlaying = isPlaying
                 )
@@ -56,10 +60,10 @@ class QuickPlayViewModel(
             super.onEvents(player, events)
             viewModelScope.launch {
                 while (player.isPlaying) {
-                    _uiState.update {
+                    _musicState.update {
                         it.copy(
                             duration = player.duration,
-                            currentPosition = player.currentPosition
+                            position = player.currentPosition
                         )
                     }
                     delay(500)
@@ -77,20 +81,17 @@ class QuickPlayViewModel(
             addListener(listener)
         }
 
+    var isSongLoaded by mutableStateOf(false)
 
-    private val _uiState = MutableStateFlow(QuickPlayUiState())
-    val uiState = _uiState.asStateFlow()
+    private val _musicState = MutableStateFlow(MusicState())
+    val musicState = _musicState.asStateFlow()
 
 
     init {
         viewModelScope.launch {
             while (player.mediaItemCount == 0) delay(300)
 
-            _uiState.update {
-                it.copy(
-                    isSongLoaded = true
-                )
-            }
+            isSongLoaded = true
         }
     }
 
@@ -127,9 +128,9 @@ class QuickPlayViewModel(
         when (action) {
             is PlayerActions.PlayOrPause -> if (player.isPlaying) player.pause() else player.play()
             is PlayerActions.UpdateCurrentPosition -> {
-                _uiState.update {
+                _musicState.update {
                     it.copy(
-                        currentPosition = action.position
+                        position = action.position
                     )
                 }
             }
@@ -137,7 +138,7 @@ class QuickPlayViewModel(
             is PlayerActions.SeekToSlider -> player.seekTo(action.position)
             is PlayerActions.SeekTo -> player.seekTo(player.currentPosition + action.position)
             is PlayerActions.RewindTo -> player.seekTo(player.currentPosition - action.position)
-            else -> {}
+            else -> Unit
         }
     }
 

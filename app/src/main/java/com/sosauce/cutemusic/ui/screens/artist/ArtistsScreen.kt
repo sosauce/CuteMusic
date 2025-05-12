@@ -62,7 +62,6 @@ fun SharedTransitionScope.ArtistsScreen(
     artist: List<Artist>,
     animatedVisibilityScope: AnimatedVisibilityScope,
     currentlyPlaying: String,
-    onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
@@ -133,10 +132,7 @@ fun SharedTransitionScope.ArtistsScreen(
                             ArtistInfoList(
                                 artist = artist,
                                 animatedVisibilityScope = animatedVisibilityScope
-                            ) {
-                                onChargeArtistLists(artist.name)
-                                onNavigate(Screen.ArtistsDetails(artist.id))
-                            }
+                            ) { onNavigate(Screen.ArtistsDetails(artist.id)) }
                         }
                     }
                 }
@@ -213,7 +209,7 @@ fun SharedTransitionScope.ArtistInfoList(
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .sharedElement(
-                        state = rememberSharedContentState(key = artist.id),
+                        sharedContentState = rememberSharedContentState(key = artist.id),
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
                     .size(45.dp)
@@ -236,8 +232,8 @@ fun SharedTransitionScope.ArtistInfoList(
                     maxLines = 1,
                     modifier = Modifier
                         .basicMarquee()
-                        .sharedElement(
-                            state = rememberSharedContentState(key = artist.name + artist.id),
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
                             animatedVisibilityScope = animatedVisibilityScope,
                         )
                 )

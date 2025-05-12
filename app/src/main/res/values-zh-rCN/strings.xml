@@ -82,10 +82,6 @@
     <string name="blacklisted">已被拉黑</string>
     <string name="not_blacklisted">未拉黑</string>
     <string name="saf_manager">S.A.F 管理器</string>
-    <string name="search_tracks">搜索曲目</string>
-    <string name="search_albums">搜索专辑</string>
-    <string name="search_artists">搜索创作者</string>
-    <string name="search_playlists">搜索歌单</string>
     <string name="no_playlists">你还没有歌单呢QwQ，请创建一个歌单以获得更好的体验！</string>
     <string name="alrdy_in_playlist">这首歌已经在歌单里了哦!</string>
     <string name="del_playlist">删除歌单</string>

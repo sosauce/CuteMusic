@@ -6,10 +6,16 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,8 +54,6 @@ fun SharedTransitionScope.Artwork(
     loadedMedias: List<MediaItem> = emptyList(),
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    imageSize: Dp = 340.dp,
-    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val useCarousel by rememberCarousel()
     val useShuffle by rememberShouldApplyShuffle()
@@ -81,11 +85,11 @@ fun SharedTransitionScope.Artwork(
             state = pagerState,
             key = { loadedMedias[it].mediaId },
             contentPadding = PaddingValues(horizontal = 30.dp),
-            pageSpacing = 10.dp,
             modifier = pagerModifier
         ) { page ->
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
@@ -109,23 +113,29 @@ fun SharedTransitionScope.Artwork(
 //                            animatedVisibilityScope = animatedVisibilityScope
 //
 //                        )
-                        .size(imageSize)
+                        .fillMaxSize(0.95f)
                         .clip(RoundedCornerShape(5)),
                     contentScale = ContentScale.Crop
                 )
             }
         }
+
     } else {
-        Crossfade(musicState.art) {
+        Crossfade(
+            targetState = musicState.art,
+            modifier = Modifier
+                .aspectRatio(1f)
+                .wrapContentSize()
+        ) {
             AsyncImage(
                 model = ImageUtils.imageRequester(it),
                 contentDescription = stringResource(R.string.artwork),
                 modifier = Modifier
-                    .sharedElement(
-                        state = rememberSharedContentState(key = SharedTransitionKeys.MUSIC_ARTWORK + musicState.mediaId),
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
-                    .size(imageSize)
+                    .fillMaxSize(0.9f)
+//                    .sharedElement(
+//                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.MUSIC_ARTWORK + musicState.mediaId),
+//                        animatedVisibilityScope = animatedVisibilityScope
+//                    )
                     .clip(RoundedCornerShape(5)),
                 contentScale = ContentScale.Crop
             )

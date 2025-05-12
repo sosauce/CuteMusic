@@ -121,10 +121,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             mediaLibrarySession = null
         }
         stopSelf()
-        widgetReceiver.also {
-            it.stopCallback()
-            unregisterReceiver(it)
-        }
         super.onDestroy()
     }
 

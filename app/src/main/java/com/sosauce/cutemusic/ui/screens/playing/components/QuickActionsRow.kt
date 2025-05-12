@@ -8,6 +8,7 @@ import android.media.audiofx.AudioEffect
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
@@ -58,11 +59,14 @@ import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
+import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
+import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicStateDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import com.sosauce.cutemusic.utils.copyMutate
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -71,8 +75,6 @@ fun QuickActionsRow(
     onShowLyrics: () -> Unit,
     onShowSpeedCard: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -80,7 +82,6 @@ fun QuickActionsRow(
     var showTimePicker by remember { mutableStateOf(false) }
     val onBackground = MaterialTheme.colorScheme.onBackground
     var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
     val uri = remember { musicState.uri.toUri() }
 
 
@@ -101,70 +102,11 @@ fun QuickActionsRow(
         )
     }
 
-    if (showPlaylistCreatorDialog) {
-        CreatePlaylistDialog { showPlaylistCreatorDialog = false }
-    }
-
     if (showPlaylistDialog) {
-        val playlistViewModel = koinViewModel<PlaylistViewModel>()
-        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-        ModalBottomSheet(
+        PlaylistPicker(
+            mediaId = listOf(musicState.mediaId),
             onDismissRequest = { showPlaylistDialog = false }
-        ) {
-            LazyColumn {
-                item {
-                    OutlinedButton(
-                        onClick = { showPlaylistCreatorDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = null
-                            )
-                            Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                            CuteText(stringResource(R.string.create_playlist))
-                        }
-                    }
-                }
-
-                items(
-                    items = playlists,
-                    key = { it.id }
-                ) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        allowEditAction = false,
-                        onClickPlaylist = {
-                            if (playlist.musics.contains(musicState.mediaId)) {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.alrdy_in_playlist),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                val playlist = Playlist(
-                                    id = playlist.id,
-                                    name = playlist.name,
-                                    emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList()
-                                        .apply { add(musicState.mediaId) }
-                                )
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(playlist)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
-
+        )
     }
 
     Row(
@@ -177,13 +119,13 @@ fun QuickActionsRow(
         IconButton(onClick = onShowLyrics) {
             Icon(
                 painter = painterResource(R.drawable.lyrics_rounded),
-                contentDescription = "show lyrics"
+                contentDescription = null
             )
         }
         IconButton(onClick = onShowSpeedCard) {
             Icon(
                 painter = painterResource(R.drawable.speed_rounded),
-                contentDescription = "change speed"
+                contentDescription = null
 
             )
         }
@@ -195,7 +137,7 @@ fun QuickActionsRow(
             Box {
                 Icon(
                     painter = painterResource(R.drawable.bedtime_outlined),
-                    contentDescription = "set sleep timer"
+                    contentDescription = null
                 )
                 if (musicState.sleepTimerActive) {
                     Box(
@@ -224,7 +166,7 @@ fun QuickActionsRow(
                 onDismissRequest = { isDropDownExpanded = false },
                 shape = RoundedCornerShape(24.dp)
             ) {
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = {
                         try {
                             eqIntent.launch()
@@ -250,7 +192,7 @@ fun QuickActionsRow(
                         .fillMaxWidth(0.9f)
                         .align(Alignment.CenterHorizontally)
                 )
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = { showDetailsDialog = true },
                     text = {
                         CuteText(stringResource(R.string.details))
@@ -262,10 +204,9 @@ fun QuickActionsRow(
                         )
                     }
                 )
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = {
                         isDropDownExpanded = false
-                        onChargeAlbumSongs(musicState.album)
                         onNavigate(Screen.AlbumsDetails(musicState.albumId))
                     },
                     text = {
@@ -278,10 +219,9 @@ fun QuickActionsRow(
                         )
                     }
                 )
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = {
                         isDropDownExpanded = false
-                        onChargeArtistLists(musicState.artist)
                         onNavigate(Screen.ArtistsDetails(musicState.artistId))
                     },
                     text = {
@@ -294,7 +234,7 @@ fun QuickActionsRow(
                         )
                     }
                 )
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = { showPlaylistDialog = true },
                     text = {
                         CuteText(stringResource(R.string.add_to_playlist))
@@ -306,7 +246,7 @@ fun QuickActionsRow(
                         )
                     }
                 )
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = {
                         context.startActivity(
                             Intent.createChooser(

@@ -1,16 +1,23 @@
 package com.sosauce.cutemusic.ui.shared_components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -68,12 +75,11 @@ fun ScreenSelection(
         ) {
             items.forEach { navigationItem ->
 
-                val backgroundColor by animateColorAsState(
+                val bgColor by animateColorAsState(
                     targetValue = if (navigationItem.navigateTo.toString() == CurrentScreen.screen) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent
                 )
 
-
-                DropdownMenuItem(
+                CuteDropdownMenuItem(
                     onClick = { onNavigate(navigationItem.navigateTo) },
                     text = { CuteText(stringResource(navigationItem.title)) },
                     leadingIcon = {
@@ -83,17 +89,15 @@ fun ScreenSelection(
                         )
                     },
                     modifier = Modifier
-                        //.fillMaxWidth()
-                        .height(56.dp)
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(backgroundColor)
+                        .padding(2.dp)
+                        .background(
+                            color = bgColor,
+                            shape = RoundedCornerShape(12.dp)
+                        )
                 )
             }
         }
     }
-
-
 }
 
 @Immutable

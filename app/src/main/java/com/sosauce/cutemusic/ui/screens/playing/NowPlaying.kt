@@ -63,11 +63,13 @@ import com.sosauce.cutemusic.ui.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.ui.screens.playing.components.QuickActionsRow
 import com.sosauce.cutemusic.ui.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
+import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicStateDetailsDialog
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
+import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.ignoreParentPadding
 import org.koin.androidx.compose.koinViewModel
 
@@ -77,8 +79,6 @@ fun SharedTransitionScope.NowPlaying(
     musicState: MusicState,
     loadedMedias: List<MediaItem> = emptyList(),
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     lyrics: List<Lyrics>
@@ -91,8 +91,6 @@ fun SharedTransitionScope.NowPlaying(
         NowPlayingLandscape(
             musicState = musicState,
             onHandlePlayerActions = onHandlePlayerActions,
-            onChargeAlbumSongs = onChargeAlbumSongs,
-            onChargeArtistLists = onChargeArtistLists,
             onNavigate = onNavigate,
             onNavigateUp = onNavigateUp,
             lyrics = lyrics,
@@ -115,8 +113,6 @@ fun SharedTransitionScope.NowPlaying(
                     musicState = musicState,
                     loadedMedias = loadedMedias,
                     onHandlePlayerActions = onHandlePlayerActions,
-                    onChargeAlbumSongs = onChargeAlbumSongs,
-                    onChargeArtistLists = onChargeArtistLists,
                     onNavigate = onNavigate,
                     onNavigateUp = onNavigateUp,
                     onShowLyrics = { showFullLyrics = true },
@@ -135,18 +131,14 @@ private fun SharedTransitionScope.NowPlayingContent(
     musicState: MusicState,
     loadedMedias: List<MediaItem> = emptyList(),
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    onChargeAlbumSongs: (String) -> Unit,
-    onChargeArtistLists: (String) -> Unit,
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     onShowLyrics: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    val context = LocalContext.current
     var showSpeedCard by remember { mutableStateOf(false) }
     var snap by rememberSnapSpeedAndPitch()
     var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
 
 
@@ -157,71 +149,12 @@ private fun SharedTransitionScope.NowPlayingContent(
         )
     }
 
-
-
     if (showPlaylistDialog) {
-        val playlistViewModel = koinViewModel<PlaylistViewModel>()
-        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-        ModalBottomSheet(
+        PlaylistPicker(
+            mediaId = listOf(musicState.mediaId),
             onDismissRequest = { showPlaylistDialog = false }
-        ) {
-            LazyColumn {
-                item {
-                    OutlinedButton(
-                        onClick = { showPlaylistCreatorDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = null
-                            )
-                            Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                            CuteText(stringResource(R.string.create_playlist))
-                        }
-                    }
-                }
-
-                items(
-                    items = playlists,
-                    key = { it.id }
-                ) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        allowEditAction = false,
-                        onClickPlaylist = {
-                            if (playlist.musics.contains(musicState.mediaId)) {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.alrdy_in_playlist),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                val newPlaylist = Playlist(
-                                    id = playlist.id,
-                                    name = playlist.name,
-                                    emoji = playlist.emoji,
-                                    musics = playlist.musics.toMutableList()
-                                        .apply { add(musicState.mediaId) }
-                                )
-                                playlistViewModel.handlePlaylistActions(
-                                    PlaylistActions.UpsertPlaylist(newPlaylist)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
-
+        )
     }
-
-
 
     if (showSpeedCard) {
         SpeedCard(
@@ -235,7 +168,7 @@ private fun SharedTransitionScope.NowPlayingContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 15.dp)
+            .padding(horizontal = 10.dp)
             .navigationBarsPadding()
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -243,7 +176,10 @@ private fun SharedTransitionScope.NowPlayingContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(15.dp),
+                .padding(
+                    start = 10.dp,
+                    top = 10.dp
+                ),
             horizontalArrangement = Arrangement.Start
         ) {
             IconButton(
@@ -252,8 +188,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(28.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -262,9 +197,7 @@ private fun SharedTransitionScope.NowPlayingContent(
             musicState = musicState,
             onHandlePlayerActions = onHandlePlayerActions,
             loadedMedias = loadedMedias,
-            animatedVisibilityScope = animatedVisibilityScope
         )
-        Spacer(Modifier.height(20.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -284,11 +217,11 @@ private fun SharedTransitionScope.NowPlayingContent(
             )
             CuteText(
                 text = musicState.artist,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(0.85f),
+                color = MaterialTheme.colorScheme.secondary,
                 fontSize = 20.sp,
                 modifier = Modifier
                     .sharedElement(
-                        state = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + musicState.mediaId),
+                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + musicState.mediaId),
                         animatedVisibilityScope = animatedVisibilityScope
 
                     )
@@ -301,23 +234,20 @@ private fun SharedTransitionScope.NowPlayingContent(
             musicState = musicState,
             onHandlePlayerActions = onHandlePlayerActions
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        ActionButtonsRow(
-            animatedVisibilityScope = animatedVisibilityScope,
-            musicState = musicState,
-            onHandlePlayerActions = onHandlePlayerActions
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        QuickActionsRow(
-            musicState = musicState,
-            onShowLyrics = onShowLyrics,
-            onShowSpeedCard = { showSpeedCard = true },
-            onHandlePlayerActions = onHandlePlayerActions,
-            onNavigate = onNavigate,
-            onChargeAlbumSongs = onChargeAlbumSongs,
-            onChargeArtistLists = onChargeArtistLists
-        )
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
+            ActionButtonsRow(
+                animatedVisibilityScope = animatedVisibilityScope,
+                musicState = musicState,
+                onHandlePlayerActions = onHandlePlayerActions
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            QuickActionsRow(
+                musicState = musicState,
+                onShowLyrics = onShowLyrics,
+                onShowSpeedCard = { showSpeedCard = true },
+                onHandlePlayerActions = onHandlePlayerActions,
+                onNavigate = onNavigate
+            )
         }
 
     }

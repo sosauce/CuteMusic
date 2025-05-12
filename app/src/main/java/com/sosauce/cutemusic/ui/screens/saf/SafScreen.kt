@@ -40,6 +40,7 @@ import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.utils.copyMutate
 
 @Composable
 fun SafScreen(
@@ -54,10 +55,7 @@ fun SafScreen(
     var safTracks by rememberAllSafTracks()
 
     val safAudioPicker = rememberLauncherForActivityResult(safActivityContract()) {
-        safTracks = safTracks.toMutableSet().apply {
-            add(it.toString())
-        }
-
+        safTracks = safTracks.copyMutate { add(it.toString()) }
 
         context.contentResolver.takePersistableUriPermission(
             it ?: Uri.EMPTY,
@@ -116,7 +114,6 @@ fun SafScreen(
                             onShortClick = { onShortClick(safTrack.mediaId) },
                             music = safTrack,
                             currentMusicUri = currentMusicUri,
-                            showBottomSheet = true,
                             isPlayerReady = isPlayerReady,
                             onDeleteFromSaf = {
                                 safTracks = safTracks.toMutableSet().apply {

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.CountDownTimer
 import android.os.ParcelFileDescriptor
@@ -25,6 +26,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.kyant.taglib.TagLib
+import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.getMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.data.datastore.getPitch
@@ -44,6 +46,7 @@ import com.sosauce.cutemusic.utils.applyShuffle
 import com.sosauce.cutemusic.utils.playAtIndex
 import com.sosauce.cutemusic.utils.playFromAlbum
 import com.sosauce.cutemusic.utils.playFromArtist
+import com.sosauce.cutemusic.utils.playFromPlaylist
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -53,6 +56,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -76,7 +81,13 @@ class MusicViewModel(
     val allTracks = mediaStoreHelper.fetchLatestMusics()
         .combine(safManager.fetchLatestSafTracks()) { localMusics, safMusics ->
             localMusics + safMusics
-        }.stateIn(
+        }
+        .map {
+            // Tracks from the SAF won't be alphabetically ordered correctly if we don't do this
+            it.sortedBy { it.mediaMetadata.title.toString() }
+        }
+        .flowOn(Dispatchers.Default) // Ensures mapping is done efficiently
+        .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             mediaStoreHelper.musics
@@ -108,16 +119,6 @@ class MusicViewModel(
 
     private val _loadedMedias = MutableStateFlow<List<MediaItem>>(emptyList())
     val loadedMedias = _loadedMedias.asStateFlow()
-
-    private val _albumSongs = MutableStateFlow<List<MediaItem>>(emptyList())
-    val albumSongs: StateFlow<List<MediaItem>> = _albumSongs.asStateFlow()
-
-    private val _artistAlbums = MutableStateFlow<List<Album>>(emptyList())
-    val artistAlbums: StateFlow<List<Album>> = _artistAlbums.asStateFlow()
-
-    private val _artistSongs = MutableStateFlow<List<MediaItem>>(emptyList())
-    val artistSongs: StateFlow<List<MediaItem>> = _artistSongs.asStateFlow()
-
 
     private val playerListener =
         object : Player.Listener {
@@ -316,20 +317,17 @@ class MusicViewModel(
                     }
                 }.toList()
             } ?: loadEmbeddedLyrics().lineSequence().map { line ->
-                regex.find(line).let { matchResult ->
-                    if (matchResult != null) {
-                        val (minutes, seconds, hundredths) = matchResult.destructured
-                        val millis =
-                            minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
-                        val lyric = line.substring(matchResult.range.last + 1).trim()
-                        Lyrics(millis, lyric)
-                    } else {
-                        // Since there's no ambiguity to what embedded lyrics could contain, lines not following the .lrc format will be positioned at the beginning
-                        Lyrics(0, line)
-                    }
-                }
+                regex.find(line)?.let { matchResult ->
+
+                    val (minutes, seconds, hundredths) = matchResult.destructured
+                    val millis =
+                        minutes.toLong() * 60_000 + seconds.toLong() * 1000 + hundredths.toLong() * 10
+                    val lyric = line.substring(matchResult.range.last + 1).trim()
+                    Lyrics(millis, lyric)
+                } ?: Lyrics(0, line)
             }.toList()
-            _lyrics.value = newLyrics
+
+            _lyrics.update { newLyrics }
         }
     }
 
@@ -381,6 +379,37 @@ class MusicViewModel(
         mediaController!!.release()
     }
 
+    fun handleMediaItemActions(action: MediaItemActions) {
+        when(action) {
+            is MediaItemActions.DeleteMediaItem -> {
+                viewModelScope.launch {
+                    mediaStoreHelper.deleteMusics(
+                        action.uri,
+                        action.activityResultLauncher
+                    )
+                }
+            }
+            is MediaItemActions.ShareMediaItem -> {
+
+                val shareIntent = Intent().apply {
+                    this.action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_STREAM, action.uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    type = "audio/*"
+                }
+
+                application.startActivity(
+                    Intent.createChooser(
+                        shareIntent,
+                        null
+                    ).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                )
+            }
+        }
+    }
+
     fun handlePlayerActions(action: PlayerActions) {
         when (action) {
             is PlayerActions.RestartSong -> mediaController!!.seekTo(0)
@@ -396,13 +425,19 @@ class MusicViewModel(
             is PlayerActions.StartAlbumPlayback -> mediaController!!.playFromAlbum(
                 action.albumName,
                 action.mediaId,
-                mediaStoreHelper.musics
+                allTracks.value
             )
 
             is PlayerActions.StartArtistPlayback -> mediaController!!.playFromArtist(
                 action.artistName,
                 action.mediaId,
-                mediaStoreHelper.musics
+                allTracks.value
+            )
+
+            is PlayerActions.StartPlaylistPlayback -> mediaController!!.playFromPlaylist(
+                action.playlistSongsId,
+                action.mediaId,
+                allTracks.value
             )
 
             is PlayerActions.StartPlayback -> {
@@ -463,38 +498,6 @@ class MusicViewModel(
             }
         }
     }
-
-    fun loadAlbumSongs(album: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _albumSongs.update {
-                allTracks.value.fastFilter { it.mediaMetadata.albumTitle.toString() == album }
-            }
-        }
-    }
-
-    fun loadArtistData(artistName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _artistSongs.update {
-                allTracks.value.fastFilter { it.mediaMetadata.artist == artistName }
-            }
-            _artistAlbums.update {
-                albums.value.fastFilter { it.artist == artistName }
-            }
-        }
-    }
-
-    fun deleteMusic(
-        uris: List<Uri>,
-        intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
-    ) {
-        viewModelScope.launch {
-            mediaStoreHelper.deleteMusics(
-                uris,
-                intentSenderLauncher
-            )
-        }
-    }
-
 
     fun editMusic(
         uris: List<Uri>,
