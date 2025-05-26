@@ -3,8 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.playlists
 
 import android.net.Uri
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -28,12 +26,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Playlist
@@ -43,6 +41,7 @@ import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.ui.shared_components.RemoveFromPlaylistDropdownItem
 import com.sosauce.cutemusic.ui.shared_components.SafMusicListItem
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
@@ -57,7 +56,8 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = {_, _ ->},
-    onHandlePlayerAction: (PlayerActions) -> Unit = {},
+    onHandlePlayerAction: (PlayerActions) -> Unit,
+    onHandlePlaylistAction: (PlaylistActions) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -120,7 +120,23 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 currentMusicUri = currentMusicUri,
                                 onLoadMetadata = onLoadMetadata,
                                 isPlayerReady = isPlayerReady,
-                                onHandleMediaItemAction = onHandleMediaItemAction
+                                onHandleMediaItemAction = onHandleMediaItemAction,
+                                playlistDropdownMenuItem = {
+                                    RemoveFromPlaylistDropdownItem(
+                                        onRemoveFromPlaylist = {
+                                            val playlist = Playlist(
+                                                id = playlist.id,
+                                                emoji = playlist.emoji,
+                                                name = playlist.name,
+                                                musics = playlist.musics.copyMutate { remove(music.mediaId) }
+                                            )
+
+                                            onHandlePlaylistAction(
+                                                PlaylistActions.UpsertPlaylist(playlist)
+                                            )
+                                        }
+                                    )
+                                }
                             )
                         } else {
                             var safTracks by rememberAllSafTracks()
@@ -138,6 +154,21 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 isPlayerReady = isPlayerReady,
                                 onDeleteFromSaf = {
                                     safTracks = safTracks.copyMutate { remove(music.mediaMetadata.extras?.getString("uri")) }
+                                },
+                                playlistDropdownMenuItem = {
+                                    RemoveFromPlaylistDropdownItem(
+                                        onRemoveFromPlaylist = {
+                                            val playlist = Playlist(
+                                                emoji = playlist.emoji,
+                                                name = playlist.name,
+                                                musics = playlist.musics.copyMutate { remove(music.mediaId) }
+                                            )
+
+                                            onHandlePlaylistAction(
+                                                PlaylistActions.UpsertPlaylist(playlist)
+                                            )
+                                        }
+                                    )
                                 }
                             )
                         }

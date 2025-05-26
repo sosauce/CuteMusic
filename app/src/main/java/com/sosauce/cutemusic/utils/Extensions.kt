@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalUuidApi::class)
+@file:OptIn(ExperimentalUuidApi::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package com.sosauce.cutemusic.utils
 
@@ -13,12 +13,16 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -29,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
@@ -38,6 +43,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavKey
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.ui.navigation.Screen
@@ -73,9 +79,10 @@ fun Player.playAtIndex(
 }
 
 fun Player.playRandom() {
-    val index = (0 until mediaItemCount).random()
-    seekTo(index, 0)
-    play()
+    (0 until mediaItemCount).takeIf { !it.isEmpty() }?.random()?.let { index ->
+        seekTo(index, 0)
+        play()
+    }
 }
 
 fun Player.playFromAlbum(
@@ -121,9 +128,14 @@ fun Player.playFromPlaylist(
     mediaId: String? = null,
     musics: List<MediaItem>
 ) {
+    val musics = musics.filter { music -> music.mediaId in playlistSongsId }
+
+    if (musics.isEmpty()) return
+
     clearMediaItems()
-    musics.filter { music -> music.mediaId in playlistSongsId }
-        .also { addMediaItems(it) }
+
+    setMediaItems(musics)
+
 
     if (mediaId == null) {
         playRandom()
@@ -248,7 +260,7 @@ fun Modifier.ignoreParentPadding(): Modifier =
     }
 
 object CurrentScreen {
-    var screen by mutableStateOf(Screen.Main.toString())
+    var screen by mutableStateOf<NavKey>(Screen.Main)
 }
 
 
@@ -336,13 +348,29 @@ fun Modifier.cuteHazeEffect(
 )
 
 @Composable
+fun String.toShape(): Shape = when (this) {
+    RoundedCornerShape(5).toString() -> RoundedCornerShape(5)
+    MaterialShapes.Square.toString() -> MaterialShapes.Square.toShape()
+    MaterialShapes.Cookie9Sided.toString() -> MaterialShapes.Cookie9Sided.toShape()
+    MaterialShapes.Cookie12Sided.toString() -> MaterialShapes.Cookie12Sided.toShape()
+    MaterialShapes.Clover8Leaf.toString() -> MaterialShapes.Clover8Leaf.toShape()
+    MaterialShapes.Arrow.toString() -> MaterialShapes.Arrow.toShape()
+    MaterialShapes.Sunny.toString() -> MaterialShapes.Sunny.toShape()
+    else -> RoundedCornerShape(5)
+}
+
+
+
+
+
+@Composable
 fun rememberInteractionSource(): MutableInteractionSource {
     return remember { MutableInteractionSource() }
 }
 
 @Composable
-fun rememberAnimatable(): Animatable<Float, AnimationVector1D> {
-    return remember { Animatable(0f) }
+fun rememberAnimatable(initialValue: Float = 0f): Animatable<Float, AnimationVector1D> {
+    return remember { Animatable(initialValue) }
 }
 
 @Composable

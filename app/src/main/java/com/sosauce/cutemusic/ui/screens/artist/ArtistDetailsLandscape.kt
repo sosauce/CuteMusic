@@ -3,8 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.artist
 
 import android.net.Uri
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -48,7 +45,6 @@ import com.sosauce.cutemusic.ui.screens.album.AlbumCard
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
-import com.sosauce.cutemusic.utils.thenIf
 
 @Composable
 fun SharedTransitionScope.ArtistDetailsLandscape(

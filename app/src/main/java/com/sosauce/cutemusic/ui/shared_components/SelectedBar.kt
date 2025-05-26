@@ -2,21 +2,16 @@ package com.sosauce.cutemusic.ui.shared_components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
-import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 

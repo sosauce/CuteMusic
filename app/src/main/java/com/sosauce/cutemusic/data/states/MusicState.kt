@@ -2,6 +2,7 @@ package com.sosauce.cutemusic.data.states
 
 import android.net.Uri
 import androidx.compose.runtime.Stable
+import com.sosauce.cutemusic.domain.model.Lyrics
 
 @Stable
 data class MusicState(
@@ -22,5 +23,7 @@ data class MusicState(
     val isPlayerReady: Boolean = false,
     val sleepTimerActive: Boolean = false,
     val mediaId: String = "",
-    val mediaIndex: Int = 0
+    val mediaIndex: Int = 0,
+    val loadedMedias: List<String> = emptyList(), // List of mediaIds ofc!
+    val lyrics: List<Lyrics> = emptyList()
 )

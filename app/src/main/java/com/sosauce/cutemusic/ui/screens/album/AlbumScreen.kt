@@ -6,23 +6,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -31,8 +27,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,18 +37,15 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -62,7 +53,6 @@ import com.sosauce.cutemusic.data.datastore.rememberAlbumGrids
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.main.components.AlbumSortingDropdownMenu
 import com.sosauce.cutemusic.ui.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
@@ -87,7 +77,7 @@ fun SharedTransitionScope.AlbumsScreen(
     var query by remember { mutableStateOf("") }
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var gridSelectionExpanded by remember { mutableStateOf(false) }
-    var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
+    var isSortedByASC by rememberSaveable { mutableStateOf(true) } // I prolly should change this
     var numberOfAlbumGrids by rememberAlbumGrids()
     val numberOfGrids = remember(numberOfAlbumGrids) {
         if (isLandscape) 4 else numberOfAlbumGrids
@@ -166,50 +156,52 @@ fun SharedTransitionScope.AlbumsScreen(
                     trailingIcon = {
                         val numberOfGrids = setOf(2, 3, 4)
 
-                        Row {
-                            IconButton(
-                                onClick = { sortMenuExpanded = true }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Sort,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = { onNavigate(Screen.Settings) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
-                                )
-                            }
-                            AlbumSortingDropdownMenu(
-                                expanded = sortMenuExpanded,
-                                onDismissRequest = { sortMenuExpanded = false },
-                                isSortedByASC = isSortedByASC,
-                                onChangeSorting = { isSortedByASC = it },
-                                onGridSelectionExpanded = { gridSelectionExpanded = !gridSelectionExpanded }
+                        IconButton(
+                            onClick = { sortMenuExpanded = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = stringResource(R.string.sort)
                             )
-                            DropdownMenu(
-                                expanded = gridSelectionExpanded,
-                                onDismissRequest = { gridSelectionExpanded = false },
-                                shape = RoundedCornerShape(24.dp)
-                            ) {
-                                numberOfGrids.forEach { number ->
-                                    CuteDropdownMenuItem(
-                                        onClick = {
-                                            numberOfAlbumGrids = number
-                                            gridSelectionExpanded = false
-                                        },
-                                        text = { CuteText(number.toString()) },
-                                        leadingIcon = {
-                                            Icon(
-                                                painter = painterResource(R.drawable.grid_view),
-                                                contentDescription = null
-                                            )
-                                        }
-                                    )
-                                }
+                        }
+                        SortingDropdownMenu(
+                            expanded = sortMenuExpanded,
+                            onDismissRequest = { sortMenuExpanded = false },
+                            isSortedByASC = isSortedByASC,
+                            onChangeSorting = { isSortedByASC = it },
+                            additionalActions = {
+                                CuteDropdownMenuItem(
+                                    onClick = { gridSelectionExpanded = true },
+                                    text = { CuteText(stringResource(R.string.no_of_grids)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.grid_view),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    trailingIcon = { CuteText(numberOfAlbumGrids.toString()) }
+                                )
+                            }
+                        )
+                        DropdownMenu(
+                            expanded = gridSelectionExpanded,
+                            onDismissRequest = { gridSelectionExpanded = false },
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            numberOfGrids.forEach { number ->
+                                CuteDropdownMenuItem(
+                                    onClick = {
+                                        numberOfAlbumGrids = number
+                                        gridSelectionExpanded = false
+                                    },
+                                    text = { CuteText(number.toString()) },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.grid_view),
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
                             }
                         }
                     },

@@ -1,6 +1,7 @@
 package com.sosauce.cutemusic.data.datastore
 
 import android.content.Context
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -17,19 +18,23 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NP_ART_SHAPE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_BACK_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SLIDER_STYLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SPEED
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THEME
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_CLASSIC_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.LastPlayed
+import com.sosauce.cutemusic.utils.SliderStyle
 import kotlinx.coroutines.flow.first
 
 private const val PREFERENCES_NAME = "settings"
@@ -46,9 +51,9 @@ data object PreferencesKeys {
     val USE_ART_THEME = booleanPreferencesKey("use_art_theme")
     val APPLY_LOOP = booleanPreferencesKey("apply_loop")
     val APPLY_SHUFFLE = booleanPreferencesKey("apply_shuffle")
-    val USE_CLASSIC_SLIDER = booleanPreferencesKey("use_classic_slider")
     val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
     val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
+    val SHOW_BACK_BUTTON = booleanPreferencesKey("show_back_button")
     val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
     val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
     val CAROUSEL = booleanPreferencesKey("CAROUSEL")
@@ -56,6 +61,9 @@ data object PreferencesKeys {
     val PITCH = floatPreferencesKey("PITCH")
     val MEDIA_INDEX_TO_MEDIA_ID = stringPreferencesKey("MEDIA_INDEX_TO_MEDIA_ID")
     val NUMBER_OF_ALBUM_GRIDS = intPreferencesKey("NUMBER_OF_ALBUM_GRIDS")
+    val NP_ART_SHAPE = stringPreferencesKey("NP_ART_SHAPE")
+    val SLIDER_STYLE = stringPreferencesKey("SLIDER_STYLE")
+    val THUMBLESS_SLIDER = booleanPreferencesKey("THUMBLESS_SLIDER")
 }
 
 
@@ -92,16 +100,16 @@ fun rememberShouldApplyShuffle() =
     rememberPreference(key = APPLY_SHUFFLE, defaultValue = false)
 
 @Composable
-fun rememberUseClassicSlider() =
-    rememberPreference(key = USE_CLASSIC_SLIDER, defaultValue = false)
-
-@Composable
 fun rememberShowXButton() =
     rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
 
 @Composable
 fun rememberShowShuffleButton() =
     rememberPreference(key = SHOW_SHUFFLE_BUTTON, defaultValue = true)
+
+@Composable
+fun rememberShowBackButton() =
+    rememberPreference(key = SHOW_BACK_BUTTON, defaultValue = true)
 
 @Composable
 fun rememberAllSafTracks() =
@@ -126,6 +134,18 @@ fun rememberPitch() =
 @Composable
 fun rememberAlbumGrids() =
     rememberPreference(key = NUMBER_OF_ALBUM_GRIDS, defaultValue = 2)
+
+@Composable
+fun rememberNpArtShape() =
+    rememberPreference(key = NP_ART_SHAPE, defaultValue = RoundedCornerShape(5).toString())
+
+@Composable
+fun rememberSliderStyle() =
+    rememberPreference(key = SLIDER_STYLE, defaultValue = SliderStyle.WAVY)
+
+@Composable
+fun rememberThumblessSlider() =
+    rememberPreference(key = THUMBLESS_SLIDER, defaultValue = false)
 
 fun getShouldLoop(context: Context) =
     getPreference(key = APPLY_LOOP, defaultValue = false, context = context)

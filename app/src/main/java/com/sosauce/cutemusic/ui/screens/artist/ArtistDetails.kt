@@ -3,8 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.artist
 
 import android.net.Uri
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -18,35 +16,26 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -55,7 +44,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
@@ -71,9 +59,7 @@ import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.LocalMusicListItem
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.SelectedBar
-import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.showCuteSearchbar
@@ -180,7 +166,7 @@ fun SharedTransitionScope.ArtistDetails(
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                    contentDescription = null
+                                    contentDescription = stringResource(R.string.add_to_playlist)
                                 )
                             }
                         }

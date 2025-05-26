@@ -15,13 +15,16 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.util.fastFilter
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.Player.EVENT_POSITION_DISCONTINUITY
+import androidx.media3.common.Player.EVENT_TIMELINE_CHANGED
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
@@ -33,12 +36,13 @@ import com.sosauce.cutemusic.data.datastore.getPitch
 import com.sosauce.cutemusic.data.datastore.getShouldLoop
 import com.sosauce.cutemusic.data.datastore.getShouldShuffle
 import com.sosauce.cutemusic.data.datastore.getSpeed
+import com.sosauce.cutemusic.data.datastore.saveMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.domain.model.Album
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.main.PlaybackService
+import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.applyLoop
 import com.sosauce.cutemusic.utils.applyPlaybackPitch
 import com.sosauce.cutemusic.utils.applyPlaybackSpeed
@@ -49,6 +53,7 @@ import com.sosauce.cutemusic.utils.playFromArtist
 import com.sosauce.cutemusic.utils.playFromPlaylist
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -56,11 +61,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -70,7 +78,10 @@ class MusicViewModel(
     safManager: SafManager
 ) : AndroidViewModel(application) {
 
-    private var mediaController: MediaController? by mutableStateOf(null)
+    private var mediaController: MediaController? = null
+
+    var hasSeekedFromDataStore = false
+    var localLastPlayed = LastPlayed("", 0) // Used when user adds a new song/ edits metadata etc...
 
     private val _musicState = MutableStateFlow(MusicState())
     val musicState = _musicState.asStateFlow()
@@ -117,9 +128,6 @@ class MusicViewModel(
         emptyList()
     )
 
-    private val _loadedMedias = MutableStateFlow<List<MediaItem>>(emptyList())
-    val loadedMedias = _loadedMedias.asStateFlow()
-
     private val playerListener =
         object : Player.Listener {
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -162,20 +170,7 @@ class MusicViewModel(
                 }
             }
 
-            override fun onEvents(player: Player, events: Player.Events) {
-                super.onEvents(player, events)
-                viewModelScope.launch {
-                    while (player.isPlaying) {
-                        _musicState.update {
-                            it.copy(
-                                duration = player.duration,
-                                position = player.currentPosition
-                            )
-                        }
-                        delay(500)
-                    }
-                }
-            }
+
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
@@ -186,7 +181,17 @@ class MusicViewModel(
                                 isPlayerReady = false
                             )
                         }
+
+                        viewModelScope.launch {
+                            saveMediaIndexToMediaIdMap(
+                                pair = LastPlayed("", 0),
+                                context = application
+                            )
+                        }
+
+                        _musicState.update { MusicState() }
                     }
+
 
                     Player.STATE_READY -> {
                         _musicState.update {
@@ -214,6 +219,33 @@ class MusicViewModel(
                     )
                 }
             }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+                super.onPositionDiscontinuity(oldPosition, newPosition, reason)
+                _musicState.update {
+                    it.copy(
+                        position = newPosition.positionMs
+                    )
+                }
+            }
+
+            override fun onEvents(player: Player, events: Player.Events) {
+                super.onEvents(player, events)
+                viewModelScope.launch {
+                    while (player.isPlaying) {
+                        _musicState.update {
+                            it.copy(
+                                position = player.currentPosition
+                            )
+                        }
+                        delay(500)
+                    }
+                }
+            }
         }
 
     init {
@@ -234,16 +266,30 @@ class MusicViewModel(
                         if (mediaController!!.mediaItemCount == 0) {
                             viewModelScope.launch {
                                 allTracks.collectLatest { mediaItems ->
+                                    localLastPlayed = LastPlayed(
+                                        _musicState.value.mediaId,
+                                        _musicState.value.position
+                                    )
                                     mediaController!!.setMediaItems(mediaItems)
-                                    seekToLastPlayedOrNot()
+
+                                    // I know this is ugly, but at least it works
+                                    if (!hasSeekedFromDataStore) {
+                                        seekToLastPlayedOrNot()
+                                    } else {
+                                        seekToLocalLastPlayed()
+                                    }
 
 
-                                    val list = mutableListOf<MediaItem>()
+                                    val list = mutableListOf<String>()
 
                                     for (i in 0 until mediaController!!.mediaItemCount) {
-                                        list.add(mediaController!!.getMediaItemAt(i))
+                                        list.add(mediaController!!.getMediaItemAt(i).mediaId)
                                     }
-                                    _loadedMedias.update { list }
+                                    _musicState.update {
+                                        it.copy(
+                                            loadedMedias = list
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -273,20 +319,10 @@ class MusicViewModel(
                 )
             }
     }
-
-
-    private fun getLrcFile(): File? {
-        val lrcFilePath = musicState.value.path.replaceAfterLast('.', "lrc")
-        val lrcFile = File(lrcFilePath)
-        return if (lrcFile.exists()) lrcFile else null
-    }
-
-    private val _lyrics = MutableStateFlow<List<Lyrics>>(emptyList())
-    val lyrics: StateFlow<List<Lyrics>> = _lyrics.asStateFlow()
-
     private fun seekToLastPlayedOrNot() {
         viewModelScope.launch {
             getMediaIndexToMediaIdMap(application).collectLatest { (id, position) ->
+
 
                 val index = (0 until mediaController!!.mediaItemCount).firstOrNull { i ->
                     mediaController!!.getMediaItemAt(i).mediaId == id
@@ -296,10 +332,31 @@ class MusicViewModel(
                     mediaController!!.prepare()
                     mediaController!!.seekTo(index, position)
                 }
+                hasSeekedFromDataStore = true
 
             }
         }
     }
+
+    private fun seekToLocalLastPlayed() {
+        val (id, position) = localLastPlayed
+
+        val index = (0 until mediaController!!.mediaItemCount).firstOrNull { i ->
+            mediaController!!.getMediaItemAt(i).mediaId == id
+        } ?: -1
+
+        if (index != -1) {
+            mediaController!!.prepare()
+            mediaController!!.seekTo(index, position)
+        }
+    }
+
+    private fun getLrcFile(): File? {
+        val lrcFilePath = musicState.value.path.replaceAfterLast('.', "lrc")
+        val lrcFile = File(lrcFilePath)
+        return if (lrcFile.exists()) lrcFile else null
+    }
+
 
     fun parseLyrics() {
         val file = getLrcFile()
@@ -327,7 +384,11 @@ class MusicViewModel(
                 } ?: Lyrics(0, line)
             }.toList()
 
-            _lyrics.update { newLyrics }
+            _musicState.update {
+                it.copy(
+                    lyrics = newLyrics
+                )
+            }
         }
     }
 
@@ -375,6 +436,16 @@ class MusicViewModel(
 
     override fun onCleared() {
         super.onCleared()
+
+        runBlocking {
+            saveMediaIndexToMediaIdMap(
+                pair = LastPlayed(
+                    _musicState.value.mediaId,
+                    _musicState.value.position
+                ),
+                context = application
+            )
+        }
         mediaController!!.removeListener(playerListener)
         mediaController!!.release()
     }

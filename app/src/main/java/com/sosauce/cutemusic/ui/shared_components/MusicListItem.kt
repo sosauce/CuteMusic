@@ -7,12 +7,9 @@ package com.sosauce.cutemusic.ui.shared_components
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Paint
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -25,41 +22,29 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,37 +53,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
-import com.sosauce.cutemusic.data.actions.PlaylistActions
-import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
-import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
 import com.sosauce.cutemusic.utils.CurrentScreen
-import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.thenIf
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SharedTransitionScope.LocalMusicListItem(
@@ -109,6 +78,7 @@ fun SharedTransitionScope.LocalMusicListItem(
     currentMusicUri: String,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
+    playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
     isPlayerReady: Boolean,
     showTrackNumber: Boolean = false,
     isSelected: Boolean = false
@@ -122,7 +92,6 @@ fun SharedTransitionScope.LocalMusicListItem(
         } else {
             Color.Transparent
         },
-        label = "Background Color",
         animationSpec = tween(500)
     )
     var isDropDownExpanded by remember { mutableStateOf(false) }
@@ -178,7 +147,12 @@ fun SharedTransitionScope.LocalMusicListItem(
                         modifier = Modifier
                             .padding(start = 10.dp)
                             .size(45.dp)
-                            .clip(RoundedCornerShape(5.dp)),
+                            .clip(MaterialShapes.Cookie9Sided.toShape())
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = MaterialShapes.Cookie9Sided.toShape()
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -298,7 +272,8 @@ fun SharedTransitionScope.LocalMusicListItem(
                                 painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
                                 contentDescription = null
                             )
-                        }
+                        },
+                        visible = CurrentScreen.screen != Screen.AlbumsDetails
                     )
                     CuteDropdownMenuItem(
                         onClick = {
@@ -317,20 +292,10 @@ fun SharedTransitionScope.LocalMusicListItem(
                                 painter = painterResource(R.drawable.artist_rounded),
                                 contentDescription = null
                             )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { showPlaylistDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.add_to_playlist))
                         },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
+                        visible = CurrentScreen.screen != Screen.ArtistsDetails
                     )
+                    playlistDropdownMenuItem()
                     CuteDropdownMenuItem(
                         onClick = {
                             onHandleMediaItemAction(
@@ -386,7 +351,8 @@ fun SafMusicListItem(
     currentMusicUri: String,
     onDeleteFromSaf: () -> Unit,
     isPlayerReady: Boolean,
-    showTrackNumber: Boolean = false
+    showTrackNumber: Boolean = false,
+    playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
 ) {
 
     val context = LocalContext.current
@@ -501,18 +467,7 @@ fun SafMusicListItem(
                             )
                         }
                     )
-                    CuteDropdownMenuItem(
-                        onClick = { showPlaylistDialog = true },
-                        text = {
-                            CuteText(stringResource(R.string.add_to_playlist))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
-                    )
+                    playlistDropdownMenuItem()
                     CuteDropdownMenuItem(
                         onClick = {
                             val shareIntent = Intent().apply {

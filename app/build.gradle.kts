@@ -8,14 +8,14 @@ plugins {
 
 android {
     namespace = "com.sosauce.cutemusic"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 29
-        versionName = "2.7.2"
+        targetSdk = 36
+        versionCode = 30
+        versionName = "2.8.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -108,6 +108,8 @@ android {
         implementation(libs.haze)
         implementation(libs.androidx.glance)
         implementation(libs.androidx.glance.appwidget)
+        implementation(libs.androidx.navigation3.runtime)
+        implementation(libs.androidx.navigation3.ui)
         ksp(libs.androidx.room.compiler)
     }
 }

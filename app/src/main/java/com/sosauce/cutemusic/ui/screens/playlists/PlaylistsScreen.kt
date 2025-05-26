@@ -14,7 +14,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,11 +25,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,13 +47,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.provider.DocumentsContractCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
+import com.sosauce.cutemusic.ui.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -66,7 +61,6 @@ import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.showCuteSearchbar
 import org.koin.androidx.compose.koinViewModel
-import java.io.File
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -83,15 +77,13 @@ fun SharedTransitionScope.PlaylistsScreen(
     val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
     var showPlaylistActionsDialog by remember { mutableStateOf(false) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
     val buttonOrientation by animateFloatAsState(
         targetValue = if (showPlaylistActionsDialog) 45f else 0f
     )
     val state = rememberLazyListState()
     var query by remember { mutableStateOf("") }
     var isSortedByASC by rememberSaveable { mutableStateOf(true) }
-    val float by animateFloatAsState(
-        targetValue = if (isSortedByASC) 45f else 135f
-    )
     val displayPlaylists by remember(isSortedByASC, playlists, query) {
         derivedStateOf {
             if (query.isNotEmpty()) {
@@ -176,25 +168,20 @@ fun SharedTransitionScope.PlaylistsScreen(
                     onQueryChange = { query = it },
                     modifier = Modifier.align(rememberSearchbarAlignment()),
                     trailingIcon = {
-                        Row {
-                            IconButton(
-                                onClick = { isSortedByASC = !isSortedByASC }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.ArrowUpward,
-                                    contentDescription = null,
-                                    modifier = Modifier.rotate(float)
-                                )
-                            }
-                            IconButton(
-                                onClick = { onNavigate(Screen.Settings) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
-                                )
-                            }
+                        IconButton(
+                            onClick = { sortMenuExpanded = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = stringResource(R.string.sort)
+                            )
                         }
+                        SortingDropdownMenu(
+                            expanded = sortMenuExpanded,
+                            onDismissRequest = { sortMenuExpanded = false },
+                            isSortedByASC = isSortedByASC,
+                            onChangeSorting = { isSortedByASC = it }
+                        )
                     },
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerAction,
@@ -214,7 +201,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Add,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.create_playlist),
                                     modifier = Modifier.rotate(buttonOrientation)
                                 )
                             }

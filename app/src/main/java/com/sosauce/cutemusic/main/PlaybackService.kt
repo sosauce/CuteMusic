@@ -121,6 +121,14 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             mediaLibrarySession = null
         }
         stopSelf()
+        try {
+            widgetReceiver.also {
+                it.stopCallback()
+                unregisterReceiver(it)
+            }
+        } catch(e: IllegalArgumentException) {
+            return
+        }
         super.onDestroy()
     }
 
@@ -129,17 +137,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         mediaLibrarySession?.run {
-
-            runBlocking {
-                saveMediaIndexToMediaIdMap(
-                    pair = LastPlayed(
-                        player.mediaMetadata.extras?.getString("mediaId") ?: "",
-                        player.currentPosition
-                    ),
-                    context = application
-                )
-            }
-
             player.release()
             release()
             mediaLibrarySession = null

@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -26,8 +25,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -36,11 +34,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,6 +48,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.ui.navigation.Screen
+import com.sosauce.cutemusic.ui.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.ui.shared_components.CuteActionButton
 import com.sosauce.cutemusic.ui.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.ui.shared_components.CuteText
@@ -69,12 +68,9 @@ fun SharedTransitionScope.ArtistsScreen(
 ) {
 
     var query by remember { mutableStateOf("") }
-    var isSortedByASC by remember { mutableStateOf(true) } // I prolly should change this
+    var isSortedByASC by rememberSaveable { mutableStateOf(true) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
     val state = rememberLazyListState()
-    val float by animateFloatAsState(
-        targetValue = if (isSortedByASC) 45f else 135f,
-        label = "Arrow Icon Animation"
-    )
     val displayArtists by remember(isSortedByASC, artist, query) {
         derivedStateOf {
             if (query.isNotEmpty()) {
@@ -147,25 +143,20 @@ fun SharedTransitionScope.ArtistsScreen(
                     query = query,
                     onQueryChange = { query = it },
                     trailingIcon = {
-                        Row {
-                            IconButton(
-                                onClick = { isSortedByASC = !isSortedByASC }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.ArrowUpward,
-                                    contentDescription = null,
-                                    modifier = Modifier.rotate(float)
-                                )
-                            }
-                            IconButton(
-                                onClick = { onNavigate(Screen.Settings) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = null
-                                )
-                            }
+                        IconButton(
+                            onClick = { sortMenuExpanded = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                contentDescription = stringResource(R.string.sort)
+                            )
                         }
+                        SortingDropdownMenu(
+                            expanded = sortMenuExpanded,
+                            onDismissRequest = { sortMenuExpanded = false },
+                            isSortedByASC = isSortedByASC,
+                            onChangeSorting = { isSortedByASC = it }
+                        )
                     },
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerActions,

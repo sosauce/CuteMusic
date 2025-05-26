@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.sosauce.cutemusic.ui.screens.metadata
 
 import android.app.Activity
@@ -8,17 +10,24 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -105,7 +114,11 @@ fun MetadataEditor(
         }
 
 
-    Box(Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -297,23 +310,31 @@ fun MetadataEditor(
                 }
             }
         }
-        CuteNavigationButton(
+        AnimatedVisibility(
+            visible = !WindowInsets.isImeVisible,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
             modifier = Modifier
-                .align(Alignment.BottomStart)
                 .navigationBarsPadding()
-                .padding(start = 15.dp)
-        ) { onNavigateUp() }
-        CuteActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .navigationBarsPadding()
-                .padding(end = 15.dp),
-            imageVector = Icons.Rounded.Done
+                .align(Alignment.BottomCenter)
         ) {
-            onEditMusic(
-                listOf(uri),
-                editSongLauncher
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                CuteNavigationButton(
+                    modifier = Modifier.padding(start = 15.dp)
+                ) { onNavigateUp() }
+                CuteActionButton(
+                    modifier = Modifier.padding(end = 15.dp),
+                    imageVector = Icons.Rounded.Done
+                ) {
+                    onEditMusic(
+                        listOf(uri),
+                        editSongLauncher
+                    )
+                }
+            }
         }
     }
 }
@@ -329,6 +350,7 @@ private fun EditTextField(
     keyboardType: KeyboardType = KeyboardType.Unspecified,
     returnModifiedValue: (String) -> Unit = {}
 ) {
+
     OutlinedTextField(
         value = value ?: "",
         onValueChange = { returnModifiedValue(it) },

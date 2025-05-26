@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.view.WindowManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,8 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Button
@@ -55,11 +51,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
@@ -67,16 +60,17 @@ import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.model.Lyrics
+import com.sosauce.cutemusic.ui.screens.playing.components.PlayPauseButton
+import com.sosauce.cutemusic.ui.shared_components.AnimatedIconButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
+import com.sosauce.cutemusic.utils.AnimationDirection
 import com.sosauce.cutemusic.utils.GOOGLE_SEARCH
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.rememberAnimatable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
 fun LyricsView(
-    lyrics: List<Lyrics>,
     onHideLyrics: () -> Unit,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit
@@ -86,11 +80,9 @@ fun LyricsView(
     val clipboardManager = LocalClipboard.current
     val isLandscape = rememberIsLandscape()
     val scope = rememberCoroutineScope()
-    val leftIconOffsetX = rememberAnimatable()
-    val rightIconOffsetX = rememberAnimatable()
     var currentLyric by remember { mutableStateOf(Lyrics()) }
     val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = if (lyrics.indexOf(currentLyric) != -1) lyrics.indexOf(
+        initialFirstVisibleItemIndex = if (musicState.lyrics.indexOf(currentLyric) != -1) musicState.lyrics.indexOf(
             currentLyric
         ) else 0
     )
@@ -105,17 +97,11 @@ fun LyricsView(
     }
 
     LaunchedEffect(currentLyric) {
-        val indexOfCurrentLyric = lyrics.indexOf(currentLyric)
+        val indexOfCurrentLyric = musicState.lyrics.indexOf(currentLyric)
         if (indexOfCurrentLyric != -1) {
-            lazyListState.animateScrollToItem(lyrics.indexOf(currentLyric))
+            lazyListState.animateScrollToItem(musicState.lyrics.indexOf(currentLyric))
         }
     }
-
-    LaunchedEffect(lyrics) {
-        println("CuteLyrics: $lyrics")
-    }
-
-
 
     Scaffold { paddingValues ->
         Box {
@@ -127,7 +113,7 @@ fun LyricsView(
                 contentPadding = paddingValues
             ) {
                 // A bit wonky but works for now
-                if (lyrics.size <= 1 && lyrics.first().lineLyrics.isEmpty()) {
+                if (musicState.lyrics.size <= 1 && musicState.lyrics.first().lineLyrics.isEmpty()) {
                     item {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -147,13 +133,13 @@ fun LyricsView(
                     }
                 } else {
                     itemsIndexed(
-                        items = lyrics,
+                        items = musicState.lyrics,
                         key = { _, lyric -> lyric.id }
                     ) { index, lyric ->
 
                         val nextTimestamp = remember(index) {
-                            if (index < lyrics.size - 1) {
-                                lyrics[index + 1].timestamp
+                            if (index < musicState.lyrics.size - 1) {
+                                musicState.lyrics[index + 1].timestamp
                             } else 0
                         }
 
@@ -233,68 +219,22 @@ fun LyricsView(
                 horizontalArrangement = if (isLandscape) Arrangement.End else Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {
-                        onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
-                        scope.launch(Dispatchers.Main) {
-                            leftIconOffsetX.animateTo(
-                                targetValue = -20f,
-                                animationSpec = tween(250)
-                            )
-                            leftIconOffsetX.animateTo(
-                                targetValue = 0f,
-                                animationSpec = tween(250)
-                            )
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    x = leftIconOffsetX.value.toInt(),
-                                    y = 0
-                                )
-                            }
-                    )
-                }
-                IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) }
-                ) {
-                    Icon(
-                        imageVector = if (musicState.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = null
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        onHandlePlayerActions(PlayerActions.SeekToNextMusic)
-                        scope.launch(Dispatchers.Main) {
-                            rightIconOffsetX.animateTo(
-                                targetValue = 20f,
-                                animationSpec = tween(250)
-                            )
-                            rightIconOffsetX.animateTo(
-                                targetValue = 0f,
-                                animationSpec = tween(250)
-                            )
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipNext,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    x = rightIconOffsetX.value.toInt(),
-                                    y = 0
-                                )
-                            }
-                    )
-                }
+                AnimatedIconButton(
+                    onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) },
+                    animationDirection = AnimationDirection.LEFT,
+                    icon = Icons.Rounded.SkipPrevious,
+                    contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_back_description)
+                )
+                PlayPauseButton(
+                    isPlaying = musicState.isPlaying,
+                    onHandlePlayerActions = onHandlePlayerActions
+                )
+                AnimatedIconButton(
+                    onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) },
+                    animationDirection = AnimationDirection.RIGHT,
+                    icon = Icons.Rounded.SkipNext,
+                    contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_to_next_description)
+                )
                 VerticalDivider(
                     modifier = Modifier.height(20.dp)
                 )
@@ -303,7 +243,7 @@ fun LyricsView(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.close)
                     )
                 }
             }

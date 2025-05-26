@@ -64,7 +64,7 @@ fun AboutCard() {
                     )
                 CuteText(
                     text = "${stringResource(id = R.string.version)} $version",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

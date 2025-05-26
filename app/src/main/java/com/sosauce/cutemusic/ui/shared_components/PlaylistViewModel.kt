@@ -1,13 +1,10 @@
 package com.sosauce.cutemusic.ui.shared_components
 
 import android.app.Application
-import android.content.Context
 import android.provider.MediaStore
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlaylistActions
@@ -23,7 +20,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.sequences.forEach
 
 class PlaylistViewModel(
     private val application: Application,
@@ -39,10 +35,6 @@ class PlaylistViewModel(
         )
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
-
-
-
-
 
 
     fun handlePlaylistActions(action: PlaylistActions) {
@@ -94,10 +86,9 @@ class PlaylistViewModel(
 
                     }
 
-
                     val playlist = Playlist(
                         emoji = "",
-                        name = "Imported playlist",
+                        name = action.uri.path?.substringAfterLast('/')?.substringBeforeLast('.') ?: "Imported playlist",
                         musics = tracksFromFile
                     )
 

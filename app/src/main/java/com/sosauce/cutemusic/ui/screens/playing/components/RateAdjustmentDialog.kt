@@ -81,7 +81,7 @@ fun RateAdjustmentDialog(
                     .focusRequester(focusRequest),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center
-                ),
+                )
             )
         }
     }

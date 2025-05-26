@@ -1,19 +1,10 @@
 package com.sosauce.cutemusic.ui.shared_components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
@@ -24,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -76,7 +66,7 @@ fun ScreenSelection(
             items.forEach { navigationItem ->
 
                 val bgColor by animateColorAsState(
-                    targetValue = if (navigationItem.navigateTo.toString() == CurrentScreen.screen) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent
+                    targetValue = if (navigationItem.navigateTo == CurrentScreen.screen) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent
                 )
 
                 CuteDropdownMenuItem(

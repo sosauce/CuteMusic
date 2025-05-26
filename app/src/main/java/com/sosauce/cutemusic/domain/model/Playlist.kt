@@ -1,9 +1,7 @@
 package com.sosauce.cutemusic.domain.model
 
-import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
 
 @Entity
 data class Playlist(

@@ -12,6 +12,7 @@ const val WIDGET_NEW_IS_PLAYING = "WIDGET_NEW_IS_PLAYING"
 const val WIDGET_ACTION_BROADCAST = "WIDGET_NEW_DATA"
 
 
+
 object SharedTransitionKeys {
     const val CURRENTLY_PLAYING = "CURRENTLY_PLAYING"
     const val ARTIST = "ARTIST"
@@ -27,4 +28,15 @@ object CuteTheme {
     const val DARK = "DARK"
     const val LIGHT = "LIGHT"
     const val AMOLED = "AMOLED"
+}
+
+object SliderStyle {
+    const val WAVY = "WAVY"
+    const val CLASSIC = "CLASSIC"
+    const val MATERIAL3 = "MATERIAL3"
+}
+
+object AnimationDirection {
+    const val LEFT = -25f
+    const val RIGHT = 25f
 }

@@ -3,7 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.playlists
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -101,7 +100,7 @@ fun CreatePlaylistDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.remove_emoji),
                     )
                 }
                 Box(
@@ -125,7 +124,7 @@ fun CreatePlaylistDialog(
                     } else {
                         Icon(
                             painter = painterResource(R.drawable.add_emoji_rounded),
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.emoji),
                             modifier = Modifier.size(40.dp)
                         )
                     }

@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.ui.shared_components
 
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

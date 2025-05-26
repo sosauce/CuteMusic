@@ -5,28 +5,19 @@ package com.sosauce.cutemusic.ui.screens.playing.components
 import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,8 +25,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,26 +37,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toUri
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.ui.navigation.Screen
-import com.sosauce.cutemusic.ui.screens.playlists.CreatePlaylistDialog
-import com.sosauce.cutemusic.ui.screens.playlists.PlaylistItem
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
 import com.sosauce.cutemusic.ui.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicStateDetailsDialog
-import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
-import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
-import com.sosauce.cutemusic.utils.copyMutate
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun QuickActionsRow(
@@ -108,6 +87,7 @@ fun QuickActionsRow(
             onDismissRequest = { showPlaylistDialog = false }
         )
     }
+
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -171,10 +151,7 @@ fun QuickActionsRow(
                         try {
                             eqIntent.launch()
                         } catch (e: Exception) {
-                            Log.d(
-                                "CuteError",
-                                "Couldn't open EQ: ${e.stackTrace}, ${e.message}"
-                            )
+                            e.stackTrace
                         }
                     },
                     text = {

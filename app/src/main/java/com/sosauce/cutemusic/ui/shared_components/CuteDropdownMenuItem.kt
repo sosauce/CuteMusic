@@ -1,20 +1,31 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.sosauce.cutemusic.ui.shared_components
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
+import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
 
 /**
  * A dropdown menu item with some padding and clipped corners,
- * also adds a visible parameter, used in artist and album details.
+ * also adds a visible parameter, if needed.
  */
 @Composable
 fun CuteDropdownMenuItem(
@@ -23,10 +34,6 @@ fun CuteDropdownMenuItem(
     modifier: Modifier = Modifier,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    colors: MenuItemColors = MenuDefaults.itemColors(),
-    contentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
-    interactionSource: MutableInteractionSource? = null,
     visible: Boolean = true
 ) {
 
@@ -39,10 +46,54 @@ fun CuteDropdownMenuItem(
                 .clip(RoundedCornerShape(12.dp)),
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
-            enabled = enabled,
-            colors = colors,
-            contentPadding = contentPadding,
-            interactionSource = interactionSource
         )
     }
+}
+
+@Composable
+fun AddToPlaylistDropdownItem(
+    music: MediaItem
+) {
+
+    var showPlaylistDialog by remember { mutableStateOf(false) }
+    if (showPlaylistDialog) {
+        PlaylistPicker(
+            mediaId = listOf(music.mediaId),
+            onDismissRequest = { showPlaylistDialog = false }
+        )
+    }
+
+
+    CuteDropdownMenuItem(
+        onClick = { showPlaylistDialog = true },
+        text = {
+            CuteText(stringResource(R.string.add_to_playlist))
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                contentDescription = null
+            )
+        }
+    )
+}
+
+@Composable
+fun RemoveFromPlaylistDropdownItem(
+    onRemoveFromPlaylist: () -> Unit
+) {
+
+
+    CuteDropdownMenuItem(
+        onClick = onRemoveFromPlaylist,
+        text = {
+            CuteText(stringResource(R.string.remove_from_playlist))
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Rounded.PlaylistRemove,
+                contentDescription = null
+            )
+        }
+    )
 }
