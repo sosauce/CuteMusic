@@ -3,7 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.artist
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
@@ -35,6 +34,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -55,7 +55,6 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
     artist: Artist,
     currentMusicUri: String,
     isPlayerReady: Boolean,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
@@ -73,7 +72,6 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                 item {
                     ArtistInfoCard(
                         artist = artist,
-                        animatedVisibilityScope = animatedVisibilityScope,
                         numberOfSongs = musics.size,
                         numberOfAlbums = albums.size,
                         modifier = Modifier
@@ -90,8 +88,7 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                         album = album,
                         modifier = Modifier
                             .clip(RoundedCornerShape(15.dp))
-                            .clickable { onNavigate(Screen.AlbumsDetails(album.id)) },
-                        animatedVisibilityScope = animatedVisibilityScope
+                            .clickable { onNavigate(Screen.AlbumsDetails(album.id)) }
                     )
                 }
             }
@@ -111,7 +108,8 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
                             isPlayerReady = isPlayerReady,
                             onLoadMetadata = onLoadMetadata,
                             onHandleMediaItemAction = onHandleMediaItemAction,
-                            onNavigate = onNavigate
+                            onNavigate = onNavigate,
+                            onHandlePlayerActions = onHandlePlayerAction
                         )
                     }
                 }
@@ -130,7 +128,6 @@ fun SharedTransitionScope.ArtistDetailsLandscape(
 private fun SharedTransitionScope.ArtistInfoCard(
     artist: Artist,
     modifier: Modifier = Modifier,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     numberOfSongs: Int,
     numberOfAlbums: Int
 ) {
@@ -143,7 +140,7 @@ private fun SharedTransitionScope.ArtistInfoCard(
                 .padding(start = 10.dp)
                 .sharedElement(
                     sharedContentState = rememberSharedContentState(key = artist.id),
-                    animatedVisibilityScope = animatedVisibilityScope,
+                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
                 .size(140.dp)
                 .clip(RoundedCornerShape(24.dp))
@@ -164,7 +161,7 @@ private fun SharedTransitionScope.ArtistInfoCard(
                 modifier = Modifier
                     .sharedElement(
                         sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
-                        animatedVisibilityScope = animatedVisibilityScope,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                     )
             )
             CuteText(pluralStringResource(R.plurals.tracks, numberOfSongs, numberOfSongs))

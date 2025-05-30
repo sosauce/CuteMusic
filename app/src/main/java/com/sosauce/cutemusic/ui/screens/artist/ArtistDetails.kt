@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.artist
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.scaleIn
@@ -45,6 +44,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -72,7 +72,6 @@ fun SharedTransitionScope.ArtistDetails(
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
@@ -86,7 +85,6 @@ fun SharedTransitionScope.ArtistDetails(
             artist = artist,
             currentMusicUri = musicState.uri,
             isPlayerReady = musicState.isPlayerReady,
-            animatedVisibilityScope = animatedVisibilityScope,
             onLoadMetadata = onLoadMetadata,
             onHandlePlayerAction = onHandlePlayerAction,
             onHandleMediaItemAction = onHandleMediaItemAction
@@ -117,7 +115,7 @@ fun SharedTransitionScope.ArtistDetails(
                                 .padding(start = 15.dp)
                                 .sharedBounds(
                                     sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
-                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                                 )
                         )
                         Spacer(Modifier.height(20.dp))
@@ -144,8 +142,7 @@ fun SharedTransitionScope.ArtistDetails(
                                     album = album,
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(15.dp))
-                                        .clickable { onNavigate(Screen.AlbumsDetails(album.id)) },
-                                    animatedVisibilityScope = animatedVisibilityScope
+                                        .clickable { onNavigate(Screen.AlbumsDetails(album.id)) }
                                 )
                             }
                         }
@@ -198,7 +195,8 @@ fun SharedTransitionScope.ArtistDetails(
                             onLoadMetadata = onLoadMetadata,
                             onNavigate = onNavigate,
                             onHandleMediaItemAction = onHandleMediaItemAction,
-                            isSelected = selectedTracks.contains(music.mediaId)
+                            isSelected = selectedTracks.contains(music.mediaId),
+                            onHandlePlayerActions = onHandlePlayerAction
                         )
                     }
                 }
@@ -220,14 +218,13 @@ fun SharedTransitionScope.ArtistDetails(
                             isPlayerReady = musicState.isPlayerReady,
                             isPlaying = musicState.isPlaying,
                             onHandlePlayerActions = onHandlePlayerAction,
-                            animatedVisibilityScope = animatedVisibilityScope,
                             showSearchField = false,
                             onNavigate = onNavigate,
                             fab = {
                                 CuteActionButton(
                                     modifier = Modifier.sharedBounds(
                                         sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                     )
                                 ) {
                                     onHandlePlayerAction(

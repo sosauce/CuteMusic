@@ -3,7 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.album
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
@@ -32,6 +31,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
@@ -51,7 +51,6 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
     onNavigateUp: () -> Unit,
     onNavigate: (Screen) -> Unit,
     musicState: MusicState,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
@@ -75,7 +74,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                         .size(200.dp)
                         .sharedElement(
                             sharedContentState = rememberSharedContentState(key = album.id),
-                            animatedVisibilityScope = animatedVisibilityScope,
+                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         )
                         .clip(RoundedCornerShape(10)),
                     contentScale = ContentScale.Crop
@@ -85,7 +84,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                     text = album.name,
                     modifier = Modifier.sharedElement(
                         sharedContentState = rememberSharedContentState(key = album.name + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                     )
                 )
                 CuteText(
@@ -93,7 +92,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
                     modifier = Modifier.sharedElement(
                         sharedContentState = rememberSharedContentState(key = album.artist + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                     )
                 )
                 CuteText(pluralStringResource(R.plurals.tracks, musics.size, musics.size))
@@ -122,6 +121,7 @@ fun SharedTransitionScope.AlbumDetailsLandscape(
                             isPlayerReady = musicState.isPlayerReady,
                             onLoadMetadata = onLoadMetadata,
                             onHandleMediaItemAction = onHandleMediaItemAction,
+                            onHandlePlayerActions = onHandlePlayerActions,
                             onNavigate = onNavigate
                         )
                     }

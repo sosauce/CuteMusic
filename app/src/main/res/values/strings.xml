@@ -125,6 +125,7 @@
     <string name="library">Library</string>
     <string name="library_desc">Manage all your tracks, like a DJ !</string>
     <string name="more_desc">Other settings that didn\'t deserve their own page.</string>
+    <string name="add_queue">Add to queue</string>
 
     <plurals name="tracks">
         <item quantity="one">%d track</item>

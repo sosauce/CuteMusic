@@ -3,7 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.album
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
@@ -46,6 +45,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -66,19 +66,18 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 @Composable
 fun SharedTransitionScope.AlbumsScreen(
     albums: List<Album>,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     currentlyPlaying: String,
     onNavigate: (Screen) -> Unit,
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlayerReady: Boolean,
 ) {
+    var numberOfAlbumGrids by rememberAlbumGrids()
     val isLandscape = rememberIsLandscape()
     var query by remember { mutableStateOf("") }
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var gridSelectionExpanded by remember { mutableStateOf(false) }
     var isSortedByASC by rememberSaveable { mutableStateOf(true) } // I prolly should change this
-    var numberOfAlbumGrids by rememberAlbumGrids()
     val numberOfGrids = remember(numberOfAlbumGrids) {
         if (isLandscape) 4 else numberOfAlbumGrids
     }
@@ -137,8 +136,7 @@ fun SharedTransitionScope.AlbumsScreen(
                                 .clip(RoundedCornerShape(15.dp))
                                 .clickable {
                                     onNavigate(Screen.AlbumsDetails(album.id))
-                                },
-                            animatedVisibilityScope = animatedVisibilityScope
+                                }
                         )
                     }
                 }
@@ -208,14 +206,13 @@ fun SharedTransitionScope.AlbumsScreen(
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerActions,
                     isPlaying = isPlaying,
-                    animatedVisibilityScope = animatedVisibilityScope,
                     isPlayerReady = isPlayerReady,
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
                             modifier = Modifier.sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                animatedVisibilityScope = animatedVisibilityScope
+                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
                             )
                         ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
                     }
@@ -230,7 +227,6 @@ fun SharedTransitionScope.AlbumsScreen(
 fun SharedTransitionScope.AlbumCard(
     album: Album,
     modifier: Modifier = Modifier,
-    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     Column(
         modifier = modifier
@@ -244,7 +240,7 @@ fun SharedTransitionScope.AlbumCard(
             modifier = Modifier
                 .sharedElement(
                     sharedContentState = rememberSharedContentState(key = album.id),
-                    animatedVisibilityScope = animatedVisibilityScope,
+                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
                 .sizeIn(maxHeight = 160.dp)
                 .clip(RoundedCornerShape(24.dp)),
@@ -258,7 +254,7 @@ fun SharedTransitionScope.AlbumCard(
                 modifier = Modifier
                     .sharedElement(
                         sharedContentState = rememberSharedContentState(key = album.name + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
                     )
                     .basicMarquee()
             )
@@ -268,7 +264,7 @@ fun SharedTransitionScope.AlbumCard(
                 modifier = Modifier
                     .sharedElement(
                         sharedContentState = rememberSharedContentState(key = album.artist + album.id),
-                        animatedVisibilityScope = animatedVisibilityScope
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
                     )
                     .basicMarquee()
             )
