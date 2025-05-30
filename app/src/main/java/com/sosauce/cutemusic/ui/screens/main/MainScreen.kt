@@ -7,7 +7,6 @@ package com.sosauce.cutemusic.ui.screens.main
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
@@ -47,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -72,8 +72,6 @@ fun SharedTransitionScope.MainScreen(
     currentlyPlaying: String,
     isCurrentlyPlaying: Boolean,
     onNavigate: (Screen) -> Unit,
-    onShortClick: (String) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     isPlayerReady: Boolean,
     currentMusicUri: String,
@@ -151,13 +149,14 @@ fun SharedTransitionScope.MainScreen(
                                         )
                                 ) {
                                     LocalMusicListItem(
-                                        onShortClick = { onShortClick(music.mediaId) },
+                                        onShortClick = { onHandlePlayerAction(PlayerActions.StartPlayback(music.mediaId)) },
                                         music = music,
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
                                         isPlayerReady = isPlayerReady,
-                                        onHandleMediaItemAction = onHandleMediaItemAction
+                                        onHandleMediaItemAction = onHandleMediaItemAction,
+                                        onHandlePlayerActions = onHandlePlayerAction
                                     )
                                 }
                             }
@@ -188,19 +187,20 @@ fun SharedTransitionScope.MainScreen(
                             ) {
                                 if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
                                     LocalMusicListItem(
-                                        onShortClick = { onShortClick(music.mediaId) },
+                                        onShortClick = { onHandlePlayerAction(PlayerActions.StartPlayback(music.mediaId)) },
                                         music = music,
                                         onNavigate = { onNavigate(it) },
                                         currentMusicUri = currentMusicUri,
                                         onLoadMetadata = onLoadMetadata,
                                         isPlayerReady = isPlayerReady,
-                                        onHandleMediaItemAction = onHandleMediaItemAction
+                                        onHandleMediaItemAction = onHandleMediaItemAction,
+                                        onHandlePlayerActions = onHandlePlayerAction
                                     )
                                 } else {
                                     var safTracks by rememberAllSafTracks()
 
                                     SafMusicListItem(
-                                        onShortClick = { onShortClick(music.mediaId) },
+                                        onShortClick = { onHandlePlayerAction(PlayerActions.StartPlayback(music.mediaId)) },
                                         music = music,
                                         currentMusicUri = currentMusicUri,
                                         isPlayerReady = isPlayerReady,
@@ -257,14 +257,13 @@ fun SharedTransitionScope.MainScreen(
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerAction,
                     isPlaying = isCurrentlyPlaying,
-                    animatedVisibilityScope = animatedVisibilityScope,
                     isPlayerReady = isPlayerReady,
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
                             modifier = Modifier.sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                animatedVisibilityScope = animatedVisibilityScope
+                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
                             )
                         ) { onHandlePlayerAction(PlayerActions.PlayRandom) }
                     }

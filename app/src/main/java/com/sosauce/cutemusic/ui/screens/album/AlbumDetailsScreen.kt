@@ -5,7 +5,6 @@ package com.sosauce.cutemusic.ui.screens.album
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.scaleIn
@@ -50,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
@@ -76,7 +76,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     album: Album,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onNavigate: (Screen) -> Unit,
@@ -89,7 +88,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             album = album,
             onNavigateUp = onNavigateUp,
             musicState = musicState,
-            animatedVisibilityScope = animatedVisibilityScope,
             onLoadMetadata = onLoadMetadata,
             onNavigate = onNavigate,
             onHandlePlayerActions = onHandlePlayerActions,
@@ -101,7 +99,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             album = album,
             onNavigateUp = onNavigateUp,
             musicState = musicState,
-            animatedVisibilityScope = animatedVisibilityScope,
             onNavigate = onNavigate,
             onLoadMetadata = onLoadMetadata,
             onHandlePlayerActions = onHandlePlayerActions,
@@ -119,7 +116,6 @@ private fun SharedTransitionScope.AlbumDetailsContent(
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigate: (Screen) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
 ) {
@@ -150,7 +146,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                 .size(150.dp)
                                 .sharedElement(
                                     sharedContentState = rememberSharedContentState(key = album.id),
-                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                                 )
                                 .clip(RoundedCornerShape(24.dp)),
                             contentScale = ContentScale.Crop
@@ -165,7 +161,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                 modifier = Modifier
                                     .sharedElement(
                                         sharedContentState = rememberSharedContentState(key = album.name + album.id),
-                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                                     )
                                     .basicMarquee()
                             )
@@ -176,7 +172,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                                 modifier = Modifier
                                     .sharedElement(
                                         sharedContentState = rememberSharedContentState(key = album.artist + album.id),
-                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                                     )
                                     .basicMarquee()
                             )
@@ -241,6 +237,7 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                         isPlayerReady = musicState.isPlayerReady,
                         onLoadMetadata = onLoadMetadata,
                         onHandleMediaItemAction = onHandleMediaItemAction,
+                        onHandlePlayerActions = onHandlePlayerActions,
                         onNavigate = onNavigate,
                         showTrackNumber = true,
                         isSelected = selectedTracks.contains(music.mediaId)
@@ -264,14 +261,13 @@ private fun SharedTransitionScope.AlbumDetailsContent(
                         isPlayerReady = musicState.isPlayerReady,
                         isPlaying = musicState.isPlaying,
                         onHandlePlayerActions = onHandlePlayerActions,
-                        animatedVisibilityScope = animatedVisibilityScope,
                         showSearchField = false,
                         onNavigate = onNavigate,
                         fab = {
                             CuteActionButton(
                                 modifier = Modifier.sharedBounds(
                                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                    animatedVisibilityScope = animatedVisibilityScope
+                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                 )
                             ) {
                                 onHandlePlayerActions(

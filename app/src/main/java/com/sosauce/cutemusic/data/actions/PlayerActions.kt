@@ -1,5 +1,7 @@
 package com.sosauce.cutemusic.data.actions
 
+import androidx.media3.common.MediaItem
+
 sealed interface PlayerActions {
     data object PlayOrPause : PlayerActions
     data object SeekToNextMusic : PlayerActions
@@ -41,5 +43,18 @@ sealed interface PlayerActions {
     data class SetSleepTimer(
         val hours: Int,
         val minutes: Int
+    ) : PlayerActions
+
+    data class ReArrangeQueue(
+        val from: Int,
+        val to: Int
+    ) : PlayerActions
+
+    data class RemoveFromQueue(
+        val mediaId: String
+    ) : PlayerActions
+
+    data class AddToQueue(
+        val mediaItem: MediaItem
     ) : PlayerActions
 }

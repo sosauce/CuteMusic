@@ -3,7 +3,6 @@
 package com.sosauce.cutemusic.ui.screens.playing
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
@@ -39,10 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionButtonsRow
@@ -61,7 +60,6 @@ fun SharedTransitionScope.NowPlayingLandscape(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope,
     loadedMedias: List<MediaItem> = emptyList()
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
@@ -168,7 +166,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                                 modifier = Modifier
                                     .sharedElement(
                                         sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                     )
                                     .basicMarquee()
                             )
@@ -179,7 +177,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                                 modifier = Modifier
                                     .sharedElement(
                                         sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + musicState.mediaId),
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
 
                                     )
                                     .basicMarquee()
@@ -192,7 +190,6 @@ fun SharedTransitionScope.NowPlayingLandscape(
                         )
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
                             ActionButtonsRow(
-                                animatedVisibilityScope = animatedVisibilityScope,
                                 musicState = musicState,
                                 onHandlePlayerActions = onHandlePlayerActions
                             )
@@ -202,7 +199,8 @@ fun SharedTransitionScope.NowPlayingLandscape(
                                 onShowLyrics = { showLyrics = true },
                                 onShowSpeedCard = { showSpeedCard = true },
                                 onHandlePlayerActions = onHandlePlayerActions,
-                                onNavigate = onNavigate
+                                onNavigate = onNavigate,
+                                loadedMedias = loadedMedias
                             )
                         }
                     }
