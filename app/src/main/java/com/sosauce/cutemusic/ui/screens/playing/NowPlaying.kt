@@ -3,9 +3,9 @@
 package com.sosauce.cutemusic.ui.screens.playing
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,11 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.ui.screens.playing.components.ActionButtonsRow
@@ -56,6 +56,7 @@ import com.sosauce.cutemusic.utils.ignoreParentPadding
 
 @Composable
 fun SharedTransitionScope.NowPlaying(
+    animatedVisibilityScope: AnimatedVisibilityScope,
     musicState: MusicState,
     loadedMedias: List<MediaItem> = emptyList(),
     onHandlePlayerActions: (PlayerActions) -> Unit,
@@ -72,6 +73,7 @@ fun SharedTransitionScope.NowPlaying(
             onHandlePlayerActions = onHandlePlayerActions,
             onNavigate = onNavigate,
             onNavigateUp = onNavigateUp,
+            animatedVisibilityScope = animatedVisibilityScope,
             loadedMedias = loadedMedias
         )
     } else {
@@ -91,7 +93,8 @@ fun SharedTransitionScope.NowPlaying(
                     onHandlePlayerActions = onHandlePlayerActions,
                     onNavigate = onNavigate,
                     onNavigateUp = onNavigateUp,
-                    onShowLyrics = { showFullLyrics = true }
+                    onShowLyrics = { showFullLyrics = true },
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             }
 
@@ -109,6 +112,7 @@ private fun SharedTransitionScope.NowPlayingContent(
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     onShowLyrics: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
     var snap by rememberSnapSpeedAndPitch()
@@ -142,7 +146,6 @@ private fun SharedTransitionScope.NowPlayingContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 10.dp)
             .statusBarsPadding()
             .navigationBarsPadding(),
@@ -186,7 +189,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                 modifier = Modifier
                     .sharedBounds(
                         sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                     .basicMarquee()
             )
@@ -197,7 +200,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                 modifier = Modifier
                     .sharedElement(
                         sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.ARTIST + musicState.mediaId),
-                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                        animatedVisibilityScope = animatedVisibilityScope
 
                     )
                     .basicMarquee()
@@ -211,6 +214,7 @@ private fun SharedTransitionScope.NowPlayingContent(
         )
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
             ActionButtonsRow(
+                animatedVisibilityScope = animatedVisibilityScope,
                 musicState = musicState,
                 onHandlePlayerActions = onHandlePlayerActions
             )
@@ -220,16 +224,8 @@ private fun SharedTransitionScope.NowPlayingContent(
                 onShowLyrics = onShowLyrics,
                 onShowSpeedCard = { showSpeedCard = true },
                 onHandlePlayerActions = onHandlePlayerActions,
-                onNavigate = onNavigate,
-                loadedMedias = loadedMedias
+                onNavigate = onNavigate
             )
-//            QuickActionsRow2(
-//                musicState = musicState,
-//                onShowLyrics = onShowLyrics,
-//                onShowSpeedCard = { showSpeedCard = true },
-//                onHandlePlayerActions = onHandlePlayerActions,
-//                onNavigate = onNavigate
-//            )
         }
 
     }

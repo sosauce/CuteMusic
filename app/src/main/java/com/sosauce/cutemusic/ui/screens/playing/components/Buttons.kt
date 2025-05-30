@@ -4,12 +4,11 @@
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,10 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberShouldApplyLoop
 import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
@@ -48,7 +45,6 @@ import com.sosauce.cutemusic.ui.shared_components.AnimatedIconButton
 import com.sosauce.cutemusic.utils.AnimationDirection
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberAnimatable
-import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.thenIf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -108,28 +104,15 @@ fun PlayPauseButton(
     isPlaying: Boolean,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
-
-    val interactionSource = rememberInteractionSource()
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.7f else 1f
-    )
-
-
-
     IconButton(
         onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
-        modifier = buttonModifier,
-        interactionSource = interactionSource
+        modifier = buttonModifier
     ) {
         Icon(
             imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-            contentDescription = if (isPlaying) stringResource(androidx.media3.session.R.string.media3_controls_pause_description) else stringResource(androidx.media3.session.R.string.media3_controls_play_description),
+            contentDescription = if (isPlaying) stringResource(androidx.media3.session.R.string.media3_controls_pause_description) else stringResource(
+                androidx.media3.session.R.string.media3_controls_play_description),
             modifier = modifier
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                }
         )
     }
 }
@@ -137,11 +120,11 @@ fun PlayPauseButton(
 @Composable
 fun SharedTransitionScope.ActionButtonsRow(
     musicState: MusicState,
-    onHandlePlayerActions: (PlayerActions) -> Unit
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
 
     val previousButtonSharedState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON)
-    val animatedVisibilityScope = LocalNavAnimatedContentScope.current
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -195,7 +178,7 @@ fun SharedTransitionScope.ActionButtonsRow(
             modifier = Modifier
                 .sharedElement(
                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
-                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
                 .size(40.dp),
             buttonModifier = Modifier.size(60.dp),

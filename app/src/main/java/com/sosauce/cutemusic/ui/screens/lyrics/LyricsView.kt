@@ -2,9 +2,7 @@
 
 package com.sosauce.cutemusic.ui.screens.lyrics
 
-import android.app.SearchManager
 import android.content.ClipData
-import android.content.Intent
 import android.view.WindowManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.animateColorAsState
@@ -53,7 +51,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,7 +64,9 @@ import com.sosauce.cutemusic.ui.screens.playing.components.PlayPauseButton
 import com.sosauce.cutemusic.ui.shared_components.AnimatedIconButton
 import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.utils.AnimationDirection
+import com.sosauce.cutemusic.utils.GOOGLE_SEARCH
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
+import com.sosauce.cutemusic.utils.rememberAnimatable
 import kotlinx.coroutines.launch
 
 @Composable
@@ -76,7 +76,7 @@ fun LyricsView(
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
     val activity = LocalActivity.current
-    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val clipboardManager = LocalClipboard.current
     val isLandscape = rememberIsLandscape()
     val scope = rememberCoroutineScope()
@@ -120,13 +120,7 @@ fun LyricsView(
                         ) {
                             CuteText(stringResource(R.string.no_lyrics_note))
                             Button(
-                                onClick = {
-                                    val query = "${musicState.title} ${musicState.artist} lyrics"
-                                    val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                        putExtra(SearchManager.QUERY, query)
-                                    }
-                                    context.startActivity(intent)
-                                }
+                                onClick = { uriHandler.openUri("$GOOGLE_SEARCH${musicState.title}+${musicState.artist}+lyrics") }
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
@@ -144,7 +138,7 @@ fun LyricsView(
                     ) { index, lyric ->
 
                         val nextTimestamp = remember(index) {
-                            if (index < musicState.lyrics.lastIndex) {
+                            if (index < musicState.lyrics.size - 1) {
                                 musicState.lyrics[index + 1].timestamp
                             } else 0
                         }

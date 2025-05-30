@@ -17,12 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -54,6 +56,8 @@ fun SharedTransitionScope.Artwork(
     val useShuffle by rememberShouldApplyShuffle()
     val pagerState =
         rememberPagerState(initialPage = loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) { loadedMedias.size }
+    var fromShapePath by remember { mutableStateOf(Path()) }
+    var toShapePath by remember { mutableStateOf(Path()) }
 
 
     if (useCarousel) {
@@ -128,10 +132,6 @@ fun SharedTransitionScope.Artwork(
                 contentDescription = stringResource(R.string.artwork),
                 modifier = Modifier
                     .fillMaxSize(0.9f)
-//                    .sharedElement(
-//                        sharedContentState = rememberSharedContentState(musicState.mediaId),
-//                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                    )
                     .clip(artShape.toShape()),
                 contentScale = ContentScale.Crop
             )

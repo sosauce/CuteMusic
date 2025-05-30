@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.ui.navigation
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
@@ -11,9 +12,15 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.sosauce.cutemusic.data.actions.MetadataActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -32,11 +39,20 @@ import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
 import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
 import com.sosauce.cutemusic.utils.CurrentScreen
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.NAVIGATION_PREFIX
+import com.sosauce.cutemusic.utils.navigateSingleTop
 import org.koin.androidx.compose.koinViewModel
+import kotlin.collections.find
 
 @Composable
 fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
 
+//    val navController = rememberNavController().apply {
+//        addOnDestinationChangedListener { _, destination, _ ->
+//            CurrentScreen.screen =
+//                destination.route?.removePrefix(NAVIGATION_PREFIX) ?: Screen.Main.toString()
+//        }
+//    }
     val backStack = rememberNavBackStack(Screen.Main).apply {
         CurrentScreen.screen = lastOrNull() ?: Screen.Main
     }
@@ -67,6 +83,8 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         onNavigate = backStack::add,
                         currentlyPlaying = musicState.title,
                         isCurrentlyPlaying = musicState.isPlaying,
+                        onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         onLoadMetadata = { path, uri ->
                             metadataViewModel.onHandleMetadataActions(
                                 MetadataActions.LoadSong(
@@ -85,6 +103,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                 entry<Screen.Albums> {
                     AlbumsScreen(
                         albums = albums,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         currentlyPlaying = musicState.title,
                         isPlayerReady = musicState.isPlayerReady,
                         isPlaying = musicState.isPlaying,
@@ -95,8 +114,9 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
 
                 entry<Screen.NowPlaying> {
                     NowPlaying(
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         musicState = musicState,
-                        loadedMedias = musics.fastFilter { it.mediaId in musicState.loadedMedias }.sortedBy { musicState.loadedMedias[it.mediaId] },
+                        loadedMedias = musics.fastFilter { it.mediaId in musicState.loadedMedias },
                         onHandlePlayerActions = viewModel::handlePlayerActions,
                         onNavigateUp = backStack::removeLastOrNull,
                         onNavigate = backStack::add,
@@ -124,6 +144,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             album = album,
                             onNavigateUp = backStack::removeLastOrNull,
                             musicState = musicState,
+                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                             onNavigate = backStack::add,
                             onHandleMediaItemAction = viewModel::handleMediaItemActions,
                             onHandlePlayerActions = viewModel::handlePlayerActions,
@@ -146,6 +167,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         currentlyPlaying = musicState.title,
                         onHandlePlayerActions = viewModel::handlePlayerActions,
                         isPlaying = musicState.isPlaying,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         isPlayerReady = musicState.isPlayerReady
                     )
                 }
@@ -160,6 +182,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlayerAction = viewModel::handlePlayerActions,
                             musicState = musicState,
+                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                             onHandleMediaItemAction = viewModel::handleMediaItemActions,
                             onLoadMetadata = { path, uri ->
                                 metadataViewModel.onHandleMetadataActions(
@@ -194,6 +217,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         onNavigate = backStack::add,
                         currentlyPlaying = musicState.title,
                         isCurrentlyPlaying = musicState.isPlaying,
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         isPlayerReady = musicState.isPlayerReady,
                         onHandlePlayerAction = viewModel::handlePlayerActions
                     )
@@ -213,6 +237,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             currentMusicUri = musicState.uri,
                             onHandleMediaItemAction = viewModel::handleMediaItemActions,
                             musics = musics,
+                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlaylistAction = playlistViewModel::handlePlaylistActions
                         )
@@ -221,5 +246,183 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
 
             }
         )
+
+//        NavHost(
+//            navController = navController,
+//            startDestination = Screen.Main
+//        ) {
+//            composable<Screen.Main> {
+//                MainScreen(
+//                    musics = musics,
+//                    onNavigate = navController::navigateSingleTop,
+//                    currentlyPlaying = musicState.title,
+//                    isCurrentlyPlaying = musicState.isPlaying,
+//                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
+//                    animatedVisibilityScope = this,
+//                    onLoadMetadata = { path, uri ->
+//                        metadataViewModel.onHandleMetadataActions(
+//                            MetadataActions.LoadSong(
+//                                path,
+//                                uri
+//                            )
+//                        )
+//                    },
+//                    isPlayerReady = musicState.isPlayerReady,
+//                    currentMusicUri = musicState.uri,
+//                    onHandlePlayerAction = viewModel::handlePlayerActions,
+//                    onHandleMediaItemAction = viewModel::handleMediaItemActions
+//                )
+//
+//            }
+//
+//            composable<Screen.Albums> {
+//                AlbumsScreen(
+//                    albums = albums,
+//                    animatedVisibilityScope = this,
+//                    currentlyPlaying = musicState.title,
+//                    isPlayerReady = musicState.isPlayerReady,
+//                    isPlaying = musicState.isPlaying,
+//                    onHandlePlayerActions = viewModel::handlePlayerActions,
+//                    onNavigate = navController::navigateSingleTop
+//                )
+//            }
+//            composable<Screen.NowPlaying> {
+//
+//                val lyrics by viewModel.lyrics.collectAsStateWithLifecycle()
+//                val loadedMedias by viewModel.loadedMedias.collectAsStateWithLifecycle()
+//
+//                NowPlaying(
+//                    animatedVisibilityScope = this,
+//                    musicState = musicState,
+//                    loadedMedias = loadedMedias,
+//                    onHandlePlayerActions = viewModel::handlePlayerActions,
+//                    onNavigateUp = navController::navigateUp,
+//                    onNavigate = navController::navigateSingleTop,
+//                    lyrics = lyrics
+//                )
+//            }
+//            composable<Screen.Settings> {
+//                val folders by viewModel.folders.collectAsStateWithLifecycle()
+//                val latestSafTracks by viewModel.safTracks.collectAsStateWithLifecycle()
+//
+//                SettingsScreen(
+//                    onNavigateUp = navController::navigateUp,
+//                    folders = folders,
+//                    latestSafTracks = latestSafTracks,
+//                    onShortClick = { viewModel.handlePlayerActions(PlayerActions.StartPlayback(it)) },
+//                    isPlayerReady = musicState.isPlayerReady,
+//                    currentMusicUri = musicState.uri,
+//                )
+//            }
+//            composable<Screen.AlbumsDetails> {
+//                val index = it.toRoute<Screen.AlbumsDetails>()
+//                albums.find { album -> album.id == index.id }?.let { album ->
+//                    AlbumDetailsScreen(
+//                        musics = musics.fastFilter { it.mediaMetadata.albumTitle == album.name },
+//                        album = album,
+//                        onNavigateUp = navController::navigateUp,
+//                        musicState = musicState,
+//                        animatedVisibilityScope = this,
+//                        onNavigate = navController::navigateSingleTop,
+//                        onHandleMediaItemAction = viewModel::handleMediaItemActions,
+//                        onHandlePlayerActions = viewModel::handlePlayerActions,
+//                        onLoadMetadata = { path, uri ->
+//                            metadataViewModel.onHandleMetadataActions(
+//                                MetadataActions.LoadSong(
+//                                    path,
+//                                    uri
+//                                )
+//                            )
+//                        }
+//                    )
+//                }
+//            }
+//
+//            composable<Screen.Artists> {
+//                ArtistsScreen(
+//                    artist = artists,
+//                    onNavigate = navController::navigateSingleTop,
+//                    currentlyPlaying = musicState.title,
+//                    onHandlePlayerActions = viewModel::handlePlayerActions,
+//                    isPlaying = musicState.isPlaying,
+//                    animatedVisibilityScope = this,
+//                    isPlayerReady = musicState.isPlayerReady
+//                )
+//            }
+//            composable<Screen.ArtistsDetails> {
+//                val index = it.toRoute<Screen.ArtistsDetails>()
+//                artists.find { artist -> artist.id == index.id }?.let { artist ->
+//                    ArtistDetails(
+//                        musics = musics.fastFilter { it.mediaMetadata.artist.toString() == artist.name },
+//                        albums = albums.fastFilter { it.artist == artist.name },
+//                        artist = artist,
+//                        onNavigate = navController::navigateSingleTop,
+//                        onNavigateUp = navController::navigateUp,
+//                        onHandlePlayerAction = viewModel::handlePlayerActions,
+//                        musicState = musicState,
+//                        animatedVisibilityScope = this,
+//                        onHandleMediaItemAction = viewModel::handleMediaItemActions,
+//                        onLoadMetadata = { path, uri ->
+//                            metadataViewModel.onHandleMetadataActions(
+//                                MetadataActions.LoadSong(
+//                                    path,
+//                                    uri
+//                                )
+//                            )
+//                        }
+//                    )
+//                }
+//            }
+//
+//            composable<Screen.MetadataEditor> {
+//                val index = it.toRoute<Screen.MetadataEditor>()
+//                musics.find { music -> music.mediaId == index.id }?.let { music ->
+//                    MetadataEditor(
+//                        music = music,
+//                        onNavigateUp = navController::navigateUp,
+//                        metadataViewModel = metadataViewModel,
+//                        onEditMusic = { uris, intentSender ->
+//                            viewModel.editMusic(
+//                                uris,
+//                                intentSender
+//                            )
+//                        }
+//                    )
+//                }
+//            }
+//
+//            composable<Screen.Playlists> {
+//                PlaylistsScreen(
+//                    onNavigate = navController::navigateSingleTop,
+//                    currentlyPlaying = musicState.title,
+//                    isCurrentlyPlaying = musicState.isPlaying,
+//                    animatedVisibilityScope = this,
+//                    isPlayerReady = musicState.isPlayerReady,
+//                    onHandlePlayerAction = viewModel::handlePlayerActions
+//                )
+//            }
+//
+//            composable<Screen.PlaylistDetails> {
+//                val playlistViewModel = koinViewModel<PlaylistViewModel>()
+//                val index = it.toRoute<Screen.PlaylistDetails>()
+//                val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+//
+//                playlists.find { it.id == index.id }?.let { playlist ->
+//                    PlaylistDetailsScreen(
+//                        playlist = playlist,
+//                        musicState = musicState,
+//                        onNavigate = navController::navigateSingleTop,
+//                        onHandlePlayerAction = viewModel::handlePlayerActions,
+//                        isPlayerReady = musicState.isPlayerReady,
+//                        currentMusicUri = musicState.uri,
+//                        onHandleMediaItemAction = viewModel::handleMediaItemActions,
+//                        musics = musics,
+//                        animatedVisibilityScope = this,
+//                        onNavigateUp = navController::navigateUp,
+//                        onHandlePlaylistAction = playlistViewModel::handlePlaylistActions
+//                    )
+//                }
+//            }
+//        }
     }
 }

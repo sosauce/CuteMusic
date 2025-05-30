@@ -24,6 +24,6 @@ data class MusicState(
     val sleepTimerActive: Boolean = false,
     val mediaId: String = "",
     val mediaIndex: Int = 0,
-    val loadedMedias: Map<String, Int> = emptyMap(), // Map of mediaId to index
+    val loadedMedias: List<String> = emptyList(), // List of mediaIds ofc!
     val lyrics: List<Lyrics> = emptyList()
 )

@@ -3,6 +3,7 @@
 package com.sosauce.cutemusic.ui.screens.artist
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
@@ -43,7 +44,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Artist
@@ -59,6 +59,7 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
     artist: List<Artist>,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     currentlyPlaying: String,
     onNavigate: (Screen) -> Unit,
     isPlaying: Boolean,
@@ -125,7 +126,8 @@ fun SharedTransitionScope.ArtistsScreen(
                                 )
                         ) {
                             ArtistInfoList(
-                                artist = artist
+                                artist = artist,
+                                animatedVisibilityScope = animatedVisibilityScope
                             ) { onNavigate(Screen.ArtistsDetails(artist.id)) }
                         }
                     }
@@ -159,13 +161,14 @@ fun SharedTransitionScope.ArtistsScreen(
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerActions,
                     isPlaying = isPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     isPlayerReady = isPlayerReady,
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
                             modifier = Modifier.sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
                         ) { onHandlePlayerActions(PlayerActions.PlayRandom) }
                     }
@@ -180,6 +183,7 @@ fun SharedTransitionScope.ArtistsScreen(
 @Composable
 fun SharedTransitionScope.ArtistInfoList(
     modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     artist: Artist,
     onClick: () -> Unit
 ) {
@@ -197,7 +201,7 @@ fun SharedTransitionScope.ArtistInfoList(
                     .padding(start = 10.dp)
                     .sharedElement(
                         sharedContentState = rememberSharedContentState(key = artist.id),
-                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                        animatedVisibilityScope = animatedVisibilityScope,
                     )
                     .size(45.dp)
                     .clip(RoundedCornerShape(10.dp))
@@ -221,7 +225,7 @@ fun SharedTransitionScope.ArtistInfoList(
                         .basicMarquee()
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
-                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                            animatedVisibilityScope = animatedVisibilityScope,
                         )
                 )
 

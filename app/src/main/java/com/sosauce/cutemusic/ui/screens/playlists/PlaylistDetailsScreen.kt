@@ -4,6 +4,7 @@ package com.sosauce.cutemusic.ui.screens.playlists
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
@@ -28,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
@@ -60,6 +60,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     onHandlePlaylistAction: (PlaylistActions) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onNavigateUp: () -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
 ) {
@@ -120,7 +121,6 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 onLoadMetadata = onLoadMetadata,
                                 isPlayerReady = isPlayerReady,
                                 onHandleMediaItemAction = onHandleMediaItemAction,
-                                onHandlePlayerActions = onHandlePlayerAction,
                                 playlistDropdownMenuItem = {
                                     RemoveFromPlaylistDropdownItem(
                                         onRemoveFromPlaylist = {
@@ -187,13 +187,14 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                     isPlayerReady = musicState.isPlayerReady,
                     isPlaying = musicState.isPlaying,
                     onHandlePlayerActions = onHandlePlayerAction,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     showSearchField = false,
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
                             modifier = Modifier.sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
                         ) {
                             onHandlePlayerAction(

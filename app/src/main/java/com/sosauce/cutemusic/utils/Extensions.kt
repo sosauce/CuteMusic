@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.offset
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavHostController
 import androidx.navigation3.runtime.NavKey
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
@@ -325,6 +326,9 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
         unregisterContentObserver(observer)
     }
 }
+
+fun <T : Any> NavHostController.navigateSingleTop(route: T) =
+    navigate(route) { launchSingleTop = true }
 
 @Composable
 fun Modifier.cuteHazeEffect(

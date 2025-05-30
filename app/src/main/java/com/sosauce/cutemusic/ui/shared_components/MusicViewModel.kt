@@ -12,13 +12,19 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
+import androidx.media3.common.Player.EVENT_POSITION_DISCONTINUITY
+import androidx.media3.common.Player.EVENT_TIMELINE_CHANGED
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
@@ -47,18 +53,22 @@ import com.sosauce.cutemusic.utils.playFromArtist
 import com.sosauce.cutemusic.utils.playFromPlaylist
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -124,8 +134,8 @@ class MusicViewModel(
                 super.onMediaMetadataChanged(mediaMetadata)
                 _musicState.update {
                     it.copy(
-                        title = mediaMetadata.title?.toString() ?: "Nothing playing!",
-                        artist = mediaMetadata.artist?.toString() ?: "No artist!",
+                        title = mediaMetadata.title.toString(),
+                        artist = mediaMetadata.artist.toString(),
                         mediaId = mediaMetadata.extras?.getString("mediaId")
                             ?: (System.currentTimeMillis().toString()),
                         artistId = mediaMetadata.extras?.getLong("artist_id") ?: 0,
@@ -223,25 +233,6 @@ class MusicViewModel(
                 }
             }
 
-            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                super.onTimelineChanged(timeline, reason)
-
-                val map = mutableMapOf<String, Int>()
-
-                (0 until timeline.windowCount).map { index ->
-                    map.put(
-                        timeline.getWindow(index, Timeline.Window()).mediaItem.mediaId,
-                        index
-                    )
-                }
-
-                _musicState.update {
-                    it.copy(
-                        loadedMedias = map
-                    )
-                }
-            }
-
             override fun onEvents(player: Player, events: Player.Events) {
                 super.onEvents(player, events)
                 viewModelScope.launch {
@@ -294,6 +285,11 @@ class MusicViewModel(
                                     for (i in 0 until mediaController!!.mediaItemCount) {
                                         list.add(mediaController!!.getMediaItemAt(i).mediaId)
                                     }
+                                    _musicState.update {
+                                        it.copy(
+                                            loadedMedias = list
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -326,6 +322,8 @@ class MusicViewModel(
     private fun seekToLastPlayedOrNot() {
         viewModelScope.launch {
             getMediaIndexToMediaIdMap(application).collectLatest { (id, position) ->
+
+
                 val index = (0 until mediaController!!.mediaItemCount).firstOrNull { i ->
                     mediaController!!.getMediaItemAt(i).mediaId == id
                 } ?: -1
@@ -339,7 +337,6 @@ class MusicViewModel(
             }
         }
     }
-
 
     private fun seekToLocalLastPlayed() {
         val (id, position) = localLastPlayed
@@ -570,22 +567,6 @@ class MusicViewModel(
                 }
                 sleepCountdownTimer?.start()
             }
-
-            is PlayerActions.ReArrangeQueue -> mediaController!!.moveMediaItem(action.from, action.to)
-            is PlayerActions.RemoveFromQueue -> {
-                val index = (0 until mediaController!!.mediaItemCount).first { mediaController!!.getMediaItemAt(it).mediaId == action.mediaId }
-                mediaController!!.removeMediaItem(index)
-            }
-            is PlayerActions.AddToQueue -> {
-                val exists = (0 until mediaController!!.mediaItemCount).any {
-                    mediaController!!.getMediaItemAt(it).mediaId == action.mediaItem.mediaId
-                }
-                if (!exists) {
-                    mediaController!!.addMediaItem(action.mediaItem)
-                }
-            }
-
-
         }
     }
 

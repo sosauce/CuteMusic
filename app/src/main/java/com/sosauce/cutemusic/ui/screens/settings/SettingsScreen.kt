@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.ui.screens.settings
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -29,6 +31,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -39,6 +44,7 @@ import com.sosauce.cutemusic.ui.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.ui.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.ui.screens.settings.compenents.SettingsScreens
 import com.sosauce.cutemusic.ui.shared_components.CuteNavigationButton
+import com.sosauce.cutemusic.utils.navigateSingleTop
 import com.sosauce.cutemusic.utils.showCuteSearchbar
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -54,6 +60,7 @@ fun SettingsScreen(
     currentMusicUri: String
 ) {
     val listState = rememberLazyListState()
+    //val navController = rememberNavController()
     val backStack = rememberNavBackStack(SettingsScreens.Settings)
     val items = arrayOf(
         Item(
@@ -155,6 +162,79 @@ fun SettingsScreen(
 
         }
     )
+
+//    NavHost(
+//        navController = navController,
+//        startDestination = SettingsScreens.Settings
+//    ) {
+//        composable<SettingsScreens.Settings> {
+//            Scaffold(
+//                contentWindowInsets = WindowInsets.safeDrawing
+//            ) { paddingValues ->
+//                Box(
+//                    modifier = Modifier.fillMaxSize()
+//                ) {
+//                    LazyColumn(
+//                        contentPadding = paddingValues,
+//                        state = listState
+//                    ) {
+//                        item { AboutCard() }
+//                        item { Spacer(Modifier.height(20.dp)) }
+//                        itemsIndexed(
+//                            items = items,
+//                            key = { _, item -> item.id }
+//                        ) { index, item ->
+//                            SettingsCategoryCard(
+//                                icon = item.icon,
+//                                name = item.name,
+//                                description = item.description,
+//                                topDp = if (index == 0) 24.dp else 4.dp,
+//                                bottomDp = if (index == items.lastIndex) 24.dp else 4.dp,
+//                                onNavigate = item.onNavigate
+//                            )
+//
+//                        }
+//                    }
+//                    AnimatedVisibility(
+//                        visible = listState.showCuteSearchbar,
+//                        modifier = Modifier
+//                            .padding(start = 15.dp)
+//                            .align(Alignment.BottomStart),
+//                        enter = slideInVertically { it },
+//                        exit = slideOutVertically { it }
+//                    ) {
+//                        CuteNavigationButton(
+//                            modifier = Modifier.navigationBarsPadding()
+//                        ) { onNavigateUp() }
+//                    }
+//                }
+//            }
+//        }
+//
+//        composable<SettingsScreens.LookAndFeel> {
+//            SettingsLookAndFeel(
+//                onNavigateUp = backStack::removeLastOrNull
+//            )
+//        }
+//
+//        composable<SettingsScreens.NowPlaying> {
+//            SettingsNowPlaying(
+//                onNavigateUp = backStack::removeLastOrNull
+//            )
+//        }
+//
+//        composable<SettingsScreens.Library> {
+//            SettingsLibrary(
+//                folders = folders,
+//                latestSafTracks = latestSafTracks,
+//                onShortClick = onShortClick,
+//                isPlayerReady = isPlayerReady,
+//                currentMusicUri = currentMusicUri,
+//                onNavigateUp = backStack::removeLastOrNull
+//            )
+//        }
+//
+//    }
 }
 
 @Immutable

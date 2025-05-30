@@ -14,8 +14,8 @@ android {
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 36
-        versionCode = 31
-        versionName = "2.8.1"
+        versionCode = 30
+        versionName = "2.8.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -86,6 +86,7 @@ android {
         implementation(libs.androidx.ui)
         implementation(libs.androidx.material.icons.extended)
         implementation(libs.androidx.lifecycle.runtime.compose)
+        implementation(libs.androidx.navigation.compose)
         implementation(libs.androidx.core.splashscreen)
         implementation(libs.androidx.datastore.preferences)
         implementation(libs.coil.compose)
@@ -109,7 +110,6 @@ android {
         implementation(libs.androidx.glance.appwidget)
         implementation(libs.androidx.navigation3.runtime)
         implementation(libs.androidx.navigation3.ui)
-        implementation(libs.reorderable)
         ksp(libs.androidx.room.compiler)
     }
 }

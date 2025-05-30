@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.sosauce.cutemusic.ui.screens.playing.components
 
@@ -18,11 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +38,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
@@ -51,7 +48,6 @@ import com.sosauce.cutemusic.ui.shared_components.CuteText
 import com.sosauce.cutemusic.ui.shared_components.MusicStateDetailsDialog
 import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
 
-
 @Composable
 fun QuickActionsRow(
     musicState: MusicState,
@@ -59,7 +55,6 @@ fun QuickActionsRow(
     onShowSpeedCard: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit = {},
-    loadedMedias: List<MediaItem>
 ) {
     val context = LocalContext.current
     var showDetailsDialog by remember { mutableStateOf(false) }
@@ -67,17 +62,6 @@ fun QuickActionsRow(
     val onBackground = MaterialTheme.colorScheme.onBackground
     var showPlaylistDialog by remember { mutableStateOf(false) }
     val uri = remember { musicState.uri.toUri() }
-    var showQueueSheet by remember { mutableStateOf(false) }
-
-
-    if (showQueueSheet) {
-        QueueSheet(
-            onDismissRequest = { showQueueSheet = false },
-            onHandlePlayerAction = onHandlePlayerActions,
-            loadedMedias = loadedMedias,
-            musicState = musicState
-        )
-    }
 
 
     if (showDetailsDialog) {
@@ -127,14 +111,6 @@ fun QuickActionsRow(
         }
         ShuffleButton()
         LoopButton()
-        IconButton(
-            onClick = { showQueueSheet = true }
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Rounded.PlaylistPlay,
-                contentDescription = null
-            )
-        }
         IconButton(
             onClick = { showTimePicker = true }
         ) {
@@ -291,5 +267,6 @@ fun equalizerActivityContract() = object : ActivityResultContract<Unit, Unit>() 
     override fun parseResult(
         resultCode: Int,
         intent: Intent?,
-    ) {}
+    ) {
+    }
 }

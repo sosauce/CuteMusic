@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
@@ -47,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
@@ -68,6 +68,7 @@ fun SharedTransitionScope.PlaylistsScreen(
     currentlyPlaying: String,
     isCurrentlyPlaying: Boolean,
     onNavigate: (Screen) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean,
     onHandlePlayerAction: (PlayerActions) -> Unit,
 ) {
@@ -185,6 +186,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                     currentlyPlaying = currentlyPlaying,
                     onHandlePlayerActions = onHandlePlayerAction,
                     isPlaying = isCurrentlyPlaying,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     isPlayerReady = isPlayerReady,
                     onNavigate = onNavigate,
                     fab = {
@@ -193,7 +195,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                                 onClick = { showPlaylistActionsDialog = true },
                                 modifier = Modifier.sharedBounds(
                                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 ),
                                 shape = RoundedCornerShape(14.dp)
                             ) {

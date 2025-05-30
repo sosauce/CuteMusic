@@ -6,6 +6,7 @@
 package com.sosauce.cutemusic.ui.shared_components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
@@ -52,7 +53,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
@@ -75,6 +75,7 @@ fun SharedTransitionScope.CuteSearchbar(
     currentlyPlaying: String = "",
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isPlaying: Boolean = false,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     isPlayerReady: Boolean = true,
     onNavigate: (Screen) -> Unit,
     showSearchField: Boolean = true,
@@ -156,7 +157,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                 .padding(start = 5.dp)
                                 .sharedBounds(
                                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 )
                                 .basicMarquee()
                         )
@@ -166,7 +167,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             modifier = Modifier
                                 .sharedElement(
                                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 ),
                             onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) },
                             animationDirection = AnimationDirection.LEFT,
@@ -181,7 +182,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             modifier = Modifier
                                 .sharedElement(
                                     sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                                    animatedVisibilityScope = animatedVisibilityScope
                                 ),
                             onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) },
                             animationDirection = AnimationDirection.RIGHT,

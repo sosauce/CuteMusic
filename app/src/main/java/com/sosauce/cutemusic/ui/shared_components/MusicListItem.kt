@@ -34,10 +34,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -67,12 +64,10 @@ import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.ui.navigation.Screen
 import com.sosauce.cutemusic.ui.screens.playlists.PlaylistPicker
 import com.sosauce.cutemusic.utils.CurrentScreen
 import com.sosauce.cutemusic.utils.ImageUtils
-import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
 fun SharedTransitionScope.LocalMusicListItem(
@@ -82,8 +77,7 @@ fun SharedTransitionScope.LocalMusicListItem(
     onNavigate: (Screen) -> Unit,
     currentMusicUri: String,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit,
+    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
     isPlayerReady: Boolean,
     showTrackNumber: Boolean = false,
@@ -105,10 +99,17 @@ fun SharedTransitionScope.LocalMusicListItem(
     val path = remember { music.mediaMetadata.extras?.getString("path") ?: "" }
     val deleteSongLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if (it.resultCode != Activity.RESULT_OK) {
+            if (it.resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
                     context,
-                    context.getString(R.string.error_deleting_song),
+                    context.resources.getText(R.string.deleting_song_OK),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } else {
+                Toast.makeText(
+                    context,
+                    context.resources.getText(R.string.error_deleting_song),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -167,10 +168,6 @@ fun SharedTransitionScope.LocalMusicListItem(
                         modifier = Modifier
                             .padding(start = 10.dp)
                             .size(45.dp)
-//                            .sharedElement(
-//                                sharedContentState = rememberSharedContentState(music.mediaId),
-//                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                            )
                             .clip(RoundedCornerShape(5.dp)),
                         contentScale = ContentScale.Crop,
                     )
@@ -217,7 +214,6 @@ fun SharedTransitionScope.LocalMusicListItem(
                     }
                 }
 
-
                 IconButton(
                     onClick = { isDropDownExpanded = true }
                 ) {
@@ -255,18 +251,6 @@ fun SharedTransitionScope.LocalMusicListItem(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.edit_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(music)) },
-                        text = {
-                            CuteText(stringResource(R.string.add_queue))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
                                 contentDescription = null
                             )
                         }
@@ -352,84 +336,6 @@ fun SharedTransitionScope.LocalMusicListItem(
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
-                    )
-                }
-            }
-        }
-    )
-}
-
-@Composable
-fun ReorderableCollectionItemScope.QueueMusicListItem(
-    modifier: Modifier = Modifier,
-    music: MediaItem,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    currentMusicUri: String,
-) {
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
-    val bgColor by animateColorAsState(
-        targetValue = if (currentMusicUri == uri.toString()) {
-            MaterialTheme.colorScheme.surfaceContainer
-        } else {
-            Color.Transparent
-        },
-        animationSpec = tween(500)
-    )
-
-    DropdownMenuItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(bgColor),
-        contentPadding = PaddingValues(0.dp),
-        onClick = {},
-        leadingIcon = {
-            AsyncImage(
-                model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri),
-                stringResource(R.string.artwork),
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .size(45.dp)
-                    .clip(RoundedCornerShape(5.dp)),
-                contentScale = ContentScale.Crop,
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.padding(vertical = 15.dp)
-            ) {
-                CuteText(
-                    text = music.mediaMetadata.title.toString(),
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.basicMarquee()
-                )
-                CuteText(
-                    text = music.mediaMetadata.artist.toString(),
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-        },
-        trailingIcon = {
-            Row {
-                IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.RemoveFromQueue(music.mediaId)) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = null
-                    )
-                }
-                IconButton(
-                    onClick = {},
-                    modifier = Modifier.draggableHandle()
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.DragHandle,
-                        contentDescription = null
                     )
                 }
             }
