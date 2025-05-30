@@ -69,7 +69,6 @@
     <string name="snap">合并速度和音高</string>
     <string name="new_rate">输入一个介于0.5与2之间的新值</string>
     <string name="share">分享</string>
-    <string name="show_close_button">在搜索栏显示关闭按钮</string>
     <string name="duration">时长</string>
     <string name="folders">文件夹</string>
     <string name="manage_shown_tabs">管理显示的标签页</string>
@@ -124,11 +123,7 @@
     <string name="now_playing_desc">让它变成你的样子！</string>
     <string name="library">库</string>
     <string name="library_desc">管理你的音乐列表，像DJ一样！</string>
-    <string name="fonts">字体</string><!-- start here of i guessed name by minqwq -->
     <string name="show_close_button">在 CuteSearchbar 上显示关闭按钮</string>
-    <string name="slider">进度条</string>
-    <string name="thumbless_slider">隐藏进度条上的"点"或者"棒"</string>
-    <string name="show_back_button">显示返回按钮</string><!-- end here of guessed name by minqwq -->
     <plurals name="tracks">
         <item quantity="one">%d 个歌曲</item>
         <item quantity="other">%d 个歌曲</item>
