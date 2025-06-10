@@ -209,28 +209,19 @@ private fun SharedTransitionScope.NowPlayingContent(
             musicState = musicState,
             onHandlePlayerActions = onHandlePlayerActions
         )
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
-            ActionButtonsRow(
-                musicState = musicState,
-                onHandlePlayerActions = onHandlePlayerActions
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            QuickActionsRow(
-                musicState = musicState,
-                onShowLyrics = onShowLyrics,
-                onShowSpeedCard = { showSpeedCard = true },
-                onHandlePlayerActions = onHandlePlayerActions,
-                onNavigate = onNavigate,
-                loadedMedias = loadedMedias
-            )
-//            QuickActionsRow2(
-//                musicState = musicState,
-//                onShowLyrics = onShowLyrics,
-//                onShowSpeedCard = { showSpeedCard = true },
-//                onHandlePlayerActions = onHandlePlayerActions,
-//                onNavigate = onNavigate
-//            )
-        }
+        ActionButtonsRow(
+            musicState = musicState,
+            onHandlePlayerActions = onHandlePlayerActions
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        QuickActionsRow(
+            musicState = musicState,
+            onShowLyrics = onShowLyrics,
+            onShowSpeedCard = { showSpeedCard = true },
+            onHandlePlayerActions = onHandlePlayerActions,
+            onNavigate = onNavigate,
+            loadedMedias = loadedMedias
+        )
 
     }
 

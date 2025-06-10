@@ -9,7 +9,7 @@ koinAndroidxStartup = "4.0.0"
 kotlin = "2.1.20"
 activityCompose = "1.10.1"
 coilCompose = "3.0.4"
-composeBom = "2025.05.01"
+composeBom = "2025.06.00"
 composeAnimation = "1.8.2"
 coreKtx = "1.16.0"
 coreSplashscreen = "1.0.1"
@@ -19,7 +19,7 @@ materialKolor = "3.0.0-beta01"
 media3Common = "1.7.1"
 media3Exoplayer = "1.7.1"
 media3Session = "1.7.1"
-reorderable = "2.4.3" # https://github.com/Calvin-LL/Reorderable
+reorderable = "2.5.1" # https://github.com/Calvin-LL/Reorderable
 squigglyslider = "1.0.0"
 serialization = "2.0.20"
 taglib = "1.0.0-alpha25"
@@ -28,7 +28,7 @@ roomKtx = "2.7.1"
 ksp = "2.1.20-1.0.31"
 kmpalette = "3.1.0"
 material3 = "1.4.0-alpha15"
-nav3Core = "1.0.0-alpha02"
+nav3Core = "1.0.0-alpha03"
 
 
 

@@ -188,21 +188,19 @@ fun SharedTransitionScope.NowPlayingLandscape(
                             musicState = musicState,
                             onHandlePlayerActions = onHandlePlayerActions
                         )
-                        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer) {
-                            ActionButtonsRow(
-                                musicState = musicState,
-                                onHandlePlayerActions = onHandlePlayerActions
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            QuickActionsRow(
-                                musicState = musicState,
-                                onShowLyrics = { showLyrics = true },
-                                onShowSpeedCard = { showSpeedCard = true },
-                                onHandlePlayerActions = onHandlePlayerActions,
-                                onNavigate = onNavigate,
-                                loadedMedias = loadedMedias
-                            )
-                        }
+                        ActionButtonsRow(
+                            musicState = musicState,
+                            onHandlePlayerActions = onHandlePlayerActions
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        QuickActionsRow(
+                            musicState = musicState,
+                            onShowLyrics = { showLyrics = true },
+                            onShowSpeedCard = { showSpeedCard = true },
+                            onHandlePlayerActions = onHandlePlayerActions,
+                            onNavigate = onNavigate,
+                            loadedMedias = loadedMedias
+                        )
                     }
                 }
             }
