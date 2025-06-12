@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">CuteMusic</string>
+    <string name="empty" translatable="false" />
     <string name="theme">"Tema"</string>
     <string name="settings">"Ajustes"</string>
     <string name="dark_mode">"Modo Oscuro"</string>
+    <string name="light_mode">"Modo Claro"</string>
     <string name="amoled_mode">"Modo Amoled"</string>
     <string name="version">"Versión"</string>
     <string name="support">"Soporte"</string>
@@ -34,6 +36,7 @@
     <string name="misc">"Varios"</string>
     <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
     <string name="follow_sys">"Seguir sistema"</string>
+    <string name="system">"Sistema"</string>
     <string name="ascending">"Ascendente"</string>
     <string name="descending">"Descendente"</string>
     <string name="playback_speed">"Ajustar velocidad de reproducción"</string>
@@ -98,12 +101,37 @@
     <string name="search_lyrics">Buscar letras</string>
     <string name="song_loading">Cargando canción…</string>
     <string name="use_carousel">Usar carrusel</string>
+    <string name="search_here">"Buscar aquí"</string>
+    <string name="no_of_grids">"Número de rejillas"</string>
+    <string name="show_shuffle_btn">"Mostrar botón de mezcla"</string>
+    <string name="not_m3u_file">"¡No es un archivo m3u!"</string>
+    <string name="m3u_saved_good">"¡Archivo m3u guardado exitosamente!"</string>
+    <string name="import_playlist">"Importar lista de reproducción"</string>
+    <string name="export_playlist">"Exportar lista de reproducción"</string>
+    <string name="edit_playlist">"Editar lista de reproducción"</string>
+    <string name="remove_from_playlist">"Quitar de lista de reproducción"</string>
+    <string name="seek_prev_song">"Buscar canción anterior"</string>
+    <string name="seek_next_song">"Buscar siguiente canción"</string>
+    <string name="sort">"Ordenar"</string>
+    <string name="stop_playback">"Detener reproducción"</string>
+    <string name="screen_selection">"Selección de pantalla"</string>
+    <string name="emoji">"Emoji"</string>
+    <string name="remove_emoji">"Quitar emoji"</string>
+    <string name="look_and_feel">"Apariencia"</string>
+    <string name="look_and_feel_desc">"La música es tuya, ¿por qué no el estilo también?"</string>
+    <string name="now_playing">"Reproduciendo ahora"</string>
+    <string name="now_playing_desc">"¡Hazlo a tu estilo!"</string>
+    <string name="library">"Biblioteca"</string>
+    <string name="library_desc">"¡Gestiona todas tus pistas como un DJ!"</string>
+    <string name="more_desc">"Otras configuraciones que no merecían su propia página."</string>
+    <string name="add_queue">"Añadir a la cola"</string>
+
     <plurals name="tracks">
-    <item quantity="one">%d pista</item>
-    <item quantity="other">%d pistas</item>
+        <item quantity="one">%d pista</item>
+        <item quantity="other">%d pistas</item>
     </plurals>
     <plurals name="albums">
-    <item quantity="one">%d álbum</item>
-    <item quantity="other">%d álbumes</item>
-</plurals>
+        <item quantity="one">%d álbum</item>
+        <item quantity="other">%d álbumes</item>
+    </plurals>
 </resources>
