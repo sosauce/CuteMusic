@@ -140,6 +140,7 @@ fun SharedTransitionScope.ArtistsScreen(
                 CuteSearchbar(
                     query = query,
                     onQueryChange = { query = it },
+                    isScrolling = state.isScrollInProgress,
                     trailingIcon = {
                         IconButton(
                             onClick = { sortMenuExpanded = true }

@@ -17,6 +17,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NP_ART_SHAPE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
@@ -64,6 +65,7 @@ data object PreferencesKeys {
     val NP_ART_SHAPE = stringPreferencesKey("NP_ART_SHAPE")
     val SLIDER_STYLE = stringPreferencesKey("SLIDER_STYLE")
     val THUMBLESS_SLIDER = booleanPreferencesKey("THUMBLESS_SLIDER")
+    val HIDDEN_FOLDERS = stringSetPreferencesKey("HIDDEN_FOLDERS")
 }
 
 
@@ -146,6 +148,10 @@ fun rememberSliderStyle() =
 @Composable
 fun rememberThumblessSlider() =
     rememberPreference(key = THUMBLESS_SLIDER, defaultValue = false)
+
+@Composable
+fun rememberHiddenFolders() =
+    rememberPreference(key = HIDDEN_FOLDERS, defaultValue = emptySet())
 
 fun getShouldLoop(context: Context) =
     getPreference(key = APPLY_LOOP, defaultValue = false, context = context)

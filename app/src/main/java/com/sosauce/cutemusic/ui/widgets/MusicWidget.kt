@@ -13,6 +13,9 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.action.Action
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -38,6 +41,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.main.MainActivity
 import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
 import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +72,7 @@ object MusicWidget : GlanceAppWidget() {
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .background(GlanceTheme.colors.background)
+                    .clickable(actionStartActivity<MainActivity>())
             ) {
                 Image(
                     provider = ImageProvider(currentArtUri?.toUri() ?: Uri.EMPTY),

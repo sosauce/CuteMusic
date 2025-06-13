@@ -151,6 +151,7 @@ fun SharedTransitionScope.AlbumsScreen(
                 CuteSearchbar(
                     query = query,
                     onQueryChange = { query = it },
+                    isScrolling = state.isScrollInProgress,
                     trailingIcon = {
                         val numberOfGrids = setOf(2, 3, 4)
 

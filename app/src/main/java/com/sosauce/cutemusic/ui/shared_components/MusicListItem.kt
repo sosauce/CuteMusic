@@ -163,7 +163,7 @@ fun SharedTransitionScope.LocalMusicListItem(
                 } else {
                     AsyncImage(
                         model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri),
-                        stringResource(R.string.artwork),
+                        contentDescription = stringResource(R.string.artwork),
                         modifier = Modifier
                             .padding(start = 10.dp)
                             .size(45.dp)

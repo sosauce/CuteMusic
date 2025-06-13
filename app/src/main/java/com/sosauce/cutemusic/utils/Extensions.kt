@@ -309,6 +309,12 @@ inline fun <E> Set<E>.copyMutate(block: MutableSet<E>.() -> Unit): Set<E> {
     return toMutableSet().apply(block)
 }
 
+fun <E> MutableSet<E>.addOrRemove(element: E) {
+    if (contains(element)) {
+        remove(element)
+    } else add(element)
+}
+
 
 typealias LastPlayed = Pair<String, Long>
 

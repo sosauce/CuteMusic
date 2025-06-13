@@ -4,38 +4,40 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import coil3.ImageLoader
 import coil3.request.ImageRequest
+import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
-import coil3.request.ImageRequest as ImageRequest3
 
 object ImageUtils {
 
     @Composable
-    fun imageRequester(img: Any?): ImageRequest3 {
+    fun imageRequester(img: Any?): ImageRequest {
         val context = LocalContext.current
-        val request = ImageRequest3.Builder(context)
+        return  ImageRequest.Builder(context)
             .data(img)
             .crossfade(true)
             .transformations()
             .diskCacheKey(img.toString())
             .memoryCacheKey(img.toString())
             .build()
-            .apply {
-            }
-
-        return request
     }
 
     fun getAlbumArt(albumId: Long): Any? {

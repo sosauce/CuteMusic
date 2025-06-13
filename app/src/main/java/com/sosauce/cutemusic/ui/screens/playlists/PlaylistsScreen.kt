@@ -165,6 +165,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                 CuteSearchbar(
                     query = query,
                     onQueryChange = { query = it },
+                    isScrolling = state.isScrollInProgress,
                     modifier = Modifier.align(rememberSearchbarAlignment()),
                     trailingIcon = {
                         IconButton(
