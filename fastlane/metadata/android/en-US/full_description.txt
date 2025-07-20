@@ -1,3 +1,5 @@
+<i>CuteMusic</i> is a simple, lightweight and open-source offline music player app for Android, using Material 3/You & Monet theming. It's Very fast and snappy!
+
 - Play any song from anywhere just by sharing the audio file to the app without downloading it!
 - Easy search across all your music/albums/artists!
 - Very fast and snappy!

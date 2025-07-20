@@ -1,3 +1,5 @@
+<i>CuteMusic</i> est un lecteur de musique hors ligne simple, léger et open-source pour Android, utilisant le thème Material 3/You & Monet. CuteMusic est très rapide !
+
 - Jouez n'importe quelle musique, just en partageant le fichier à l'application, sans le télécharger !
 - Recherche simple à travers touts vos musiques/albums/artistes !
 - Très rapide et fluide !
