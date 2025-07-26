@@ -2,8 +2,6 @@
 <h1 align="center">CuteMusic</h1>
 <p align="center">CuteMusic is a cute and powerful offline music player for Android!</p>
 
-> [!CAUTION]
-> The Google Play Store release is a fake and stolen one. CuteMusic is NOT officialy available on the Google Play Store !!!
  <p align="center">
    <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9"/>
    <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
@@ -54,13 +52,14 @@
 ---
 <h1>💬 Contact Me</h1>
 
-- Discord server: https://discord.gg/c6aCu4yjbu
-- Email: sosauce_dev@protonmail.com
+[Discord server](https://discord.gg/c6aCu4yjbu)
+</br>
+[Email](mailto:sosauce_dev@protonmail.com)
 
 ---
 <h1>❤️ Support</h1>
 
-<p>You can support me by donating on my PayPal: https://bit.ly/sosaucePayPal. Thank you so much for the support ❤️</p>
+If you wish to support me, you can see how to do so on my [website](https://sosauce.github.io/support/)
 
 ---
 <h1>⚠️ Copyright</h1>
@@ -87,4 +86,4 @@ To get started with contributing, please check the [get started readme](https://
 
 ---
 
-#### You can find the SHA-256 here : https://sosauce.github.io/projects/
+#### You can find the SHA-256 [here](https://sosauce.github.io/projects/)
