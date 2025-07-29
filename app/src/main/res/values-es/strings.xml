@@ -29,10 +29,10 @@
     <string name="hi_there">"¡Hola!"</string>
     <string name="permissio_needed">"¡Parece que CuteMusic no tiene permiso para acceder a tu música! ¡Puedes otorgarlo a continuación!"</string>
     <string name="request_perm">"Solicitar permisos"</string>
-    <string name="no_musics_found">"¡Música no encontrada!"</string>
+    <string name="no_musics_found">"¡Canción no encontrada!"</string>
     <string name="error_deleting_song">"Hubo un error al eliminar la canción"</string>
     <string name="deleting_song_OK">"La canción ha sido eliminada exitosamente"</string>
-    <string name="okay">"De acuerdo"</string>
+    <string name="okay">"Vale"</string>
     <string name="misc">"Varios"</string>
     <string name="no_albums_found">"¡Álbumes no encontrados!"</string>
     <string name="follow_sys">"Seguir sistema"</string>
@@ -61,7 +61,7 @@
     <string name="error_saving">Error al guardar los cambios.</string>
     <string name="editor">Editor</string>
     <string name="details">Detalles</string>
-    <string name="classic_slider">Usar slider clásico</string>
+    <string name="classic_slider">Usar barra de progreso clásica</string>
     <string name="cancel">Cancelar</string>
     <string name="set_sap">Ajustar velocidad y tono</string>
     <string name="set_speed">Ajustar velocidad</string>
@@ -82,7 +82,7 @@
     <string name="from_saf">Esta pista viene de S.A.F</string>
     <string name="open_saf">Abrir S.A.F para añadir pistas</string>
     <string name="blacklisted">Lista negra</string>
-    <string name="not_blacklisted">No en la lista negra</string>
+    <string name="not_blacklisted">No está en la lista negra</string>
     <string name="saf_manager">Administrador S.A.F</string>
     <string name="no_playlists">¡No tienes listas de reproducción! Haz tu experiencia de escucha más divertida creando una.</string>
     <string name="alrdy_in_playlist">¡La pista ya está en la lista de reproducción!</string>
@@ -117,13 +117,13 @@
     <string name="screen_selection">"Selección de pantalla"</string>
     <string name="emoji">"Emoji"</string>
     <string name="remove_emoji">"Quitar emoji"</string>
-    <string name="look_and_feel">"Apariencia"</string>
+    <string name="look_and_feel">"Apariencia y estilo"</string>
     <string name="look_and_feel_desc">"La música es tuya, ¿por qué no el estilo también?"</string>
     <string name="now_playing">"Reproduciendo ahora"</string>
     <string name="now_playing_desc">"¡Hazlo a tu estilo!"</string>
     <string name="library">"Biblioteca"</string>
     <string name="library_desc">"¡Gestiona todas tus pistas como un DJ!"</string>
-    <string name="more_desc">"Otras configuraciones que no merecían su propia página."</string>
+    <string name="more_desc">"Otros ajustes que no merecían su propia página."</string>
     <string name="add_queue">"Añadir a la cola"</string>
 
     <plurals name="tracks">
