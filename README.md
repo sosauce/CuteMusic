@@ -19,6 +19,7 @@
   <a href="https://apt.izzysoft.de/fdroid/index/apk/com.sosauce.cutemusic">
    <image src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"/>
  </a>
+
    <a href="https://f-droid.org/en/packages/com.sosauce.cutemusic/">
    <image src="https://f-droid.org/badge/get-it-on.png" height="80"/>
  </a>
@@ -28,10 +29,12 @@
 
 
 <p align=center>
+ <img height="512" alt="1" src="https://github.com/user-attachments/assets/82108efb-4030-4603-adac-a53bcc21fee3" />
+ <img height="512" alt="2" src="https://github.com/user-attachments/assets/1a713055-84a3-48e8-b9b4-03b692429da1" />
+ <img height="512" alt="3" src="https://github.com/user-attachments/assets/f5be5d07-d588-4304-ad1b-ce6552a1be53" />
+ <img height="512" alt="5" src="https://github.com/user-attachments/assets/96009e6e-af5e-4d15-8d6a-15cc83274d1a" />
+ <img height="512" alt="4" src="https://github.com/user-attachments/assets/40750ad9-7f18-4213-9c33-6a74d8f4a20e" />
 
-<image src="https://i.postimg.cc/tJS44wR7/1.png" height="512" />
- <image src="https://i.ibb.co/jkqv5DfC/np.png" height="512" />
- <image src="https://i.postimg.cc/4NvTPrRc/3.png" height="512" />
 </p>
   
 <h1>👀 Overview</h1>
@@ -40,7 +43,7 @@
 - Easy search across all your music/albums/artists!
 - Very fast and snappy!
 - No unnecessary permissions needed!
-- Material 3/You & Monet theming (+ Amoled mode)!
+- Material 3 Expressive deisgn!
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
