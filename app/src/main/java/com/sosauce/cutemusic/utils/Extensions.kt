@@ -8,8 +8,6 @@ import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -17,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -25,14 +22,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
@@ -42,14 +35,10 @@ import androidx.compose.ui.unit.offset
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation3.runtime.NavKey
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
-import com.sosauce.cutemusic.ui.navigation.Screen
-import dev.chrisbanes.haze.HazeEffectScope
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
+import com.sosauce.cutemusic.domain.model.Album
+import com.sosauce.cutemusic.domain.model.Artist
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
@@ -58,14 +47,6 @@ import java.util.Locale
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-fun Modifier.thenIf(
-    condition: Boolean,
-    modifier: Modifier.() -> Modifier
-): Modifier {
-    return if (condition) {
-        this.then(modifier())
-    } else this
-}
 
 fun Player.playAtIndex(
     mediaId: String
@@ -143,13 +124,10 @@ fun Player.playFromPlaylist(
     }
 }
 
-fun Player.applyLoop(
-    shouldLoop: Boolean
+fun Player.applyRepeatMode(
+    repeatMode: Int
 ) {
-    repeatMode = when (shouldLoop) {
-        true -> Player.REPEAT_MODE_ONE
-        false -> Player.REPEAT_MODE_OFF
-    }
+    this.repeatMode = repeatMode
 }
 
 fun Player.applyShuffle(
@@ -185,7 +163,8 @@ fun Uri.getBitrate(context: Context): String {
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, this)
-        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toInt()?.div(1000)?.toString()?.plus(" kbps") ?: "Unknown"
+        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toInt()?.div(1000)
+            ?.toString()?.plus(" kbps") ?: "Unknown"
     } catch (e: Exception) {
         e.stackTrace
         "Error parsing bitrate!"
@@ -258,11 +237,6 @@ fun Modifier.ignoreParentPadding(): Modifier =
         ) { placeable.place(0, 0) }
     }
 
-object CurrentScreen {
-    var screen by mutableStateOf<NavKey>(Screen.Main)
-}
-
-
 @Stable
 data class AudioFileMetadata(
     val title: String?,
@@ -309,14 +283,100 @@ inline fun <E> Set<E>.copyMutate(block: MutableSet<E>.() -> Unit): Set<E> {
     return toMutableSet().apply(block)
 }
 
+inline fun <E, K : Comparable<K>> List<E>.ordered(
+    sortAsc: Boolean,
+    filterSelector: (E) -> Boolean,
+    crossinline sortingSelector: (E) -> K?
+): List<E> {
+    val filtered = this.filter(filterSelector)
+    return if (!sortAsc)
+        filtered.sortedByDescending(sortingSelector)
+    else filtered.sortedBy(sortingSelector)
+}
+
+//fun List<MediaItem>.ordered(
+//    ascending: Boolean
+//): List<MediaItem> {
+// return emptyList()
+//}
+
+
+fun List<MediaItem>.ordered(
+    sort: TrackSort,
+    ascending: Boolean,
+    query: String
+): List<MediaItem> {
+    val sortedList = if (ascending) {
+        when (sort) {
+            TrackSort.TITLE -> sortedBy { it.mediaMetadata.title.toString() }
+            TrackSort.ARTIST -> sortedBy { it.mediaMetadata.artist.toString() }
+            TrackSort.ALBUM -> sortedBy { it.mediaMetadata.albumTitle.toString() }
+            TrackSort.YEAR -> sortedBy { it.mediaMetadata.recordingYear }
+            TrackSort.DATE_MODIFIED -> sortedBy { it.mediaMetadata.extras?.getInt("date_modified") }
+        }
+    } else {
+        when (sort) {
+            TrackSort.TITLE -> sortedByDescending { it.mediaMetadata.title.toString() }
+            TrackSort.ARTIST -> sortedByDescending { it.mediaMetadata.artist.toString() }
+            TrackSort.ALBUM -> sortedByDescending { it.mediaMetadata.albumTitle.toString() }
+            TrackSort.YEAR -> sortedByDescending { it.mediaMetadata.recordingYear }
+            TrackSort.DATE_MODIFIED -> sortedByDescending { it.mediaMetadata.extras?.getInt("date_modified") }
+        }
+    }
+
+    return sortedList.filter { it.mediaMetadata.title?.contains(query) == true }
+}
+
+fun List<Album>.ordered(
+    sort: AlbumSort,
+    ascending: Boolean,
+    query: String
+): List<Album> {
+    val sortedList = if (ascending) {
+        when (sort) {
+            AlbumSort.NAME -> sortedBy { it.name }
+            AlbumSort.ARTIST -> sortedBy { it.artist }
+        }
+    } else {
+        when (sort) {
+            AlbumSort.NAME -> sortedByDescending { it.name }
+            AlbumSort.ARTIST -> sortedByDescending { it.artist }
+        }
+    }
+
+    return sortedList.filter { it.name.contains(query) }
+
+}
+
+fun List<Artist>.ordered(
+    sort: ArtistSort,
+    ascending: Boolean,
+    query: String
+): List<Artist> {
+    val sortedList = if (ascending) {
+        when (sort) {
+            ArtistSort.NAME -> sortedBy { it.name }
+            ArtistSort.NB_TRACKS -> sortedBy { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> sortedBy { it.numberAlbums }
+        }
+    } else {
+        when (sort) {
+            ArtistSort.NAME -> sortedByDescending { it.name }
+            ArtistSort.NB_TRACKS -> sortedByDescending { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> sortedByDescending { it.numberAlbums }
+        }
+    }
+
+    return sortedList.filter { it.name.contains(query) }
+
+}
+
 fun <E> MutableSet<E>.addOrRemove(element: E) {
     if (contains(element)) {
         remove(element)
     } else add(element)
 }
 
-
-typealias LastPlayed = Pair<String, Long>
 
 fun ContentResolver.observe(uri: Uri) = callbackFlow {
     val observer = object : ContentObserver(null) {
@@ -332,22 +392,6 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
     }
 }
 
-@Composable
-fun Modifier.cuteHazeEffect(
-    state: HazeState,
-    intensity: Dp = 15.dp,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    block: (HazeEffectScope.() -> Unit)? = null,
-) = hazeEffect(
-    state = state,
-    style = HazeStyle(
-        backgroundColor = backgroundColor,
-        tints = emptyList(),
-        blurRadius = intensity,
-        noiseFactor = 0f
-    ),
-    block = block
-)
 
 @Composable
 fun String.toShape(): Shape = when (this) {
@@ -362,7 +406,8 @@ fun String.toShape(): Shape = when (this) {
 }
 
 
-
+val Context.appVersion
+    get() = packageManager.getPackageInfo(packageName, 0).versionName
 
 
 @Composable
@@ -371,25 +416,10 @@ fun rememberInteractionSource(): MutableInteractionSource {
 }
 
 @Composable
-fun rememberAnimatable(initialValue: Float = 0f): Animatable<Float, AnimationVector1D> {
-    return remember { Animatable(initialValue) }
-}
-
-@Composable
 fun rememberFocusRequester(): FocusRequester {
     return remember { FocusRequester() }
 }
 
-
-//@Composable
-//fun animateAlignmentAsState(
-//    targetAlignment: Alignment,
-//): State<Alignment> {
-//    val biased = targetAlignment as BiasAlignment
-//    val horizontal by animateFloatAsState(biased.horizontalBias, tween(400))
-//    val vertical by animateFloatAsState(biased.verticalBias, tween(400))
-//    return remember { derivedStateOf { BiasAlignment(horizontal, vertical) } }
-//}
 
 @Composable
 fun rememberSearchbarAlignment(
@@ -436,8 +466,6 @@ fun rememberSearchbarRightPadding(
     }
 }
 
-@Composable
-fun rememberHazeState(): HazeState = remember { HazeState() }
 
 @Composable
 fun anyLightColorScheme(): ColorScheme {

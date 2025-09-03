@@ -75,7 +75,9 @@ class MediaStoreHelperImpl(
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.SIZE,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.TRACK
+            MediaStore.Audio.Media.TRACK,
+            MediaStore.Audio.Media.DATE_MODIFIED,
+            MediaStore.Audio.Media.YEAR
         )
 
 
@@ -96,6 +98,9 @@ class MediaStoreHelperImpl(
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val trackNbColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
+            val dateModifiedColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+            val yearColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -109,6 +114,8 @@ class MediaStoreHelperImpl(
                 val size = cursor.getLong(sizeColumn)
                 val duration = cursor.getLong(durationColumn)
                 val trackNumber = cursor.getInt(trackNbColumn)
+                val dateModified = cursor.getLong(dateModifiedColumn)
+                val year = cursor.getInt(yearColumn)
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
@@ -134,6 +141,7 @@ class MediaStoreHelperImpl(
                                 .setArtworkUri(artUri)
                                 .setDurationMs(duration)
                                 .setTrackNumber(trackNumber)
+                                .setRecordingYear(year)
                                 .setExtras(
                                     Bundle()
                                         .apply {
@@ -145,7 +153,9 @@ class MediaStoreHelperImpl(
                                             putLong("artist_id", artistId)
                                             putBoolean("is_saf", false)
                                             putString("mediaId", mediaId)
-                                        }).build()
+                                            putLong("date_modifier", dateModified)
+                                        }
+                                ).build()
                         )
                         .build()
                 )
@@ -194,11 +204,14 @@ class MediaStoreHelperImpl(
     }
 
     override fun fetchArtists(): List<Artist> {
+
         val artists = mutableListOf<Artist>()
 
         val projection = arrayOf(
             MediaStore.Audio.Artists._ID,
             MediaStore.Audio.Artists.ARTIST,
+            MediaStore.Audio.Artists.NUMBER_OF_ALBUMS,
+            MediaStore.Audio.Artists.NUMBER_OF_TRACKS
         )
 
         context.contentResolver.query(
@@ -210,14 +223,24 @@ class MediaStoreHelperImpl(
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
+            val numberAlbumsColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS)
+            val numberTracksColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val artist = cursor.getString(artistColumn)
+                val numberTracks = cursor.getInt(numberTracksColumn)
+                val numberAlbums = cursor.getInt(numberAlbumsColumn)
 
                 val artistInfo = Artist(
                     id = id,
-                    name = artist
+                    name = artist,
+                    albumId = getArtistAlbumId(id),
+                    numberTracks = numberTracks,
+                    numberAlbums = numberAlbums
+
                 )
                 if (musics.map { it.mediaMetadata.extras?.getLong("artist_id") }.contains(id)) {
                     artists.add(artistInfo)
@@ -226,6 +249,26 @@ class MediaStoreHelperImpl(
         }
 
         return artists
+    }
+
+    private fun getArtistAlbumId(artistId: Long): Long {
+        val uri = MediaStore.Audio.Artists.Albums.getContentUri("external", artistId)
+
+        context.contentResolver.query(
+            uri,
+            arrayOf(MediaStore.Audio.Artists.Albums.ALBUM_ID),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.Albums.ALBUM_ID)
+
+            if (cursor.moveToFirst()) {
+                return cursor.getLong(idColumn)
+            }
+        }
+
+        return 0
     }
 
 

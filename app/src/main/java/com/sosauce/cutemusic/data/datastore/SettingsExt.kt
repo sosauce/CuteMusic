@@ -30,6 +30,7 @@ fun <T> rememberPreference(
             .map { it[key] ?: defaultValue }
     }.collectAsStateWithLifecycle(defaultValue)
 
+
     return remember(state) {
         object : MutableState<T> {
             override var value: T
@@ -57,6 +58,15 @@ fun <T> getPreference(
         .map { preference ->
             preference[key] ?: defaultValue
         }
+
+suspend fun <T> savePreference(
+    key: Preferences.Key<T>,
+    value: T,
+    context: Context
+) =
+    context.dataStore.edit { prefs ->
+        prefs[key] = value
+    }
 
 suspend inline fun <reified T> saveCustomPreference(
     value: T,

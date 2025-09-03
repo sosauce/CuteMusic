@@ -19,7 +19,7 @@
 
 
     <application
-        android:name=".main.App"
+        android:name=".domain.App"
         android:appCategory="audio"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,7 +30,7 @@
         tools:targetApi="tiramisu">
 
         <service
-            android:name=".main.PlaybackService"
+            android:name=".domain.PlaybackService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
@@ -42,18 +42,9 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name=".main.AutoPlaybackService"
-            android:exported="true"
-            android:enabled="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
 
         <activity
-            android:name=".main.MainActivity"
+            android:name=".presentation.MainActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:enableOnBackInvokedCallback="true"
@@ -76,7 +67,7 @@
         </activity>
 
         <activity
-            android:name=".main.quickplay.QuickPlayActivity"
+            android:name=".presentation.screens.quickplay.QuickPlayActivity"
             android:theme="@style/Theme.CuteSplash"
             android:exported="true">
             <intent-filter>
@@ -119,7 +110,7 @@
 
 
         <receiver
-            android:name=".ui.widgets.MusicWidgetReceiver"
+            android:name=".presentation.widgets.MusicWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

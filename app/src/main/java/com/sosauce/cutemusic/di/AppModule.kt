@@ -5,10 +5,10 @@ import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelperImpl
 import com.sosauce.cutemusic.domain.repository.SafManager
-import com.sosauce.cutemusic.main.quickplay.QuickPlayViewModel
-import com.sosauce.cutemusic.ui.screens.metadata.MetadataViewModel
-import com.sosauce.cutemusic.ui.shared_components.MusicViewModel
-import com.sosauce.cutemusic.ui.shared_components.PlaylistViewModel
+import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
+import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
+import com.sosauce.cutemusic.presentation.screens.quickplay.QuickPlayViewModel
+import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
