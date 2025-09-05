@@ -7,7 +7,7 @@ const val ICON_TEXT_SPACING = 5
 const val WIDGET_NEW_DATA = "WIDGET_NEW_DATA"
 const val WIDGET_NEW_IS_PLAYING = "WIDGET_NEW_IS_PLAYING"
 const val WIDGET_ACTION_BROADCAST = "WIDGET_NEW_DATA"
-const val GITHUB_RELEASES = "https://github.com/sosauce/CuteCalc/releases"
+const val GITHUB_RELEASES = "https://github.com/sosauce/CuteMusic/releases"
 const val SUPPORT_PAGE = "https://sosauce.github.io/support/"
 
 

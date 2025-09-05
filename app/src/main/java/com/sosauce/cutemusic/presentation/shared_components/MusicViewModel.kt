@@ -52,6 +52,7 @@ import com.sosauce.cutemusic.utils.applyShuffle
 import com.sosauce.cutemusic.utils.playAtIndex
 import com.sosauce.cutemusic.utils.playFromAlbum
 import com.sosauce.cutemusic.utils.playFromArtist
+import com.sosauce.cutemusic.utils.playFromFolder
 import com.sosauce.cutemusic.utils.playFromPlaylist
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
@@ -581,6 +582,11 @@ class MusicViewModel(
             is PlayerActions.StartArtistPlayback -> mediaController!!.playFromArtist(
                 action.artistName,
                 action.mediaId,
+                allTracks.value
+            )
+
+            is PlayerActions.StartFolderPlayback -> mediaController!!.playFromFolder(
+                action.folder,
                 allTracks.value
             )
 

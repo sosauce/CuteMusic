@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.runtime.NavKey
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.actions.PlaylistActions
@@ -44,6 +45,7 @@ import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.RemoveFromPlaylistDropdownItem
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.utils.comesFromSaf
 import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
 import com.sosauce.cutemusic.utils.showCuteSearchbar
@@ -52,6 +54,7 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 fun SharedTransitionScope.PlaylistDetailsScreen(
     playlist: Playlist,
     musicState: MusicState,
+    currentScreen: NavKey,
     musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit,
@@ -119,7 +122,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     horizontal = 4.dp
                                 )
                         ) {
-                            if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                            if (music.comesFromSaf) {
                                 LocalMusicListItem(
                                     onShortClick = {
                                         onHandlePlayerAction(
@@ -131,6 +134,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     },
                                     music = music,
                                     musicState = musicState,
+                                    currentScreen = currentScreen,
                                     onNavigate = { onNavigate(it) },
                                     onLoadMetadata = onLoadMetadata,
                                     onHandleMediaItemAction = onHandleMediaItemAction,

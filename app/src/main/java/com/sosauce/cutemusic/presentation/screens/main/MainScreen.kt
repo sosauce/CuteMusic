@@ -14,6 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,8 @@ import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -79,6 +82,7 @@ import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.addOrRemove
+import com.sosauce.cutemusic.utils.comesFromSaf
 import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.ordered
 import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
@@ -140,13 +144,20 @@ fun SharedTransitionScope.MainScreen(
                                         .clickable {
                                             hiddenFolders =
                                                 hiddenFolders.copyMutate { addOrRemove(category.name) }
-                                        }
-                                        .padding(
-                                            horizontal = 25.dp,
-                                            vertical = 8.dp
-                                        ),
+                                        },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    IconButton(
+                                        onClick = {
+                                            onHandlePlayerAction(PlayerActions.StartFolderPlayback(category.name))
+                                        },
+                                        shapes = IconButtonDefaults.shapes()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.widget_play),
+                                            contentDescription = null
+                                        )
+                                    }
                                     Icon(
                                         painter = painterResource(R.drawable.folder_rounded),
                                         contentDescription = null
@@ -169,30 +180,28 @@ fun SharedTransitionScope.MainScreen(
                                 items = category.tracks,
                                 key = { it.mediaId }
                             ) { music ->
-                                Column(
+                                LocalMusicListItem(
                                     modifier = Modifier
                                         .animateItem()
                                         .padding(
                                             vertical = 2.dp,
                                             horizontal = 4.dp
-                                        )
-                                ) {
-                                    LocalMusicListItem(
-                                        onShortClick = {
-                                            onHandlePlayerAction(
-                                                PlayerActions.StartPlayback(
-                                                    music.mediaId
-                                                )
+                                        ),
+                                    onShortClick = {
+                                        onHandlePlayerAction(
+                                            PlayerActions.StartPlayback(
+                                                music.mediaId
                                             )
-                                        },
-                                        music = music,
-                                        musicState = musicState,
-                                        onNavigate = { onNavigate(it) },
-                                        onLoadMetadata = onLoadMetadata,
-                                        onHandleMediaItemAction = onHandleMediaItemAction,
-                                        onHandlePlayerActions = onHandlePlayerAction
-                                    )
-                                }
+                                        )
+                                    },
+                                    music = music,
+                                    musicState = musicState,
+                                    onNavigate = { onNavigate(it) },
+                                    onLoadMetadata = onLoadMetadata,
+                                    onHandleMediaItemAction = onHandleMediaItemAction,
+                                    onHandlePlayerActions = onHandlePlayerAction,
+                                    currentScreen = currentScreen
+                                )
                             }
                         }
                     }
@@ -228,7 +237,7 @@ fun SharedTransitionScope.MainScreen(
                                             horizontal = 4.dp
                                         )
                                 ) {
-                                    if (music.mediaMetadata.extras?.getBoolean("is_saf") == false) {
+                                    if (music.comesFromSaf) {
                                         LocalMusicListItem(
                                             onShortClick = {
                                                 onHandlePlayerAction(
@@ -242,7 +251,8 @@ fun SharedTransitionScope.MainScreen(
                                             onNavigate = { onNavigate(it) },
                                             onLoadMetadata = onLoadMetadata,
                                             onHandleMediaItemAction = onHandleMediaItemAction,
-                                            onHandlePlayerActions = onHandlePlayerAction
+                                            onHandlePlayerActions = onHandlePlayerAction,
+                                            currentScreen = currentScreen
                                         )
                                     } else {
                                         var safTracks by rememberAllSafTracks()

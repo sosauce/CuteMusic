@@ -9,6 +9,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.InfiniteTransition
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,18 +33,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,23 +61,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
+import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.rememberInteractionSource
+import com.sosauce.cutemusic.utils.toShape
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -94,15 +113,20 @@ class QuickPlayActivity : ComponentActivity() {
                     val state by viewModel.musicState.collectAsStateWithLifecycle()
                     val context = LocalContext.current
                     val interactionSources = List(5) { rememberInteractionSource() }
+                    val artShape by rememberNpArtShape()
+
 
 
                     if (!viewModel.isSongLoaded) {
+
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            CircularProgressIndicator()
+                            ContainedLoadingIndicator(
+                                polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons
+                            )
                             CuteText(stringResource(R.string.song_loading))
                         }
                     } else {
@@ -125,11 +149,16 @@ class QuickPlayActivity : ComponentActivity() {
                             ) {
                                 IconButton(
                                     onClick = { Process.killProcess(Process.myPid()) },
+                                    colors = IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                                    ),
+                                    modifier = Modifier
+                                        .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
-                                        contentDescription = stringResource(R.string.stop_playback),
-                                        modifier = Modifier.size(24.dp)
+                                        contentDescription = null
                                     )
                                 }
                             }
@@ -143,7 +172,7 @@ class QuickPlayActivity : ComponentActivity() {
                                     contentDescription = stringResource(R.string.artwork),
                                     modifier = Modifier
                                         .fillMaxSize(0.9f)
-                                        .clip(RoundedCornerShape(5)),
+                                        .clip(artShape.toShape()),
                                     contentScale = ContentScale.Crop,
                                     onSuccess = { state ->
                                         artImageBitmap =
@@ -158,107 +187,102 @@ class QuickPlayActivity : ComponentActivity() {
                                 onHandlePlayerActions = viewModel::handlePlayerAction
                             )
                             Spacer(Modifier.height(10.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                ButtonGroup(
-                                    overflowIndicator = {}
+                            ButtonGroup {
+                                FilledIconButton(
+                                    onClick = {
+                                        viewModel.handlePlayerAction(
+                                            PlayerActions.RewindTo(5000)
+                                        )
+                                    },
+                                    shapes = IconButtonDefaults.shapes(),
+                                    interactionSource = interactionSources[1],
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .size(
+                                            IconButtonDefaults.mediumContainerSize(
+                                                IconButtonDefaults.IconButtonWidthOption.Wide
+                                            )
+                                        )
+                                        .animateWidth(interactionSource = interactionSources[1])
                                 ) {
-                                    customItem(
-                                        {
-                                            IconButton(
-                                                onClick = {
-                                                    viewModel.handlePlayerAction(
-                                                        PlayerActions.RewindTo(5000)
-                                                    )
-                                                },
-                                                shapes = IconButtonDefaults.shapes(),
-                                                colors = IconButtonDefaults.filledIconButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                                    contentColor = MaterialTheme.colorScheme.contentColorFor(
-                                                        MaterialTheme.colorScheme.surfaceContainer
-                                                    )
-                                                ),
-                                                interactionSource = interactionSources[1],
-                                                modifier = Modifier
-                                                    .size(
-                                                        IconButtonDefaults.mediumContainerSize(
-                                                            IconButtonDefaults.IconButtonWidthOption.Narrow
-                                                        )
-                                                    )
-                                                    .animateWidth(interactionSource = interactionSources[1])
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.FastRewind,
-                                                    contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
-                                                )
-                                            }
-                                        },
-                                        {}
+                                    Icon(
+                                        imageVector = Icons.Rounded.FastRewind,
+                                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                                     )
-                                    customItem(
-                                        {
-                                            FilledIconToggleButton(
-                                                checked = state.isPlaying,
-                                                onCheckedChange = {
-                                                    viewModel.handlePlayerAction(
-                                                        PlayerActions.PlayOrPause
-                                                    )
-                                                },
-                                                shapes = IconButtonDefaults.toggleableShapes(),
-                                                interactionSource = interactionSources[2],
-                                                modifier = Modifier
-                                                    .size(
-                                                        IconButtonDefaults.mediumContainerSize(
-                                                            IconButtonDefaults.IconButtonWidthOption.Wide
-                                                        )
-                                                    )
-                                                    .animateWidth(interactionSource = interactionSources[2])
-                                            ) {
-                                                Icon(
-                                                    imageVector = if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                                    contentDescription = if (state.isPlaying) stringResource(
-                                                        androidx.media3.session.R.string.media3_controls_pause_description
-                                                    ) else stringResource(androidx.media3.session.R.string.media3_controls_play_description),
-                                                )
-                                            }
-                                        },
-                                        {}
+                                }
+                                FilledIconToggleButton(
+                                    checked = state.isPlaying,
+                                    onCheckedChange = {
+                                        viewModel.handlePlayerAction(
+                                            PlayerActions.PlayOrPause
+                                        )
+                                    },
+                                    shapes = IconButtonDefaults.toggleableShapes(),
+                                    interactionSource = interactionSources[2],
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .size(
+                                            IconButtonDefaults.mediumContainerSize(
+                                                IconButtonDefaults.IconButtonWidthOption.Wide
+                                            )
+                                        )
+                                        .animateWidth(interactionSource = interactionSources[2])
+                                ) {
+                                    Icon(
+                                        imageVector = if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                        contentDescription = if (state.isPlaying) stringResource(
+                                            androidx.media3.session.R.string.media3_controls_pause_description
+                                        ) else stringResource(androidx.media3.session.R.string.media3_controls_play_description),
                                     )
-                                    customItem(
-                                        {
-                                            IconButton(
-                                                onClick = {
-                                                    viewModel.handlePlayerAction(
-                                                        PlayerActions.SeekTo(5000)
-                                                    )
-                                                },
-                                                shapes = IconButtonDefaults.shapes(),
-                                                colors = IconButtonDefaults.filledIconButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                                    contentColor = MaterialTheme.colorScheme.contentColorFor(
-                                                        MaterialTheme.colorScheme.surfaceContainer
-                                                    )
-                                                ),
-                                                interactionSource = interactionSources[3],
-                                                modifier = Modifier
-                                                    .size(
-                                                        IconButtonDefaults.mediumContainerSize(
-                                                            IconButtonDefaults.IconButtonWidthOption.Narrow
-                                                        )
-                                                    )
-                                                    .animateWidth(interactionSource = interactionSources[3])
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.FastForward,
-                                                    contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
-                                                )
-                                            }
-                                        },
-                                        {}
+                                }
+                                FilledIconButton(
+                                    onClick = {
+                                        viewModel.handlePlayerAction(
+                                            PlayerActions.SeekTo(5000)
+                                        )
+                                    },
+                                    shapes = IconButtonDefaults.shapes(),
+                                    interactionSource = interactionSources[3],
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .size(
+                                            IconButtonDefaults.mediumContainerSize(
+                                                IconButtonDefaults.IconButtonWidthOption.Narrow
+                                            )
+                                        )
+                                        .animateWidth(interactionSource = interactionSources[3])
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.FastForward,
+                                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                                     )
+                                }
+                            }
+                            Spacer(Modifier.weight(1f))
+                            ButtonGroup {
+                                ToggleButton(
+                                    checked = state.repeatMode == Player.REPEAT_MODE_ONE,
+                                    colors = ToggleButtonDefaults.toggleButtonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    onCheckedChange = {
+                                        val repeatMode = if (state.repeatMode == Player.REPEAT_MODE_ONE) {
+                                            Player.REPEAT_MODE_OFF
+                                        } else Player.REPEAT_MODE_ONE
+
+                                        viewModel.handlePlayerAction(PlayerActions.RepeatMode(repeatMode))
+                                    }
+                                ) {
+                                    val icon = if (state.repeatMode == Player.REPEAT_MODE_ONE) {
+                                        R.drawable.repeat_one
+                                    } else R.drawable.repeat
+
+                                    Icon(
+                                        painter = painterResource(icon),
+                                        contentDescription = null
+                                    )
+
                                 }
                             }
                         }

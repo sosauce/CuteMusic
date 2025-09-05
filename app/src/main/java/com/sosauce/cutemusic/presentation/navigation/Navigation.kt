@@ -149,6 +149,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             AlbumDetailsScreen(
                                 musics = musics.fastFilter { it.mediaMetadata.albumTitle == album.name },
                                 album = album,
+                                currentScreen = currentScreen,
                                 onNavigateUp = backStack::removeLastOrNull,
                                 musicState = musicState,
                                 onNavigate = backStack::add,
@@ -182,6 +183,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                                 musics = musics.fastFilter { it.mediaMetadata.artist.toString() == artist.name },
                                 albums = albums.fastFilter { it.artist == artist.name },
                                 artist = artist,
+                                currentScreen = currentScreen,
                                 onNavigate = backStack::add,
                                 onNavigateUp = backStack::removeLastOrNull,
                                 onHandlePlayerAction = viewModel::handlePlayerActions,
@@ -232,6 +234,7 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             PlaylistDetailsScreen(
                                 playlist = playlist,
                                 musicState = musicState,
+                                currentScreen = currentScreen,
                                 onNavigate = backStack::add,
                                 onHandlePlayerAction = viewModel::handlePlayerActions,
                                 onHandleMediaItemAction = viewModel::handleMediaItemActions,

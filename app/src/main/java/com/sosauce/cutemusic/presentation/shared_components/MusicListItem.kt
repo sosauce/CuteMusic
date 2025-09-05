@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.Badge
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
+import androidx.navigation3.runtime.NavKey
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
@@ -83,7 +85,7 @@ fun LocalMusicListItem(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
-    showTrackNumber: Boolean = false,
+    currentScreen: NavKey,
     isSelected: Boolean = false
 ) {
 
@@ -100,8 +102,7 @@ fun LocalMusicListItem(
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             Color.Transparent
-        },
-        animationSpec = tween(500)
+        }
     )
     val deleteSongLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
@@ -236,13 +237,9 @@ fun LocalMusicListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 5.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.tertiary),
-                        contentAlignment = Alignment.Center
+                if (currentScreen is Screen.AlbumsDetails && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.tertiary
                     ) {
                         CuteText(
                             text = music.mediaMetadata.trackNumber.toString(),

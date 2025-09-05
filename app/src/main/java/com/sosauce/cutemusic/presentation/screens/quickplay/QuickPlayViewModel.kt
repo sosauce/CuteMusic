@@ -19,6 +19,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.utils.applyRepeatMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +53,15 @@ class QuickPlayViewModel(
             _musicState.update {
                 it.copy(
                     isPlaying = isPlaying
+                )
+            }
+        }
+
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            super.onRepeatModeChanged(repeatMode)
+            _musicState.update {
+                it.copy(
+                    repeatMode = repeatMode
                 )
             }
         }
@@ -138,6 +148,7 @@ class QuickPlayViewModel(
             is PlayerActions.SeekToSlider -> player.seekTo(action.position)
             is PlayerActions.SeekTo -> player.seekTo(player.currentPosition + action.position)
             is PlayerActions.RewindTo -> player.seekTo(player.currentPosition - action.position)
+            is PlayerActions.RepeatMode -> player.applyRepeatMode(action.repeatMode)
             else -> Unit
         }
     }

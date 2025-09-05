@@ -35,6 +35,8 @@ sealed interface PlayerActions {
         val mediaId: String?
     ) : PlayerActions
 
+    data class StartFolderPlayback(val folder: String) : PlayerActions
+
     data class StartPlaylistPlayback(
         val playlistSongsId: List<String>,
         val mediaId: String?

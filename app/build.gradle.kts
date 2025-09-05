@@ -6,16 +6,23 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val versionNameLocal = "3.0.1"
+
+
 android {
     namespace = "com.sosauce.cutemusic"
     compileSdk = 36
 
     defaultConfig {
+
+        //noinspection WrongGradleMethod
+        val (major, minor, patch) = versionNameLocal.split(".").map { it.toInt() }
+
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 36
-        versionCode = 34
-        versionName = "3.0.0"
+        versionCode = major * 10000 + minor * 100 + patch // https://proandroiddev.com/quick-tip-auto-generate-your-versioncode-614629f7d3bd
+        versionName = versionNameLocal
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -31,7 +38,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                output.outputFileName = "CM_${variant.versionName}.apk"
+                output.outputFileName = "CM_$versionNameLocal.apk"
             }
     }
 

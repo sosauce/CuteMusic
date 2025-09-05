@@ -127,7 +127,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         shapes = IconButtonDefaults.shapes(),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
                         ),
                         interactionSource = interactionSources[1],
                         modifier = Modifier
@@ -175,7 +175,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         shapes = IconButtonDefaults.shapes(),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
                         ),
                         interactionSource = interactionSources[3],
                         modifier = Modifier

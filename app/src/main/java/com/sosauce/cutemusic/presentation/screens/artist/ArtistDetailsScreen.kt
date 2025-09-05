@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
@@ -76,6 +77,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
     musics: List<MediaItem>,
     albums: List<Album>,
     artist: Artist,
+    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
@@ -216,6 +218,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             modifier = Modifier.animateItem(),
                             music = music,
                             musicState = musicState,
+                            currentScreen = currentScreen,
                             onShortClick = { mediaId ->
                                 if (selectedTracks.isEmpty()) {
                                     onHandlePlayerAction(

@@ -171,7 +171,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                     onClick = onNavigateUp,
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
                     ),
                     modifier = Modifier
                         .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))

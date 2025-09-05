@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.navigation3.runtime.NavKey
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
@@ -55,6 +56,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     musics: List<MediaItem>,
     album: Album,
     onNavigateUp: () -> Unit,
+    currentScreen: NavKey,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
@@ -138,7 +140,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                         onHandleMediaItemAction = onHandleMediaItemAction,
                         onHandlePlayerActions = onHandlePlayerActions,
                         onNavigate = onNavigate,
-                        showTrackNumber = true,
+                        currentScreen = currentScreen,
                         isSelected = selectedTracks.contains(music.mediaId)
                     )
                 }

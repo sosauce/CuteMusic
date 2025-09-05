@@ -87,6 +87,17 @@ fun Player.playFromAlbum(
     }
 }
 
+fun Player.playFromFolder(
+    folder: String,
+    musics: List<MediaItem>
+) {
+    clearMediaItems()
+    musics.filter { music -> music.mediaMetadata.extras?.getString("folder") == folder }
+        .also { addMediaItems(it) }
+    seekTo(0, 0)
+    play()
+}
+
 fun Player.playFromArtist(
     artistsName: String,
     mediaId: String? = null,
@@ -139,6 +150,10 @@ fun Player.applyShuffle(
 fun Player.applyPlaybackSpeed(speed: Float = 1f) {
     playbackParameters = playbackParameters.withSpeed(speed)
 }
+
+val MediaItem.comesFromSaf
+    get() = mediaMetadata.extras?.getBoolean("is_saf") == true
+
 
 // Yes Google, a copy & paste of another function REALLY needed an unstable api...
 @UnstableApi
@@ -324,7 +339,7 @@ fun List<MediaItem>.ordered(
         }
     }
 
-    return sortedList.filter { it.mediaMetadata.title?.contains(query) == true }
+    return sortedList.filter { it.mediaMetadata.title?.contains(query, true) == true }
 }
 
 fun List<Album>.ordered(
@@ -344,7 +359,7 @@ fun List<Album>.ordered(
         }
     }
 
-    return sortedList.filter { it.name.contains(query) }
+    return sortedList.filter { it.name.contains(query, true) }
 
 }
 
@@ -367,7 +382,7 @@ fun List<Artist>.ordered(
         }
     }
 
-    return sortedList.filter { it.name.contains(query) }
+    return sortedList.filter { it.name.contains(query, true) }
 
 }
 
