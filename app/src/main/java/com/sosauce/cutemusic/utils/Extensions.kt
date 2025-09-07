@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -153,6 +154,12 @@ fun Player.applyPlaybackSpeed(speed: Float = 1f) {
 
 val MediaItem.comesFromSaf
     get() = mediaMetadata.extras?.getBoolean("is_saf") == true
+
+val MediaItem.path
+    get() = mediaMetadata.extras?.getString("path") ?: ""
+
+val MediaItem.uri: Uri
+    get() = mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY
 
 
 // Yes Google, a copy & paste of another function REALLY needed an unstable api...

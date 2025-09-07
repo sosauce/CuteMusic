@@ -72,6 +72,9 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.LocalScreen
+import com.sosauce.cutemusic.utils.path
+import com.sosauce.cutemusic.utils.uri
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
@@ -85,20 +88,18 @@ fun LocalMusicListItem(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
-    currentScreen: NavKey,
     isSelected: Boolean = false
 ) {
 
     val context = LocalContext.current
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
+    val currentScreen = LocalScreen.current
     var isDropDownExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
-    val path = remember { music.mediaMetadata.extras?.getString("path") ?: "" }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
 
     val bgColor by animateColorAsState(
-        targetValue = if (musicState.uri == uri.toString() && musicState.isPlayerReady) {
+        targetValue = if (musicState.uri == music.uri.toString() && musicState.isPlayerReady) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             Color.Transparent
@@ -135,7 +136,7 @@ fun LocalMusicListItem(
             onDelete = {
                 onHandleMediaItemAction(
                     MediaItemActions.DeleteMediaItem(
-                        listOf(uri),
+                        listOf(music.uri),
                         deleteSongLauncher
                     )
                 )
@@ -278,7 +279,7 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
-                            onLoadMetadata(path, uri)
+                            onLoadMetadata(music.path, music.uri)
                             onNavigate(Screen.MetadataEditor(music.mediaId))
                         },
                         text = {
@@ -345,7 +346,7 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = {
                             onHandleMediaItemAction(
-                                MediaItemActions.ShareMediaItem(uri)
+                                MediaItemActions.ShareMediaItem(music.uri)
                             )
                         },
                         text = {

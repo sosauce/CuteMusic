@@ -64,7 +64,6 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 fun SharedTransitionScope.ArtistsScreen(
     artists: List<Artist>,
     musicState: MusicState,
-    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
 ) {
@@ -140,7 +139,6 @@ fun SharedTransitionScope.ArtistsScreen(
                 CuteSearchbar(
                     textFieldState = textFieldState,
                     musicState = musicState,
-                    currentScreen = currentScreen,
                     showSearchField = !state.isScrollInProgress,
                     sortingMenu = {
                         SortingDropdownMenu(

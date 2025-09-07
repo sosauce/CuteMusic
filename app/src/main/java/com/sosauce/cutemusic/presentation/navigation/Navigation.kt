@@ -41,6 +41,8 @@ import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistsScreen
 import com.sosauce.cutemusic.presentation.screens.settings.SettingsScreen
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.LocalScreen
+import com.sosauce.cutemusic.utils.LocalSharedTransitionScope
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -68,7 +70,10 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
     }
 
     SharedTransitionLayout {
-        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+        CompositionLocalProvider(
+            LocalSharedTransitionScope provides this,
+            LocalScreen provides currentScreen
+        ) {
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
@@ -83,7 +88,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         MainScreen(
                             musics = musics,
                             musicState = musicState,
-                            currentScreen = currentScreen,
                             onNavigate = backStack::add,
                             onLoadMetadata = { path, uri ->
                                 metadataViewModel.onHandleMetadataActions(
@@ -102,7 +106,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         AlbumsScreen(
                             albums = albums,
                             musicState = musicState,
-                            currentScreen = currentScreen,
                             numberOfAlbumGrids = numberOfAlbumGrids,
                             onChangeNumberOfGrids = {
                                 numberOfAlbumGrids =
@@ -149,7 +152,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             AlbumDetailsScreen(
                                 musics = musics.fastFilter { it.mediaMetadata.albumTitle == album.name },
                                 album = album,
-                                currentScreen = currentScreen,
                                 onNavigateUp = backStack::removeLastOrNull,
                                 musicState = musicState,
                                 onNavigate = backStack::add,
@@ -171,7 +173,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                         ArtistsScreen(
                             artists = artists,
                             musicState = musicState,
-                            currentScreen = currentScreen,
                             onNavigate = backStack::add,
                             onHandlePlayerActions = viewModel::handlePlayerActions,
                         )
@@ -183,7 +184,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                                 musics = musics.fastFilter { it.mediaMetadata.artist.toString() == artist.name },
                                 albums = albums.fastFilter { it.artist == artist.name },
                                 artist = artist,
-                                currentScreen = currentScreen,
                                 onNavigate = backStack::add,
                                 onNavigateUp = backStack::removeLastOrNull,
                                 onHandlePlayerAction = viewModel::handlePlayerActions,
@@ -220,7 +220,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                     entry<Screen.Playlists> {
                         PlaylistsScreen(
                             musicState = musicState,
-                            currentScreen = currentScreen,
                             onNavigate = backStack::add,
                             onHandlePlayerAction = viewModel::handlePlayerActions
                         )
@@ -234,7 +233,6 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
                             PlaylistDetailsScreen(
                                 playlist = playlist,
                                 musicState = musicState,
-                                currentScreen = currentScreen,
                                 onNavigate = backStack::add,
                                 onHandlePlayerAction = viewModel::handlePlayerActions,
                                 onHandleMediaItemAction = viewModel::handleMediaItemActions,
@@ -259,5 +257,3 @@ fun Nav(onImageLoadSuccess: (ImageBitmap) -> Unit) {
     }
 }
 
-val LocalSharedTransitionScope =
-    compositionLocalOf<SharedTransitionScope> { throw IllegalStateException("No SharedTransitionScope provided") }

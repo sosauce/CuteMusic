@@ -77,13 +77,12 @@ fun SharedTransitionScope.ArtistDetailsScreen(
     musics: List<MediaItem>,
     albums: List<Album>,
     artist: Artist,
-    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit,
     musicState: MusicState,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
+    onLoadMetadata: (String, Uri) -> Unit,
 ) {
     val context = LocalContext.current
     val state = rememberLazyListState()
@@ -218,7 +217,6 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             modifier = Modifier.animateItem(),
                             music = music,
                             musicState = musicState,
-                            currentScreen = currentScreen,
                             onShortClick = { mediaId ->
                                 if (selectedTracks.isEmpty()) {
                                     onHandlePlayerAction(

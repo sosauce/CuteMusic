@@ -54,7 +54,6 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 fun SharedTransitionScope.PlaylistDetailsScreen(
     playlist: Playlist,
     musicState: MusicState,
-    currentScreen: NavKey,
     musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
     onLoadMetadata: (String, Uri) -> Unit,
@@ -134,7 +133,6 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     },
                                     music = music,
                                     musicState = musicState,
-                                    currentScreen = currentScreen,
                                     onNavigate = { onNavigate(it) },
                                     onLoadMetadata = onLoadMetadata,
                                     onHandleMediaItemAction = onHandleMediaItemAction,

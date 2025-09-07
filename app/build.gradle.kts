@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-val versionNameLocal = "3.0.1"
+val versionNameLocal = "3.0.2"
 
 
 android {

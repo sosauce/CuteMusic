@@ -56,7 +56,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     musics: List<MediaItem>,
     album: Album,
     onNavigateUp: () -> Unit,
-    currentScreen: NavKey,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
@@ -140,7 +139,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                         onHandleMediaItemAction = onHandleMediaItemAction,
                         onHandlePlayerActions = onHandlePlayerActions,
                         onNavigate = onNavigate,
-                        currentScreen = currentScreen,
                         isSelected = selectedTracks.contains(music.mediaId)
                     )
                 }

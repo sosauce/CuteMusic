@@ -49,7 +49,6 @@ import com.sosauce.cutemusic.utils.showCuteSearchbar
 @Composable
 fun SharedTransitionScope.AlbumsScreen(
     albums: List<Album>,
-    currentScreen: NavKey,
     musicState: MusicState,
     numberOfAlbumGrids: Int,
     onChangeNumberOfGrids: () -> Unit,
@@ -115,7 +114,6 @@ fun SharedTransitionScope.AlbumsScreen(
                 CuteSearchbar(
                     textFieldState = textFieldState,
                     showSearchField = !state.isScrollInProgress,
-                    currentScreen = currentScreen,
                     musicState = musicState,
                     sortingMenu = {
                         SortingDropdownMenu(

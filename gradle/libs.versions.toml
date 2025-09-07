@@ -1,10 +1,10 @@
 [versions]
-agp = "8.13.0"
+agp = "8.11.1" # Don't update, AGP 12+ breaks fdroid
 emoji2Emojipicker = "1.5.0"
 glance = "1.1.1"
-koinAndroid = "4.1.0"
-koinAndroidxCompose = "4.1.0"
-koinAndroidxStartup = "4.1.0"
+koinAndroid = "4.1.1"
+koinAndroidxCompose = "4.1.1"
+koinAndroidxStartup = "4.1.1"
 kotlin = "2.2.10"
 activityCompose = "1.10.1"
 coilCompose = "3.3.0"

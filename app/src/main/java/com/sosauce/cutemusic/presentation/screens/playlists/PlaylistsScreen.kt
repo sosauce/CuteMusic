@@ -65,7 +65,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun SharedTransitionScope.PlaylistsScreen(
     musicState: MusicState,
-    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerAction: (PlayerActions) -> Unit,
 ) {
@@ -154,7 +153,6 @@ fun SharedTransitionScope.PlaylistsScreen(
                 CuteSearchbar(
                     textFieldState = textFieldState,
                     musicState = musicState,
-                    currentScreen = currentScreen,
                     showSearchField = !state.isScrollInProgress,
                     sortingMenu = {
                         SortingDropdownMenu(

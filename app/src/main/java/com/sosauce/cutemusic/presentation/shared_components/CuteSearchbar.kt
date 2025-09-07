@@ -76,6 +76,7 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playing.components.PlayPauseButton
 import com.sosauce.cutemusic.presentation.theme.nunitoFontFamily
+import com.sosauce.cutemusic.utils.LocalScreen
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
@@ -87,7 +88,6 @@ fun SharedTransitionScope.CuteSearchbar(
     modifier: Modifier = Modifier,
     textFieldState: TextFieldState = rememberTextFieldState(),
     musicState: MusicState,
-    currentScreen: NavKey = Screen.Main,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
     showSearchField: Boolean = true,
@@ -96,6 +96,7 @@ fun SharedTransitionScope.CuteSearchbar(
     sortingMenu: (@Composable (() -> Unit))? = null,
 ) {
 
+    val currentScreen = LocalScreen.current
     val showXButton by rememberShowXButton()
     val showShuffleButton by rememberShowShuffleButton()
     val showBackButton by rememberShowBackButton()
@@ -237,7 +238,6 @@ fun SharedTransitionScope.CuteSearchbar(
                         if (it) {
                             ScreenSelection(
                                 screenToLeadingIcon = screenToLeadingIcon,
-                                currentScreen = currentScreen,
                                 onNavigate = onNavigate,
                                 dismiss = { isInScreenSelectionMode = false }
                             )
@@ -315,12 +315,12 @@ fun SharedTransitionScope.CuteSearchbar(
 @Composable
 private fun ScreenSelection(
     screenToLeadingIcon: Map<Screen, Int>,
-    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
     dismiss: () -> Unit
 ) {
 
     val interactionsSources = List(4) { rememberInteractionSource() }
+    val currentScreen = LocalScreen.current
 
     ButtonGroup(
         overflowIndicator = {},

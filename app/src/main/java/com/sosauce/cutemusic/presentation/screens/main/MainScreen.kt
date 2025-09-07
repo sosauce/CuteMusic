@@ -94,9 +94,8 @@ import java.io.File
 fun SharedTransitionScope.MainScreen(
     musics: List<MediaItem>,
     musicState: MusicState,
-    currentScreen: NavKey,
     onNavigate: (Screen) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit = { _, _ -> },
+    onLoadMetadata: (String, Uri) -> Unit,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit
 ) {
@@ -199,8 +198,7 @@ fun SharedTransitionScope.MainScreen(
                                     onNavigate = { onNavigate(it) },
                                     onLoadMetadata = onLoadMetadata,
                                     onHandleMediaItemAction = onHandleMediaItemAction,
-                                    onHandlePlayerActions = onHandlePlayerAction,
-                                    currentScreen = currentScreen
+                                    onHandlePlayerActions = onHandlePlayerAction
                                 )
                             }
                         }
@@ -237,7 +235,7 @@ fun SharedTransitionScope.MainScreen(
                                             horizontal = 4.dp
                                         )
                                 ) {
-                                    if (music.comesFromSaf) {
+                                    if (!music.comesFromSaf) {
                                         LocalMusicListItem(
                                             onShortClick = {
                                                 onHandlePlayerAction(
@@ -251,8 +249,7 @@ fun SharedTransitionScope.MainScreen(
                                             onNavigate = { onNavigate(it) },
                                             onLoadMetadata = onLoadMetadata,
                                             onHandleMediaItemAction = onHandleMediaItemAction,
-                                            onHandlePlayerActions = onHandlePlayerAction,
-                                            currentScreen = currentScreen
+                                            onHandlePlayerActions = onHandlePlayerAction
                                         )
                                     } else {
                                         var safTracks by rememberAllSafTracks()
@@ -293,7 +290,6 @@ fun SharedTransitionScope.MainScreen(
             ) {
                 CuteSearchbar(
                     textFieldState = textFieldState,
-                    currentScreen = currentScreen,
                     musicState = musicState,
                     showSearchField = !state.isScrollInProgress,
                     sortingMenu = {
