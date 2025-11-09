@@ -2,16 +2,20 @@
 
 package com.sosauce.cutemusic.presentation.screens.playing.components
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,11 +29,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.media3.common.MediaItem
-import coil3.compose.AsyncImage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberCarousel
@@ -45,7 +51,6 @@ import kotlin.math.absoluteValue
 @Composable
 fun Artwork(
     pagerModifier: Modifier = Modifier,
-    loadedMedias: List<MediaItem> = emptyList(),
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
 ) {
@@ -54,11 +59,13 @@ fun Artwork(
     val artShape by rememberNpArtShape()
     val useShuffle by rememberShouldApplyShuffle()
     val pagerState =
-        rememberPagerState(initialPage = loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) { loadedMedias.size }
+        rememberPagerState(initialPage = musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }
+            .takeIf { it != -1 } ?: 0) { musicState.loadedMedias.size }
+
 
 
     if (useCarousel) {
-        var lastPage by remember { mutableIntStateOf(loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) }
+        var lastPage by remember { mutableIntStateOf(musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) }
 
         LaunchedEffect(pagerState.settledPage) {
             if (musicState.mediaIndex == pagerState.settledPage) return@LaunchedEffect
@@ -80,62 +87,100 @@ fun Artwork(
 
         HorizontalPager(
             state = pagerState,
-            key = { loadedMedias[it].mediaId },
-            contentPadding = PaddingValues(horizontal = 30.dp),
+            key = { musicState.loadedMedias[it].mediaId },
+            //contentPadding = PaddingValues(horizontal = 5.dp),
             modifier = pagerModifier
         ) { page ->
-            Box(
-                modifier = Modifier
-                    .aspectRatio(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = loadedMedias[page].mediaMetadata.artworkUri,
-                    contentDescription = stringResource(R.string.artwork),
-                    modifier = Modifier
-                        .graphicsLayer {
-                            val pageOffset =
-                                (pagerState.currentPage - page + pagerState.currentPageOffsetFraction).absoluteValue
 
-                            lerp(
-                                start = 75.dp,
-                                stop = 100.dp,
-                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                            ).also { scale ->
-                                scaleY = scale / 100.dp
+            val image = rememberAsyncImagePainter(musicState.loadedMedias[page].artUri)
+            val imageState by image.state.collectAsStateWithLifecycle()
+
+            when (imageState) {
+                is AsyncImagePainter.State.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .wrapContentSize()
+                            .fillMaxSize(0.9f)
+                            .clip(artShape.toShape())
+                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.music_note_rounded),
+                            contentDescription = null,
+                            modifier = Modifier.size(110.dp),
+                            tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+
+                        )
+                    }
+                }
+
+                else -> {
+                    Image(
+                        painter = image,
+                        contentDescription = stringResource(R.string.artwork),
+                        modifier = Modifier
+                            .graphicsLayer {
+                                val pageOffset =
+                                    (pagerState.currentPage - page + pagerState.currentPageOffsetFraction).absoluteValue
+
+                                lerp(
+                                    start = 75.dp,
+                                    stop = 100.dp,
+                                    fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                ).also { scale ->
+                                    scaleY = scale / 100.dp
+                                }
                             }
-                        }
-//                        .sharedElement(
-//                            state = rememberSharedContentState(key = SharedTransitionKeys.MUSIC_ARTWORK + musicState.currentMediaId),
-//                            animatedVisibilityScope = animatedVisibilityScope
-//
-//                        )
-                        .fillMaxSize(0.95f)
-                        .clip(artShape.toShape()),
-                    contentScale = ContentScale.Crop
-                )
+                            .aspectRatio(1f)
+                            .wrapContentSize()
+                            .fillMaxSize(0.9f)
+                            .clip(artShape.toShape()),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
 
     } else {
-        Crossfade(
-            targetState = musicState.art,
-            modifier = Modifier
-                .aspectRatio(1f)
-                .wrapContentSize()
-        ) {
-            AsyncImage(
-                model = ImageUtils.imageRequester(it, context),
-                contentDescription = stringResource(R.string.artwork),
-                modifier = Modifier
-                    .fillMaxSize(0.9f)
-//                    .sharedElement(
-//                        sharedContentState = rememberSharedContentState(musicState.mediaId),
-//                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                    )
-                    .clip(artShape.toShape()),
-                contentScale = ContentScale.Crop
-            )
+
+        val image = rememberAsyncImagePainter(ImageUtils.imageRequester(musicState.art, context))
+        val imageState by image.state.collectAsStateWithLifecycle()
+
+        when (imageState) {
+            is AsyncImagePainter.State.Error -> {
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .wrapContentSize()
+                        .fillMaxSize()
+                        .clip(artShape.toShape())
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.music_note_rounded),
+                        contentDescription = null,
+                        modifier = Modifier.size(110.dp),
+                        tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+
+                    )
+                }
+            }
+
+            else -> {
+                Image(
+                    painter = image,
+                    contentDescription = stringResource(R.string.artwork),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .wrapContentSize()
+                        .fillMaxSize()
+                        .clip(artShape.toShape()),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }

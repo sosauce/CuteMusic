@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -18,7 +17,6 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberPauseOnMute
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCards
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
 
 @Composable
@@ -48,14 +46,7 @@ fun SettingsPlayback(
                     topDp = 24.dp,
                     bottomDp = 24.dp,
                     text = stringResource(R.string.pause_on_mute),
-                    optionalDescription = {
-                        CuteText(
-                            text = stringResource(R.string.pause_on_mute_desc),
-                            style = MaterialTheme.typography.labelSmallEmphasized.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                        )
-                    }
+                    optionalDescription = R.string.pause_on_mute_desc
                 )
             }
         }

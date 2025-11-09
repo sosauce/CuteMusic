@@ -16850,11 +16850,11 @@ HSPLcom/sosauce/cutemusic/ui/screens/main/MainScreenKt$MainScreenContent$1$1$5$1
 HSPLcom/sosauce/cutemusic/ui/screens/main/MainScreenKt$MainScreenContent$1$1$5$1$3;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 Lcom/sosauce/cutemusic/ui/screens/main/MainScreenKt$MainScreenContent$1$1$5$1$3$$ExternalSyntheticLambda0;
 HSPLcom/sosauce/cutemusic/ui/screens/main/MainScreenKt$MainScreenContent$1$1$5$1$3$$ExternalSyntheticLambda0;-><init>()V
-Lcom/sosauce/cutemusic/ui/shared_components/CuteTextKt;
-HSPLcom/sosauce/cutemusic/ui/shared_components/CuteTextKt;->CuteText-EeFLIFo(Ljava/lang/String;Landroidx/compose/ui/Modifier;JJLandroidx/compose/ui/text/style/TextAlign;ILandroidx/compose/runtime/Composer;II)V
-HSPLcom/sosauce/cutemusic/ui/shared_components/CuteTextKt;->CuteText_EeFLIFo$lambda$0(Landroidx/compose/runtime/MutableState;)Z
-Lcom/sosauce/cutemusic/ui/shared_components/CuteTextKt$$ExternalSyntheticLambda0;
-HSPLcom/sosauce/cutemusic/ui/shared_components/CuteTextKt$$ExternalSyntheticLambda0;-><init>(Ljava/lang/String;Landroidx/compose/ui/Modifier;JJLandroidx/compose/ui/text/style/TextAlign;III)V
+Lcom/sosauce/cutemusic/ui/shared_components/TextKt;
+HSPLcom/sosauce/cutemusic/ui/shared_components/TextKt;->Text-EeFLIFo(Ljava/lang/String;Landroidx/compose/ui/Modifier;JJLandroidx/compose/ui/text/style/TextAlign;ILandroidx/compose/runtime/Composer;II)V
+HSPLcom/sosauce/cutemusic/ui/shared_components/TextKt;->Text_EeFLIFo$lambda$0(Landroidx/compose/runtime/MutableState;)Z
+Lcom/sosauce/cutemusic/ui/shared_components/TextKt$$ExternalSyntheticLambda0;
+HSPLcom/sosauce/cutemusic/ui/shared_components/TextKt$$ExternalSyntheticLambda0;-><init>(Ljava/lang/String;Landroidx/compose/ui/Modifier;JJLandroidx/compose/ui/text/style/TextAlign;III)V
 Lcom/sosauce/cutemusic/ui/shared_components/MusicViewModel;
 HSPLcom/sosauce/cutemusic/ui/shared_components/MusicViewModel;->$r8$lambda$QNcYPjwZNJQ3FQfKvC-m5Gdy86A(Lcom/sosauce/cutemusic/ui/shared_components/MusicViewModel;)V
 HSPLcom/sosauce/cutemusic/ui/shared_components/MusicViewModel;-><clinit>()V

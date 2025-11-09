@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,12 +32,12 @@ fun NoResult() {
             modifier = Modifier.size(70.dp)
         )
         Spacer(Modifier.height(10.dp))
-        CuteText(
+        Text(
             text = stringResource(R.string.no_result_found),
             style = MaterialTheme.typography.headlineMediumEmphasized,
             fontWeight = FontWeight.Black
         )
-        CuteText(
+        Text(
             text = stringResource(R.string.better_luck_next_time),
             style = MaterialTheme.typography.bodyMediumEmphasized,
             color = MaterialTheme.colorScheme.onSurfaceVariant

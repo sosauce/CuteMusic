@@ -1,13 +1,8 @@
-package com.sosauce.cutemusic.data.actions
+package com.sosauce.cutemusic.domain.actions
 
 import android.net.Uri
 
 sealed interface MetadataActions {
-
-    data class LoadSong(
-        val path: String,
-        val uri: Uri
-    ) : MetadataActions
 
     data class UpdateAudioArt(
         val newArtUri: Uri

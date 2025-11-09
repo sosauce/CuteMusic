@@ -8,6 +8,7 @@ package com.sosauce.cutemusic.presentation.screens.playlists.components
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,16 +38,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlaylistActions
-import com.sosauce.cutemusic.domain.model.Playlist
+import com.sosauce.cutemusic.data.models.Playlist
+import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.shared_components.DeletionDialog
 
 @Composable
@@ -93,7 +97,7 @@ fun PlaylistItem(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (playlist.emoji.isNotEmpty()) {
-                    CuteText(
+                    Text(
                         text = playlist.emoji,
                         fontSize = 50.sp
                     )
@@ -104,7 +108,7 @@ fun PlaylistItem(
                         modifier = Modifier.size(50.dp)
                     )
                 }
-                CuteText(
+                Text(
                     text = playlist.name,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.basicMarquee()
@@ -126,7 +130,7 @@ fun PlaylistItem(
                 contentAlignment = Alignment.Center
             ) {
                 if (playlist.emoji.isNotBlank()) {
-                    CuteText(
+                    Text(
                         text = playlist.emoji,
                         fontSize = 20.sp
                     )
@@ -143,12 +147,12 @@ fun PlaylistItem(
             Column(
                 modifier = Modifier.padding(vertical = 15.dp)
             ) {
-                CuteText(
+                Text(
                     text = playlist.name,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee()
                 )
-                CuteText(
+                Text(
                     text = pluralStringResource(
                         R.plurals.tracks,
                         playlist.musics.size,
@@ -160,7 +164,19 @@ fun PlaylistItem(
             }
         },
         trailingIcon = {
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (playlist.color != -1) {
+                    Box(
+                        modifier = Modifier
+                            .size(15.dp)
+                            .background(
+                                color = Color(playlist.color),
+                                shape = MaterialShapes.Circle.toShape()
+                            )
+                    )
+                }
                 IconButton(
                     onClick = { isDropdownExpanded = true }
                 ) {
@@ -177,7 +193,7 @@ fun PlaylistItem(
                 ) {
                     CuteDropdownMenuItem(
                         onClick = { showEditDialog = true },
-                        text = { CuteText(stringResource(R.string.edit_playlist)) },
+                        text = { Text(stringResource(R.string.edit_playlist)) },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.edit_rounded),
@@ -187,7 +203,7 @@ fun PlaylistItem(
                     )
                     CuteDropdownMenuItem(
                         onClick = { exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u") },
-                        text = { CuteText(stringResource(R.string.export_playlist)) },
+                        text = { Text(stringResource(R.string.export_playlist)) },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.export),
@@ -198,7 +214,7 @@ fun PlaylistItem(
                     CuteDropdownMenuItem(
                         onClick = { showDeletionDialog = true },
                         text = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.delete),
                                 color = MaterialTheme.colorScheme.error
                             )

@@ -7,17 +7,13 @@ import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlaylistActions
+import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.data.playlist.PlaylistDao
-import com.sosauce.cutemusic.data.playlist.PlaylistState
-import com.sosauce.cutemusic.domain.model.Playlist
+import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,10 +27,8 @@ class PlaylistViewModel(
         .stateIn(
             viewModelScope,
             SharingStarted.Companion.WhileSubscribed(5000),
-            listOf()
+            emptyList()
         )
-    private val _state = MutableStateFlow(PlaylistState())
-    val state = _state.asStateFlow()
 
 
     fun handlePlaylistActions(action: PlaylistActions) {
@@ -46,23 +40,8 @@ class PlaylistViewModel(
             }
 
             is PlaylistActions.CreatePlaylist -> {
-                val name = state.value.name.ifBlank {
-                    "Playlist ${allPlaylists.value.size + 1}"
-                }
-                val playlist = Playlist(
-                    emoji = state.value.emoji,
-                    name = name,
-                    musics = emptyList()
-                )
                 viewModelScope.launch(Dispatchers.IO) {
-                    dao.upsertPlaylist(playlist)
-                }
-
-                _state.update {
-                    it.copy(
-                        emoji = "",
-                        name = ""
-                    )
+                    dao.upsertPlaylist(action.playlist)
                 }
             }
 
@@ -91,7 +70,9 @@ class PlaylistViewModel(
                         emoji = "",
                         name = action.uri.path?.substringAfterLast('/')?.substringBeforeLast('.')
                             ?: "Imported playlist",
-                        musics = tracksFromFile
+                        musics = tracksFromFile,
+                        color = -1,
+                        tags = emptyList()
                     )
 
                     dao.upsertPlaylist(playlist)
@@ -115,14 +96,6 @@ class PlaylistViewModel(
                         ).show()
                     }
                 }
-            }
-
-            is PlaylistActions.UpdateStateEmoji -> {
-                _state.update { it.copy(emoji = action.emoji) }
-            }
-
-            is PlaylistActions.UpdateStateName -> {
-                _state.update { it.copy(name = action.name) }
             }
         }
     }

@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.utils
 
+import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
 import android.database.ContentObserver
@@ -9,8 +10,8 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -32,14 +33,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
+import androidx.compose.ui.util.fastFilter
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
+import androidx.navigation3.runtime.NavKey
 import com.kyant.taglib.PropertyMap
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
-import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.domain.model.Artist
+import com.sosauce.cutemusic.data.models.Album
+import com.sosauce.cutemusic.data.models.Artist
+import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Playlist
+import com.sosauce.cutemusic.presentation.navigation.Screen
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
@@ -48,6 +53,39 @@ import java.util.Locale
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+
+inline fun Modifier.thenIf(condition: Boolean, modifier: Modifier.() -> Modifier): Modifier {
+    return if (condition) {
+        then(modifier(Modifier))
+    } else {
+        this
+    }
+}
+
+fun NavKey.showBackButton(): Boolean {
+    return this is Screen.AlbumsDetails || this is Screen.ArtistsDetails || this is Screen.PlaylistDetails
+}
+
+fun Modifier.selfAlignHorizontally(): Modifier {
+    return then(Modifier
+        .fillMaxWidth()
+        .wrapContentWidth())
+}
+
+val MediaItem.comesFromSaf
+    get() = mediaMetadata.extras?.getBoolean("is_saf") == true
+
+val MediaItem.path
+    get() = mediaMetadata.extras?.getString("path") ?: ""
+
+val MediaItem.uri: Uri
+    get() = mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY
+
+val MediaItem.albumId
+    get() = mediaMetadata.extras?.getLong("album_id") ?: 0
+
+val MediaItem.artistId
+    get() = mediaMetadata.extras?.getLong("artist_id") ?: 0
 
 fun Player.playAtIndex(
     mediaId: String
@@ -64,6 +102,15 @@ fun Player.playRandom() {
         seekTo(index, 0)
         play()
     }
+}
+
+fun Player.playFromAll(
+    mediaId: String,
+    tracks: List<MediaItem>
+) {
+    setMediaItems(tracks)
+    playAtIndex(mediaId)
+
 }
 
 fun Player.playFromAlbum(
@@ -136,34 +183,35 @@ fun Player.playFromPlaylist(
     }
 }
 
-fun Player.applyRepeatMode(
-    repeatMode: Int
+fun Player.changeRepeatMode(
+    initialRepeatMode: Int? = null
 ) {
-    this.repeatMode = repeatMode
+
+    if (initialRepeatMode != null) {
+        this.repeatMode = initialRepeatMode
+    } else {
+
+        val repeatMode = when (repeatMode) {
+            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+            else -> Player.REPEAT_MODE_OFF
+        }
+        this.repeatMode = repeatMode
+    }
 }
 
 fun Player.applyShuffle(
-    shouldShuffle: Boolean
+    initialShuffle: Boolean? = null
 ) {
-    shuffleModeEnabled = shouldShuffle
+
+    shuffleModeEnabled = initialShuffle ?: !shuffleModeEnabled
 }
 
 fun Player.applyPlaybackSpeed(speed: Float = 1f) {
     playbackParameters = playbackParameters.withSpeed(speed)
 }
 
-val MediaItem.comesFromSaf
-    get() = mediaMetadata.extras?.getBoolean("is_saf") == true
-
-val MediaItem.path
-    get() = mediaMetadata.extras?.getString("path") ?: ""
-
-val MediaItem.uri: Uri
-    get() = mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY
-
-
-// Yes Google, a copy & paste of another function REALLY needed an unstable api...
-@UnstableApi
+@SuppressLint("UnsafeOptInUsageError")
 fun Player.applyPlaybackPitch(pitch: Float = 1f) {
     playbackParameters = playbackParameters.withPitch(pitch)
 }
@@ -181,15 +229,15 @@ fun ByteArray.getUriFromByteArray(context: Context): Uri {
     }
 }
 
-fun Uri.getBitrate(context: Context): String {
+fun Uri.getBitrate(context: Context): Int {
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, this)
         retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toInt()?.div(1000)
-            ?.toString()?.plus(" kbps") ?: "Unknown"
+            ?: 0
     } catch (e: Exception) {
         e.stackTrace
-        "Error parsing bitrate!"
+        0
     } finally {
         retriever.release()
     }
@@ -220,37 +268,11 @@ fun String?.formatForField(separator: String = ","): Array<String> {
     return this?.split(separator)?.map { it.trim() }?.toTypedArray() ?: arrayOf(this ?: "")
 }
 
-val LazyListState.showCuteSearchbar
-    get() =
-        if (layoutInfo.totalItemsCount == 0) {
-            true
-        } else if (
-            layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
-            layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
-        ) {
-            true
-        } else {
-            layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
-        }
-
-val LazyGridState.showCuteSearchbar
-    get() =
-        if (layoutInfo.totalItemsCount == 0) {
-            true
-        } else if (
-            layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 &&
-            layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
-        ) {
-            true
-        } else {
-            layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
-        }
-
 fun Modifier.ignoreParentPadding(): Modifier =
     layout { measurable, constraints ->
         val placeable = measurable.measure(
             constraints.offset(
-                30.dp.roundToPx()
+                15.dp.roundToPx()
             )
         )
         layout(
@@ -323,30 +345,33 @@ inline fun <E, K : Comparable<K>> List<E>.ordered(
 //}
 
 
-fun List<MediaItem>.ordered(
+fun List<CuteTrack>.ordered(
     sort: TrackSort,
     ascending: Boolean,
     query: String
-): List<MediaItem> {
+): List<CuteTrack> {
     val sortedList = if (ascending) {
         when (sort) {
-            TrackSort.TITLE -> sortedBy { it.mediaMetadata.title.toString() }
-            TrackSort.ARTIST -> sortedBy { it.mediaMetadata.artist.toString() }
-            TrackSort.ALBUM -> sortedBy { it.mediaMetadata.albumTitle.toString() }
-            TrackSort.YEAR -> sortedBy { it.mediaMetadata.recordingYear }
-            TrackSort.DATE_MODIFIED -> sortedBy { it.mediaMetadata.extras?.getInt("date_modified") }
+            TrackSort.TITLE -> sortedBy { it.title }
+            TrackSort.ARTIST -> sortedBy { it.artist }
+            TrackSort.ALBUM -> sortedBy { it.album }
+            TrackSort.YEAR -> sortedBy { it.year }
+            TrackSort.DATE_MODIFIED -> sortedBy { it.dateModified }
+            TrackSort.AS_ADDED -> this
         }
     } else {
         when (sort) {
-            TrackSort.TITLE -> sortedByDescending { it.mediaMetadata.title.toString() }
-            TrackSort.ARTIST -> sortedByDescending { it.mediaMetadata.artist.toString() }
-            TrackSort.ALBUM -> sortedByDescending { it.mediaMetadata.albumTitle.toString() }
-            TrackSort.YEAR -> sortedByDescending { it.mediaMetadata.recordingYear }
-            TrackSort.DATE_MODIFIED -> sortedByDescending { it.mediaMetadata.extras?.getInt("date_modified") }
+            TrackSort.TITLE -> sortedByDescending { it.title }
+            TrackSort.ARTIST -> sortedByDescending { it.artist }
+            TrackSort.ALBUM -> sortedByDescending { it.album }
+            TrackSort.YEAR -> sortedByDescending { it.year }
+            TrackSort.DATE_MODIFIED -> sortedByDescending { it.dateModified }
+            TrackSort.AS_ADDED -> this.reversed()
+
         }
     }
 
-    return sortedList.filter { it.mediaMetadata.title?.contains(query, true) == true }
+    return sortedList.fastFilter { it.title.contains(query, true) }
 }
 
 fun List<Album>.ordered(
@@ -366,7 +391,7 @@ fun List<Album>.ordered(
         }
     }
 
-    return sortedList.filter { it.name.contains(query, true) }
+    return sortedList.fastFilter { it.name.contains(query, true) }
 
 }
 
@@ -389,7 +414,32 @@ fun List<Artist>.ordered(
         }
     }
 
-    return sortedList.filter { it.name.contains(query, true) }
+    return sortedList.fastFilter { it.name.contains(query, true) }
+
+}
+
+fun List<Playlist>.ordered(
+    sort: PlaylistSort,
+    ascending: Boolean,
+    query: String
+): List<Playlist> {
+    val sortedList = if (ascending) {
+        when (sort) {
+            PlaylistSort.NAME -> sortedBy { it.name }
+            PlaylistSort.NB_TRACKS -> sortedBy { it.musics.size }
+            PlaylistSort.TAGS -> sortedBy { it.tags.size }
+            PlaylistSort.COLOR -> sortedBy { it.color }
+        }
+    } else {
+        when (sort) {
+            PlaylistSort.NAME -> sortedByDescending { it.name }
+            PlaylistSort.NB_TRACKS -> sortedByDescending { it.musics.size }
+            PlaylistSort.TAGS -> sortedByDescending { it.tags.size }
+            PlaylistSort.COLOR -> sortedByDescending { it.color }
+        }
+    }
+
+    return sortedList.fastFilter { it.name.contains(query, true) }
 
 }
 

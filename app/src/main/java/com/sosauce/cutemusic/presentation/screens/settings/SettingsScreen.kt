@@ -22,13 +22,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.media3.common.MediaItem
-import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.domain.model.Folder
+import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Folder
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsScreens
@@ -41,7 +40,7 @@ import kotlin.uuid.Uuid
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
     folders: List<Folder>,
-    latestSafTracks: List<MediaItem>,
+    latestSafTracks: List<CuteTrack>,
     onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String

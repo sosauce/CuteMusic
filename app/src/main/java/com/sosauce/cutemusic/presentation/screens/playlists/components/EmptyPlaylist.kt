@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+
 
 @Composable
 fun EmptyPlaylist(emoji: String) {
@@ -34,18 +35,18 @@ fun EmptyPlaylist(emoji: String) {
                 modifier = Modifier.size(70.dp)
             )
         } else {
-            CuteText(
+            Text(
                 text = emoji,
                 fontSize = 70.sp
             )
         }
         Spacer(Modifier.height(10.dp))
-        CuteText(
+        Text(
             text = stringResource(R.string.its_empty_here),
             style = MaterialTheme.typography.headlineMediumEmphasized,
             fontWeight = FontWeight.Black
         )
-        CuteText(
+        Text(
             text = stringResource(R.string.empty_playlist_desc),
             style = MaterialTheme.typography.bodyMediumEmphasized,
             color = MaterialTheme.colorScheme.onSurfaceVariant

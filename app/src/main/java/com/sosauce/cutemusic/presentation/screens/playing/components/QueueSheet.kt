@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.shared_components.QueueMusicListItem
@@ -23,7 +22,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @Composable
 fun QueueSheet(
     onDismissRequest: () -> Unit,
-    loadedMedias: List<MediaItem>,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     musicState: MusicState
 ) {
@@ -39,7 +37,7 @@ fun QueueSheet(
     ) {
         LazyColumn(state = lazyListState) {
             items(
-                items = loadedMedias,
+                items = musicState.loadedMedias,
                 key = { it.mediaId }
             ) { music ->
                 ReorderableItem(reorderableLazyListState, key = music.mediaId) { isDragging ->

@@ -1,6 +1,6 @@
 package com.sosauce.cutemusic.data.actions
 
-import androidx.media3.common.MediaItem
+import com.sosauce.cutemusic.data.models.CuteTrack
 
 sealed interface PlayerActions {
     data object PlayOrPause : PlayerActions
@@ -10,7 +10,7 @@ sealed interface PlayerActions {
     data object PlayRandom : PlayerActions
     data object StopPlayback : PlayerActions
     data object Shuffle : PlayerActions
-    data class RepeatMode(val repeatMode: Int) : PlayerActions
+    data object ChangeRepeatMode : PlayerActions
     data class SeekTo(val position: Long) : PlayerActions
     data class SeekToSlider(val position: Long) : PlayerActions
     data class RewindTo(val position: Long) : PlayerActions
@@ -61,6 +61,6 @@ sealed interface PlayerActions {
     ) : PlayerActions
 
     data class AddToQueue(
-        val mediaItem: MediaItem
+        val cuteTrack: CuteTrack
     ) : PlayerActions
 }

@@ -3,6 +3,7 @@
 package com.sosauce.cutemusic.presentation.screens.settings.compenents
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,9 +25,13 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,23 +41,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberSliderStyle
+import com.sosauce.cutemusic.presentation.screens.playing.components.rememberCuteSliderState
+import com.sosauce.cutemusic.presentation.screens.playing.components.toSlider
 import com.sosauce.cutemusic.presentation.screens.settings.FontItem
 import com.sosauce.cutemusic.presentation.screens.settings.FontStyle
 import com.sosauce.cutemusic.presentation.screens.settings.ThemeItem
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+
 
 @Composable
 fun SettingsCards(
+    modifier: Modifier = Modifier,
     checked: Boolean,
     topDp: Dp,
     bottomDp: Dp,
     text: String,
     onCheckedChange: () -> Unit,
-    optionalDescription: (@Composable () -> Unit)? = null,
+    optionalDescription: Int? = null,
 ) {
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 16.dp, vertical = 2.dp),
         shape = RoundedCornerShape(
             topStart = topDp,
@@ -73,10 +82,15 @@ fun SettingsCards(
                     .weight(1f)
             ) {
                 Column {
-                    CuteText(
-                        text = text
-                    )
-                    optionalDescription?.invoke()
+                    Text(text)
+                    optionalDescription?.let {
+                        Text(
+                            text = stringResource(it),
+                            style = MaterialTheme.typography.labelSmallEmphasized.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
                 }
             }
             Switch(
@@ -90,6 +104,74 @@ fun SettingsCards(
     }
 }
 
+@Composable
+fun SliderSettingsCards(
+    value: Int,
+    topDp: Dp,
+    bottomDp: Dp,
+    text: String,
+    onValueChange: (Int) -> Unit,
+    optionalDescription: Int? = null,
+) {
+
+    val sliderStyle by rememberSliderStyle()
+    var tempValue by remember { mutableStateOf<Int?>(null) }
+    val animatedValue by animateIntAsState(
+        targetValue = tempValue ?: value
+    )
+
+
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        shape = RoundedCornerShape(
+            topStart = topDp,
+            topEnd = topDp,
+            bottomStart = bottomDp,
+            bottomEnd = bottomDp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(15.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Text(text)
+                }
+                Text(animatedValue.toString())
+            }
+            sliderStyle.toSlider(
+                rememberCuteSliderState(
+                    value = animatedValue.toFloat(),
+                    onValueChange = { tempValue = it.toInt() },
+                    onValueChangeFinished = {
+                        tempValue?.let {
+                            onValueChange(it)
+                        }
+                        tempValue = null
+                    },
+                    valueRange = 0f..60f
+                )
+            )
+            optionalDescription?.let {
+                Text(
+                    text = stringResource(it),
+                    style = MaterialTheme.typography.labelSmallEmphasized.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun ThemeSelector(theme: ThemeItem) {
@@ -126,7 +208,7 @@ fun ThemeSelector(theme: ThemeItem) {
             )
         }
         Spacer(Modifier.weight(1f))
-        CuteText(theme.text)
+        Text(theme.text)
     }
 }
 
@@ -155,7 +237,7 @@ fun FontSelector(fontItem: FontItem) {
             contentAlignment = Alignment.Center
         ) { fontItem.text() }
         Spacer(Modifier.weight(1f))
-        CuteText(
+        Text(
             text = if (fontItem.fontStyle == FontStyle.SYSTEM) stringResource(R.string.system) else stringResource(
                 R.string.default_text
             )
@@ -206,6 +288,7 @@ fun SliderSelector(
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
     )
+
 
     Column(
         verticalArrangement = Arrangement.Center,

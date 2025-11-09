@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.datastore.rememberThumblessSlider
-import com.sosauce.cutemusic.presentation.shared_components.AnimatedSlider
+import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedSlider
 import com.sosauce.cutemusic.utils.SliderStyle
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import me.saket.squiggles.SquigglySlider

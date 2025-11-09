@@ -4,15 +4,12 @@ package com.sosauce.cutemusic.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -21,100 +18,56 @@ import androidx.compose.ui.text.font.FontWeight
 import com.kmpalette.color
 import com.kmpalette.rememberDominantColorState
 import com.materialkolor.DynamicMaterialExpressiveTheme
-import com.materialkolor.LocalDynamicMaterialThemeSeed
+import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAppTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
+import com.sosauce.cutemusic.data.datastore.rememberUseExpressivePalette
+import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.anyDarkColorScheme
-import com.sosauce.cutemusic.utils.anyLightColorScheme
-
-private val DarkColors = darkColorScheme(
-    primary = md_theme_dark_primary,
-    onPrimary = md_theme_dark_onPrimary,
-    primaryContainer = md_theme_dark_primaryContainer,
-    onPrimaryContainer = md_theme_dark_onPrimaryContainer,
-    secondary = md_theme_dark_secondary,
-    onSecondary = md_theme_dark_onSecondary,
-    secondaryContainer = md_theme_dark_secondaryContainer,
-    onSecondaryContainer = md_theme_dark_onSecondaryContainer,
-    tertiary = md_theme_dark_tertiary,
-    onTertiary = md_theme_dark_onTertiary,
-    tertiaryContainer = md_theme_dark_tertiaryContainer,
-    onTertiaryContainer = md_theme_dark_onTertiaryContainer,
-    error = md_theme_dark_error,
-    errorContainer = md_theme_dark_errorContainer,
-    onError = md_theme_dark_onError,
-    onErrorContainer = md_theme_dark_onErrorContainer,
-    background = md_theme_dark_background,
-    onBackground = md_theme_dark_onBackground,
-    surface = md_theme_dark_surface,
-    onSurface = md_theme_dark_onSurface,
-    surfaceVariant = md_theme_dark_surfaceVariant,
-    onSurfaceVariant = md_theme_dark_onSurfaceVariant,
-    outline = md_theme_dark_outline,
-    inverseOnSurface = md_theme_dark_inverseOnSurface,
-    inverseSurface = md_theme_dark_inverseSurface,
-    inversePrimary = md_theme_dark_inversePrimary,
-    surfaceTint = md_theme_dark_surfaceTint,
-    outlineVariant = md_theme_dark_outlineVariant,
-    scrim = md_theme_dark_scrim,
-)
 
 @Composable
 fun CuteMusicTheme(
-    artImageBitmap: ImageBitmap,
+    artImageBitmap: ImageBitmap?,
     content: @Composable () -> Unit,
 ) {
     val theme by rememberAppTheme()
     val useArtTheme by rememberUseArtTheme()
     val isSystemInDarkTheme = isSystemInDarkTheme()
-
-
-    val colorSchemeToUse = when (theme) {
-        CuteTheme.AMOLED -> anyDarkColorScheme().copy(
-            surface = Color.Black,
-            inverseSurface = Color.White,
-            background = Color.Black,
-        )
-
-        CuteTheme.SYSTEM -> if (isSystemInDarkTheme) anyDarkColorScheme() else anyLightColorScheme()
-        CuteTheme.DARK -> anyDarkColorScheme()
-        CuteTheme.LIGHT -> anyLightColorScheme()
-        else -> DarkColors
+    val paletteState = rememberDominantColorState()
+    val useExpressivePalette by rememberUseExpressivePalette()
+    val useSystemFont by rememberUseSystemFont()
+    val seedColor = if (useArtTheme && artImageBitmap != null) {
+        paletteState.result?.paletteOrNull?.vibrantSwatch?.color
+            ?: MaterialTheme.colorScheme.primary
+    } else {
+        anyDarkColorScheme().primary
     }
 
-    val paletteState = rememberDominantColorState()
-
     LaunchedEffect(artImageBitmap) {
-        paletteState.updateFrom(artImageBitmap)
+        if (artImageBitmap != null) {
+            paletteState.updateFrom(artImageBitmap)
+        }
     }
 
     val state = rememberDynamicMaterialThemeState(
-        seedColor = paletteState.result?.paletteOrNull?.vibrantSwatch?.color
-            ?: MaterialTheme.colorScheme.primary,
+        seedColor = seedColor,
         isDark = if (theme == CuteTheme.SYSTEM) isSystemInDarkTheme else if (theme == CuteTheme.AMOLED) true else theme == CuteTheme.DARK,
         isAmoled = theme == CuteTheme.AMOLED,
-        specVersion = ColorSpec.SpecVersion.SPEC_2025
+        specVersion = ColorSpec.SpecVersion.SPEC_2025,
+        style = if (useExpressivePalette) PaletteStyle.Expressive else PaletteStyle.Fidelity
     )
 
     DynamicMaterialExpressiveTheme(
         state = state,
         motionScheme = MotionScheme.expressive(),
-        animate = true,
+        animate = false,
+        typography = if (useSystemFont) MaterialTheme.typography else NunitoTypography,
         content = content
     )
-
-    CompositionLocalProvider(LocalDynamicMaterialThemeSeed provides state.seedColor) {
-        MaterialExpressiveTheme(
-            //colorScheme = animateColorScheme(if (useArtTheme) state.colorScheme else colorSchemeToUse, tween(500)),
-            colorScheme = if (useArtTheme) state.colorScheme else colorSchemeToUse,
-            motionScheme = MotionScheme.expressive(),
-            content = content,
-        )
-    }
 }
 
 val nunitoFontFamily = FontFamily(
@@ -126,3 +79,130 @@ val nunitoFontFamily = FontFamily(
     Font(R.font.nunito_regular, FontWeight.Normal, FontStyle.Normal),
     Font(R.font.nunito_semibold, FontWeight.SemiBold, FontStyle.Normal),
 )
+
+val NunitoTypography = Typography().run {
+    copy(
+        displayLarge = displayLarge.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        displayMedium = displayMedium.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        displaySmall = displaySmall.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineLarge = headlineLarge.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineMedium = headlineMedium.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineSmall = headlineSmall.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleLarge = titleLarge.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleMedium = titleMedium.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleSmall = titleSmall.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodyLarge = bodyLarge.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodyMedium = bodyMedium.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodySmall = bodySmall.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelLarge = labelLarge.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelMedium = labelMedium.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelSmall = labelSmall.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        displayLargeEmphasized = displayLargeEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        displayMediumEmphasized = displayMediumEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        displaySmallEmphasized = displaySmallEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineLargeEmphasized = headlineLargeEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineMediumEmphasized = headlineMediumEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        headlineSmallEmphasized = headlineSmallEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleLargeEmphasized = titleLargeEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleMediumEmphasized = titleMediumEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        titleSmallEmphasized = titleSmallEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodyLargeEmphasized = bodyLargeEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodyMediumEmphasized = bodyMediumEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        bodySmallEmphasized = bodySmallEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelLargeEmphasized = labelLargeEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelMediumEmphasized = labelMediumEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        ),
+        labelSmallEmphasized = labelSmallEmphasized.copy(
+            fontFamily = nunitoFontFamily,
+            fontWeight = FontWeight.ExtraBold
+        )
+    )
+}
+
+

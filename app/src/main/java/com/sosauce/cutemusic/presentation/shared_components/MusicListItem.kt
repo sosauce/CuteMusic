@@ -7,7 +7,6 @@ package com.sosauce.cutemusic.presentation.shared_components
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,6 +45,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,32 +62,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
-import androidx.navigation3.runtime.NavKey
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.LocalScreen
-import com.sosauce.cutemusic.utils.path
-import com.sosauce.cutemusic.utils.uri
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
 fun LocalMusicListItem(
     modifier: Modifier = Modifier,
-    music: MediaItem,
+    music: CuteTrack,
     musicState: MusicState,
     onShortClick: (mediaId: String) -> Unit,
     onNavigate: (Screen) -> Unit,
     onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
     isSelected: Boolean = false
 ) {
@@ -147,7 +146,7 @@ fun LocalMusicListItem(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri, context),
+                    model = ImageUtils.imageRequester(music.artUri, context),
                     contentDescription = null,
                     modifier = Modifier
                         .size(100.dp)
@@ -155,13 +154,13 @@ fun LocalMusicListItem(
                         .clip(RoundedCornerShape(15)),
                     contentScale = ContentScale.Crop
                 )
-                CuteText(
-                    text = music.mediaMetadata.title.toString(),
+                Text(
+                    text = music.title,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.basicMarquee()
                 )
-                CuteText(
-                    text = music.mediaMetadata.artist.toString(),
+                Text(
+                    text = music.artist,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmallEmphasized,
                     modifier = Modifier.basicMarquee()
@@ -179,6 +178,11 @@ fun LocalMusicListItem(
         contentPadding = PaddingValues(0.dp),
         onClick = { onShortClick(music.mediaId) },
         leadingIcon = {
+
+            val image = rememberAsyncImagePainter(ImageUtils.imageRequester(music.artUri, context))
+            val imageState by image.state.collectAsStateWithLifecycle()
+
+
             AnimatedContent(
                 targetState = isSelected,
                 transitionSpec = { scaleIn() togetherWith scaleOut() }
@@ -199,19 +203,37 @@ fun LocalMusicListItem(
                         )
                     }
                 } else {
-                    AsyncImage(
-                        model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri, context),
-                        contentDescription = stringResource(R.string.artwork),
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .size(50.dp)
-//                            .sharedElement(
-//                                sharedContentState = rememberSharedContentState(music.mediaId),
-//                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                            )
-                            .clip(RoundedCornerShape(10.dp)),
-                        contentScale = ContentScale.Crop,
-                    )
+                    when (imageState) {
+                        is AsyncImagePainter.State.Error -> {
+                            Box(
+                                modifier = Modifier
+                                    .padding(start = 10.dp)
+                                    .size(50.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.music_note_rounded),
+                                    contentDescription = null,
+                                    tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+
+                                )
+                            }
+                        }
+
+                        else -> {
+                            AsyncImage(
+                                model = ImageUtils.imageRequester(music.artUri, context),
+                                contentDescription = stringResource(R.string.artwork),
+                                modifier = Modifier
+                                    .padding(start = 10.dp)
+                                    .size(50.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
                 }
             }
         },
@@ -219,14 +241,14 @@ fun LocalMusicListItem(
             Column(
                 modifier = Modifier.padding(vertical = 15.dp)
             ) {
-                CuteText(
-                    text = music.mediaMetadata.title.toString(),
+                Text(
+                    text = music.title,
                     maxLines = 1,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.basicMarquee()
                 )
-                CuteText(
-                    text = music.mediaMetadata.artist.toString(),
+                Text(
+                    text = music.artist,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyLargeEmphasized,
@@ -238,12 +260,12 @@ fun LocalMusicListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (currentScreen is Screen.AlbumsDetails && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+                if (currentScreen is Screen.AlbumsDetails && music.trackNumber != 0) {
                     Badge(
                         containerColor = MaterialTheme.colorScheme.tertiary
                     ) {
-                        CuteText(
-                            text = music.mediaMetadata.trackNumber.toString(),
+                        Text(
+                            text = music.trackNumber.toString(),
                             color = MaterialTheme.colorScheme.onTertiary,
                             modifier = Modifier.padding(3.dp)
                         )
@@ -267,7 +289,7 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = { showDetailsDialog = true },
                         text = {
-                            CuteText(stringResource(R.string.details))
+                            Text(stringResource(R.string.details))
                         },
                         leadingIcon = {
                             Icon(
@@ -279,11 +301,10 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
-                            onLoadMetadata(music.path, music.uri)
-                            onNavigate(Screen.MetadataEditor(music.mediaId))
+                            onNavigate(Screen.MetadataEditor(music.path, music.uri.toString()))
                         },
                         text = {
-                            CuteText(stringResource(R.string.edit))
+                            Text(stringResource(R.string.edit))
                         },
                         leadingIcon = {
                             Icon(
@@ -295,7 +316,7 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(music)) },
                         text = {
-                            CuteText(stringResource(R.string.add_queue))
+                            Text(stringResource(R.string.add_queue))
                         },
                         leadingIcon = {
                             Icon(
@@ -308,39 +329,37 @@ fun LocalMusicListItem(
                         onClick = {
                             isDropDownExpanded = false
                             onNavigate(
-                                Screen.AlbumsDetails(
-                                    music.mediaMetadata.extras?.getLong("album_id") ?: 0
-                                )
+                                Screen.AlbumsDetails(music.album)
                             )
                         },
                         text = {
-                            CuteText("${stringResource(R.string.go_to)} ${music.mediaMetadata.albumTitle}")
+                            Text("${stringResource(R.string.go_to)} ${music.album}")
                         },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
                                 contentDescription = null
                             )
-                        }
+                        },
+                        visible = currentScreen !is Screen.AlbumsDetails
                     )
                     CuteDropdownMenuItem(
                         onClick = {
                             isDropDownExpanded = false
                             onNavigate(
-                                Screen.ArtistsDetails(
-                                    music.mediaMetadata.extras?.getLong("artist_id") ?: 0
-                                )
+                                Screen.ArtistsDetails(music.artist)
                             )
                         },
                         text = {
-                            CuteText("${stringResource(R.string.go_to)} ${music.mediaMetadata.artist}")
+                            Text("${stringResource(R.string.go_to)} ${music.artist}")
                         },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.artist_rounded),
                                 contentDescription = null
                             )
-                        }
+                        },
+                        visible = currentScreen !is Screen.ArtistsDetails
                     )
                     playlistDropdownMenuItem()
                     CuteDropdownMenuItem(
@@ -350,7 +369,7 @@ fun LocalMusicListItem(
                             )
                         },
                         text = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.share)
                             )
                         },
@@ -364,7 +383,7 @@ fun LocalMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = { showDeletionDialog = true },
                         text = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.delete),
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -386,14 +405,13 @@ fun LocalMusicListItem(
 @Composable
 fun ReorderableCollectionItemScope.QueueMusicListItem(
     modifier: Modifier = Modifier,
-    music: MediaItem,
+    music: CuteTrack,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     currentMusicUri: String,
 ) {
     val context = LocalContext.current
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
     val bgColor by animateColorAsState(
-        targetValue = if (currentMusicUri == uri.toString()) {
+        targetValue = if (currentMusicUri == music.uri.toString()) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             Color.Transparent
@@ -410,7 +428,7 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
         onClick = {},
         leadingIcon = {
             AsyncImage(
-                model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri, context),
+                model = ImageUtils.imageRequester(music.artUri, context),
                 stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)
@@ -423,14 +441,14 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
             Column(
                 modifier = Modifier.padding(vertical = 15.dp)
             ) {
-                CuteText(
-                    text = music.mediaMetadata.title.toString(),
+                Text(
+                    text = music.title,
                     maxLines = 1,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.basicMarquee()
                 )
-                CuteText(
-                    text = music.mediaMetadata.artist.toString(),
+                Text(
+                    text = music.artist,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                     style = MaterialTheme.typography.bodyLarge,
@@ -465,7 +483,7 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
 @Composable
 fun SafMusicListItem(
     modifier: Modifier = Modifier,
-    music: MediaItem,
+    music: CuteTrack,
     onShortClick: (albumName: String) -> Unit,
     currentMusicUri: String,
     onDeleteFromSaf: () -> Unit,
@@ -477,10 +495,9 @@ fun SafMusicListItem(
     val context = LocalContext.current
     var isDropDownExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     val bgColor by animateColorAsState(
-        targetValue = if (currentMusicUri == uri.toString() && isPlayerReady) {
+        targetValue = if (currentMusicUri == music.uri.toString() && isPlayerReady) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             Color.Transparent
@@ -513,7 +530,7 @@ fun SafMusicListItem(
         onClick = { onShortClick(music.mediaId) },
         leadingIcon = {
             AsyncImage(
-                model = ImageUtils.imageRequester(music.mediaMetadata.artworkUri, context),
+                model = ImageUtils.imageRequester(music.artUri, context),
                 stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)
@@ -526,14 +543,14 @@ fun SafMusicListItem(
             Column(
                 modifier = Modifier.padding(vertical = 15.dp)
             ) {
-                CuteText(
-                    text = music.mediaMetadata.title.toString(),
+                Text(
+                    text = music.title,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(),
                     style = MaterialTheme.typography.titleMedium
                 )
-                CuteText(
-                    text = music.mediaMetadata.artist.toString(),
+                Text(
+                    text = music.artist,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                     style = MaterialTheme.typography.bodyLarge
@@ -544,7 +561,7 @@ fun SafMusicListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (showTrackNumber && music.mediaMetadata.trackNumber != null && music.mediaMetadata.trackNumber != 0) {
+                if (showTrackNumber && music.trackNumber != 0) {
                     Box(
                         modifier = Modifier
                             .padding(start = 5.dp)
@@ -553,8 +570,8 @@ fun SafMusicListItem(
                             .wrapContentSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CuteText(
-                            text = music.mediaMetadata.trackNumber.toString(),
+                        Text(
+                            text = music.trackNumber.toString(),
                             color = MaterialTheme.colorScheme.onTertiary,
                             modifier = Modifier.padding(3.dp)
                         )
@@ -577,7 +594,7 @@ fun SafMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = { showDetailsDialog = true },
                         text = {
-                            CuteText(stringResource(R.string.details))
+                            Text(stringResource(R.string.details))
                         },
                         leadingIcon = {
                             Icon(
@@ -591,7 +608,7 @@ fun SafMusicListItem(
                         onClick = {
                             val shareIntent = Intent().apply {
                                 action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, uri)
+                                putExtra(Intent.EXTRA_STREAM, music.uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 type = "audio/*"
                             }
@@ -604,7 +621,7 @@ fun SafMusicListItem(
                             )
                         },
                         text = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.share)
                             )
                         },
@@ -618,7 +635,7 @@ fun SafMusicListItem(
                     CuteDropdownMenuItem(
                         onClick = onDeleteFromSaf,
                         text = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.delete),
                                 color = MaterialTheme.colorScheme.error
                             )

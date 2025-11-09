@@ -1,4 +1,4 @@
-package com.sosauce.cutemusic.presentation.shared_components
+package com.sosauce.cutemusic.presentation.shared_components.animations
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState

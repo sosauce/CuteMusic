@@ -1,4 +1,4 @@
-package com.sosauce.cutemusic.domain.model
+package com.sosauce.cutemusic.data.models
 
 data class Folder(
     val name: String,

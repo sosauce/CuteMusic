@@ -18,21 +18,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Playlist
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Playlist
+
 
 @Composable
 fun PlaylistHeaderLandscape(
     playlist: Playlist,
-    musics: List<MediaItem>,
+    musics: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
     Row(
@@ -47,7 +48,7 @@ fun PlaylistHeaderLandscape(
                 modifier = Modifier.size(200.dp)
             )
         } else {
-            CuteText(
+            Text(
                 text = playlist.emoji,
                 maxLines = 1,
                 modifier = Modifier.size(200.dp)
@@ -55,7 +56,7 @@ fun PlaylistHeaderLandscape(
         }
         Spacer(Modifier.width(15.dp))
         Column {
-            CuteText(
+            Text(
                 text = playlist.name,
                 style = MaterialTheme.typography.headlineMediumEmphasized,
                 modifier = Modifier.basicMarquee()

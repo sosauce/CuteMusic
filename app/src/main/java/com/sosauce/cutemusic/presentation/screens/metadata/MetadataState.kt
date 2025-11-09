@@ -9,8 +9,6 @@ import com.kyant.taglib.Picture
 
 data class MetadataState(
     val mutablePropertiesMap: SnapshotStateMap<String, String> = mutableStateMapOf(),
-    val songPath: String = "",
-    val songUri: Uri = Uri.EMPTY,
     val metadata: Metadata? = null,
     val audioProperties: AudioProperties? = null,
     val art: Picture? = null,

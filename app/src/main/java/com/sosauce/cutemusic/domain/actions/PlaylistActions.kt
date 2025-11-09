@@ -1,13 +1,11 @@
-package com.sosauce.cutemusic.data.actions
+package com.sosauce.cutemusic.domain.actions
 
 import android.net.Uri
-import com.sosauce.cutemusic.domain.model.Playlist
+import com.sosauce.cutemusic.data.models.Playlist
 
 sealed interface PlaylistActions {
 
-    data object CreatePlaylist : PlaylistActions
-    data class UpdateStateName(val name: String) : PlaylistActions
-    data class UpdateStateEmoji(val emoji: String) : PlaylistActions
+    data class CreatePlaylist(val playlist: Playlist) : PlaylistActions
     data class DeletePlaylist(val playlist: Playlist) : PlaylistActions
     data class UpsertPlaylist(val playlist: Playlist) :
         PlaylistActions // Modify a playlist basically

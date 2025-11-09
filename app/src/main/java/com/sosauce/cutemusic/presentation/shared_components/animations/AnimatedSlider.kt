@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.sosauce.cutemusic.presentation.shared_components
+package com.sosauce.cutemusic.presentation.shared_components.animations
 
 import androidx.annotation.IntRange
 import androidx.compose.animation.core.animateDpAsState

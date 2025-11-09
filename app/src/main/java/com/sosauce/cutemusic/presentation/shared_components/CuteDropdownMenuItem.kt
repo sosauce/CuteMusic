@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 
 /**
@@ -52,7 +53,7 @@ fun CuteDropdownMenuItem(
 
 @Composable
 fun AddToPlaylistDropdownItem(
-    music: MediaItem
+    music: CuteTrack
 ) {
 
     var showPlaylistDialog by remember { mutableStateOf(false) }
@@ -67,7 +68,7 @@ fun AddToPlaylistDropdownItem(
     CuteDropdownMenuItem(
         onClick = { showPlaylistDialog = true },
         text = {
-            CuteText(stringResource(R.string.add_to_playlist))
+            Text(stringResource(R.string.add_to_playlist))
         },
         leadingIcon = {
             Icon(
@@ -85,7 +86,7 @@ fun RemoveFromPlaylistDropdownItem(
     CuteDropdownMenuItem(
         onClick = onRemoveFromPlaylist,
         text = {
-            CuteText(stringResource(R.string.remove_from_playlist))
+            Text(stringResource(R.string.remove_from_playlist))
         },
         leadingIcon = {
             Icon(

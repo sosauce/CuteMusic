@@ -3,6 +3,7 @@ package com.sosauce.cutemusic.data.states
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.media3.common.Player
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.domain.model.Lyrics
 
 @Stable
@@ -28,6 +29,6 @@ data class MusicState(
     val mediaIndex: Int = 0,
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
     val shuffle: Boolean = false,
-    val loadedMedias: Map<String, Int> = emptyMap(), // Map of mediaId to index
+    val loadedMedias: List<CuteTrack> = emptyList(),
     val lyrics: List<Lyrics> = emptyList()
 )

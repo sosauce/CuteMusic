@@ -21,6 +21,7 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.ListenableFuture
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.CuteEqualizer
 import com.sosauce.cutemusic.presentation.MainActivity
 import com.sosauce.cutemusic.presentation.widgets.WidgetBroadcastReceiver
 import com.sosauce.cutemusic.presentation.widgets.WidgetCallback
@@ -28,8 +29,10 @@ import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
 import com.sosauce.cutemusic.utils.PACKAGE
 import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
 import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
+import org.koin.android.ext.android.get
 
 
+@UnstableApi
 class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Player.Listener,
     WidgetCallback {
 
@@ -41,6 +44,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
         .build()
 
     private val widgetReceiver = WidgetBroadcastReceiver()
+    private val cuteEqualizer = get<CuteEqualizer>()
 
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -64,6 +68,11 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
         }
 
         sendBroadcast(intent)
+    }
+
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        super.onAudioSessionIdChanged(audioSessionId)
+        cuteEqualizer.initEqualizer(audioSessionId)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
@@ -91,6 +100,8 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
                 )
             )
             .build()
+
+
 
         IntentFilter(PACKAGE).also {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -122,6 +133,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             release()
             mediaLibrarySession = null
         }
+        cuteEqualizer.clearEqualizer()
         stopSelf()
         try {
             widgetReceiver.also {
@@ -129,7 +141,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
                 unregisterReceiver(it)
             }
         } catch (e: IllegalArgumentException) {
-            return
+            super.onDestroy()
         }
         super.onDestroy()
     }
@@ -170,6 +182,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             release()
             mediaLibrarySession = null
         }
+        cuteEqualizer.clearEqualizer()
         widgetReceiver.also {
             it.stopCallback()
             unregisterReceiver(it)

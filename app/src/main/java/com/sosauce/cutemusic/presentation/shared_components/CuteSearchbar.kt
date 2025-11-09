@@ -5,6 +5,7 @@
 
 package com.sosauce.cutemusic.presentation.shared_components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -21,9 +22,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -40,6 +41,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -47,10 +49,10 @@ import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +67,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
@@ -75,12 +76,14 @@ import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playing.components.PlayPauseButton
+import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedIconButton
 import com.sosauce.cutemusic.presentation.theme.nunitoFontFamily
 import com.sosauce.cutemusic.utils.LocalScreen
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
+import com.sosauce.cutemusic.utils.showBackButton
 
 
 @Composable
@@ -90,9 +93,9 @@ fun SharedTransitionScope.CuteSearchbar(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
+    onNavigateUp: (() -> Unit)? = null,
     showSearchField: Boolean = true,
     fab: @Composable (() -> Unit)? = null,
-    navigationIcon: @Composable (() -> Unit)? = null,
     sortingMenu: (@Composable (() -> Unit))? = null,
 ) {
 
@@ -104,8 +107,8 @@ fun SharedTransitionScope.CuteSearchbar(
     var showSortMenu by remember { mutableStateOf(false) }
     val screenToLeadingIcon = mapOf(
         Screen.Main to R.drawable.music_note_rounded,
-        Screen.Albums to androidx.media3.session.R.drawable.media3_icon_album,
-        Screen.Artists to R.drawable.artist_rounded,
+        Screen.Albums to R.drawable.album_filled,
+        Screen.Artists to R.drawable.artists_filled,
         Screen.Playlists to R.drawable.queue_music_rounded,
     )
 
@@ -129,13 +132,17 @@ fun SharedTransitionScope.CuteSearchbar(
 //        }
 
         Row(
-            horizontalArrangement = if (navigationIcon != null) Arrangement.SpaceBetween else Arrangement.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
         ) {
-            if (showBackButton) {
-                navigationIcon?.invoke()
+            if (showBackButton && currentScreen.showBackButton()) {
+                CuteNavigationButton(
+                    onNavigateUp = { onNavigateUp?.invoke() }
+                )
             }
             if (showShuffleButton || currentScreen == Screen.Playlists) {
+                Spacer(Modifier.weight(1f))
                 fab?.invoke()
             }
         }
@@ -176,7 +183,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             transitionSpec = { slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut() },
                             modifier = modifier.fillMaxWidth()
                         ) {
-                            CuteText(
+                            Text(
                                 text = it,
                                 modifier = Modifier
                                     .padding(start = 10.dp)
@@ -237,7 +244,6 @@ fun SharedTransitionScope.CuteSearchbar(
                     ) {
                         if (it) {
                             ScreenSelection(
-                                screenToLeadingIcon = screenToLeadingIcon,
                                 onNavigate = onNavigate,
                                 dismiss = { isInScreenSelectionMode = false }
                             )
@@ -249,7 +255,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
                                 placeholder = {
-                                    CuteText(
+                                    Text(
                                         text = stringResource(R.string.search_here),
                                         maxLines = 1
                                     )
@@ -269,7 +275,6 @@ fun SharedTransitionScope.CuteSearchbar(
                                 },
                                 trailingIcon = {
                                     Row {
-
                                         DropdownMenu(
                                             expanded = showSortMenu,
                                             onDismissRequest = { showSortMenu = false },
@@ -314,44 +319,86 @@ fun SharedTransitionScope.CuteSearchbar(
 
 @Composable
 private fun ScreenSelection(
-    screenToLeadingIcon: Map<Screen, Int>,
     onNavigate: (Screen) -> Unit,
     dismiss: () -> Unit
 ) {
 
     val interactionsSources = List(4) { rememberInteractionSource() }
     val currentScreen = LocalScreen.current
+    val screens = listOf(
+        ScreenCategory(
+            screen = Screen.Main,
+            onClick = { onNavigate(Screen.Main) },
+            unselectedIcon = R.drawable.music_note_rounded,
+            selectedIcon = R.drawable.music_note_rounded
+        ),
+        ScreenCategory(
+            screen = Screen.Albums,
+            onClick = { onNavigate(Screen.Albums) },
+            unselectedIcon = androidx.media3.session.R.drawable.media3_icon_album,
+            selectedIcon = R.drawable.album_filled
+        ),
+        ScreenCategory(
+            screen = Screen.Artists,
+            onClick = { onNavigate(Screen.Artists) },
+            unselectedIcon = R.drawable.artist_rounded,
+            selectedIcon = R.drawable.artists_filled
+        ),
+        ScreenCategory(
+            screen = Screen.Playlists,
+            onClick = { onNavigate(Screen.Playlists) },
+            unselectedIcon = R.drawable.queue_music_rounded,
+            selectedIcon = R.drawable.queue_music_rounded
+        )
+    )
 
     ButtonGroup(
-        overflowIndicator = {},
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
-        screenToLeadingIcon.onEachIndexed { index, (screen, icon) ->
-            customItem(
-                {
-                    ToggleButton(
-                        checked = currentScreen == screen,
-                        onCheckedChange = {
-                            onNavigate(screen)
-                            dismiss()
-                        },
-                        shapes = ToggleButtonDefaults.shapes(),
-                        interactionSource = interactionsSources[index],
-                        modifier = Modifier
-                            .weight(1f)
-                            .animateWidth(interactionsSources[index])
-                    ) {
-                        Icon(
-                            painter = painterResource(icon),
-                            contentDescription = null
-                        )
-                    }
+        screens.forEachIndexed { index, item ->
+            ToggleButton(
+                checked = currentScreen == item.screen,
+                onCheckedChange = {
+                    item.onClick()
+                    dismiss()
                 },
-                {}
-            )
+                shapes =
+                    when (index) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        screens.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                interactionSource = interactionsSources[index],
+                modifier = Modifier
+                    .weight(1f)
+                    .animateWidth(interactionsSources[index])
+            ) {
+
+                val icon =
+                    if (currentScreen == item.screen) item.selectedIcon else item.unselectedIcon
+
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null
+                )
+            }
         }
     }
 }
+
+private data class ScreenCategory(
+    val screen: Screen,
+    val onClick: () -> Unit,
+    @param:DrawableRes val unselectedIcon: Int,
+    @param:DrawableRes val selectedIcon: Int
+)
+
+private val screensToShowBack = listOf(
+    Screen.ArtistsDetails,
+    Screen.AlbumsDetails,
+    Screen.PlaylistDetails,
+)
 
 
 

@@ -13,6 +13,7 @@ import com.sosauce.cutemusic.data.datastore.getSafTracks
 import com.sosauce.cutemusic.utils.getUriFromByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -27,6 +28,7 @@ class SafManager(
                 uriToMediaItem(uri.toUri())
             }
         }
+        .flowOn(Dispatchers.IO)
 
 
     private suspend fun uriToMediaItem(uri: Uri): MediaItem {
@@ -73,12 +75,10 @@ class SafManager(
     }
 
 
-    private suspend fun loadAudioMetadata(songFd: ParcelFileDescriptor): Metadata? {
+    private fun loadAudioMetadata(songFd: ParcelFileDescriptor): Metadata? {
         val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
 
-        return withContext(Dispatchers.IO) {
-            TagLib.getMetadata(fd)
-        }
+        return TagLib.getMetadata(fd)
     }
 
 }

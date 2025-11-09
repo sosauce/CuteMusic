@@ -5,16 +5,15 @@ package com.sosauce.cutemusic.presentation.screens.playing.components
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+
 
 @Composable
 fun TitleAndArtist(
@@ -22,12 +21,10 @@ fun TitleAndArtist(
     musicState: MusicState
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
     ) {
-        CuteText(
+        Text(
             text = musicState.title,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMediumEmphasized,
@@ -36,7 +33,7 @@ fun TitleAndArtist(
                 .fillMaxWidth()
                 .basicMarquee()
         )
-        CuteText(
+        Text(
             text = musicState.artist,
             color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.titleLargeEmphasized,

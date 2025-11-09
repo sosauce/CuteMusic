@@ -6,35 +6,38 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
+import androidx.compose.ui.util.fastForEach
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Playlist
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 @Composable
 fun PlaylistHeader(
     playlist: Playlist,
-    musics: List<MediaItem>,
+    musics: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
@@ -53,7 +56,7 @@ fun PlaylistHeader(
                 modifier = Modifier.size(70.dp)
             )
         } else {
-            CuteText(
+            Text(
                 text = playlist.emoji,
                 maxLines = 1,
                 fontSize = 70.sp
@@ -61,12 +64,22 @@ fun PlaylistHeader(
         }
 
         Spacer(Modifier.height(10.dp))
-        CuteText(
+        Text(
             text = playlist.name,
             style = MaterialTheme.typography.headlineMediumEmphasized,
             maxLines = 1,
             modifier = Modifier.basicMarquee()
         )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            playlist.tags.fastForEach { tag ->
+                AssistChip(
+                    onClick = {},
+                    label = { Text(tag) }
+                )
+            }
+        }
         Spacer(Modifier.height(15.dp))
 
         ButtonGroup(

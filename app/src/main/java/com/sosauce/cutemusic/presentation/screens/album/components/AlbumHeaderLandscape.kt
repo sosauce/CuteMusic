@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,19 +31,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.data.models.Album
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
 fun SharedTransitionScope.AlbumHeaderLandscape(
     album: Album,
-    musics: List<MediaItem>,
+    musics: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
     val context = LocalContext.current
@@ -66,7 +66,7 @@ fun SharedTransitionScope.AlbumHeaderLandscape(
         )
         Spacer(Modifier.width(15.dp))
         Column {
-            CuteText(
+            Text(
                 text = album.name,
                 style = MaterialTheme.typography.headlineMediumEmphasized,
                 modifier = Modifier
@@ -76,7 +76,7 @@ fun SharedTransitionScope.AlbumHeaderLandscape(
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                     )
             )
-            CuteText(
+            Text(
                 text = album.artist,
                 style = MaterialTheme.typography.bodyLargeEmphasized,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -9,12 +9,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.InfiniteTransition
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,16 +22,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.ButtonGroup
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -46,10 +37,10 @@ import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.contentColorFor
@@ -77,10 +68,8 @@ import coil3.toBitmap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
-import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.toShape
@@ -127,7 +116,7 @@ class QuickPlayActivity : ComponentActivity() {
                             ContainedLoadingIndicator(
                                 polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons
                             )
-                            CuteText(stringResource(R.string.song_loading))
+                            Text(stringResource(R.string.song_loading))
                         }
                     } else {
                         Column(
@@ -154,7 +143,11 @@ class QuickPlayActivity : ComponentActivity() {
                                         contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
                                     ),
                                     modifier = Modifier
-                                        .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                                        .size(
+                                            IconButtonDefaults.smallContainerSize(
+                                                IconButtonDefaults.IconButtonWidthOption.Wide
+                                            )
+                                        )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
@@ -266,13 +259,7 @@ class QuickPlayActivity : ComponentActivity() {
                                         containerColor = Color.Transparent,
                                         contentColor = MaterialTheme.colorScheme.onSurface
                                     ),
-                                    onCheckedChange = {
-                                        val repeatMode = if (state.repeatMode == Player.REPEAT_MODE_ONE) {
-                                            Player.REPEAT_MODE_OFF
-                                        } else Player.REPEAT_MODE_ONE
-
-                                        viewModel.handlePlayerAction(PlayerActions.RepeatMode(repeatMode))
-                                    }
+                                    onCheckedChange = { viewModel.handlePlayerAction(PlayerActions.ChangeRepeatMode) }
                                 ) {
                                     val icon = if (state.repeatMode == Player.REPEAT_MODE_ONE) {
                                         R.drawable.repeat_one

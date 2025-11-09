@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalHazeMaterialsApi::class, ExperimentalHazeApi::class
+)
 
 package com.sosauce.cutemusic.presentation.screens.album.components
 
@@ -20,7 +23,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,25 +34,130 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.data.models.Album
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.rememberInteractionSource
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 
 @Composable
 fun SharedTransitionScope.AlbumHeader(
     album: Album,
-    musics: List<MediaItem>,
+    musics: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
     val context = LocalContext.current
+    val hazeState = remember { HazeState() }
     val interactionSources = List(2) { rememberInteractionSource() }
+
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .size(220.dp)
+//    ) {
+//        AsyncImage(
+//            model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id), context),
+//            contentDescription = stringResource(R.string.artwork),
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .hazeSource(hazeState)
+//                .sharedElement(
+//                    sharedContentState = rememberSharedContentState(key = album.id),
+//                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+//                ),
+//            contentScale = ContentScale.Crop
+//        )
+//
+//        Row(
+//            modifier = Modifier
+//                .align(Alignment.BottomStart)
+//                .fillMaxWidth()
+//                .hazeEffect(
+//                    state = hazeState,
+//                    style = HazeMaterials.ultraThin(Color.Transparent)
+//                ) {
+//                    progressive = HazeProgressive.verticalGradient(
+//                        startIntensity = 1f,
+//                        endIntensity = 0f,
+//                        startY = Float.POSITIVE_INFINITY,
+//                        endY = 0f
+//                    )
+//                }
+//                .padding(5.dp),
+//            verticalAlignment = Alignment.Bottom
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.Start
+//            ) {
+//                Text(
+//                    text = album.name,
+//                    style = MaterialTheme.typography.headlineMediumEmphasized,
+//                    maxLines = 1,
+//                    modifier = Modifier
+////                .sharedElement(
+////                    sharedContentState = rememberSharedContentState(key = album.name + album.id),
+////                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+////                )
+//                        .basicMarquee()
+//                )
+//                Text(
+//                    text = album.artist,
+//                    style = MaterialTheme.typography.bodyLargeEmphasized.copy(
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    ),
+//                    modifier = Modifier
+//                        .basicMarquee()
+////                .sharedElement(
+////                    sharedContentState = rememberSharedContentState(key = album.artist + album.id),
+////                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+////                )
+//
+//                )
+//            }
+//            Spacer(Modifier.weight(1f))
+//            MediumFloatingActionButton(
+//                shape = MaterialShapes.Pill.toShape(),
+//                onClick = {
+//                    onHandlePlayerActions(
+//                        PlayerActions.StartAlbumPlayback(
+//                            albumName = album.name,
+//                            mediaId = null
+//                        )
+//                    )
+//                }
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Rounded.Shuffle,
+//                    contentDescription = null
+//                )
+//            }
+//            MediumFloatingActionButton(
+//                shape = MaterialShapes.Pill.toShape(),
+//                onClick = {
+//                    onHandlePlayerActions(
+//                        PlayerActions.StartAlbumPlayback(
+//                            albumName = album.name,
+//                            mediaId = musics.first().mediaId
+//                        )
+//                    )
+//                }
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Rounded.PlayArrow,
+//                    contentDescription = null
+//                )
+//            }
+//        }
+//
+//    }
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,7 +178,7 @@ fun SharedTransitionScope.AlbumHeader(
             contentScale = ContentScale.Crop
         )
         Spacer(Modifier.height(10.dp))
-        CuteText(
+        Text(
             text = album.name,
             style = MaterialTheme.typography.headlineMediumEmphasized,
             maxLines = 1,
@@ -79,7 +189,7 @@ fun SharedTransitionScope.AlbumHeader(
 //                )
                 .basicMarquee()
         )
-        CuteText(
+        Text(
             text = album.artist,
             style = MaterialTheme.typography.bodyLargeEmphasized.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -144,3 +254,4 @@ fun SharedTransitionScope.AlbumHeader(
         }
     }
 }
+

@@ -22,11 +22,13 @@ import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
 fun ScaffoldWithBackArrow(
     backArrowVisible: Boolean,
     onNavigateUp: () -> Unit,
+    topBar: @Composable (() -> Unit) = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     val showBackButton by rememberShowBackButton()
 
     Scaffold(
+        topBar = topBar,
         contentWindowInsets = WindowInsets.safeDrawing
     ) { pv ->
         Box(Modifier.fillMaxSize()) {

@@ -1,33 +1,36 @@
 [versions]
-agp = "8.11.1" # Don't update, AGP 12+ breaks fdroid
-emoji2Emojipicker = "1.5.0"
+agp = "8.11.2" # Don't update, AGP 12+ breaks fdroid
+colorpickerCompose = "1.1.2"
+emoji2Emojipicker = "1.6.0"
 glance = "1.1.1"
 koinAndroid = "4.1.1"
 koinAndroidxCompose = "4.1.1"
 koinAndroidxStartup = "4.1.1"
-kotlin = "2.2.10"
-activityCompose = "1.10.1"
+kotlin = "2.2.21"
+activityCompose = "1.11.0"
 coilCompose = "3.3.0"
-composeBom = "2025.08.01"
-composeAnimation = "1.9.0"
+composeBom = "2025.11.00"
+composeAnimation = "1.9.4"
 coreKtx = "1.17.0"
-coreSplashscreen = "1.0.1"
+coreSplashscreen = "1.2.0"
 datastorePreferences = "1.1.7"
 kotlinxSerializationJson = "1.9.0"
-materialKolor = "3.0.1"
+materialKolor = "5.0.0-alpha02"
 media3Common = "1.8.0"
 media3Exoplayer = "1.8.0"
 media3Session = "1.8.0"
 reorderable = "3.0.0" # https://github.com/Calvin-LL/Reorderable
 squigglyslider = "1.0.0"
-serialization = "2.2.10"
+serialization = "2.2.21"
 taglib = "1.0.0-alpha25"
-roomCompiler = "2.7.2"
-roomKtx = "2.7.2"
+roomCompiler = "2.8.3"
+roomKtx = "2.8.3"
 ksp = "2.2.10-2.0.2"
 kmpalette = "3.1.0"
-material3 = "1.5.0-alpha03"
-nav3Core = "1.0.0-alpha03" # Don't update for now
+material3 = "1.5.0-alpha08"
+nav3Core = "1.0.0-rc01"
+lifecycleViewmodelNav3 = "2.10.0-rc01"
+
 
 
 
@@ -51,6 +54,7 @@ androidx-media3-session = { module = "androidx.media3:media3-session", version.r
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 koin-androidx-startup = { module = "io.insert-koin:koin-androidx-startup", version.ref = "koinAndroidxStartup" }
@@ -64,6 +68,9 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx"
 kmpalette-core = { module = "com.kmpalette:kmpalette-core", version.ref = "kmpalette" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
+
+
 
 
 

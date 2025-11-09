@@ -17,7 +17,7 @@ import com.kyant.taglib.AudioPropertiesReadStyle
 import com.kyant.taglib.Metadata
 import com.kyant.taglib.Picture
 import com.kyant.taglib.TagLib
-import com.sosauce.cutemusic.data.actions.MetadataActions
+import com.sosauce.cutemusic.domain.actions.MetadataActions
 import com.sosauce.cutemusic.utils.toAudioFileMetadata
 import com.sosauce.cutemusic.utils.toModifiableMap
 import com.sosauce.cutemusic.utils.toPropertyMap
@@ -32,6 +32,7 @@ import java.io.FileNotFoundException
 
 
 class MetadataViewModel(
+    private val trackPath: String,
     private val application: Application
 ) : AndroidViewModel(application) {
 
@@ -39,14 +40,15 @@ class MetadataViewModel(
     val metadataState = _metadata.asStateFlow()
 
 
-    override fun onCleared() {
-        super.onCleared()
-        _metadata.value.mutablePropertiesMap.clear()
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            loadMetadata()
+        }
     }
 
     private suspend fun loadMetadata() {
         runCatching {
-            getFileDescriptorFromPath(application, metadataState.value.songPath)?.use { fd ->
+            getFileDescriptorFromPath(application, trackPath)?.use { fd ->
                 val metadata = loadAudioMetadata(fd)
                 val audioProperties = loadAudioProperties(fd)
                 val audioArt = loadAudioArt(fd)
@@ -98,7 +100,7 @@ class MetadataViewModel(
 
     private fun saveAllChanges() {
         try {
-            val fd = getFileDescriptorFromPath(application, metadataState.value.songPath, "w")
+            val fd = getFileDescriptorFromPath(application, trackPath, "w")
 
 
             fd?.dup()?.detachFd()?.let {
@@ -116,7 +118,7 @@ class MetadataViewModel(
 
             MediaScannerConnection.scanFile(
                 application.applicationContext,
-                arrayOf(metadataState.value.songPath),
+                arrayOf(trackPath),
                 null,
                 null
             )
@@ -194,17 +196,6 @@ class MetadataViewModel(
         when (action) {
             is MetadataActions.SaveChanges -> saveAllChanges()
 
-            is MetadataActions.LoadSong -> {
-                viewModelScope.launch {
-                    _metadata.update {
-                        it.copy(
-                            songPath = action.path,
-                            songUri = action.uri
-                        )
-                    }
-                    loadMetadata()
-                }
-            }
 
             is MetadataActions.UpdateAudioArt -> {
                 saveNewAudioArt(action.newArtUri)

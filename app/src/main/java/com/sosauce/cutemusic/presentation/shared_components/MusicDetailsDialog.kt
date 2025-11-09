@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.presentation.shared_components
 
-import android.net.Uri
 import android.text.format.Formatter
 import android.webkit.MimeTypeMap
 import androidx.compose.foundation.basicMarquee
@@ -24,6 +23,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -37,23 +38,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.comesFromSaf
 import com.sosauce.cutemusic.utils.formatToReadableTime
 import com.sosauce.cutemusic.utils.getBitrate
 
 @Composable
 fun MusicDetailsDialog(
-    music: MediaItem,
+    music: CuteTrack,
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
-    val fileBitrate = uri.getBitrate(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -61,14 +59,14 @@ fun MusicDetailsDialog(
             TextButton(
                 onClick = onDismissRequest
             ) {
-                CuteText(
+                Text(
                     text = stringResource(R.string.okay),
                     color = LocalContentColor.current
                 )
             }
         },
         title = {
-            CuteText(
+            Text(
                 text = stringResource(R.string.details)
             )
         },
@@ -93,7 +91,7 @@ fun MusicDetailsDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
                             model = ImageUtils.imageRequester(
-                                music.mediaMetadata.artworkUri,
+                                music.artUri,
                                 context
                             ),
                             contentDescription = null,
@@ -104,13 +102,13 @@ fun MusicDetailsDialog(
                             contentScale = ContentScale.Crop
                         )
                         Column {
-                            CuteText(
-                                text = music.mediaMetadata.title.toString(),
+                            Text(
+                                text = music.title,
                                 modifier = Modifier
                                     .basicMarquee()
                             )
-                            CuteText(
-                                text = music.mediaMetadata.artist.toString(),
+                            Text(
+                                text = music.artist,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.basicMarquee()
                             )
@@ -121,44 +119,44 @@ fun MusicDetailsDialog(
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    if (music.comesFromSaf) {
-                        AssistChip(
+                    if (music.isSaf) {
+                        SuggestionChip(
                             onClick = {},
                             colors = AssistChipDefaults.assistChipColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 labelColor = contentColorFor(MaterialTheme.colorScheme.primary)
                             ),
-                            label = { CuteText("S.A.F") }
+                            label = { Text("S.A.F") }
                         )
                     }
-                    AssistChip(
+                    SuggestionChip(
                         onClick = {},
                         label = {
-                            CuteText(
+                            Text(
                                 text = Formatter.formatFileSize(
                                     context,
-                                    music.mediaMetadata.extras?.getLong("size") ?: 0
+                                    music.size
                                 )
                             )
                         }
                     )
-                    AssistChip(
+                    SuggestionChip(
                         onClick = {},
-                        label = { CuteText(fileBitrate) }
+                        label = { Text("${music.uri.getBitrate(context)} kbps") }
                     )
-                    AssistChip(
+                    SuggestionChip(
                         onClick = {},
                         label = {
-                            CuteText(
+                            Text(
                                 MimeTypeMap.getSingleton()
-                                    .getExtensionFromMimeType(context.contentResolver.getType(uri))
+                                    .getExtensionFromMimeType(context.contentResolver.getType(music.uri))
                                     ?: "No type"
                             )
                         }
                     )
-                    AssistChip(
+                    SuggestionChip(
                         onClick = {},
-                        label = { CuteText("${music.mediaMetadata.durationMs?.formatToReadableTime() ?: 0}") }
+                        label = { Text(music.durationMs.formatToReadableTime()) }
                     )
                 }
             }
@@ -174,7 +172,6 @@ fun MusicStateDetailsDialog(
 ) {
     val context = LocalContext.current
     val uri = remember { musicState.uri.toUri() }
-    val fileBitrate = uri.getBitrate(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -182,11 +179,11 @@ fun MusicStateDetailsDialog(
             TextButton(
                 onClick = onDismissRequest
             ) {
-                CuteText(stringResource(R.string.okay))
+                Text(stringResource(R.string.okay))
             }
         },
         title = {
-            CuteText(
+            Text(
                 text = stringResource(R.string.details)
             )
         },
@@ -220,14 +217,13 @@ fun MusicStateDetailsDialog(
 
                         )
                         Column {
-                            CuteText(
+                            Text(
                                 text = musicState.title,
                                 modifier = Modifier
                                     .basicMarquee()
                             )
-                            CuteText(
+                            Text(
                                 text = musicState.artist,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
                                 modifier = Modifier.basicMarquee()
                             )
                         }
@@ -240,7 +236,7 @@ fun MusicStateDetailsDialog(
                     AssistChip(
                         onClick = {},
                         label = {
-                            CuteText(
+                            Text(
                                 text = Formatter.formatFileSize(
                                     context,
                                     musicState.size
@@ -250,12 +246,12 @@ fun MusicStateDetailsDialog(
                     )
                     AssistChip(
                         onClick = {},
-                        label = { CuteText(fileBitrate) }
+                        label = { Text("${uri.getBitrate(context)} kbps") }
                     )
                     AssistChip(
                         onClick = {},
                         label = {
-                            CuteText(
+                            Text(
                                 MimeTypeMap.getSingleton()
                                     .getExtensionFromMimeType(context.contentResolver.getType(uri))
                                     ?: "No type"

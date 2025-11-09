@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-val versionNameLocal = "3.0.2"
 
 
 android {
@@ -15,14 +14,12 @@ android {
 
     defaultConfig {
 
-        //noinspection WrongGradleMethod
-        val (major, minor, patch) = versionNameLocal.split(".").map { it.toInt() }
 
         applicationId = "com.sosauce.cutemusic"
         minSdk = 26
         targetSdk = 36
-        versionCode = major * 10000 + minor * 100 + patch // https://proandroiddev.com/quick-tip-auto-generate-your-versioncode-614629f7d3bd
-        versionName = versionNameLocal
+        versionCode = 40000
+        versionName = "3.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -38,7 +35,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                output.outputFileName = "CM_$versionNameLocal.apk"
+                output.outputFileName = "CM_${variant.versionName}.apk"
             }
     }
 
@@ -117,6 +114,10 @@ android {
         implementation(libs.androidx.navigation3.ui)
         implementation(libs.reorderable)
         ksp(libs.androidx.room.compiler)
-
+        implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+        implementation("dev.chrisbanes.haze:haze:1.6.10")
+        implementation("dev.chrisbanes.haze:haze-materials:1.6.10")
+        implementation("androidx.compose.animation:animation-graphics-android:1.9.4")
+        implementation(libs.colorpicker.compose)
     }
 }

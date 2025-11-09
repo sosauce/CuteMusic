@@ -13,7 +13,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -48,6 +47,44 @@ fun <T> rememberPreference(
         }
     }
 }
+
+@Composable
+inline fun <reified T> rememberCustomPreference(
+    key: Preferences.Key<String>,
+    defaultValue: T,
+): MutableState<T> {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val state by remember {
+        context.dataStore.data
+            .map { it[key] }
+            .map {
+                it?.let { string ->
+                    Json.decodeFromString(string)
+                } ?: defaultValue
+            }
+    }.collectAsStateWithLifecycle(defaultValue)
+
+
+    return remember(state) {
+        object : MutableState<T> {
+            override var value: T
+                get() = state
+                set(value) {
+                    coroutineScope.launch {
+                        val json = Json.encodeToString(value)
+                        context.dataStore.edit { prefs ->
+                            prefs[key] = json
+                        }
+                    }
+                }
+
+            override fun component1() = value
+            override fun component2(): (T) -> Unit = { value = it }
+        }
+    }
+}
+
 
 fun <T> getPreference(
     key: Preferences.Key<T>,
@@ -84,14 +121,16 @@ inline fun <reified T> getCustomPreference(
     defaultValue: T,
     context: Context
 ): Flow<T> {
-    return context.dataStore.data.map { preferences ->
-        val jsonString = preferences[key]
 
-        jsonString?.let { string ->
-            Json.decodeFromString<T>(string)
-        } ?: defaultValue
-
-    }.distinctUntilChanged()
+    return context.dataStore.data
+        .map { preferences ->
+            preferences[key]
+        }
+        .map { pref ->
+            pref?.let { string ->
+                Json.decodeFromString(string)
+            } ?: defaultValue
+        }
 }
 
 

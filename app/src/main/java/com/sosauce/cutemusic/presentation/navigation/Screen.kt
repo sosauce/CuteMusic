@@ -24,13 +24,16 @@ sealed class Screen() : NavKey {
     data object Playlists : Screen()
 
     @Serializable
+    data object Equalizer : Screen()
+
+    @Serializable
     data class AlbumsDetails(
-        val id: Long
+        val name: String
     ) : Screen()
 
     @Serializable
     data class ArtistsDetails(
-        val id: Long
+        val name: String
     ) : Screen()
 
     @Serializable
@@ -40,6 +43,7 @@ sealed class Screen() : NavKey {
 
     @Serializable
     data class MetadataEditor(
-        val id: String
+        val trackPath: String,
+        val trackUri: String
     ) : Screen()
 }

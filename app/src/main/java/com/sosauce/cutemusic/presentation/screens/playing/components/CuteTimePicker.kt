@@ -5,6 +5,7 @@ package com.sosauce.cutemusic.presentation.screens.playing.components
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
@@ -13,7 +14,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -38,7 +38,7 @@ fun CuteTimePicker(
 
     AlertDialog(
         title = {
-            CuteText(
+            Text(
                 text = stringResource(R.string.set_sleep_timer),
                 fontSize = 24.sp
             )
@@ -62,14 +62,14 @@ fun CuteTimePicker(
                     )
                 }
             ) {
-                CuteText(stringResource(R.string.okay))
+                Text(stringResource(R.string.okay))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismissRequest
             ) {
-                CuteText(stringResource(R.string.cancel))
+                Text(stringResource(R.string.cancel))
             }
         },
         onDismissRequest = onDismissRequest

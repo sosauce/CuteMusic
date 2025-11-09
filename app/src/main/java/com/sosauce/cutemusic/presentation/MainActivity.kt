@@ -3,12 +3,10 @@ package com.sosauce.cutemusic.presentation
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,7 +16,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import com.sosauce.cutemusic.data.datastore.rememberAppTheme
-import com.sosauce.cutemusic.domain.model.Playlist
 import com.sosauce.cutemusic.presentation.navigation.Nav
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.CuteTheme
@@ -39,18 +36,9 @@ class MainActivity : ComponentActivity() {
             permission,
             0
         )
-        try {
-            val c = Playlist::class.java
-            Log.d(
-                "FIELDS_DEBUG",
-                "Fields in Playlist: ${c.declaredFields.joinToString { it.name }}"
-            )
-        } catch (e: Exception) {
-            Log.e("FIELDS_DEBUG", "Error getting fields", e)
-        }
         setContent {
             val theme by rememberAppTheme()
-            var artImageBitmap by remember { mutableStateOf(ImageBitmap(1, 1)) }
+            var artImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             CuteMusicTheme(artImageBitmap = artImageBitmap) {
@@ -65,11 +53,8 @@ class MainActivity : ComponentActivity() {
                         isAppearanceLightStatusBars = isLight
                         isAppearanceLightNavigationBars = isLight
                     }
-
-                Scaffold { _ ->
-                    Nav { imageBitmap ->
-                        artImageBitmap = imageBitmap
-                    }
+                Nav { imageBitmap ->
+                    artImageBitmap = imageBitmap
                 }
             }
         }

@@ -8,24 +8,17 @@ package com.sosauce.cutemusic.presentation.screens.playing
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
@@ -44,6 +36,7 @@ import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.presentation.screens.playing.components.ActionButtonsRow
 import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
+import com.sosauce.cutemusic.presentation.screens.playing.components.PlayingTopRow
 import com.sosauce.cutemusic.presentation.screens.playing.components.QuickActionsRow
 import com.sosauce.cutemusic.presentation.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
@@ -56,8 +49,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
     onNavigateUp: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     musicState: MusicState,
-    onNavigate: (Screen) -> Unit,
-    loadedMedias: List<MediaItem> = emptyList()
+    onNavigate: (Screen) -> Unit
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(false) }
@@ -66,45 +58,42 @@ fun SharedTransitionScope.NowPlayingLandscape(
 
     var showDetailsDialog by remember { mutableStateOf(false) }
 
-    if (showDetailsDialog) {
-        MusicStateDetailsDialog(
-            musicState = musicState,
-            onDismissRequest = { showDetailsDialog = false }
-        )
-    }
+    Scaffold(
+        modifier = Modifier.padding(horizontal = 15.dp)
+    ) { paddingValues ->
 
-    if (showPlaylistDialog) {
-        PlaylistPicker(
-            mediaId = listOf(musicState.mediaId),
-            onDismissRequest = { showPlaylistDialog = false }
-        )
-    }
+        if (showDetailsDialog) {
+            MusicStateDetailsDialog(
+                musicState = musicState,
+                onDismissRequest = { showDetailsDialog = false }
+            )
+        }
 
-
-
-
-
-    if (showSpeedCard) {
-        SpeedCard(
-            musicState = musicState,
-            onHandlePlayerAction = onHandlePlayerActions,
-            onDismissRequest = { showSpeedCard = false },
-            shouldSnap = snap,
-            onChangeSnap = { snap = !snap }
-        )
-    }
+        if (showPlaylistDialog) {
+            PlaylistPicker(
+                mediaId = listOf(musicState.mediaId),
+                onDismissRequest = { showPlaylistDialog = false }
+            )
+        }
 
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .displayCutoutPadding()
-    ) {
+
+
+
+        if (showSpeedCard) {
+            SpeedCard(
+                musicState = musicState,
+                onHandlePlayerAction = onHandlePlayerActions,
+                onDismissRequest = { showSpeedCard = false },
+                shouldSnap = snap,
+                onChangeSnap = { snap = !snap }
+            )
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
+                .padding(paddingValues)
                 .fillMaxSize()
         ) {
             Column {
@@ -112,8 +101,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                     pagerModifier = Modifier
                         .fillMaxWidth(0.4f),
                     musicState = musicState,
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    loadedMedias = loadedMedias,
+                    onHandlePlayerActions = onHandlePlayerActions
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -130,16 +118,11 @@ fun SharedTransitionScope.NowPlayingLandscape(
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        IconButton(
-                            onClick = { onNavigateUp() },
-                            modifier = Modifier.align(Alignment.Start)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.KeyboardArrowDown,
-                                contentDescription = null,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
+                        PlayingTopRow(
+                            musicState = musicState,
+                            onNavigate = onNavigate,
+                            onNavigateUp = onNavigateUp
+                        )
                         TitleAndArtist(
                             titleModifier = Modifier
                                 .sharedBounds(
@@ -162,9 +145,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                             musicState = musicState,
                             onShowLyrics = { showLyrics = true },
                             onShowSpeedCard = { showSpeedCard = true },
-                            onHandlePlayerActions = onHandlePlayerActions,
-                            onNavigate = onNavigate,
-                            loadedMedias = loadedMedias
+                            onHandlePlayerActions = onHandlePlayerActions
                         )
                     }
                 }

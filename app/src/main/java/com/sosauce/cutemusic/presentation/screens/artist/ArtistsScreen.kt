@@ -2,15 +2,14 @@
 
 package com.sosauce.cutemusic.presentation.screens.artist
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,16 +21,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -39,30 +41,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberArtistSort
+import com.sosauce.cutemusic.data.models.Artist
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.domain.model.Artist
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
 import com.sosauce.cutemusic.utils.ArtistSort
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.ordered
-import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
-import com.sosauce.cutemusic.utils.showCuteSearchbar
 
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
-    artists: List<Artist>,
+    state: ArtistsState,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
@@ -70,20 +68,66 @@ fun SharedTransitionScope.ArtistsScreen(
 
     val textFieldState = rememberTextFieldState()
     var isSortedByASC by rememberSaveable { mutableStateOf(true) }
-    val state = rememberLazyListState()
+    val lazyState = rememberLazyListState()
     var artistSort by rememberArtistSort()
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing
-    ) { paddingValues ->
-        Box {
+    if (state.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            ContainedLoadingIndicator()
+        }
+    } else {
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing,
+            bottomBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CuteSearchbar(
+                        textFieldState = textFieldState,
+                        musicState = musicState,
+                        showSearchField = true,
+                        sortingMenu = {
+                            SortingDropdownMenu(
+                                isSortedByASC = isSortedByASC,
+                                onChangeSorting = { isSortedByASC = it },
+                                sortingOptions = {
+
+                                    repeat(3) { i ->
+                                        val text = when (i) {
+                                            0 -> R.string.name
+                                            1 -> R.string.number_of_tracks
+                                            2 -> R.string.number_of_albums
+                                            else -> throw IndexOutOfBoundsException()
+                                        }
+                                        CuteDropdownMenuItem(
+                                            onClick = { artistSort = i },
+                                            text = { Text(stringResource(text)) },
+                                            leadingIcon = {
+                                                RadioButton(
+                                                    selected = artistSort == i,
+                                                    onClick = null
+                                                )
+                                            }
+                                        )
+                                    }
+                                }
+                            )
+                        },
+                        onHandlePlayerActions = onHandlePlayerActions,
+                        onNavigate = onNavigate
+                    )
+                }
+            }
+        ) { paddingValues ->
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
                 contentPadding = paddingValues,
-                state = state
+                state = lazyState
             ) {
-                if (artists.isEmpty()) {
+                if (state.artists.isEmpty()) {
                     item {
                         NoXFound(
                             headlineText = R.string.no_artists_found,
@@ -93,7 +137,7 @@ fun SharedTransitionScope.ArtistsScreen(
                     }
                 } else {
 
-                    val orderedArtists = artists.ordered(
+                    val orderedArtists = state.artists.ordered(
                         sort = ArtistSort.entries[artistSort],
                         ascending = isSortedByASC,
                         query = textFieldState.text.toString()
@@ -121,66 +165,12 @@ fun SharedTransitionScope.ArtistsScreen(
                                             vertical = 2.dp,
                                             horizontal = 4.dp
                                         ),
-                                    onClick = { onNavigate(Screen.ArtistsDetails(artist.id)) }
+                                    onClick = { onNavigate(Screen.ArtistsDetails(artist.name)) }
                                 )
                             }
                         }
                     }
                 }
-
-
-            }
-            AnimatedVisibility(
-                visible = state.showCuteSearchbar,
-                modifier = Modifier.align(rememberSearchbarAlignment()),
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it }
-            ) {
-                CuteSearchbar(
-                    textFieldState = textFieldState,
-                    musicState = musicState,
-                    showSearchField = !state.isScrollInProgress,
-                    sortingMenu = {
-                        SortingDropdownMenu(
-                            isSortedByASC = isSortedByASC,
-                            onChangeSorting = { isSortedByASC = it },
-                            sortingOptions = {
-                                CuteDropdownMenuItem(
-                                    onClick = { artistSort = 0 },
-                                    text = { CuteText(stringResource(R.string.name)) },
-                                    leadingIcon = {
-                                        RadioButton(
-                                            selected = artistSort == 0,
-                                            onClick = null
-                                        )
-                                    }
-                                )
-                                CuteDropdownMenuItem(
-                                    onClick = { artistSort = 1 },
-                                    text = { CuteText(stringResource(R.string.number_of_tracks)) },
-                                    leadingIcon = {
-                                        RadioButton(
-                                            selected = artistSort == 1,
-                                            onClick = null
-                                        )
-                                    }
-                                )
-                                CuteDropdownMenuItem(
-                                    onClick = { artistSort = 2 },
-                                    text = { CuteText(stringResource(R.string.number_of_albums)) },
-                                    leadingIcon = {
-                                        RadioButton(
-                                            selected = artistSort == 2,
-                                            onClick = null
-                                        )
-                                    }
-                                )
-                            }
-                        )
-                    },
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigate = onNavigate
-                )
             }
         }
     }
@@ -227,7 +217,7 @@ fun SharedTransitionScope.ArtistItem(
             Column(
                 modifier = Modifier.padding(vertical = 15.dp)
             ) {
-                CuteText(
+                Text(
                     text = artist.name,
                     maxLines = 1,
                     style = MaterialTheme.typography.titleMediumEmphasized,
@@ -238,7 +228,7 @@ fun SharedTransitionScope.ArtistItem(
 //                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
 //                        )
                 )
-                CuteText(
+                Text(
                     text = buildString {
                         append(
                             pluralStringResource(

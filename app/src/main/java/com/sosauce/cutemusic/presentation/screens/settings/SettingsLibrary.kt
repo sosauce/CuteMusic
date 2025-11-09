@@ -25,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -36,14 +37,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllBlacklistedFolders
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
-import com.sosauce.cutemusic.domain.model.Folder
+import com.sosauce.cutemusic.data.datastore.rememberMinTrackDuration
+import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Folder
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FolderItem
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
 import com.sosauce.cutemusic.utils.copyMutate
@@ -51,7 +53,7 @@ import com.sosauce.cutemusic.utils.copyMutate
 @Composable
 fun SettingsLibrary(
     folders: List<Folder>,
-    latestSafTracks: List<MediaItem>,
+    latestSafTracks: List<CuteTrack>,
     onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String,
@@ -62,6 +64,7 @@ fun SettingsLibrary(
     val scrollState = rememberScrollState()
     var blacklistedFolders by rememberAllBlacklistedFolders()
     var safTracks by rememberAllSafTracks()
+    var minTrackDuration by rememberMinTrackDuration()
 
     val safAudioPicker = rememberLauncherForActivityResult(safActivityContract()) {
         safTracks = safTracks.copyMutate { add(it.toString()) }
@@ -83,6 +86,18 @@ fun SettingsLibrary(
                 .padding(pv)
         ) {
 
+            SettingsWithTitle(
+                title = R.string.scan
+            ) {
+                SliderSettingsCards(
+                    value = minTrackDuration,
+                    onValueChange = { minTrackDuration = it.toInt() },
+                    topDp = 24.dp,
+                    bottomDp = 24.dp,
+                    text = "Min track duration",
+                    optionalDescription = R.string.min_track_duration_desc
+                )
+            }
 
             folders.sortedBy { it.name }
                 .groupBy { it.path in blacklistedFolders }
@@ -96,7 +111,7 @@ fun SettingsLibrary(
                                 vertical = 8.dp
                             )
                     ) {
-                        CuteText(
+                        Text(
                             text = if (isBlacklisted) stringResource(R.string.blacklisted) else stringResource(
                                 R.string.not_blacklisted
                             ),
@@ -178,7 +193,7 @@ fun SettingsLibrary(
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(10.dp))
-                            CuteText(stringResource(R.string.open_saf))
+                            Text(stringResource(R.string.open_saf))
                         }
                     }
 
@@ -197,7 +212,7 @@ fun SettingsLibrary(
                                 isPlayerReady = isPlayerReady,
                                 onDeleteFromSaf = {
                                     safTracks = safTracks.toMutableSet().apply {
-                                        remove(safTrack.mediaMetadata.extras?.getString("uri"))
+                                        remove(safTrack.uri.toString())
                                     }
                                 }
                             )

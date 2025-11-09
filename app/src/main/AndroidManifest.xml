@@ -45,11 +45,11 @@
 
         <activity
             android:name=".presentation.MainActivity"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.CuteSplash"
+            android:windowSoftInputMode="adjustResize"
             tools:targetApi="tiramisu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -68,8 +68,8 @@
 
         <activity
             android:name=".presentation.screens.quickplay.QuickPlayActivity"
-            android:theme="@style/Theme.CuteSplash"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.CuteSplash">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,8 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.domain.model.Album
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
+import com.sosauce.cutemusic.data.models.Album
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
@@ -61,7 +61,7 @@ fun SharedTransitionScope.AlbumCard(
         )
         Spacer(Modifier.height(10.dp))
         Column {
-            CuteText(
+            Text(
                 text = album.name,
                 maxLines = 1,
                 style = MaterialTheme.typography.titleMediumEmphasized,
@@ -72,7 +72,7 @@ fun SharedTransitionScope.AlbumCard(
 //                    )
                     .basicMarquee()
             )
-            CuteText(
+            Text(
                 text = album.artist,
                 style = MaterialTheme.typography.bodyLargeEmphasized.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

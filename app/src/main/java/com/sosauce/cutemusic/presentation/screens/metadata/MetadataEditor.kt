@@ -10,9 +10,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -22,16 +19,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,15 +37,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -60,30 +56,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.MetadataActions
+import com.sosauce.cutemusic.domain.actions.MetadataActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
-import com.sosauce.cutemusic.presentation.shared_components.CuteText
 import com.sosauce.cutemusic.presentation.shared_components.ThreadDivider
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
 fun MetadataEditor(
-    music: MediaItem,
+    fileName: String,
     onNavigateUp: () -> Unit,
     metadataViewModel: MetadataViewModel,
-    onEditMusic: (List<Uri>, ActivityResultLauncher<IntentSenderRequest>) -> Unit
+    onEditMusic: (ActivityResultLauncher<IntentSenderRequest>) -> Unit
 ) {
 
     val metadataState by metadataViewModel.metadataState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
-    val uri = remember { music.mediaMetadata.extras?.getString("uri")?.toUri() ?: Uri.EMPTY }
+    val resources = LocalResources.current
     val photoPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
             metadataViewModel.onHandleMetadataActions(
@@ -99,31 +92,43 @@ fun MetadataEditor(
         ) {
             if (it.resultCode == Activity.RESULT_OK) {
                 metadataViewModel.onHandleMetadataActions(MetadataActions.SaveChanges)
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.success),
-                    Toast.LENGTH_SHORT
-                ).show()
+                onNavigateUp()
             } else {
                 Toast.makeText(
                     context,
-                    context.getString(R.string.error_saving),
+                    resources.getString(R.string.error_saving),
                     Toast.LENGTH_SHORT
                 ).show()
             }
         }
 
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding()
-    ) {
+    Scaffold(
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                CuteNavigationButton(
+                    modifier = Modifier.padding(start = 15.dp)
+                ) { onNavigateUp() }
+                CuteActionButton(
+                    modifier = Modifier.padding(end = 15.dp),
+                    imageVector = Icons.Rounded.Done
+                ) {
+                    onEditMusic(editSongLauncher)
+                }
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
+                .padding(paddingValues)
+                .imePadding()
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -192,8 +197,14 @@ fun MetadataEditor(
                 EditTextField(
                     initialValue = metadataState.mutablePropertiesMap["TITLE"],
                     label = {
-                        CuteText(
+                        Text(
                             text = stringResource(R.string.title)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.music_note_rounded),
+                            contentDescription = null
                         )
                     }
                 ) { title ->
@@ -206,12 +217,8 @@ fun MetadataEditor(
                     ThreadDivider(
                         color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                     )
-                    CuteText(
-                        text = "${stringResource(R.string.file_name)}: ${
-                            metadataState.songPath.substringAfterLast(
-                                "/"
-                            )
-                        }",
+                    Text(
+                        text = "${stringResource(R.string.file_name)}: $fileName",
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1,
                         fontSize = 14.sp,
@@ -224,8 +231,14 @@ fun MetadataEditor(
                     initialValue = metadataState.mutablePropertiesMap["ARTIST"],
                     verticalPadding = 0.dp,
                     label = {
-                        CuteText(
+                        Text(
                             text = stringResource(R.string.artist)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.artist_rounded),
+                            contentDescription = null
                         )
                     }
                 ) { artist ->
@@ -234,8 +247,14 @@ fun MetadataEditor(
                 EditTextField(
                     initialValue = metadataState.mutablePropertiesMap["ALBUM"],
                     label = {
-                        CuteText(
+                        Text(
                             text = stringResource(R.string.album)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
+                            contentDescription = null
                         )
                     }
                 ) { album ->
@@ -247,7 +266,7 @@ fun MetadataEditor(
                     EditTextField(
                         initialValue = metadataState.mutablePropertiesMap["DATE"],
                         label = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.year)
                             )
                         },
@@ -259,7 +278,7 @@ fun MetadataEditor(
                     EditTextField(
                         initialValue = metadataState.mutablePropertiesMap["GENRE"],
                         label = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.genre)
                             )
                         },
@@ -272,7 +291,7 @@ fun MetadataEditor(
                     EditTextField(
                         initialValue = metadataState.mutablePropertiesMap["TRACKNUMBER"],
                         label = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.track_nb),
                                 modifier = Modifier.basicMarquee()
                             )
@@ -285,7 +304,7 @@ fun MetadataEditor(
                     EditTextField(
                         initialValue = metadataState.mutablePropertiesMap["DISCNUMBER"],
                         label = {
-                            CuteText(
+                            Text(
                                 text = stringResource(R.string.disc_nb),
                                 modifier = Modifier.basicMarquee()
                             )
@@ -299,40 +318,20 @@ fun MetadataEditor(
                 EditTextField(
                     initialValue = metadataState.mutablePropertiesMap["LYRICS"],
                     label = {
-                        CuteText(
+                        Text(
                             text = stringResource(R.string.lyrics),
                             modifier = Modifier.basicMarquee()
                         )
                     },
-                    imeAction = ImeAction.Default
+                    imeAction = ImeAction.Default,
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.lyrics_rounded),
+                            contentDescription = null
+                        )
+                    }
                 ) { lyrics ->
                     metadataState.mutablePropertiesMap["LYRICS"] = lyrics
-                }
-            }
-        }
-        AnimatedVisibility(
-            visible = !WindowInsets.isImeVisible,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
-            modifier = Modifier
-                .navigationBarsPadding()
-                .align(Alignment.BottomCenter)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                CuteNavigationButton(
-                    modifier = Modifier.padding(start = 15.dp)
-                ) { onNavigateUp() }
-                CuteActionButton(
-                    modifier = Modifier.padding(end = 15.dp),
-                    imageVector = Icons.Rounded.Done
-                ) {
-                    onEditMusic(
-                        listOf(uri),
-                        editSongLauncher
-                    )
                 }
             }
         }
@@ -348,6 +347,7 @@ private fun EditTextField(
     label: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Done,
     keyboardType: KeyboardType = KeyboardType.Unspecified,
+    leadingIcon: @Composable (() -> Unit)? = null,
     returnModifiedValue: (String) -> Unit
 ) {
 
@@ -360,6 +360,7 @@ private fun EditTextField(
             imeAction = imeAction,
             keyboardType = keyboardType
         ),
+        leadingIcon = leadingIcon,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 10.dp, vertical = verticalPadding)

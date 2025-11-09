@@ -1,38 +1,61 @@
 package com.sosauce.cutemusic.di
 
 import androidx.room.Room
+import com.sosauce.cutemusic.data.CuteEqualizer
+import com.sosauce.cutemusic.data.LyricsParser
+import com.sosauce.cutemusic.data.playlist.MIGRATION_1_2
 import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
+import com.sosauce.cutemusic.domain.repository.AlbumsRepository
+import com.sosauce.cutemusic.domain.repository.ArtistsRepository
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
-import com.sosauce.cutemusic.domain.repository.MediaStoreHelperImpl
+import com.sosauce.cutemusic.domain.repository.PlaylistsRepository
 import com.sosauce.cutemusic.domain.repository.SafManager
+import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
+import com.sosauce.cutemusic.presentation.screens.album.AlbumsViewModel
+import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsViewModel
+import com.sosauce.cutemusic.presentation.screens.artist.ArtistsViewModel
+import com.sosauce.cutemusic.presentation.screens.equalizer.EqualizerViewModel
+import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
+import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.cutemusic.presentation.screens.quickplay.QuickPlayViewModel
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import org.koin.android.ext.koin.androidApplication
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val appModule = module {
-
-    single<MediaStoreHelper> {
-        MediaStoreHelperImpl(androidContext())
-    }
-
     single {
         Room.databaseBuilder(
             context = androidApplication(),
             klass = PlaylistDatabase::class.java,
             name = "playlist.db"
-        ).build().dao
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
+            .dao
     }
 
 
+
+    singleOf(::LyricsParser)
+    singleOf(::MediaStoreHelper)
     singleOf(::SafManager)
+    singleOf(::AlbumsRepository)
+    singleOf(::ArtistsRepository)
+    singleOf(::PlaylistsRepository)
+    singleOf(::CuteEqualizer)
     viewModelOf(::MusicViewModel)
     viewModelOf(::MetadataViewModel)
     viewModelOf(::PlaylistViewModel)
+    viewModelOf(::PlaylistDetailsViewModel)
     viewModelOf(::QuickPlayViewModel)
+    viewModelOf(::ArtistsViewModel)
+    viewModelOf(::ArtistDetailsViewModel)
+    viewModelOf(::AlbumsViewModel)
+    viewModelOf(::AlbumDetailsViewModel)
+    viewModelOf(::MainViewModel)
+    viewModelOf(::EqualizerViewModel)
 }

@@ -156,6 +156,14 @@
     <string name="name">Name</string>
     <string name="number_of_tracks">Number of tracks</string>
     <string name="number_of_albums">Number of albums</string>
+    <string name="color_picker">Color picker</string>
+    <string name="save">Save</string>
+    <string name="set">Set</string>
+    <string name="add">Add</string>
+    <string name="use_expr_palette">Use expressive palette</string>
+    <string name="scan">Scan</string>
+    <string name="min_track_duration_desc">Tracks shorter than the specified duration will be not fetched.</string>
+    <string name="as_added">As added</string>
 
     <plurals name="tracks">
         <item quantity="one">%d track</item>

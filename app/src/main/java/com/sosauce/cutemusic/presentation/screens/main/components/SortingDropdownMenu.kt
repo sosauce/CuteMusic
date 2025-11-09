@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -43,6 +44,7 @@ fun SortingDropdownMenu(
                     checked = isSortedByASC,
                     onCheckedChange = { onChangeSorting(true) },
                     interactionSource = interactionSources[0],
+                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                     modifier = Modifier.animateWidth(interactionSources[0])
                 ) {
                     Icon(
@@ -59,6 +61,7 @@ fun SortingDropdownMenu(
                     checked = !isSortedByASC,
                     onCheckedChange = { onChangeSorting(false) },
                     interactionSource = interactionSources[1],
+                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                     modifier = Modifier.animateWidth(interactionSources[1])
                 ) {
                     Icon(

@@ -18,13 +18,16 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ART_AS_BACKGROUND
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.EQUALIZER_BANDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NP_ART_SHAPE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PITCH
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PLAYLIST_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.REPEAT_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_BACK_BUTTON
@@ -37,8 +40,10 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.TRACK_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_EXPRESSIVE_PALETTE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.cutemusic.utils.CuteTheme
+import com.sosauce.cutemusic.utils.EqBand
 import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.SliderStyle
 import kotlinx.coroutines.flow.first
@@ -76,6 +81,10 @@ data object PreferencesKeys {
     val ARTIST_SORT = intPreferencesKey("ARTIST_SORT")
     val PAUSE_ON_MUTE = booleanPreferencesKey("PAUSE_ON_MUTE")
     val REPEAT_MODE = intPreferencesKey("REPEAT_MODE")
+    val USE_EXPRESSIVE_PALETTE = booleanPreferencesKey("USE_EXPRESSIVE_PALETTE")
+    val MIN_TRACK_DURATION = intPreferencesKey("MIN_TRACK_DURATION")
+    val PLAYLIST_SORT = intPreferencesKey("PLAYLIST_SORT")
+    val EQUALIZER_BANDS = stringPreferencesKey("EQUALIZER_BANDS")
 }
 
 
@@ -160,12 +169,28 @@ fun rememberTrackSort() =
     rememberPreference(key = TRACK_SORT, defaultValue = 0)
 
 @Composable
+fun rememberPlaylistSort() =
+    rememberPreference(key = PLAYLIST_SORT, defaultValue = 0)
+
+@Composable
 fun rememberArtistSort() =
     rememberPreference(key = ARTIST_SORT, defaultValue = 0)
 
 @Composable
 fun rememberPauseOnMute() =
     rememberPreference(key = PAUSE_ON_MUTE, defaultValue = false)
+
+@Composable
+fun rememberUseExpressivePalette() =
+    rememberPreference(key = USE_EXPRESSIVE_PALETTE, defaultValue = false)
+
+@Composable
+fun rememberMinTrackDuration() =
+    rememberPreference(key = MIN_TRACK_DURATION, defaultValue = 0)
+
+@Composable
+fun rememberEqBands() =
+    rememberCustomPreference(key = EQUALIZER_BANDS, defaultValue = emptyList<EqBand>())
 
 fun getShouldShuffle(context: Context) =
     getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
@@ -195,6 +220,9 @@ fun getSafTracks(context: Context) =
 fun getRepeatMode(context: Context) =
     getPreference(key = REPEAT_MODE, defaultValue = Player.REPEAT_MODE_OFF, context = context)
 
+fun getMinTrackDuration(context: Context) =
+    getPreference(key = MIN_TRACK_DURATION, defaultValue = 0, context = context)
+
 suspend fun saveRepeatMode(context: Context, value: Int) =
     savePreference(key = REPEAT_MODE, value = value, context = context)
 
@@ -213,4 +241,10 @@ suspend fun getBlacklistedFolder(context: Context): Set<String> {
     val preferences = context.dataStore.data.first()
     return preferences[BLACKLISTED_FOLDERS] ?: emptySet()
 }
+
+suspend fun saveEqBands(context: Context, value: List<EqBand>) =
+    saveCustomPreference(key = EQUALIZER_BANDS, value = value, context = context)
+
+fun getEqBands(context: Context) =
+    getCustomPreference(key = EQUALIZER_BANDS, defaultValue = emptyList<EqBand>(), context)
 

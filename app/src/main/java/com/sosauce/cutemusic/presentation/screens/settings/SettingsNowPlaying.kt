@@ -24,7 +24,6 @@ import com.sosauce.cutemusic.data.datastore.rememberCarousel
 import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
 import com.sosauce.cutemusic.data.datastore.rememberSliderStyle
 import com.sosauce.cutemusic.data.datastore.rememberThumblessSlider
-import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.presentation.screens.playing.components.rememberCuteSliderState
 import com.sosauce.cutemusic.presentation.screens.playing.components.toSlider
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCards
@@ -44,7 +43,6 @@ fun SettingsNowPlaying(
     val scrollState = rememberScrollState()
     var npArtShape by rememberNpArtShape()
     var sliderStyle by rememberSliderStyle()
-    var useMaterialArt by rememberUseArtTheme()
     var useThumb by rememberThumblessSlider()
     var useCarousel by rememberCarousel()
     val shapes = listOf(
@@ -96,13 +94,6 @@ fun SettingsNowPlaying(
                         )
                     }
                 }
-                SettingsCards(
-                    checked = useMaterialArt,
-                    onCheckedChange = { useMaterialArt = !useMaterialArt },
-                    topDp = 4.dp,
-                    bottomDp = 4.dp,
-                    text = stringResource(R.string.use_art)
-                )
 //                SettingsCards(
 //                    checked = artAsBackground,
 //                    onCheckedChange = { artAsBackground = !artAsBackground },

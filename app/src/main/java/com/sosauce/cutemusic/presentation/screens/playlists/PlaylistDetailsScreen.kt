@@ -1,62 +1,81 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package com.sosauce.cutemusic.presentation.screens.playlists
 
-import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
-import androidx.navigation3.runtime.NavKey
+import com.materialkolor.DynamicMaterialExpressiveTheme
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicMaterialThemeState
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.actions.PlayerActions
-import com.sosauce.cutemusic.data.actions.PlaylistActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
+import com.sosauce.cutemusic.data.datastore.rememberAppTheme
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
+import com.sosauce.cutemusic.data.datastore.rememberTrackSort
+import com.sosauce.cutemusic.data.datastore.rememberUseExpressivePalette
 import com.sosauce.cutemusic.data.states.MusicState
-import com.sosauce.cutemusic.domain.model.Playlist
+import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.album.components.NumberOfTracks
+import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.screens.playlists.components.EmptyPlaylist
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeader
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeaderLandscape
-import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
+import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.RemoveFromPlaylistDropdownItem
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
-import com.sosauce.cutemusic.utils.comesFromSaf
+import com.sosauce.cutemusic.utils.CuteTheme
+import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.copyMutate
-import com.sosauce.cutemusic.utils.rememberSearchbarAlignment
-import com.sosauce.cutemusic.utils.showCuteSearchbar
+import com.sosauce.cutemusic.utils.ordered
+import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 @Composable
 fun SharedTransitionScope.PlaylistDetailsScreen(
-    playlist: Playlist,
+    state: PlaylistDetailsState,
     musicState: MusicState,
-    musics: List<MediaItem>,
     onNavigate: (Screen) -> Unit,
-    onLoadMetadata: (String, Uri) -> Unit,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandlePlaylistAction: (PlaylistActions) -> Unit,
     onNavigateUp: () -> Unit,
@@ -65,169 +84,221 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
 
     val listState = rememberLazyListState()
     val isLandscape = rememberIsLandscape()
+    val theme by rememberAppTheme()
+    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val useExpressivePalette by rememberUseExpressivePalette()
+    var showTrackSort by remember { mutableStateOf(false) }
+    var sortTracksAsc by rememberSaveable { mutableStateOf(true) }
+    var trackSort by rememberTrackSort()
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(5.dp)
-        ) {
-            LazyColumn(
+
+
+    DynamicMaterialExpressiveTheme(
+        state = rememberDynamicMaterialThemeState(
+            seedColor = state.playlist.color.takeIf { it != -1 }?.let { Color(it) }
+                ?: MaterialTheme.colorScheme.primary,
+            isDark = if (theme == CuteTheme.SYSTEM) isSystemInDarkTheme else if (theme == CuteTheme.AMOLED) true else theme == CuteTheme.DARK,
+            isAmoled = theme == CuteTheme.AMOLED,
+            specVersion = ColorSpec.SpecVersion.SPEC_2025,
+            style = if (useExpressivePalette) PaletteStyle.Expressive else PaletteStyle.Fidelity
+        )
+    ) {
+        if (state.isLoading) {
+            Box(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = paddingValues,
-                state = listState
+                contentAlignment = Alignment.Center
             ) {
-
-                if (musics.isEmpty()) {
-                    item(
-                        "EmptyHeader"
-                    ) {
-                        EmptyPlaylist(playlist.emoji)
-                    }
-                } else {
-
-
-                    item(
-                        "Header"
-                    ) {
-                        if (isLandscape) {
-                            PlaylistHeaderLandscape(
-                                playlist = playlist,
-                                musics = musics,
-                                onHandlePlayerActions = onHandlePlayerAction
-                            )
-                        } else {
-                            PlaylistHeader(
-                                playlist = playlist,
-                                musics = musics,
-                                onHandlePlayerActions = onHandlePlayerAction
-                            )
-                        }
-                        Spacer(Modifier.height(10.dp))
-                        NumberOfTracks(size = musics.size)
-                    }
-
-                    items(
-                        items = musics,
-                        key = { it.mediaId }
-                    ) { music ->
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
+                ContainedLoadingIndicator()
+            }
+        } else {
+            Scaffold(
+                contentWindowInsets = WindowInsets.safeDrawing,
+                bottomBar = {
+                    CuteSearchbar(
+                        onHandlePlayerActions = onHandlePlayerAction,
+                        musicState = musicState,
+                        showSearchField = false,
+                        onNavigate = onNavigate,
+                        onNavigateUp = onNavigateUp,
+                        modifier = Modifier.selfAlignHorizontally()
+                    )
+                }
+            ) { paddingValues ->
+                LazyColumn(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    contentPadding = paddingValues,
+                    state = listState
+                ) {
+                    if (state.tracks.isEmpty()) {
+                        item(
+                            "EmptyHeader"
                         ) {
-                            if (music.comesFromSaf) {
-                                LocalMusicListItem(
-                                    onShortClick = {
-                                        onHandlePlayerAction(
-                                            PlayerActions.StartPlaylistPlayback(
-                                                playlist.musics,
-                                                music.mediaId
-                                            )
-                                        )
-                                    },
-                                    music = music,
-                                    musicState = musicState,
-                                    onNavigate = { onNavigate(it) },
-                                    onLoadMetadata = onLoadMetadata,
-                                    onHandleMediaItemAction = onHandleMediaItemAction,
-                                    onHandlePlayerActions = onHandlePlayerAction,
-                                    playlistDropdownMenuItem = {
-                                        RemoveFromPlaylistDropdownItem(
-                                            onRemoveFromPlaylist = {
-                                                val playlist = Playlist(
-                                                    id = playlist.id,
-                                                    emoji = playlist.emoji,
-                                                    name = playlist.name,
-                                                    musics = playlist.musics.copyMutate {
-                                                        remove(
-                                                            music.mediaId
-                                                        )
-                                                    }
-                                                )
-
-                                                onHandlePlaylistAction(
-                                                    PlaylistActions.UpsertPlaylist(playlist)
-                                                )
-                                            }
-                                        )
-                                    }
+                            EmptyPlaylist(state.playlist.emoji)
+                        }
+                    } else {
+                        item(
+                            "Header"
+                        ) {
+                            if (isLandscape) {
+                                PlaylistHeaderLandscape(
+                                    playlist = state.playlist,
+                                    musics = state.tracks,
+                                    onHandlePlayerActions = onHandlePlayerAction
                                 )
                             } else {
-                                var safTracks by rememberAllSafTracks()
-                                SafMusicListItem(
-                                    onShortClick = {
-                                        onHandlePlayerAction(
-                                            PlayerActions.StartPlaylistPlayback(
-                                                playlist.musics,
-                                                music.mediaId
-                                            )
-                                        )
-                                    },
-                                    music = music,
-                                    currentMusicUri = musicState.uri,
-                                    isPlayerReady = musicState.isPlayerReady,
-                                    onDeleteFromSaf = {
-                                        safTracks = safTracks.copyMutate {
-                                            remove(
-                                                music.mediaMetadata.extras?.getString("uri")
+                                PlaylistHeader(
+                                    playlist = state.playlist,
+                                    musics = state.tracks,
+                                    onHandlePlayerActions = onHandlePlayerAction
+                                )
+                            }
+                            Spacer(Modifier.height(10.dp))
+                            NumberOfTracks(
+                                size = state.tracks.size,
+                                sortMenu = {
+                                    Column {
+                                        IconButton(
+                                            onClick = { showTrackSort = !showTrackSort },
+                                            shapes = IconButtonDefaults.shapes()
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                                contentDescription = null
                                             )
                                         }
-                                    },
-                                    playlistDropdownMenuItem = {
-                                        RemoveFromPlaylistDropdownItem(
-                                            onRemoveFromPlaylist = {
-                                                val playlist = Playlist(
-                                                    emoji = playlist.emoji,
-                                                    name = playlist.name,
-                                                    musics = playlist.musics.copyMutate {
-                                                        remove(
-                                                            music.mediaId
-                                                        )
-                                                    }
-                                                )
 
-                                                onHandlePlaylistAction(
-                                                    PlaylistActions.UpsertPlaylist(playlist)
-                                                )
+                                        DropdownMenu(
+                                            expanded = showTrackSort,
+                                            onDismissRequest = { showTrackSort = false },
+                                            shape = RoundedCornerShape(24.dp)
+                                        ) {
+                                            SortingDropdownMenu(
+                                                isSortedByASC = sortTracksAsc,
+                                                onChangeSorting = { sortTracksAsc = it }
+                                            ) {
+                                                repeat(6) { i ->
+                                                    val text = when (i) {
+                                                        0 -> R.string.title
+                                                        1 -> R.string.artist
+                                                        2 -> R.string.album
+                                                        3 -> R.string.year
+                                                        4 -> R.string.date_modified
+                                                        5 -> R.string.as_added
+                                                        else -> throw IndexOutOfBoundsException()
+                                                    }
+                                                    CuteDropdownMenuItem(
+                                                        onClick = { trackSort = i },
+                                                        text = { Text(stringResource(text)) },
+                                                        leadingIcon = {
+                                                            RadioButton(
+                                                                selected = trackSort == i,
+                                                                onClick = null
+                                                            )
+                                                        }
+                                                    )
+                                                }
                                             }
-                                        )
+                                        }
                                     }
-                                )
+                                }
+                            )
+                        }
+
+                        items(
+                            items = state.tracks.ordered(
+                                sort = TrackSort.entries[trackSort],
+                                ascending = sortTracksAsc,
+                                query = ""
+                            ),
+                            key = { it.mediaId }
+                        ) { music ->
+                            Column(
+                                modifier = Modifier
+                                    .animateItem()
+                                    .padding(
+                                        vertical = 2.dp,
+                                        horizontal = 4.dp
+                                    )
+                            ) {
+                                if (music.isSaf) {
+                                    LocalMusicListItem(
+                                        onShortClick = {
+                                            onHandlePlayerAction(
+                                                PlayerActions.StartPlaylistPlayback(
+                                                    state.playlist.musics,
+                                                    music.mediaId
+                                                )
+                                            )
+                                        },
+                                        music = music,
+                                        musicState = musicState,
+                                        onNavigate = { onNavigate(it) },
+                                        onHandleMediaItemAction = onHandleMediaItemAction,
+                                        onHandlePlayerActions = onHandlePlayerAction,
+                                        playlistDropdownMenuItem = {
+                                            RemoveFromPlaylistDropdownItem(
+                                                onRemoveFromPlaylist = {
+                                                    onHandlePlaylistAction(
+                                                        PlaylistActions.UpsertPlaylist(
+                                                            state.playlist.copy(
+                                                                musics = state.playlist.musics.copyMutate {
+                                                                    remove(
+                                                                        music.mediaId
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                } else {
+                                    var safTracks by rememberAllSafTracks()
+                                    SafMusicListItem(
+                                        onShortClick = {
+                                            onHandlePlayerAction(
+                                                PlayerActions.StartPlaylistPlayback(
+                                                    state.playlist.musics,
+                                                    music.mediaId
+                                                )
+                                            )
+                                        },
+                                        music = music,
+                                        currentMusicUri = musicState.uri,
+                                        isPlayerReady = musicState.isPlayerReady,
+                                        onDeleteFromSaf = {
+                                            safTracks = safTracks.copyMutate {
+                                                remove(music.uri.toString())
+                                            }
+                                        },
+                                        playlistDropdownMenuItem = {
+                                            RemoveFromPlaylistDropdownItem(
+                                                onRemoveFromPlaylist = {
+                                                    onHandlePlaylistAction(
+                                                        PlaylistActions.UpsertPlaylist(
+                                                            state.playlist.copy(
+                                                                musics = state.playlist.musics.copyMutate {
+                                                                    remove(
+                                                                        music.mediaId
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+
                 }
-
             }
-
-            AnimatedVisibility(
-                visible = listState.showCuteSearchbar,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it },
-                modifier = Modifier.align(rememberSearchbarAlignment()),
-            ) {
-                CuteSearchbar(
-                    onHandlePlayerActions = onHandlePlayerAction,
-                    musicState = musicState,
-                    showSearchField = false,
-                    onNavigate = onNavigate,
-                    navigationIcon = {
-                        CuteNavigationButton(
-                            modifier = Modifier
-                                .padding(start = 15.dp)
-                                .navigationBarsPadding()
-                        ) { onNavigateUp() }
-                    }
-                )
-            }
-
         }
     }
+
 
 }

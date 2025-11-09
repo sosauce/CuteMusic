@@ -34,6 +34,8 @@ import com.sosauce.cutemusic.data.datastore.rememberAppTheme
 import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
+import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
+import com.sosauce.cutemusic.data.datastore.rememberUseExpressivePalette
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FontSelector
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCards
@@ -56,6 +58,8 @@ fun SettingsLookAndFeel(
     var showXButton by rememberShowXButton()
     var showShuffleButton by rememberShowShuffleButton()
     var showBackButton by rememberShowBackButton()
+    var useMaterialArt by rememberUseArtTheme()
+    var useExpressivePalette by rememberUseExpressivePalette()
     val themeItems = listOf(
         ThemeItem(
             onClick = { theme = CuteTheme.SYSTEM },
@@ -168,9 +172,23 @@ fun SettingsLookAndFeel(
                 title = R.string.UI
             ) {
                 SettingsCards(
+                    checked = useMaterialArt,
+                    onCheckedChange = { useMaterialArt = !useMaterialArt },
+                    topDp = 24.dp,
+                    bottomDp = 4.dp,
+                    text = stringResource(R.string.use_art)
+                )
+                SettingsCards(
+                    checked = useExpressivePalette,
+                    onCheckedChange = { useExpressivePalette = !useExpressivePalette },
+                    topDp = 4.dp,
+                    bottomDp = 4.dp,
+                    text = stringResource(R.string.use_expr_palette)
+                )
+                SettingsCards(
                     checked = showBackButton,
                     onCheckedChange = { showBackButton = !showBackButton },
-                    topDp = 24.dp,
+                    topDp = 4.dp,
                     bottomDp = 24.dp,
                     text = stringResource(R.string.show_back_button)
                 )
