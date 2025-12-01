@@ -22,9 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -167,7 +164,7 @@ fun EditPlaylist(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Close,
+                        painter = painterResource(R.drawable.close),
                         contentDescription = stringResource(R.string.remove_emoji),
                     )
                 }
@@ -235,7 +232,7 @@ fun EditPlaylist(
                         shapes = IconButtonDefaults.shapes()
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Add,
+                            painter = painterResource(R.drawable.add),
                             contentDescription = null
                         )
                     }

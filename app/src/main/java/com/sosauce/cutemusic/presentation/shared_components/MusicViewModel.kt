@@ -26,7 +26,6 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.data.LyricsParser
 import com.sosauce.cutemusic.data.actions.MediaItemActions
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.getMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.data.datastore.getPauseOnMute
 import com.sosauce.cutemusic.data.datastore.getPitch
@@ -42,6 +41,7 @@ import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.models.toCuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.PlaybackService
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.utils.LastPlayed
@@ -102,15 +102,9 @@ class MusicViewModel(
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
-
-    val folders = mediaStoreHelper.fetchLatestFoldersWithMusics().stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList()
-    )
-
     private val playerListener =
         object : Player.Listener {
+
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                 super.onMediaMetadataChanged(mediaMetadata)
                 viewModelScope.launch {
@@ -280,6 +274,16 @@ class MusicViewModel(
                     {
                         mediaController = get()
                         mediaController!!.addListener(playerListener)
+
+                        _musicState.update {
+                            it.copy(
+                                audioSessionAudio = mediaController!!.sessionExtras.getInt(
+                                    "audioSessionId",
+                                    0
+                                )
+                            )
+                        }
+
                         viewModelScope.launch {
                             allTracks.collectLatest { mediaItems ->
                                 mediaController!!.replaceMediaItems(
@@ -419,6 +423,7 @@ class MusicViewModel(
             }
         }
     }
+
 
     fun handlePlayerActions(action: PlayerActions) {
         when (action) {

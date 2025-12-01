@@ -29,17 +29,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenu
@@ -69,11 +62,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playing.components.PlayPauseButton
 import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedIconButton
@@ -165,15 +158,15 @@ fun SharedTransitionScope.CuteSearchbar(
                         .fillMaxWidth(),
                 ) {
                     Row(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (showXButton) {
                             IconButton(
-                                onClick = { onHandlePlayerActions(PlayerActions.StopPlayback) },
-                                modifier = Modifier.size(22.dp)
+                                onClick = { onHandlePlayerActions(PlayerActions.StopPlayback) }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Close,
+                                    painter = painterResource(R.drawable.close),
                                     contentDescription = stringResource(R.string.stop_playback),
                                 )
                             }
@@ -203,7 +196,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                     animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                 ),
                             onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) },
-                            icon = Icons.Rounded.SkipPrevious,
+                            icon = R.drawable.skip_previous,
                             contentDescription = stringResource(R.string.seek_prev_song)
                         )
                         PlayPauseButton(
@@ -222,7 +215,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                     animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                 ),
                             onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) },
-                            icon = Icons.Rounded.SkipNext,
+                            icon = R.drawable.skip_next,
                             contentDescription = stringResource(R.string.seek_next_song)
                         )
                     }
@@ -286,7 +279,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                             onClick = { showSortMenu = !showSortMenu }
                                         ) {
                                             Icon(
-                                                imageVector = Icons.AutoMirrored.Rounded.Sort,
+                                                painter = painterResource(R.drawable.sort),
                                                 contentDescription = stringResource(R.string.sort)
                                             )
                                         }
@@ -294,7 +287,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                             onClick = { onNavigate(Screen.Settings) }
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.Settings,
+                                                painter = painterResource(R.drawable.settings_filled),
                                                 contentDescription = stringResource(R.string.settings)
                                             )
                                         }

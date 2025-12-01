@@ -44,10 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberArtistSort
 import com.sosauce.cutemusic.data.models.Artist
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem

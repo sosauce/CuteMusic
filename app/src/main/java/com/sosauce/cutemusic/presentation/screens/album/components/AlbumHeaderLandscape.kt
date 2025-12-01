@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.models.Album
 import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
@@ -126,7 +124,7 @@ fun SharedTransitionScope.AlbumHeaderLandscape(
                     .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Shuffle,
+                    painter = painterResource(R.drawable.shuffle),
                     contentDescription = null
                 )
             }

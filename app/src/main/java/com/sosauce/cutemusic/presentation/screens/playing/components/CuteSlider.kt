@@ -17,9 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberSliderStyle
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.formatToReadableTime
 
 @Composable

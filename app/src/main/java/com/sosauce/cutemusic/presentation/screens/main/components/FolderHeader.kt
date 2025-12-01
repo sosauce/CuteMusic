@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +27,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.main.Category
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import java.io.File
@@ -76,7 +74,7 @@ fun FolderHeader(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                painter = painterResource(R.drawable.arrow_right),
                 contentDescription = null,
                 modifier = Modifier.rotate(iconRotation)
             )

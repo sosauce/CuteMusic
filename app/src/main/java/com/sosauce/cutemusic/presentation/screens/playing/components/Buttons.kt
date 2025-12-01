@@ -13,11 +13,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.FastRewind
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
@@ -31,11 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedPlayPauseIcon
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberInteractionSource
@@ -98,7 +95,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         .animateWidth(interactionSource = interactionSources[0])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
+                        painter = painterResource(R.drawable.skip_previous),
                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description),
                         modifier = Modifier
                             .sharedElement(
@@ -125,7 +122,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         .animateWidth(interactionSource = interactionSources[1])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.FastRewind,
+                        painter = painterResource(R.drawable.fast_rewind),
                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                     )
                 }
@@ -176,7 +173,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         .animateWidth(interactionSource = interactionSources[3])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.FastForward,
+                        painter = painterResource(R.drawable.fast_forward),
                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                     )
                 }
@@ -195,7 +192,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         .animateWidth(interactionSource = interactionSources[4])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.SkipNext,
+                        painter = painterResource(R.drawable.skip_next),
                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description),
                         modifier = Modifier
                             .sharedElement(

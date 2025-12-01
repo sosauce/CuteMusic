@@ -16,9 +16,8 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.sosauce.cutemusic.data.datastore.getBlacklistedFolder
 import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
-import com.sosauce.cutemusic.data.models.Folder
+import com.sosauce.cutemusic.data.datastore.getWhitelistedFolders
 import com.sosauce.cutemusic.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,31 +37,24 @@ class MediaStoreHelper(
             .mapLatest { fetchMusics() }
             .flowOn(Dispatchers.IO)
 
-
-    fun fetchLatestFoldersWithMusics(): Flow<List<Folder>> =
-        context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-            .mapLatest { fetchFoldersWithMusics() }
-            .flowOn(Dispatchers.IO)
-
     suspend fun fetchMusics(): List<MediaItem> {
         val musics = mutableListOf<MediaItem>()
+        val whitelistedFolders = getWhitelistedFolders(context).first()
 
-        val blacklistedFolders = getBlacklistedFolder(context)
+        if (whitelistedFolders.isEmpty()) return emptyList()
+
+
         val minTrackDuration = getMinTrackDuration(context).first()
         val selection = buildString {
             append("${MediaStore.Audio.Media.DURATION} >= ?")
             append(" AND ${MediaStore.Audio.Media.IS_MUSIC} != ?")
-            if (blacklistedFolders.isNotEmpty()) {
-                append(" AND ")
-                append(blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" })
-            }
+            append(" AND ")
+            append(whitelistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} LIKE ?" })
         }
         val selectionArgs = mutableListOf<String>().apply {
             add("${minTrackDuration * 1000}")
             add("0")
-            if (blacklistedFolders.isNotEmpty()) {
-                addAll(blacklistedFolders.map { "$it%" })
-            }
+            addAll(whitelistedFolders.map { "$it%" })
         }.toTypedArray()
 
         val projection = arrayOf(
@@ -162,44 +154,6 @@ class MediaStoreHelper(
 
         return musics
     }
-
-
-    // Only gets folder with musics in them
-    fun fetchFoldersWithMusics(): List<Folder> {
-
-        val folders = mutableListOf<Folder>()
-
-        val projection = arrayOf(MediaStore.Audio.Media.DATA)
-
-        context.contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            projection,
-            null,
-            null,
-            null
-        )?.use {
-            val folderPaths = mutableSetOf<String>()
-            val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-
-            while (it.moveToNext()) {
-                val filePath = it.getString(dataColumn)
-                val folderPath = filePath.substringBeforeLast('/')
-                folderPaths.add(folderPath)
-            }
-            folderPaths.forEach { path ->
-                val folderName = path.substringAfterLast('/')
-                folders.add(
-                    Folder(
-                        name = folderName,
-                        path = path,
-                    )
-                )
-            }
-
-        }
-        return folders
-    }
-
 
     fun deleteMusics(
         uris: List<Uri>,

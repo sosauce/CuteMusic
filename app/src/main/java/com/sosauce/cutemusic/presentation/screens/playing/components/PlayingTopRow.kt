@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,7 +14,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 
@@ -43,7 +43,7 @@ fun PlayingTopRow(
                 .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
         ) {
             Icon(
-                imageVector = Icons.Rounded.KeyboardArrowDown,
+                painter = painterResource(R.drawable.arrow_down),
                 contentDescription = null,
                 modifier = Modifier.size(28.dp)
             )

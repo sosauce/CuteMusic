@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -136,7 +133,7 @@ fun PlaylistItem(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.QueueMusic,
+                        painter = painterResource(R.drawable.queue_music_rounded),
                         contentDescription = null,
                         modifier = Modifier.size(30.dp)
                     )
@@ -181,7 +178,7 @@ fun PlaylistItem(
                     onClick = { isDropdownExpanded = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.MoreVert,
+                        painter = painterResource(R.drawable.more_vert),
                         contentDescription = null
                     )
                 }

@@ -40,3 +40,7 @@ object AnimationDirection {
     const val LEFT = -25f
     const val RIGHT = 25f
 }
+
+object CustomCommands {
+    const val OPEN_EQ = "open equalizer"
+}

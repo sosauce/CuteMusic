@@ -37,11 +37,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberCarousel
 import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
 import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.toShape
 import kotlinx.coroutines.flow.filter

@@ -30,9 +30,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -116,7 +113,7 @@ fun MetadataEditor(
                 ) { onNavigateUp() }
                 CuteActionButton(
                     modifier = Modifier.padding(end = 15.dp),
-                    imageVector = Icons.Rounded.Done
+                    icon = R.drawable.check
                 ) {
                     onEditMusic(editSongLauncher)
                 }
@@ -140,7 +137,7 @@ fun MetadataEditor(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Close,
+                        painter = painterResource(R.drawable.close),
                         contentDescription = null
                     )
                 }

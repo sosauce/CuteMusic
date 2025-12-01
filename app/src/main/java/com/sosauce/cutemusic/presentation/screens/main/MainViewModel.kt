@@ -22,13 +22,14 @@ class MainViewModel(
 
     init {
         viewModelScope.launch {
-            mediaStoreHelper.fetchLatestMusics().collectLatest { tracks ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        tracks = tracks.fastMap { track -> track.toCuteTrack() }
-                    )
-                }
+            mediaStoreHelper.fetchLatestMusics()
+                .collectLatest { tracks ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            tracks = tracks.fastMap { track -> track.toCuteTrack() }
+                        )
+                    }
             }
         }
     }

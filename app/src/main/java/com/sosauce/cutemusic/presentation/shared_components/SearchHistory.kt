@@ -3,18 +3,13 @@ package com.sosauce.cutemusic.presentation.shared_components
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowOutward
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -41,20 +36,20 @@ fun SearchHistory(
                     onClick = {},
                     text = { Text(item.toString()) },
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = null
-                        )
+//                        Icon(
+//                            imageVector = Icons.Rounded.Search,
+//                            contentDescription = null
+//                        )
                     },
                     trailingIcon = {
                         IconButton(
                             onClick = { onInsertToSearch(item.toString()) }
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowOutward,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(270f)
-                            )
+//                            Icon(
+//                                imageVector = Icons.Rounded.ArrowOutward,
+//                                contentDescription = null,
+//                                modifier = Modifier.rotate(270f)
+//                            )
                         }
                     }
                 )

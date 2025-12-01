@@ -2,9 +2,6 @@
 
 package com.sosauce.cutemusic.presentation.shared_components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -13,7 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.sosauce.cutemusic.R
 
 @Composable
 fun CuteNavigationButton(
@@ -28,7 +26,7 @@ fun CuteNavigationButton(
 
         ) {
         Icon(
-            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+            painter = painterResource(R.drawable.back),
             contentDescription = null
         )
     }
@@ -38,7 +36,7 @@ fun CuteNavigationButton(
 @Composable
 fun CuteActionButton(
     modifier: Modifier = Modifier,
-    imageVector: ImageVector = Icons.Rounded.Shuffle,
+    icon: Int = R.drawable.shuffle,
     action: () -> Unit
 ) {
     FloatingActionButton(
@@ -47,7 +45,7 @@ fun CuteActionButton(
         modifier = modifier
     ) {
         Icon(
-            imageVector = imageVector,
+            painter = painterResource(icon),
             contentDescription = null
         )
     }

@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowDownward
-import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,7 +14,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 @Composable
@@ -48,7 +47,7 @@ fun SortingDropdownMenu(
                     modifier = Modifier.animateWidth(interactionSources[0])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.ArrowUpward,
+                        painter = painterResource(R.drawable.up),
                         contentDescription = null
                     )
                 }
@@ -65,7 +64,7 @@ fun SortingDropdownMenu(
                     modifier = Modifier.animateWidth(interactionSources[1])
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.ArrowDownward,
+                        painter = painterResource(R.drawable.down),
                         contentDescription = null
                     )
                 }

@@ -2,9 +2,11 @@
 
 package com.sosauce.cutemusic.utils
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -64,6 +66,16 @@ inline fun Modifier.thenIf(condition: Boolean, modifier: Modifier.() -> Modifier
 
 fun NavKey.showBackButton(): Boolean {
     return this is Screen.AlbumsDetails || this is Screen.ArtistsDetails || this is Screen.PlaylistDetails
+}
+
+fun Context.hasMusicPermission(): Boolean {
+    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+
+    return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 }
 
 fun Modifier.selfAlignHorizontally(): Modifier {

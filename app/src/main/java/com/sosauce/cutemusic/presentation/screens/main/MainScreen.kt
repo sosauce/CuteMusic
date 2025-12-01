@@ -40,13 +40,13 @@ import androidx.compose.ui.util.fastForEach
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
 import com.sosauce.cutemusic.data.datastore.rememberHiddenFolders
 import com.sosauce.cutemusic.data.datastore.rememberTrackSort
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.FolderHeader
 import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu

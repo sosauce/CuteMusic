@@ -4,9 +4,6 @@ package com.sosauce.cutemusic.presentation.shared_components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -18,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
@@ -72,7 +70,7 @@ fun AddToPlaylistDropdownItem(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                painter = painterResource(R.drawable.playlist_add),
                 contentDescription = null
             )
         }
@@ -90,7 +88,7 @@ fun RemoveFromPlaylistDropdownItem(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Rounded.PlaylistRemove,
+                painter = painterResource(R.drawable.playlist_remove),
                 contentDescription = null
             )
         }

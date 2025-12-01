@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -37,9 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.models.Album
 import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -54,7 +52,7 @@ fun SharedTransitionScope.AlbumHeader(
 ) {
 
     val context = LocalContext.current
-    val hazeState = remember { HazeState() }
+    remember { HazeState() }
     val interactionSources = List(2) { rememberInteractionSource() }
 
 //    Box(
@@ -247,7 +245,7 @@ fun SharedTransitionScope.AlbumHeader(
                     .animateWidth(interactionSources[1])
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Shuffle,
+                    painter = painterResource(R.drawable.shuffle),
                     contentDescription = null
                 )
             }

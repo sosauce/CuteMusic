@@ -1,4 +1,4 @@
-package com.sosauce.cutemusic.data.actions
+package com.sosauce.cutemusic.domain.actions
 
 import com.sosauce.cutemusic.data.models.CuteTrack
 

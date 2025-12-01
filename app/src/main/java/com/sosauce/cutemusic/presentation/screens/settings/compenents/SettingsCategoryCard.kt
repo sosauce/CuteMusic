@@ -15,14 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 
 @Composable
 fun SettingsCategoryCard(
-    icon: Painter,
+    icon: Int,
     name: String,
     description: String,
     topDp: Dp,
@@ -48,7 +48,7 @@ fun SettingsCategoryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = icon,
+                painter = painterResource(icon),
                 contentDescription = null
             )
             Spacer(Modifier.width(15.dp))

@@ -24,7 +24,7 @@ sealed class Screen() : NavKey {
     data object Playlists : Screen()
 
     @Serializable
-    data object Equalizer : Screen()
+    data object Setup : Screen()
 
     @Serializable
     data class AlbumsDetails(

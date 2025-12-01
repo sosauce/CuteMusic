@@ -3,9 +3,6 @@
 package com.sosauce.cutemusic.presentation.screens.playing.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -25,8 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.presentation.shared_components.MusicStateDetailsDialog
 import com.sosauce.cutemusic.utils.rememberInteractionSource
@@ -120,7 +117,7 @@ fun QuickActionsRow(
                 .animateWidth(interactionSources[2])
         ) {
             Icon(
-                imageVector = Icons.Rounded.Shuffle,
+                painter = painterResource(R.drawable.shuffle),
                 contentDescription = "shuffle button"
             )
         }
@@ -153,7 +150,7 @@ fun QuickActionsRow(
                 .animateWidth(interactionSources[4])
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.PlaylistPlay,
+                painter = painterResource(R.drawable.queue),
                 contentDescription = null
             )
         }

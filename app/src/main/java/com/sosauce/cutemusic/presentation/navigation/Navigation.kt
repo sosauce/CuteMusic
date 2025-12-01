@@ -25,7 +25,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.data.datastore.rememberHasBeenThroughSetup
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.album.AlbumsScreen
@@ -34,8 +35,6 @@ import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsScreen
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsViewModel
-import com.sosauce.cutemusic.presentation.screens.equalizer.EqualizerScreen
-import com.sosauce.cutemusic.presentation.screens.equalizer.EqualizerViewModel
 import com.sosauce.cutemusic.presentation.screens.main.MainScreen
 import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataEditor
@@ -46,21 +45,26 @@ import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewM
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistsScreen
 import com.sosauce.cutemusic.presentation.screens.settings.SettingsScreen
+import com.sosauce.cutemusic.presentation.screens.setup.SetupScreen
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.LocalScreen
 import com.sosauce.cutemusic.utils.LocalSharedTransitionScope
+import com.sosauce.cutemusic.utils.hasMusicPermission
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
 
-    val backStack = rememberNavBackStack(Screen.Main)
+    val context = LocalContext.current
+    val hasBeenThroughPermission by rememberHasBeenThroughSetup()
+    val startScreen =
+        if (hasBeenThroughPermission && context.hasMusicPermission()) Screen.Main else Screen.Setup
+    val backStack = rememberNavBackStack(startScreen)
     val currentScreen by remember {
         derivedStateOf { backStack.lastOrNull() ?: Screen.Main }
     }
-    val context = LocalContext.current
     val musicViewModel = koinViewModel<MusicViewModel>()
     val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
 
@@ -91,10 +95,21 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     )
                 },
                 entryProvider = entryProvider {
+
+                    entry<Screen.Setup> {
+                        SetupScreen(
+                            onNavigateToApp = {
+                                backStack.clear()
+                                backStack.add(Screen.Main)
+                            }
+                        )
+                    }
+
                     entry<Screen.Main> {
 
                         val viewModel = koinViewModel<MainViewModel>()
                         val state by viewModel.state.collectAsStateWithLifecycle()
+
 
                         MainScreen(
                             state = state,
@@ -128,12 +143,10 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     }
 
                     entry<Screen.Settings> {
-                        val folders by musicViewModel.folders.collectAsStateWithLifecycle()
                         val latestSafTracks by musicViewModel.safTracks.collectAsStateWithLifecycle()
 
                         SettingsScreen(
                             onNavigateUp = backStack::removeLastOrNull,
-                            folders = folders,
                             latestSafTracks = latestSafTracks,
                             onShortClick = {
                                 musicViewModel.handlePlayerActions(
@@ -243,18 +256,6 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             onHandlePlaylistAction = viewModel::handlePlaylistActions
                         )
                     }
-
-                    entry<Screen.Equalizer> {
-                        val viewModel = koinViewModel<EqualizerViewModel>()
-
-                        EqualizerScreen(
-                            onNavigateUp = backStack::removeLastOrNull,
-                            onResetBands = viewModel::resetBands,
-                            onChangeDecibelLevel = viewModel::setBandLevel
-                        )
-
-                    }
-
                 }
             )
         }

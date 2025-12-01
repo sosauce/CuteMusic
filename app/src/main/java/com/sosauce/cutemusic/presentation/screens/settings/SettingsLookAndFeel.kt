@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -23,9 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -67,7 +61,7 @@ fun SettingsLookAndFeel(
             text = stringResource(R.string.system),
             isSelected = theme == CuteTheme.SYSTEM,
             iconAndTint = Pair(
-                painterResource(R.drawable.system_theme),
+                R.drawable.system_theme,
                 if (isSystemInDarkTheme()) anyDarkColorScheme().onBackground else anyLightColorScheme().onBackground
             )
         ),
@@ -77,7 +71,7 @@ fun SettingsLookAndFeel(
             text = stringResource(R.string.dark_mode),
             isSelected = theme == CuteTheme.DARK,
             iconAndTint = Pair(
-                painterResource(R.drawable.dark_mode),
+                R.drawable.dark_mode,
                 anyDarkColorScheme().onBackground
             )
         ),
@@ -87,7 +81,7 @@ fun SettingsLookAndFeel(
             text = stringResource(R.string.light_mode),
             isSelected = theme == CuteTheme.LIGHT,
             iconAndTint = Pair(
-                rememberVectorPainter(Icons.Outlined.LightMode),
+                R.drawable.light_mode,
                 anyLightColorScheme().onBackground
             )
         ),
@@ -96,7 +90,7 @@ fun SettingsLookAndFeel(
             backgroundColor = Color.Black,
             text = stringResource(R.string.amoled_mode),
             isSelected = theme == CuteTheme.AMOLED,
-            iconAndTint = Pair(rememberVectorPainter(Icons.Rounded.Contrast), Color.White)
+            iconAndTint = Pair(R.drawable.amoled, Color.White)
         )
     )
     val fontItems = listOf(
@@ -221,7 +215,7 @@ data class ThemeItem(
     val backgroundColor: Color,
     val text: String,
     val isSelected: Boolean,
-    val iconAndTint: Pair<Painter, Color>
+    val iconAndTint: Pair<Int, Color>
 )
 
 @Immutable

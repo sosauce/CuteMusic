@@ -3,14 +3,14 @@
 package com.sosauce.cutemusic.presentation.screens.playing.components
 
 import android.content.Intent
+import android.media.audiofx.AudioEffect
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -47,7 +47,8 @@ fun MoreOptionsButton(
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showMoreDialog by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
-
+    val activityResultLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
     if (showDetailsDialog) {
         MusicStateDetailsDialog(
@@ -75,7 +76,7 @@ fun MoreOptionsButton(
                 .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
         ) {
             Icon(
-                imageVector = Icons.Rounded.MoreVert,
+                painter = painterResource(R.drawable.more_vert),
                 contentDescription = null
             )
         }
@@ -86,7 +87,15 @@ fun MoreOptionsButton(
             shape = RoundedCornerShape(24.dp)
         ) {
             CuteDropdownMenuItem(
-                onClick = { onNavigate(Screen.Equalizer) },
+                onClick = {
+                    val intent =
+                        Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicState.audioSessionAudio)
+                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                        }
+                    activityResultLauncher.launch(intent)
+                },
                 text = {
                     Text(stringResource(R.string.open_eq))
                 },
@@ -146,7 +155,7 @@ fun MoreOptionsButton(
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                        painter = painterResource(R.drawable.playlist_add),
                         contentDescription = null
                     )
                 }

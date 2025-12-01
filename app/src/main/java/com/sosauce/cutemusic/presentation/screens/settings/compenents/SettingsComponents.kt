@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -202,7 +203,7 @@ fun ThemeSelector(theme: ThemeItem) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = theme.iconAndTint.first,
+                painter = painterResource(theme.iconAndTint.first),
                 contentDescription = null,
                 tint = theme.iconAndTint.second,
             )

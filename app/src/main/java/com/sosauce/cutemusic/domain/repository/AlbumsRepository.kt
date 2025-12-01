@@ -6,8 +6,8 @@ import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
 import androidx.core.net.toUri
-import com.sosauce.cutemusic.data.datastore.getBlacklistedFolder
 import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
+import com.sosauce.cutemusic.data.datastore.getWhitelistedFolders
 import com.sosauce.cutemusic.data.models.Album
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.observe
@@ -92,25 +92,23 @@ class AlbumsRepository(private val context: Context) {
 
     private suspend fun fetchAlbumTracks(albumName: String): List<CuteTrack> {
         val musics = mutableListOf<CuteTrack>()
+        val whitelistedFolders = getWhitelistedFolders(context).first()
 
-        val blacklistedFolders = getBlacklistedFolder(context)
+        if (whitelistedFolders.isEmpty()) return emptyList()
+
         val minTrackDuration = getMinTrackDuration(context).first()
         val selection = buildString {
             append("${MediaStore.Audio.Media.ALBUM} = ?")
             append(" AND ${MediaStore.Audio.Media.DURATION} >= ?")
             append(" AND ${MediaStore.Audio.Media.IS_MUSIC} != ?")
-            if (blacklistedFolders.isNotEmpty()) {
-                append(" AND ")
-                append(blacklistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} NOT LIKE ?" })
-            }
+            append(" AND ")
+            append(whitelistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} LIKE ?" })
         }
         val selectionArgs = mutableListOf<String>().apply {
             add(albumName)
             add("${minTrackDuration * 1000}")
             add("0")
-            if (blacklistedFolders.isNotEmpty()) {
-                addAll(blacklistedFolders.map { "$it%" })
-            }
+            addAll(whitelistedFolders.map { "$it%" })
         }.toTypedArray()
 
         val projection = arrayOf(

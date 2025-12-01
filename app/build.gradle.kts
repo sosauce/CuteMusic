@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlin)
@@ -49,12 +51,18 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "debug"
+        }
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }
-        kotlinOptions {
-            jvmTarget = "17"
+        kotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+            }
         }
         buildFeatures {
             compose = true
@@ -88,7 +96,6 @@ android {
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.material3)
         implementation(libs.androidx.ui)
-        implementation(libs.androidx.material.icons.extended)
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.androidx.core.splashscreen)
         implementation(libs.androidx.datastore.preferences)

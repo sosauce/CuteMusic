@@ -16,10 +16,10 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ALBUM_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_SHUFFLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ART_AS_BACKGROUND
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.BLACKLISTED_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.EQUALIZER_BANDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
@@ -42,11 +42,11 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.TRACK_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_EXPRESSIVE_PALETTE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.EqBand
 import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.SliderStyle
-import kotlinx.coroutines.flow.first
 
 private const val PREFERENCES_NAME = "settings"
 
@@ -55,7 +55,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(PREFERENCE
 data object PreferencesKeys {
     val THEME = stringPreferencesKey("theme")
     val USE_SYSTEM_FONT = booleanPreferencesKey("use_sys_font")
-    val BLACKLISTED_FOLDERS = stringSetPreferencesKey("blacklisted_folders")
+    val WHITELISTED_FOLDERS = stringSetPreferencesKey("WHITELISTED_FOLDERS")
     val HAS_SEEN_TIP = booleanPreferencesKey("has_seen_tip")
     val SNAP_SPEED_N_PITCH = booleanPreferencesKey("snap_peed_n_pitch")
     val KILL_SERVICE = booleanPreferencesKey("kill_service")
@@ -85,6 +85,8 @@ data object PreferencesKeys {
     val MIN_TRACK_DURATION = intPreferencesKey("MIN_TRACK_DURATION")
     val PLAYLIST_SORT = intPreferencesKey("PLAYLIST_SORT")
     val EQUALIZER_BANDS = stringPreferencesKey("EQUALIZER_BANDS")
+
+    val HAS_BEEN_THROUGH_SETUP = booleanPreferencesKey("HAS_BEEN_THROUGH_SETUP")
 }
 
 
@@ -95,11 +97,6 @@ fun rememberAppTheme() =
 @Composable
 fun rememberUseSystemFont() =
     rememberPreference(key = USE_SYSTEM_FONT, defaultValue = false)
-
-@Composable
-fun rememberAllBlacklistedFolders() =
-    rememberPreference(key = BLACKLISTED_FOLDERS, defaultValue = emptySet())
-
 @Composable
 fun rememberSnapSpeedAndPitch() =
     rememberPreference(key = SNAP_SPEED_N_PITCH, defaultValue = false)
@@ -192,6 +189,14 @@ fun rememberMinTrackDuration() =
 fun rememberEqBands() =
     rememberCustomPreference(key = EQUALIZER_BANDS, defaultValue = emptyList<EqBand>())
 
+@Composable
+fun rememberWhitelistedFolders() =
+    rememberPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet())
+
+@Composable
+fun rememberHasBeenThroughSetup() =
+    rememberPreference(key = HAS_BEEN_THROUGH_SETUP, defaultValue = false)
+
 fun getShouldShuffle(context: Context) =
     getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
 
@@ -223,6 +228,9 @@ fun getRepeatMode(context: Context) =
 fun getMinTrackDuration(context: Context) =
     getPreference(key = MIN_TRACK_DURATION, defaultValue = 0, context = context)
 
+fun getWhitelistedFolders(context: Context) =
+    getPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet(), context = context)
+
 suspend fun saveRepeatMode(context: Context, value: Int) =
     savePreference(key = REPEAT_MODE, value = value, context = context)
 
@@ -235,13 +243,6 @@ fun getMediaIndexToMediaIdMap(context: Context) =
         defaultValue = LastPlayed("", 0L),
         context = context
     )
-
-
-suspend fun getBlacklistedFolder(context: Context): Set<String> {
-    val preferences = context.dataStore.data.first()
-    return preferences[BLACKLISTED_FOLDERS] ?: emptySet()
-}
-
 suspend fun saveEqBands(context: Context, value: List<EqBand>) =
     saveCustomPreference(key = EQUALIZER_BANDS, value = value, context = context)
 

@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,7 +59,7 @@ fun SelectedBar(
                 onClick = onClearSelected
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Close,
+                    painter = painterResource(R.drawable.close),
                     contentDescription = null
                 )
             }
@@ -78,7 +75,7 @@ fun SelectedBar(
                 onClick = { showPlaylistDialog = true }
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                    painter = painterResource(R.drawable.playlist_add),
                     contentDescription = null
                 )
             }

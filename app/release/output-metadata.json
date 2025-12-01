@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 40000,
-      "versionName": "3.0.2",
-      "outputFile": "CM_3.0.2.apk"
+      "versionName": "3.1.0",
+      "outputFile": "CM_3.1.0.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/CM_3.0.2.dm"
+        "baselineProfiles/1/CM_3.1.0.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/CM_3.0.2.dm"
+        "baselineProfiles/0/CM_3.1.0.dm"
       ]
     }
   ],

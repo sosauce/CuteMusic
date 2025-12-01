@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -21,7 +22,6 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.ListenableFuture
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.CuteEqualizer
 import com.sosauce.cutemusic.presentation.MainActivity
 import com.sosauce.cutemusic.presentation.widgets.WidgetBroadcastReceiver
 import com.sosauce.cutemusic.presentation.widgets.WidgetCallback
@@ -29,7 +29,6 @@ import com.sosauce.cutemusic.utils.CUTE_MUSIC_ID
 import com.sosauce.cutemusic.utils.PACKAGE
 import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
 import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
-import org.koin.android.ext.android.get
 
 
 @UnstableApi
@@ -44,7 +43,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
         .build()
 
     private val widgetReceiver = WidgetBroadcastReceiver()
-    private val cuteEqualizer = get<CuteEqualizer>()
+
 
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -70,10 +69,16 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
         sendBroadcast(intent)
     }
 
+
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
         super.onAudioSessionIdChanged(audioSessionId)
-        cuteEqualizer.initEqualizer(audioSessionId)
+        println("Testing, service audiosession = $audioSessionId")
+        mediaLibrarySession?.sessionExtras = Bundle().apply {
+            putInt("audioSessionId", audioSessionId)
+        }
     }
+
+
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
         mediaLibrarySession
@@ -83,7 +88,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     @UnstableApi
     override fun onCreate() {
         super.onCreate()
-
         val player = ExoPlayer.Builder(applicationContext)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
@@ -100,6 +104,8 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
                 )
             )
             .build()
+
+
 
 
 
@@ -133,7 +139,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             release()
             mediaLibrarySession = null
         }
-        cuteEqualizer.clearEqualizer()
         stopSelf()
         try {
             widgetReceiver.also {
@@ -182,7 +187,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             release()
             mediaLibrarySession = null
         }
-        cuteEqualizer.clearEqualizer()
         widgetReceiver.also {
             it.stopCallback()
             unregisterReceiver(it)

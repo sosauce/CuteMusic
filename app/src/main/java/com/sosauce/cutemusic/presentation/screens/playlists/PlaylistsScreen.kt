@@ -15,9 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButtonMenu
@@ -42,10 +39,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberPlaylistSort
 import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
@@ -168,14 +165,14 @@ fun SharedTransitionScope.PlaylistsScreen(
                                 onCheckedChange = { fabMenuExpanded = !fabMenuExpanded },
                                 containerSize = { 56.dp }
                             ) {
-                                val imageVector by remember {
+                                val icon by remember {
                                     derivedStateOf {
-                                        if (checkedProgress > 0.5f) Icons.Rounded.Close else Icons.Rounded.Add
+                                        if (checkedProgress > 0.5f) R.drawable.close else R.drawable.add
                                     }
                                 }
 
                                 Icon(
-                                    imageVector = imageVector,
+                                    painter = painterResource(icon),
                                     contentDescription = null,
                                     modifier = Modifier.animateIcon({ checkedProgress })
                                 )

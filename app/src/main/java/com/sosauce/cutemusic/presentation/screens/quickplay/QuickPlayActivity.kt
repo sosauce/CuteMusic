@@ -22,12 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.FastRewind
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -66,8 +60,8 @@ import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
@@ -150,7 +144,7 @@ class QuickPlayActivity : ComponentActivity() {
                                         )
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.Close,
+                                        painter = painterResource(R.drawable.close),
                                         contentDescription = null
                                     )
                                 }
@@ -199,7 +193,7 @@ class QuickPlayActivity : ComponentActivity() {
                                         .animateWidth(interactionSource = interactionSources[1])
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.FastRewind,
+                                        painter = painterResource(R.drawable.fast_rewind),
                                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                                     )
                                 }
@@ -222,7 +216,9 @@ class QuickPlayActivity : ComponentActivity() {
                                         .animateWidth(interactionSource = interactionSources[2])
                                 ) {
                                     Icon(
-                                        imageVector = if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                        painter = if (state.isPlaying) painterResource(R.drawable.widget_pause) else painterResource(
+                                            R.drawable.widget_play
+                                        ),
                                         contentDescription = if (state.isPlaying) stringResource(
                                             androidx.media3.session.R.string.media3_controls_pause_description
                                         ) else stringResource(androidx.media3.session.R.string.media3_controls_play_description),
@@ -246,7 +242,7 @@ class QuickPlayActivity : ComponentActivity() {
                                         .animateWidth(interactionSource = interactionSources[3])
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.FastForward,
+                                        painter = painterResource(R.drawable.fast_forward),
                                         contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                                     )
                                 }

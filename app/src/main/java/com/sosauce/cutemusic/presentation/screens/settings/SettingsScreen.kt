@@ -11,14 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -27,7 +22,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.CuteTrack
-import com.sosauce.cutemusic.data.models.Folder
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsScreens
@@ -39,7 +33,6 @@ import kotlin.uuid.Uuid
 @Composable
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
-    folders: List<Folder>,
     latestSafTracks: List<CuteTrack>,
     onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
@@ -49,25 +42,25 @@ fun SettingsScreen(
     val backStack = rememberNavBackStack(SettingsScreens.Settings)
     val items = listOf(
         Item(
-            icon = rememberVectorPainter(Icons.Outlined.Palette),
+            icon = R.drawable.palette,
             name = stringResource(R.string.look_and_feel),
             description = stringResource(R.string.look_and_feel_desc),
             onNavigate = { backStack.add(SettingsScreens.LookAndFeel) }
         ),
         Item(
-            icon = painterResource(R.drawable.music_note_rounded),
+            icon = R.drawable.music_note_rounded,
             name = stringResource(R.string.now_playing),
             description = stringResource(R.string.now_playing_desc),
             onNavigate = { backStack.add(SettingsScreens.NowPlaying) }
         ),
         Item(
-            icon = painterResource(R.drawable.headphones),
+            icon = R.drawable.headphones,
             name = stringResource(R.string.playback_controls),
             description = stringResource(R.string.playback_controls_desc),
             onNavigate = { backStack.add(SettingsScreens.Playback) }
         ),
         Item(
-            icon = painterResource(R.drawable.library),
+            icon = R.drawable.library,
             name = stringResource(R.string.library),
             description = stringResource(R.string.library_desc),
             onNavigate = { backStack.add(SettingsScreens.Library) }
@@ -137,7 +130,6 @@ fun SettingsScreen(
 
             entry<SettingsScreens.Library> {
                 SettingsLibrary(
-                    folders = folders,
                     latestSafTracks = latestSafTracks,
                     onShortClick = onShortClick,
                     isPlayerReady = isPlayerReady,
@@ -155,6 +147,6 @@ private data class Item(
     val id: String = Uuid.random().toString(),
     val name: String,
     val description: String,
-    val icon: Painter,
+    val icon: Int,
     val onNavigate: () -> Unit
 )

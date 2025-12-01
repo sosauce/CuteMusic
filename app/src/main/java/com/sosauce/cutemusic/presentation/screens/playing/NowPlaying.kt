@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -34,12 +32,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import com.sosauce.cutemusic.data.actions.PlayerActions
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsView
 import com.sosauce.cutemusic.presentation.screens.playing.components.ActionButtonsRow
@@ -126,7 +126,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                             .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.KeyboardArrowDown,
+                            painter = painterResource(R.drawable.arrow_down),
                             contentDescription = null,
                             modifier = Modifier.size(28.dp)
                         )

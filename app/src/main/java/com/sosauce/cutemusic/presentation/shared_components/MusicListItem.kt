@@ -30,12 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Badge
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -68,9 +62,9 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.actions.MediaItemActions
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -197,7 +191,7 @@ fun LocalMusicListItem(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Check,
+                            painter = painterResource(R.drawable.check),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
@@ -277,7 +271,7 @@ fun LocalMusicListItem(
                     onClick = { isDropDownExpanded = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.MoreVert,
+                        painter = painterResource(R.drawable.more_vert),
                         contentDescription = null
                     )
                 }
@@ -320,7 +314,7 @@ fun LocalMusicListItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Rounded.Add,
+                                painter = painterResource(R.drawable.add),
                                 contentDescription = null
                             )
                         }
@@ -462,7 +456,7 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
                     onClick = { onHandlePlayerActions(PlayerActions.RemoveFromQueue(music.mediaId)) }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Close,
+                        painter = painterResource(R.drawable.close),
                         contentDescription = null
                     )
                 }
@@ -471,7 +465,7 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
                     modifier = Modifier.draggableHandle()
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.DragHandle,
+                        painter = painterResource(R.drawable.drag_handle),
                         contentDescription = null
                     )
                 }
@@ -582,7 +576,7 @@ fun SafMusicListItem(
                     onClick = { isDropDownExpanded = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.MoreVert,
+                        painter = painterResource(R.drawable.more_vert),
                         contentDescription = null
                     )
                 }

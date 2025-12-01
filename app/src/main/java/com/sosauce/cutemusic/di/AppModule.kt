@@ -1,12 +1,12 @@
 package com.sosauce.cutemusic.di
 
 import androidx.room.Room
-import com.sosauce.cutemusic.data.CuteEqualizer
 import com.sosauce.cutemusic.data.LyricsParser
 import com.sosauce.cutemusic.data.playlist.MIGRATION_1_2
 import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
 import com.sosauce.cutemusic.domain.repository.AlbumsRepository
 import com.sosauce.cutemusic.domain.repository.ArtistsRepository
+import com.sosauce.cutemusic.domain.repository.FoldersRepository
 import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.PlaylistsRepository
 import com.sosauce.cutemusic.domain.repository.SafManager
@@ -14,12 +14,12 @@ import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.album.AlbumsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsViewModel
-import com.sosauce.cutemusic.presentation.screens.equalizer.EqualizerViewModel
 import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.cutemusic.presentation.screens.quickplay.QuickPlayViewModel
+import com.sosauce.cutemusic.presentation.screens.settings.FoldersViewModel
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
@@ -41,12 +41,12 @@ val appModule = module {
 
 
     singleOf(::LyricsParser)
+    singleOf(::FoldersRepository)
     singleOf(::MediaStoreHelper)
     singleOf(::SafManager)
     singleOf(::AlbumsRepository)
     singleOf(::ArtistsRepository)
     singleOf(::PlaylistsRepository)
-    singleOf(::CuteEqualizer)
     viewModelOf(::MusicViewModel)
     viewModelOf(::MetadataViewModel)
     viewModelOf(::PlaylistViewModel)
@@ -57,5 +57,5 @@ val appModule = module {
     viewModelOf(::AlbumsViewModel)
     viewModelOf(::AlbumDetailsViewModel)
     viewModelOf(::MainViewModel)
-    viewModelOf(::EqualizerViewModel)
+    viewModelOf(::FoldersViewModel)
 }

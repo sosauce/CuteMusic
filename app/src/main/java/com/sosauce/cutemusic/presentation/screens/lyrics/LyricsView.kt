@@ -22,11 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.OpenInNew
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -50,16 +45,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.model.Lyrics
 import com.sosauce.cutemusic.presentation.screens.playing.components.PlayPauseButton
 import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedIconButton
-
 import com.sosauce.cutemusic.utils.ICON_TEXT_SPACING
 import com.sosauce.cutemusic.utils.selfAlignHorizontally
 import kotlinx.coroutines.launch
@@ -73,7 +68,7 @@ fun LyricsView(
     val activity = LocalActivity.current
     val context = LocalContext.current
     val clipboardManager = LocalClipboard.current
-    val isLandscape = rememberIsLandscape()
+    rememberIsLandscape()
     val scope = rememberCoroutineScope()
     var currentLyric by remember { mutableStateOf(Lyrics()) }
     val lazyListState = rememberLazyListState(
@@ -111,7 +106,7 @@ fun LyricsView(
                         onClick = onHideLyrics
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
+                            painter = painterResource(R.drawable.close),
                             contentDescription = stringResource(R.string.close)
                         )
                     }
@@ -119,7 +114,7 @@ fun LyricsView(
             ) {
                 AnimatedIconButton(
                     onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) },
-                    icon = Icons.Rounded.SkipPrevious,
+                    icon = R.drawable.skip_previous,
                     contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_back_description)
                 )
                 PlayPauseButton(
@@ -128,7 +123,7 @@ fun LyricsView(
                 )
                 AnimatedIconButton(
                     onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) },
-                    icon = Icons.Rounded.SkipNext,
+                    icon = R.drawable.skip_next,
                     contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_to_next_description)
                 )
             }
@@ -158,7 +153,7 @@ fun LyricsView(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                                painter = painterResource(R.drawable.open),
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(ICON_TEXT_SPACING.dp))

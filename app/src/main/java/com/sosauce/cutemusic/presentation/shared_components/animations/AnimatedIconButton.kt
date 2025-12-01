@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 @Composable
@@ -16,7 +16,7 @@ fun AnimatedIconButton(
     modifier: Modifier = Modifier,
     buttonModifier: Modifier = Modifier,
     onClick: () -> Unit,
-    icon: ImageVector,
+    icon: Int,
     contentDescription: String
 ) {
     val interactionSource = rememberInteractionSource()
@@ -27,14 +27,12 @@ fun AnimatedIconButton(
 
 
     IconButton(
-        onClick = {
-            onClick()
-        },
+        onClick = onClick,
         modifier = buttonModifier,
         interactionSource = interactionSource
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = contentDescription,
             modifier = modifier
                 .graphicsLayer {

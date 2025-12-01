@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -29,9 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.PlayerActions
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.models.Playlist
+import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 
 @Composable
@@ -125,7 +123,7 @@ fun PlaylistHeader(
                     .animateWidth(interactionSources[1])
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Shuffle,
+                    painter = painterResource(R.drawable.shuffle),
                     contentDescription = null
                 )
             }
