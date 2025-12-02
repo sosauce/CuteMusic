@@ -30,17 +30,13 @@ jobs:
         id: date
         run: echo "RUN_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
-      - name: Locate APK file
-        id: find_apk
-        run: echo "APK_PATH=$(find app/build -name '*-debug.apk' | head -n 1)" >> $GITHUB_OUTPUT
-
-
       - name: Create Nightly Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.find_apk.outputs.APK_PATH }}
           tag_name: nightly-${{ env.RUN_DATE }}
           name: Nightly Build ${{ env.RUN_DATE }}
           prerelease: true 
+          files: |
+            ./**/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
