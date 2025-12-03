@@ -46,7 +46,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
 import com.sosauce.cutemusic.data.datastore.rememberTrackSort
 import com.sosauce.cutemusic.data.states.MusicState
@@ -70,7 +69,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     onNavigateUp: () -> Unit,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onNavigate: (Screen) -> Unit
 ) {
     val lazyState = rememberLazyListState()
@@ -223,7 +221,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                                 }
                             }
                         },
-                        onHandleMediaItemAction = onHandleMediaItemAction,
                         onHandlePlayerActions = onHandlePlayerActions,
                         onNavigate = onNavigate,
                         isSelected = selectedTracks.contains(music.mediaId)

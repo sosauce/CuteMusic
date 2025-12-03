@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,11 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
 import com.sosauce.cutemusic.data.datastore.rememberHiddenFolders
@@ -70,8 +71,7 @@ fun SharedTransitionScope.MainScreen(
     state: MainState,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
-    onHandlePlayerAction: (PlayerActions) -> Unit,
-    onHandleMediaItemAction: (MediaItemActions) -> Unit
+    onHandlePlayerAction: (PlayerActions) -> Unit
 ) {
 
 
@@ -211,7 +211,6 @@ fun SharedTransitionScope.MainScreen(
                                     music = music,
                                     musicState = musicState,
                                     onNavigate = { onNavigate(it) },
-                                    onHandleMediaItemAction = onHandleMediaItemAction,
                                     onHandlePlayerActions = onHandlePlayerAction
                                 )
                             }
@@ -224,6 +223,14 @@ fun SharedTransitionScope.MainScreen(
                                 headlineText = R.string.no_musics_found,
                                 bodyText = R.string.no_music_desc,
                                 icon = R.drawable.music_note_rounded
+                            )
+                            Text(
+                                text = "Tip: Don't forget to whitelist folders you want to scan in settings!",
+                                style = MaterialTheme.typography.bodySmallEmphasized.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.padding(top = 15.dp)
                             )
                         }
                     } else {
@@ -261,7 +268,6 @@ fun SharedTransitionScope.MainScreen(
                                             music = music,
                                             musicState = musicState,
                                             onNavigate = { onNavigate(it) },
-                                            onHandleMediaItemAction = onHandleMediaItemAction,
                                             onHandlePlayerActions = onHandlePlayerAction
                                         )
                                     } else {

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.util.fastFilter
+import androidx.compose.ui.util.fastMap
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -118,9 +119,9 @@ fun Player.playRandom() {
 
 fun Player.playFromAll(
     mediaId: String,
-    tracks: List<MediaItem>
+    tracks: List<CuteTrack>
 ) {
-    setMediaItems(tracks)
+    setMediaItems(tracks.fastMap { it.mediaItem })
     playAtIndex(mediaId)
 
 }
@@ -128,16 +129,16 @@ fun Player.playFromAll(
 fun Player.playFromAlbum(
     albumName: String,
     mediaId: String? = null,
-    musics: List<MediaItem>
+    musics: List<CuteTrack>
 ) {
     clearMediaItems()
-    musics.filter { music -> music.mediaMetadata.albumTitle.toString() == albumName }
+    musics.fastFilter { music -> music.album == albumName }
         .sortedWith(
             compareBy(
-                { it.mediaMetadata.trackNumber == null || it.mediaMetadata.trackNumber == 0 },
-                { it.mediaMetadata.trackNumber }
+                { it.trackNumber == 0 },
+                { it.trackNumber }
             ))
-        .also { addMediaItems(it) }
+        .also { addMediaItems(it.fastMap { it.mediaItem }) }
 
 
     if (mediaId == null) {
@@ -149,11 +150,11 @@ fun Player.playFromAlbum(
 
 fun Player.playFromFolder(
     folder: String,
-    musics: List<MediaItem>
+    musics: List<CuteTrack>
 ) {
     clearMediaItems()
-    musics.filter { music -> music.mediaMetadata.extras?.getString("folder") == folder }
-        .also { addMediaItems(it) }
+    musics.filter { music -> music.folder == folder }
+        .also { addMediaItems(it.fastMap { it.mediaItem }) }
     seekTo(0, 0)
     play()
 }
@@ -161,11 +162,11 @@ fun Player.playFromFolder(
 fun Player.playFromArtist(
     artistsName: String,
     mediaId: String? = null,
-    musics: List<MediaItem>
+    musics: List<CuteTrack>
 ) {
     clearMediaItems()
-    musics.filter { music -> music.mediaMetadata.artist.toString() == artistsName }
-        .also { addMediaItems(it) }
+    musics.filter { music -> music.artist == artistsName }
+        .also { addMediaItems(it.fastMap { it.mediaItem }) }
 
     if (mediaId == null) {
         playRandom()
@@ -177,15 +178,15 @@ fun Player.playFromArtist(
 fun Player.playFromPlaylist(
     playlistSongsId: List<String>,
     mediaId: String? = null,
-    musics: List<MediaItem>
+    musics: List<CuteTrack>
 ) {
-    val musics = musics.filter { music -> music.mediaId in playlistSongsId }
+    val musics = musics.fastFilter { music -> music.mediaId in playlistSongsId }
 
     if (musics.isEmpty()) return
 
     clearMediaItems()
 
-    setMediaItems(musics)
+    setMediaItems(musics.fastMap { it.mediaItem })
 
 
     if (mediaId == null) {

@@ -34,9 +34,6 @@ fun SetupBottomBar(
     onGoToNextPage: () -> Unit,
     onNavigateToApp: () -> Unit
 ) {
-    var hasBeenThroughPermission by rememberHasBeenThroughSetup()
-
-
     Row(
         modifier = Modifier
             .padding(5.dp)
@@ -58,10 +55,7 @@ fun SetupBottomBar(
         )
         Button(
             onClick = if (isLastStep) {
-                {
-                    onNavigateToApp()
-                    hasBeenThroughPermission = true
-                }
+                onNavigateToApp
             } else {
                 onGoToNextPage
             },

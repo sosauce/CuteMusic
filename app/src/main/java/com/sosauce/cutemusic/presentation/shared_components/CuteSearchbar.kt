@@ -162,14 +162,16 @@ fun SharedTransitionScope.CuteSearchbar(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (showXButton) {
-                            IconButton(
-                                onClick = { onHandlePlayerActions(PlayerActions.StopPlayback) }
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.close),
-                                    contentDescription = stringResource(R.string.stop_playback),
-                                )
-                            }
+                            Icon(
+                                painter = painterResource(R.drawable.close),
+                                contentDescription = stringResource(R.string.stop_playback),
+                                modifier = Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = null
+                                ) {
+                                    onHandlePlayerActions(PlayerActions.StopPlayback)
+                                }
+                            )
                         }
                         AnimatedContent(
                             targetState = musicState.title,

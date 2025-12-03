@@ -7,8 +7,11 @@ package com.sosauce.cutemusic.presentation.shared_components
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -56,12 +59,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
@@ -78,7 +81,6 @@ fun LocalMusicListItem(
     musicState: MusicState,
     onShortClick: (mediaId: String) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onHandleMediaItemAction: (MediaItemActions) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
     isSelected: Boolean = false
@@ -111,7 +113,7 @@ fun LocalMusicListItem(
 
     if (showDetailsDialog) {
         MusicDetailsDialog(
-            music = music,
+            track = music,
             onDismissRequest = { showDetailsDialog = false }
         )
     }
@@ -127,12 +129,12 @@ fun LocalMusicListItem(
         DeletionDialog(
             onDismissRequest = { showDeletionDialog = false },
             onDelete = {
-                onHandleMediaItemAction(
-                    MediaItemActions.DeleteMediaItem(
-                        listOf(music.uri),
-                        deleteSongLauncher
-                    )
-                )
+                val intentSender = MediaStore.createDeleteRequest(
+                    context.contentResolver,
+                    listOf(music.uri)
+                ).intentSender
+
+                deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
             }
         ) {
             Column(
@@ -358,9 +360,11 @@ fun LocalMusicListItem(
                     playlistDropdownMenuItem()
                     CuteDropdownMenuItem(
                         onClick = {
-                            onHandleMediaItemAction(
-                                MediaItemActions.ShareMediaItem(music.uri)
-                            )
+                            ShareCompat.IntentBuilder(context)
+                                .setType("audio/*")
+                                .setStream(Uri.parse(music.path)) // this instead of passing allows to see the file name in the share sheet
+                                .setChooserTitle("Share track")
+                                .startChooser()
                         },
                         text = {
                             Text(
@@ -503,7 +507,7 @@ fun SafMusicListItem(
 
     if (showDetailsDialog) {
         MusicDetailsDialog(
-            music = music,
+            track = music,
             onDismissRequest = { showDetailsDialog = false }
         )
     }

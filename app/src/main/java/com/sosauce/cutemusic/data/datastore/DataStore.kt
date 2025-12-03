@@ -197,38 +197,38 @@ fun rememberWhitelistedFolders() =
 fun rememberHasBeenThroughSetup() =
     rememberPreference(key = HAS_BEEN_THROUGH_SETUP, defaultValue = false)
 
-fun getShouldShuffle(context: Context) =
+suspend  fun getShouldShuffle(context: Context) =
     getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
 
 suspend fun saveShouldShuffle(context: Context, value: Boolean) =
     savePreference(key = APPLY_SHUFFLE, value = value, context = context)
 
 
-fun getSpeed(context: Context) =
+suspend fun getSpeed(context: Context) =
     getPreference(key = SPEED, defaultValue = 1.0f, context = context)
 
 suspend fun saveSpeed(context: Context, value: Float) =
     savePreference(key = SPEED, value = value, context = context)
 
-fun getPitch(context: Context) =
+suspend fun getPitch(context: Context) =
     getPreference(key = PITCH, defaultValue = 1.0f, context = context)
 
 suspend fun savePitch(context: Context, value: Float) =
     savePreference(key = PITCH, value = value, context = context)
 
-fun getPauseOnMute(context: Context) =
+suspend fun getPauseOnMute(context: Context) =
     getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)
 
-fun getSafTracks(context: Context) =
+suspend fun getSafTracks(context: Context) =
     getPreference(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
 
-fun getRepeatMode(context: Context) =
+suspend fun getRepeatMode(context: Context) =
     getPreference(key = REPEAT_MODE, defaultValue = Player.REPEAT_MODE_OFF, context = context)
 
-fun getMinTrackDuration(context: Context) =
+suspend fun getMinTrackDuration(context: Context) =
     getPreference(key = MIN_TRACK_DURATION, defaultValue = 0, context = context)
 
-fun getWhitelistedFolders(context: Context) =
+suspend fun getWhitelistedFolders(context: Context) =
     getPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet(), context = context)
 
 suspend fun saveRepeatMode(context: Context, value: Int) =

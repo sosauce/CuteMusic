@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -86,15 +87,15 @@ inline fun <reified T> rememberCustomPreference(
 }
 
 
-fun <T> getPreference(
+suspend fun <T> getPreference(
     key: Preferences.Key<T>,
     defaultValue: T,
     context: Context
-): Flow<T> =
+): T =
     context.dataStore.data
         .map { preference ->
             preference[key] ?: defaultValue
-        }
+        }.first()
 
 suspend fun <T> savePreference(
     key: Preferences.Key<T>,

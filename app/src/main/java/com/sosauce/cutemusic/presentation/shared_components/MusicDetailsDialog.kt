@@ -48,7 +48,7 @@ import com.sosauce.cutemusic.utils.getBitrate
 
 @Composable
 fun MusicDetailsDialog(
-    music: CuteTrack,
+    track: CuteTrack,
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current

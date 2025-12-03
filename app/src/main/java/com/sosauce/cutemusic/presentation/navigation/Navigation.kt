@@ -15,12 +15,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -58,9 +61,7 @@ import org.koin.core.parameter.parametersOf
 fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
 
     val context = LocalContext.current
-    val hasBeenThroughPermission by rememberHasBeenThroughSetup()
-    val startScreen =
-        if (hasBeenThroughPermission && context.hasMusicPermission()) Screen.Main else Screen.Setup
+    val startScreen = if (context.hasMusicPermission()) Screen.Main else Screen.Setup
     val backStack = rememberNavBackStack(startScreen)
     val currentScreen by remember {
         derivedStateOf { backStack.lastOrNull() ?: Screen.Main }
@@ -114,9 +115,8 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         MainScreen(
                             state = state,
                             musicState = musicState,
-                            onNavigate = backStack::add,
-                            onHandlePlayerAction = musicViewModel::handlePlayerActions,
-                            onHandleMediaItemAction = musicViewModel::handleMediaItemActions
+                            onNavigate = backStack::navigate,
+                            onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
                     }
 
@@ -129,7 +129,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             state = state,
                             musicState = musicState,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions,
-                            onNavigate = backStack::add
+                            onNavigate = backStack::navigate
                         )
                     }
 
@@ -138,7 +138,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             musicState = musicState,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions,
                             onNavigateUp = backStack::removeLastOrNull,
-                            onNavigate = backStack::add,
+                            onNavigate = backStack::navigate,
                         )
                     }
 
@@ -171,8 +171,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             state = state,
                             onNavigateUp = backStack::removeLastOrNull,
                             musicState = musicState,
-                            onNavigate = backStack::add,
-                            onHandleMediaItemAction = musicViewModel::handleMediaItemActions,
+                            onNavigate = backStack::navigate,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions
                         )
                     }
@@ -185,7 +184,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         ArtistsScreen(
                             state = state,
                             musicState = musicState,
-                            onNavigate = backStack::add,
+                            onNavigate = backStack::navigate,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions,
                         )
                     }
@@ -199,11 +198,10 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
 
                         ArtistDetailsScreen(
                             state = state,
-                            onNavigate = backStack::add,
+                            onNavigate = backStack::navigate,
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions,
-                            musicState = musicState,
-                            onHandleMediaItemAction = musicViewModel::handleMediaItemActions
+                            musicState = musicState
                         )
                     }
 
@@ -235,7 +233,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             playlists = playlists,
                             onHandlePlaylistAction = playlistViewModel::handlePlaylistActions,
                             musicState = musicState,
-                            onNavigate = backStack::add,
+                            onNavigate = backStack::navigate,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
                     }
@@ -249,9 +247,8 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         PlaylistDetailsScreen(
                             state = state,
                             musicState = musicState,
-                            onNavigate = backStack::add,
+                            onNavigate = backStack::navigate,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions,
-                            onHandleMediaItemAction = musicViewModel::handleMediaItemActions,
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlaylistAction = viewModel::handlePlaylistActions
                         )
@@ -260,5 +257,10 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
             )
         }
     }
+}
+
+fun NavBackStack<NavKey>.navigate(screen: NavKey) {
+    remove(screen)
+    add(screen)
 }
 

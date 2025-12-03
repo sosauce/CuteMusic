@@ -1,6 +1,7 @@
 package com.sosauce.cutemusic.di
 
 import androidx.room.Room
+import com.sosauce.cutemusic.data.AbstractTracksScanner
 import com.sosauce.cutemusic.data.LyricsParser
 import com.sosauce.cutemusic.data.playlist.MIGRATION_1_2
 import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
@@ -40,6 +41,7 @@ val appModule = module {
 
 
 
+    singleOf(::AbstractTracksScanner)
     singleOf(::LyricsParser)
     singleOf(::FoldersRepository)
     singleOf(::MediaStoreHelper)

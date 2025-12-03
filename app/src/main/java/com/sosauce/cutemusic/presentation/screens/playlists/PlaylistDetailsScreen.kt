@@ -44,7 +44,6 @@ import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.actions.MediaItemActions
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberAppTheme
 import com.sosauce.cutemusic.data.datastore.rememberIsLandscape
@@ -77,8 +76,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     onNavigate: (Screen) -> Unit,
     onHandlePlayerAction: (PlayerActions) -> Unit,
     onHandlePlaylistAction: (PlaylistActions) -> Unit,
-    onNavigateUp: () -> Unit,
-    onHandleMediaItemAction: (MediaItemActions) -> Unit,
+    onNavigateUp: () -> Unit
 ) {
 
     val listState = rememberLazyListState()
@@ -232,7 +230,6 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                         music = music,
                                         musicState = musicState,
                                         onNavigate = { onNavigate(it) },
-                                        onHandleMediaItemAction = onHandleMediaItemAction,
                                         onHandlePlayerActions = onHandlePlayerAction,
                                         playlistDropdownMenuItem = {
                                             RemoveFromPlaylistDropdownItem(

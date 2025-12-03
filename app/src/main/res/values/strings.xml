@@ -164,6 +164,7 @@
     <string name="scan">Scan</string>
     <string name="min_track_duration_desc">Tracks shorter than the specified duration will be not fetched.</string>
     <string name="as_added">As added</string>
+    <string name="unknown">Unknown</string>
 
     <plurals name="tracks">
         <item quantity="one">%d track</item>
