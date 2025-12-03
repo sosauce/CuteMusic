@@ -1,0 +1,77 @@
+name: Release Stable CI
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    outputs:
+      versionName: ${{ steps.versionname.outputs.versionName }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Get versionName
+      id: versionname
+      run: echo "versionName=$(grep 'versionName' app/build.gradle.kts | head -1 | awk -F\" '{ print $2 }')" >> $GITHUB_OUTPUT
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Decode Keystore
+      id: decode_keystore
+      uses: timheuer/base64-to-file@v1
+      with:
+        fileName: 'release_key.jks'
+        fileDir: 'app/'
+        encodedString: ${{ secrets.SIGNING_KEY }}
+      
+    - name: Clean Gradle
+      run: ./gradlew clean
+
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      env: 
+        SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: CuteMusic Release
+        path: app/build/**/*.apk
+    - name: Generate Changelog Content
+      id: generate_changelog
+      uses: release-drafter/release-drafter@v5
+      with:
+        disable-prerelease: true 
+        publish: false
+    - name: Write Changelog to File
+      run: echo "${{ steps.generate_changelog.outputs.body }}" > ${{ needs.build.outputs.versionName }}-changelog.txt
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: CuteMusic Release
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Vesion ${{ needs.build.outputs.versionName }}
+          body_path: ${{ needs.build.outputs.versionName }}-changelog.txt
+          prerelease: false
+          tag_name: ${{ needs.build.outputs.versionName }}
+          files: |
+            ./**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
