@@ -31,7 +31,6 @@ import com.sosauce.cutemusic.utils.WIDGET_NEW_DATA
 import com.sosauce.cutemusic.utils.WIDGET_NEW_IS_PLAYING
 
 
-@UnstableApi
 class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Player.Listener,
     WidgetCallback {
 
@@ -70,6 +69,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     }
 
 
+    @SuppressLint("UnsafeOptInUsageError")
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
         super.onAudioSessionIdChanged(audioSessionId)
         println("Testing, service audiosession = $audioSessionId")

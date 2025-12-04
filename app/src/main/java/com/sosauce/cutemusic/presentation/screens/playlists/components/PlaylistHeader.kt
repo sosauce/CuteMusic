@@ -35,7 +35,7 @@ import com.sosauce.cutemusic.utils.rememberInteractionSource
 @Composable
 fun PlaylistHeader(
     playlist: Playlist,
-    musics: List<CuteTrack>,
+    tracks: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
@@ -86,9 +86,9 @@ fun PlaylistHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartPlaylistPlayback(
-                            playlistSongsId = playlist.musics,
-                            mediaId = musics.first().mediaId
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks
                         )
                     )
                 },
@@ -108,9 +108,10 @@ fun PlaylistHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartPlaylistPlayback(
-                            playlistSongsId = playlist.musics,
-                            mediaId = null
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks,
+                            random = true
                         )
                     )
                 },

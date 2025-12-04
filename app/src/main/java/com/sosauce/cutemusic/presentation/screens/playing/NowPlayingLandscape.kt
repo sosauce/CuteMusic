@@ -41,7 +41,7 @@ import com.sosauce.cutemusic.presentation.screens.playing.components.QuickAction
 import com.sosauce.cutemusic.presentation.screens.playing.components.SpeedCard
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
-import com.sosauce.cutemusic.presentation.shared_components.MusicStateDetailsDialog
+import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 
 @Composable
@@ -63,15 +63,15 @@ fun SharedTransitionScope.NowPlayingLandscape(
     ) { paddingValues ->
 
         if (showDetailsDialog) {
-            MusicStateDetailsDialog(
-                musicState = musicState,
+            MusicDetailsDialog(
+                track = musicState.track,
                 onDismissRequest = { showDetailsDialog = false }
             )
         }
 
         if (showPlaylistDialog) {
             PlaylistPicker(
-                mediaId = listOf(musicState.mediaId),
+                mediaId = listOf(musicState.track.mediaId),
                 onDismissRequest = { showPlaylistDialog = false }
             )
         }

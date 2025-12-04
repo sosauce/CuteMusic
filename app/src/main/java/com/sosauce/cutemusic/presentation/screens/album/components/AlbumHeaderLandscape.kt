@@ -40,7 +40,7 @@ import com.sosauce.cutemusic.utils.ImageUtils
 @Composable
 fun SharedTransitionScope.AlbumHeaderLandscape(
     album: Album,
-    musics: List<CuteTrack>,
+    tracks: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
     val context = LocalContext.current
@@ -90,9 +90,9 @@ fun SharedTransitionScope.AlbumHeaderLandscape(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartAlbumPlayback(
-                            albumName = album.name,
-                            mediaId = musics.first().mediaId
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks
                         )
                     )
                 },
@@ -111,9 +111,10 @@ fun SharedTransitionScope.AlbumHeaderLandscape(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartAlbumPlayback(
-                            albumName = album.name,
-                            mediaId = null
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks,
+                            random = true
                         )
                     )
                 },

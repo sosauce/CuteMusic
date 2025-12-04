@@ -91,7 +91,7 @@ fun MusicDetailsDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
                             model = ImageUtils.imageRequester(
-                                music.artUri,
+                                track.artUri,
                                 context
                             ),
                             contentDescription = null,
@@ -103,12 +103,12 @@ fun MusicDetailsDialog(
                         )
                         Column {
                             Text(
-                                text = music.title,
+                                text = track.title,
                                 modifier = Modifier
                                     .basicMarquee()
                             )
                             Text(
-                                text = music.artist,
+                                text = track.artist,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.basicMarquee()
                             )
@@ -119,7 +119,7 @@ fun MusicDetailsDialog(
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    if (music.isSaf) {
+                    if (track.isSaf) {
                         SuggestionChip(
                             onClick = {},
                             colors = AssistChipDefaults.assistChipColors(
@@ -135,132 +135,31 @@ fun MusicDetailsDialog(
                             Text(
                                 text = Formatter.formatFileSize(
                                     context,
-                                    music.size
+                                    track.size
                                 )
                             )
                         }
                     )
                     SuggestionChip(
                         onClick = {},
-                        label = { Text("${music.uri.getBitrate(context)} kbps") }
+                        label = { Text("${track.uri.getBitrate(context)} kbps") }
                     )
                     SuggestionChip(
                         onClick = {},
                         label = {
                             Text(
                                 MimeTypeMap.getSingleton()
-                                    .getExtensionFromMimeType(context.contentResolver.getType(music.uri))
+                                    .getExtensionFromMimeType(context.contentResolver.getType(track.uri))
                                     ?: "No type"
                             )
                         }
                     )
                     SuggestionChip(
                         onClick = {},
-                        label = { Text(music.durationMs.formatToReadableTime()) }
+                        label = { Text(track.durationMs.formatToReadableTime()) }
                     )
                 }
             }
         }
     )
-
-}
-
-@Composable
-fun MusicStateDetailsDialog(
-    musicState: MusicState,
-    onDismissRequest: () -> Unit
-) {
-    val context = LocalContext.current
-    val uri = remember { musicState.uri.toUri() }
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(
-                onClick = onDismissRequest
-            ) {
-                Text(stringResource(R.string.okay))
-            }
-        },
-        title = {
-            Text(
-                text = stringResource(R.string.details)
-            )
-        },
-        icon = {
-            Icon(
-                painter = painterResource(R.drawable.info_rounded),
-                contentDescription = null
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        MaterialTheme.colorScheme.surfaceContainerHighest
-                    )
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(
-                            model = ImageUtils.imageRequester(musicState.art, context),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .padding(15.dp)
-                                .clip(RoundedCornerShape(15)),
-                            contentScale = ContentScale.Crop
-
-                        )
-                        Column {
-                            Text(
-                                text = musicState.title,
-                                modifier = Modifier
-                                    .basicMarquee()
-                            )
-                            Text(
-                                text = musicState.artist,
-                                modifier = Modifier.basicMarquee()
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(10.dp))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = Formatter.formatFileSize(
-                                    context,
-                                    musicState.size
-                                )
-                            )
-                        }
-                    )
-                    AssistChip(
-                        onClick = {},
-                        label = { Text("${uri.getBitrate(context)} kbps") }
-                    )
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                MimeTypeMap.getSingleton()
-                                    .getExtensionFromMimeType(context.contentResolver.getType(uri))
-                                    ?: "No type"
-                            )
-                        }
-                    )
-                }
-            }
-        }
-    )
-
 }

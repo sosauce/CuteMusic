@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
+import kotlin.random.Random
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -64,6 +65,8 @@ inline fun Modifier.thenIf(condition: Boolean, modifier: Modifier.() -> Modifier
         this
     }
 }
+
+fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
 
 fun NavKey.showBackButton(): Boolean {
     return this is Screen.AlbumsDetails || this is Screen.ArtistsDetails || this is Screen.PlaylistDetails
@@ -85,8 +88,6 @@ fun Modifier.selfAlignHorizontally(): Modifier {
         .wrapContentWidth())
 }
 
-val MediaItem.comesFromSaf
-    get() = mediaMetadata.extras?.getBoolean("is_saf") == true
 
 val MediaItem.path
     get() = mediaMetadata.extras?.getString("path") ?: ""
@@ -97,103 +98,19 @@ val MediaItem.uri: Uri
 val MediaItem.albumId
     get() = mediaMetadata.extras?.getLong("album_id") ?: 0
 
-val MediaItem.artistId
-    get() = mediaMetadata.extras?.getLong("artist_id") ?: 0
 
-fun Player.playAtIndex(
-    mediaId: String
-) {
-    val index = (0 until mediaItemCount).indexOfFirst { getMediaItemAt(it).mediaId == mediaId }
-    index.takeIf { it != -1 }?.let {
-        seekTo(it, 0)
-        play()
-    }
-}
 
 fun Player.playRandom() {
-    (0 until mediaItemCount).takeIf { !it.isEmpty() }?.random()?.let { index ->
-        seekTo(index, 0)
-        play()
-    }
-}
 
-fun Player.playFromAll(
-    mediaId: String,
-    tracks: List<CuteTrack>
-) {
-    setMediaItems(tracks.fastMap { it.mediaItem })
-    playAtIndex(mediaId)
+    if (mediaItemCount == 0) return
 
-}
-
-fun Player.playFromAlbum(
-    albumName: String,
-    mediaId: String? = null,
-    musics: List<CuteTrack>
-) {
-    clearMediaItems()
-    musics.fastFilter { music -> music.album == albumName }
-        .sortedWith(
-            compareBy(
-                { it.trackNumber == 0 },
-                { it.trackNumber }
-            ))
-        .also { addMediaItems(it.fastMap { it.mediaItem }) }
-
-
-    if (mediaId == null) {
-        playRandom()
-    } else {
-        playAtIndex(mediaId)
-    }
-}
-
-fun Player.playFromFolder(
-    folder: String,
-    musics: List<CuteTrack>
-) {
-    clearMediaItems()
-    musics.filter { music -> music.folder == folder }
-        .also { addMediaItems(it.fastMap { it.mediaItem }) }
-    seekTo(0, 0)
+    val randomIndex = Random.nextInt(mediaItemCount)
+    seekTo(randomIndex, 0)
     play()
 }
 
-fun Player.playFromArtist(
-    artistsName: String,
-    mediaId: String? = null,
-    musics: List<CuteTrack>
-) {
-    clearMediaItems()
-    musics.filter { music -> music.artist == artistsName }
-        .also { addMediaItems(it.fastMap { it.mediaItem }) }
-
-    if (mediaId == null) {
-        playRandom()
-    } else {
-        playAtIndex(mediaId)
-    }
-}
-
-fun Player.playFromPlaylist(
-    playlistSongsId: List<String>,
-    mediaId: String? = null,
-    musics: List<CuteTrack>
-) {
-    val musics = musics.fastFilter { music -> music.mediaId in playlistSongsId }
-
-    if (musics.isEmpty()) return
-
-    clearMediaItems()
-
-    setMediaItems(musics.fastMap { it.mediaItem })
-
-
-    if (mediaId == null) {
-        playRandom()
-    } else {
-        playAtIndex(mediaId)
-    }
+fun Player.playOrPause() {
+    if (isPlaying) pause() else play()
 }
 
 fun Player.changeRepeatMode(

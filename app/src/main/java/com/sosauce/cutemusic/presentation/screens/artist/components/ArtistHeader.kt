@@ -40,7 +40,7 @@ import com.sosauce.cutemusic.utils.rememberInteractionSource
 @Composable
 fun SharedTransitionScope.ArtistHeader(
     artist: Artist,
-    musics: List<CuteTrack>,
+    tracks: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
@@ -95,9 +95,9 @@ fun SharedTransitionScope.ArtistHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartArtistPlayback(
-                            artistName = artist.name,
-                            mediaId = musics.first().mediaId
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks
                         )
                     )
                 },
@@ -117,9 +117,10 @@ fun SharedTransitionScope.ArtistHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartArtistPlayback(
-                            artistName = artist.name,
-                            mediaId = null
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks,
+                            random = true
                         )
                     )
                 },

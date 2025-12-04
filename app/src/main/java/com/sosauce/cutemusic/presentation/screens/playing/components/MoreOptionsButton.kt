@@ -35,7 +35,7 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
-import com.sosauce.cutemusic.presentation.shared_components.MusicStateDetailsDialog
+import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 
 @Composable
 fun MoreOptionsButton(
@@ -51,15 +51,15 @@ fun MoreOptionsButton(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
     if (showDetailsDialog) {
-        MusicStateDetailsDialog(
-            musicState = musicState,
+        MusicDetailsDialog(
+            track = musicState.track,
             onDismissRequest = { showDetailsDialog = false }
         )
     }
 
     if (showPlaylistDialog) {
         PlaylistPicker(
-            mediaId = listOf(musicState.mediaId),
+            mediaId = listOf(musicState.track.mediaId),
             onDismissRequest = { showPlaylistDialog = false }
         )
     }
@@ -121,10 +121,10 @@ fun MoreOptionsButton(
             CuteDropdownMenuItem(
                 onClick = {
                     showMoreDialog = false
-                    onNavigate(Screen.AlbumsDetails(musicState.album))
+                    onNavigate(Screen.AlbumsDetails(musicState.track.album))
                 },
                 text = {
-                    Text("${stringResource(R.string.go_to)} ${musicState.album}")
+                    Text("${stringResource(R.string.go_to)} ${musicState.track.album}")
                 },
                 leadingIcon = {
                     Icon(
@@ -136,10 +136,10 @@ fun MoreOptionsButton(
             CuteDropdownMenuItem(
                 onClick = {
                     showMoreDialog = false
-                    onNavigate(Screen.ArtistsDetails(musicState.artist))
+                    onNavigate(Screen.ArtistsDetails(musicState.track.artist))
                 },
                 text = {
-                    Text("${stringResource(R.string.go_to)} ${musicState.artist}")
+                    Text("${stringResource(R.string.go_to)} ${musicState.track.artist}")
                 },
                 leadingIcon = {
                     Icon(
@@ -166,7 +166,7 @@ fun MoreOptionsButton(
                         Intent.createChooser(
                             Intent().apply {
                                 action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, musicState.uri.toUri())
+                                putExtra(Intent.EXTRA_STREAM, musicState.track.uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 type = "audio/*"
                             }, null

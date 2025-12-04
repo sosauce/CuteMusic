@@ -14,34 +14,15 @@ sealed interface PlayerActions {
     data class SeekTo(val position: Long) : PlayerActions
     data class SeekToSlider(val position: Long) : PlayerActions
     data class RewindTo(val position: Long) : PlayerActions
-    data class StartPlayback(val mediaId: String) : PlayerActions
     data class SeekToMusicIndex(val index: Int) : PlayerActions
     data class SetSpeed(val speed: Float) : PlayerActions
     data class SetPitch(val pitch: Float) : PlayerActions
 
-    /**
-     * @param mediaId If set to null, it means we want to play a random song
-     */
-    data class StartAlbumPlayback(
-        val albumName: String,
-        val mediaId: String?
+    data class Play(
+        val index: Int,
+        val tracks: List<CuteTrack>,
+        val random: Boolean = false
     ) : PlayerActions
-
-    /**
-     * @param mediaId If set to null, it means we want to play a random song
-     */
-    data class StartArtistPlayback(
-        val artistName: String,
-        val mediaId: String?
-    ) : PlayerActions
-
-    data class StartFolderPlayback(val folder: String) : PlayerActions
-
-    data class StartPlaylistPlayback(
-        val playlistSongsId: List<String>,
-        val mediaId: String?
-    ) : PlayerActions
-
     data class UpdateCurrentPosition(
         val position: Long
     ) : PlayerActions
@@ -57,7 +38,7 @@ sealed interface PlayerActions {
     ) : PlayerActions
 
     data class RemoveFromQueue(
-        val mediaId: String
+        val track: CuteTrack
     ) : PlayerActions
 
     data class AddToQueue(

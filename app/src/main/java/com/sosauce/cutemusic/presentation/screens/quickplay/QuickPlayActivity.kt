@@ -68,6 +68,7 @@ import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.toShape
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 class QuickPlayActivity : ComponentActivity() {
@@ -77,16 +78,14 @@ class QuickPlayActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
 
-        val uri = intent?.data ?: Uri.EMPTY
+        val uri = intent?.data ?: return
 
         setContent {
-            val viewModel = koinViewModel<QuickPlayViewModel>()
+            val viewModel = koinViewModel<QuickPlayViewModel>(
+                parameters = { parametersOf(uri) }
+            )
             var artImageBitmap by remember { mutableStateOf(ImageBitmap(1, 1)) }
 
-
-            LaunchedEffect(uri) {
-                viewModel.loadSong(uri)
-            }
 
             CuteMusicTheme(artImageBitmap = artImageBitmap) {
                 Scaffold(
@@ -101,16 +100,11 @@ class QuickPlayActivity : ComponentActivity() {
 
 
                     if (!viewModel.isSongLoaded) {
-
-                        Column(
+                        Box(
                             modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                            contentAlignment = Alignment.Center
                         ) {
-                            ContainedLoadingIndicator(
-                                polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons
-                            )
-                            Text(stringResource(R.string.song_loading))
+                            ContainedLoadingIndicator()
                         }
                     } else {
                         Column(
@@ -132,6 +126,7 @@ class QuickPlayActivity : ComponentActivity() {
                             ) {
                                 IconButton(
                                     onClick = { Process.killProcess(Process.myPid()) },
+                                    shapes = IconButtonDefaults.shapes(),
                                     colors = IconButtonDefaults.filledIconButtonColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                         contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
@@ -248,25 +243,28 @@ class QuickPlayActivity : ComponentActivity() {
                                 }
                             }
                             Spacer(Modifier.weight(1f))
-                            ButtonGroup {
-                                ToggleButton(
-                                    checked = state.repeatMode == Player.REPEAT_MODE_ONE,
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
-                                        containerColor = Color.Transparent,
-                                        contentColor = MaterialTheme.colorScheme.onSurface
-                                    ),
-                                    onCheckedChange = { viewModel.handlePlayerAction(PlayerActions.ChangeRepeatMode) }
-                                ) {
-                                    val icon = if (state.repeatMode == Player.REPEAT_MODE_ONE) {
-                                        R.drawable.repeat_one
-                                    } else R.drawable.repeat
-
-                                    Icon(
-                                        painter = painterResource(icon),
-                                        contentDescription = null
+                            ToggleButton(
+                                checked = state.repeatMode != Player.REPEAT_MODE_OFF,
+                                onCheckedChange = {
+                                    viewModel.handlePlayerAction(
+                                        PlayerActions.ChangeRepeatMode
                                     )
+                                },
+                                colors = ToggleButtonDefaults.toggleButtonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
+                            ) {
 
+                                val icon = when (state.repeatMode) {
+                                    Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
+                                    else -> R.drawable.repeat_one
                                 }
+
+                                Icon(
+                                    painter = painterResource(icon),
+                                    contentDescription = "repeat mode"
+                                )
                             }
                         }
                     }

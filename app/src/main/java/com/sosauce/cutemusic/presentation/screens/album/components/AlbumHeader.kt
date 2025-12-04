@@ -47,7 +47,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 @Composable
 fun SharedTransitionScope.AlbumHeader(
     album: Album,
-    musics: List<CuteTrack>,
+    tracks: List<CuteTrack>,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
@@ -208,9 +208,9 @@ fun SharedTransitionScope.AlbumHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartAlbumPlayback(
-                            albumName = album.name,
-                            mediaId = musics.first().mediaId
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks
                         )
                     )
                 },
@@ -230,9 +230,10 @@ fun SharedTransitionScope.AlbumHeader(
             IconButton(
                 onClick = {
                     onHandlePlayerActions(
-                        PlayerActions.StartAlbumPlayback(
-                            albumName = album.name,
-                            mediaId = null
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = tracks,
+                            random = true
                         )
                     )
                 },

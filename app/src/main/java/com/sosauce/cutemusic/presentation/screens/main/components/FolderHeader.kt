@@ -55,7 +55,12 @@ fun FolderHeader(
         ) {
             IconButton(
                 onClick = {
-                    onHandlePlayerAction(PlayerActions.StartFolderPlayback(category.name))
+                    onHandlePlayerAction(
+                        PlayerActions.Play(
+                            index = 0,
+                            tracks = category.tracks
+                        )
+                    )
                 },
                 shapes = IconButtonDefaults.shapes()
             ) {

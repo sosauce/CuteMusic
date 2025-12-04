@@ -139,13 +139,13 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                             if (isLandscape) {
                                 PlaylistHeaderLandscape(
                                     playlist = state.playlist,
-                                    musics = state.tracks,
+                                    tracks = state.tracks,
                                     onHandlePlayerActions = onHandlePlayerAction
                                 )
                             } else {
                                 PlaylistHeader(
                                     playlist = state.playlist,
-                                    musics = state.tracks,
+                                    tracks = state.tracks,
                                     onHandlePlayerActions = onHandlePlayerAction
                                 )
                             }
@@ -221,9 +221,9 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     LocalMusicListItem(
                                         onShortClick = {
                                             onHandlePlayerAction(
-                                                PlayerActions.StartPlaylistPlayback(
-                                                    state.playlist.musics,
-                                                    music.mediaId
+                                                PlayerActions.Play(
+                                                    index = state.tracks.indexOf(music),
+                                                    tracks = state.tracks
                                                 )
                                             )
                                         },
@@ -254,14 +254,14 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                     SafMusicListItem(
                                         onShortClick = {
                                             onHandlePlayerAction(
-                                                PlayerActions.StartPlaylistPlayback(
-                                                    state.playlist.musics,
-                                                    music.mediaId
+                                                PlayerActions.Play(
+                                                    index = state.tracks.indexOf(music),
+                                                    tracks = state.tracks
                                                 )
                                             )
                                         },
                                         music = music,
-                                        currentMusicUri = musicState.uri,
+                                        currentMusicUri = musicState.track.uri.toString(),
                                         isPlayerReady = musicState.isPlayerReady,
                                         onDeleteFromSaf = {
                                             safTracks = safTracks.copyMutate {

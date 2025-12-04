@@ -43,7 +43,6 @@ import com.sosauce.cutemusic.utils.copyMutate
 @Composable
 fun SettingsLibrary(
     latestSafTracks: List<CuteTrack>,
-    onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String,
     onNavigateUp: () -> Unit
@@ -130,7 +129,7 @@ fun SettingsLibrary(
                                 )
                         ) {
                             SafMusicListItem(
-                                onShortClick = { onShortClick(safTrack.mediaId) },
+                                onShortClick = { },
                                 music = safTrack,
                                 currentMusicUri = currentMusicUri,
                                 isPlayerReady = isPlayerReady,

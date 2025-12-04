@@ -38,10 +38,15 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.toShape
@@ -89,104 +94,36 @@ fun LocalMusicListItem(
     val context = LocalContext.current
     val currentScreen = LocalScreen.current
     var isDropDownExpanded by remember { mutableStateOf(false) }
-    var showDetailsDialog by remember { mutableStateOf(false) }
-    var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showDeletionDialog by remember { mutableStateOf(false) }
+    val image = rememberAsyncImagePainter(ImageUtils.imageRequester(music.artUri, context))
+    val imageState by image.state.collectAsStateWithLifecycle()
 
     val bgColor by animateColorAsState(
-        targetValue = if (musicState.uri == music.uri.toString() && musicState.isPlayerReady) {
-            MaterialTheme.colorScheme.surfaceContainer
+        targetValue = if (musicState.track.uri.toString() == music.uri.toString() && musicState.isPlayerReady) {
+            MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
         } else {
             Color.Transparent
         }
     )
-    val deleteSongLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if (it.resultCode != Activity.RESULT_OK) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.error_deleting_song),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
 
-    if (showDetailsDialog) {
-        MusicDetailsDialog(
-            track = music,
-            onDismissRequest = { showDetailsDialog = false }
-        )
-    }
-
-    if (showPlaylistDialog) {
-        PlaylistPicker(
-            mediaId = listOf(music.mediaId),
-            onDismissRequest = { showPlaylistDialog = false }
-        )
-    }
-
-    if (showDeletionDialog) {
-        DeletionDialog(
-            onDismissRequest = { showDeletionDialog = false },
-            onDelete = {
-                val intentSender = MediaStore.createDeleteRequest(
-                    context.contentResolver,
-                    listOf(music.uri)
-                ).intentSender
-
-                deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-            }
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AsyncImage(
-                    model = ImageUtils.imageRequester(music.artUri, context),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(15.dp)
-                        .clip(RoundedCornerShape(15)),
-                    contentScale = ContentScale.Crop
-                )
-                Text(
-                    text = music.title,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    modifier = Modifier.basicMarquee()
-                )
-                Text(
-                    text = music.artist,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmallEmphasized,
-                    modifier = Modifier.basicMarquee()
-                )
-
-            }
-        }
-    }
-
-    DropdownMenuItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(bgColor),
-        contentPadding = PaddingValues(0.dp),
+    Surface(
         onClick = { onShortClick(music.mediaId) },
-        leadingIcon = {
-
-            val image = rememberAsyncImagePainter(ImageUtils.imageRequester(music.artUri, context))
-            val imageState by image.state.collectAsStateWithLifecycle()
-
-
+        shape = RoundedCornerShape(24.dp),
+        color = bgColor,
+        contentColor = contentColorFor(bgColor)
+    ) {
+        Row(
+            modifier = modifier
+                .padding(vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AnimatedContent(
                 targetState = isSelected,
-                transitionSpec = { scaleIn() togetherWith scaleOut() }
+                transitionSpec = { scaleIn() togetherWith scaleOut() },
+                modifier = Modifier.padding(start = 10.dp)
             ) {
                 if (it) {
                     Box(
                         modifier = Modifier
-                            .padding(start = 10.dp)
                             .size(50.dp)
                             .clip(MaterialShapes.Cookie9Sided.toShape())
                             .background(MaterialTheme.colorScheme.primary),
@@ -203,7 +140,6 @@ fun LocalMusicListItem(
                         is AsyncImagePainter.State.Error -> {
                             Box(
                                 modifier = Modifier
-                                    .padding(start = 10.dp)
                                     .size(50.dp)
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(MaterialTheme.colorScheme.surfaceContainer),
@@ -223,7 +159,6 @@ fun LocalMusicListItem(
                                 model = ImageUtils.imageRequester(music.artUri, context),
                                 contentDescription = stringResource(R.string.artwork),
                                 modifier = Modifier
-                                    .padding(start = 10.dp)
                                     .size(50.dp)
                                     .clip(RoundedCornerShape(10.dp)),
                                 contentScale = ContentScale.Crop
@@ -232,10 +167,10 @@ fun LocalMusicListItem(
                     }
                 }
             }
-        },
-        text = {
             Column(
-                modifier = Modifier.padding(vertical = 15.dp)
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .weight(1f)
             ) {
                 Text(
                     text = music.title,
@@ -251,8 +186,6 @@ fun LocalMusicListItem(
                     modifier = Modifier.basicMarquee()
                 )
             }
-        },
-        trailingIcon = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -270,134 +203,228 @@ fun LocalMusicListItem(
 
 
                 IconButton(
-                    onClick = { isDropDownExpanded = true }
+                    onClick = { isDropDownExpanded = true },
+                    shapes = IconButtonDefaults.shapes()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.more_vert),
                         contentDescription = null
                     )
                 }
-                DropdownMenu(
-                    expanded = isDropDownExpanded,
+
+                TrackDropdownMenu(
+                    track = music,
+                    isExpanded = isDropDownExpanded,
                     onDismissRequest = { isDropDownExpanded = false },
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    CuteDropdownMenuItem(
-                        onClick = { showDetailsDialog = true },
-                        text = {
-                            Text(stringResource(R.string.details))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.info_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onNavigate(Screen.MetadataEditor(music.path, music.uri.toString()))
-                        },
-                        text = {
-                            Text(stringResource(R.string.edit))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.edit_rounded),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(music)) },
-                        text = {
-                            Text(stringResource(R.string.add_queue))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.add),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onNavigate(
-                                Screen.AlbumsDetails(music.album)
-                            )
-                        },
-                        text = {
-                            Text("${stringResource(R.string.go_to)} ${music.album}")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
-                                contentDescription = null
-                            )
-                        },
-                        visible = currentScreen !is Screen.AlbumsDetails
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = {
-                            isDropDownExpanded = false
-                            onNavigate(
-                                Screen.ArtistsDetails(music.artist)
-                            )
-                        },
-                        text = {
-                            Text("${stringResource(R.string.go_to)} ${music.artist}")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.artist_rounded),
-                                contentDescription = null
-                            )
-                        },
-                        visible = currentScreen !is Screen.ArtistsDetails
-                    )
-                    playlistDropdownMenuItem()
-                    CuteDropdownMenuItem(
-                        onClick = {
-                            ShareCompat.IntentBuilder(context)
-                                .setType("audio/*")
-                                .setStream(Uri.parse(music.path)) // this instead of passing allows to see the file name in the share sheet
-                                .setChooserTitle("Share track")
-                                .startChooser()
-                        },
-                        text = {
-                            Text(
-                                text = stringResource(R.string.share)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { showDeletionDialog = true },
-                        text = {
-                            Text(
-                                text = stringResource(R.string.delete),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.trash_rounded),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    )
-                }
+                    onNavigate = onNavigate,
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    playlistDropdownMenuItem = playlistDropdownMenuItem
+                )
             }
         }
-    )
+    }
+}
+
+@Composable
+fun TrackDropdownMenu(
+    track: CuteTrack,
+    isExpanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onNavigate: (Screen) -> Unit,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(track) }
+) {
+
+    val context = LocalContext.current
+    val currentScreen = LocalScreen.current
+    var showDetailsDialog by remember { mutableStateOf(false) }
+    var showPlaylistDialog by remember { mutableStateOf(false) }
+    var showDeletionDialog by remember { mutableStateOf(false) }
+
+    val deleteSongLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if (it.resultCode != Activity.RESULT_OK) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.error_deleting_song),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    if (showDetailsDialog) {
+        MusicDetailsDialog(
+            track = track,
+            onDismissRequest = { showDetailsDialog = false }
+        )
+    }
+
+    if (showPlaylistDialog) {
+        PlaylistPicker(
+            mediaId = listOf(track.mediaId),
+            onDismissRequest = { showPlaylistDialog = false }
+        )
+    }
+
+    if (showDeletionDialog) {
+        DeletionDialog(
+            onDismissRequest = { showDeletionDialog = false },
+            onDelete = {
+                val intentSender = MediaStore.createDeleteRequest(
+                    context.contentResolver,
+                    listOf(track.uri)
+                ).intentSender
+
+                deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+            }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AsyncImage(
+                    model = ImageUtils.imageRequester(track.artUri, context),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(15.dp)
+                        .clip(RoundedCornerShape(15)),
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    modifier = Modifier.basicMarquee()
+                )
+                Text(
+                    text = track.artist,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmallEmphasized,
+                    modifier = Modifier.basicMarquee()
+                )
+
+            }
+        }
+    }
+
+    DropdownMenu(
+        expanded = isExpanded,
+        onDismissRequest = onDismissRequest,
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        CuteDropdownMenuItem(
+            onClick = { showDetailsDialog = true },
+            text = {
+                Text(stringResource(R.string.details))
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.info_rounded),
+                    contentDescription = null
+                )
+            }
+        )
+        CuteDropdownMenuItem(
+            onClick = {
+                onDismissRequest()
+                onNavigate(Screen.MetadataEditor(track.path, track.uri.toString()))
+            },
+            text = {
+                Text(stringResource(R.string.edit))
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.edit_rounded),
+                    contentDescription = null
+                )
+            }
+        )
+        CuteDropdownMenuItem(
+            onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(track)) },
+            text = {
+                Text(stringResource(R.string.add_queue))
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.add),
+                    contentDescription = null
+                )
+            }
+        )
+        CuteDropdownMenuItem(
+            onClick = {
+                onDismissRequest()
+                onNavigate(
+                    Screen.AlbumsDetails(track.album)
+                )
+            },
+            text = {
+                Text("${stringResource(R.string.go_to)} ${track.album}")
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(androidx.media3.session.R.drawable.media3_icon_album),
+                    contentDescription = null
+                )
+            },
+            visible = currentScreen !is Screen.AlbumsDetails
+        )
+        CuteDropdownMenuItem(
+            onClick = {
+                onDismissRequest()
+                onNavigate(
+                    Screen.ArtistsDetails(track.artist)
+                )
+            },
+            text = {
+                Text("${stringResource(R.string.go_to)} ${track.artist}")
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.artist_rounded),
+                    contentDescription = null
+                )
+            },
+            visible = currentScreen !is Screen.ArtistsDetails
+        )
+        playlistDropdownMenuItem()
+        CuteDropdownMenuItem(
+            onClick = {
+                ShareCompat.IntentBuilder(context)
+                    .setType("audio/*")
+                    .setStream(Uri.parse(track.path)) // this instead of passing allows to see the file name in the share sheet
+                    .setChooserTitle("Share track")
+                    .startChooser()
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.share)
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(androidx.media3.session.R.drawable.media3_icon_share),
+                    contentDescription = null
+                )
+            }
+        )
+        CuteDropdownMenuItem(
+            onClick = { showDeletionDialog = true },
+            text = {
+                Text(
+                    text = stringResource(R.string.delete),
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.trash_rounded),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        )
+    }
 }
 
 @Composable
@@ -457,7 +484,8 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
         trailingIcon = {
             Row {
                 IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.RemoveFromQueue(music.mediaId)) }
+                    onClick = { onHandlePlayerActions(PlayerActions.RemoveFromQueue(music)) },
+                    shapes = IconButtonDefaults.shapes()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.close),
@@ -466,7 +494,9 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
                 }
                 IconButton(
                     onClick = {},
-                    modifier = Modifier.draggableHandle()
+                    enabled = false,
+                    modifier = Modifier.draggableHandle(),
+                    shapes = IconButtonDefaults.shapes()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.drag_handle),
@@ -477,7 +507,6 @@ fun ReorderableCollectionItemScope.QueueMusicListItem(
         }
     )
 }
-
 @Composable
 fun SafMusicListItem(
     modifier: Modifier = Modifier,

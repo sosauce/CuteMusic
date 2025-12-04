@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,16 +18,24 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.kyant.taglib.Metadata
+import com.kyant.taglib.TagLib
+import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.utils.changeRepeatMode
+import com.sosauce.cutemusic.utils.getUriFromByteArray
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class QuickPlayViewModel(
-    application: Application
+    private val trackUri: Uri,
+    private val application: Application
 ) : AndroidViewModel(application) {
 
     private val audioAttributes = AudioAttributes
@@ -36,16 +45,6 @@ class QuickPlayViewModel(
         .build()
 
     private val listener = object : Player.Listener {
-        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            super.onMediaMetadataChanged(mediaMetadata)
-            _musicState.update {
-                it.copy(
-                    title = mediaMetadata.title.toString(),
-                    artist = mediaMetadata.artist.toString(),
-                    art = mediaMetadata.artworkUri,
-                )
-            }
-        }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
@@ -71,7 +70,7 @@ class QuickPlayViewModel(
                 while (player.isPlaying) {
                     _musicState.update {
                         it.copy(
-                            duration = player.duration,
+                            //duration = player.duration,
                             position = player.currentPosition
                         )
                     }
@@ -97,10 +96,25 @@ class QuickPlayViewModel(
 
 
     init {
-        viewModelScope.launch {
-            while (player.mediaItemCount == 0) delay(300)
 
+        viewModelScope.launch(Dispatchers.IO) {
+            val mediaItem = MediaItem.fromUri(trackUri)
+            withContext(Dispatchers.Main) {
+                player.addMediaItem(mediaItem)
+                player.prepare()
+            }
+
+            _musicState.update {
+                it.copy(
+                    track = loadTrackData()
+                )
+            }
             isSongLoaded = true
+
+            withContext(Dispatchers.Main) {
+                player.play()
+            }
+
         }
     }
 
@@ -110,13 +124,6 @@ class QuickPlayViewModel(
         player.release()
     }
 
-
-    fun loadSong(uri: Uri) {
-        val mediaItem = MediaItem.fromUri(uri)
-        player.addMediaItem(mediaItem)
-        player.prepare()
-        player.play()
-    }
 
     fun loadAlbumArt(context: Context, uri: Uri): Bitmap? {
         val retriever = MediaMetadataRetriever()
@@ -130,6 +137,32 @@ class QuickPlayViewModel(
         } finally {
             retriever.release()
         }
+    }
+
+    private fun loadTrackData(): CuteTrack {
+        return application.contentResolver.openFileDescriptor(trackUri, "r")?.use { fd ->
+
+            val metadata = loadAudioMetadata(fd)
+            val title = metadata?.propertyMap?.get("TITLE")?.getOrNull(0) ?: "<unknown>"
+            val artist = metadata?.propertyMap?.get("ARTIST")?.joinToString(", ") ?: "<unknown>"
+            val duration = metadata?.propertyMap?.get("DURATION")?.getOrNull(0)
+
+            val artUri =
+                TagLib.getFrontCover(fd.dup().detachFd())?.data?.getUriFromByteArray(application)
+
+            CuteTrack(
+                title = title,
+                artist = artist,
+                durationMs = duration?.toLong() ?: 67,
+                artUri = artUri ?: Uri.EMPTY
+            )
+        } ?: throw IllegalArgumentException("Unable to open file descriptor for uri")
+    }
+
+    private fun loadAudioMetadata(songFd: ParcelFileDescriptor): Metadata? {
+        val fd = songFd.dup()?.detachFd() ?: throw NullPointerException()
+
+        return TagLib.getMetadata(fd)
     }
 
 
@@ -147,10 +180,8 @@ class QuickPlayViewModel(
             is PlayerActions.SeekToSlider -> player.seekTo(action.position)
             is PlayerActions.SeekTo -> player.seekTo(player.currentPosition + action.position)
             is PlayerActions.RewindTo -> player.seekTo(player.currentPosition - action.position)
-            is PlayerActions.ChangeRepeatMode -> TODO()
+            is PlayerActions.ChangeRepeatMode -> player.changeRepeatMode()
             else -> Unit
         }
     }
-
-
 }

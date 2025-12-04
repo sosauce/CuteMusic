@@ -139,13 +139,13 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                     if (isLandscape) {
                         ArtistHeaderLandscape(
                             artist = state.artist,
-                            musics = state.tracks,
+                            tracks = state.tracks,
                             onHandlePlayerActions = onHandlePlayerAction
                         )
                     } else {
                         ArtistHeader(
                             artist = state.artist,
-                            musics = state.tracks,
+                            tracks = state.tracks,
                             onHandlePlayerActions = onHandlePlayerAction
                         )
                     }
@@ -299,9 +299,9 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             onShortClick = { mediaId ->
                                 if (selectedTracks.isEmpty()) {
                                     onHandlePlayerAction(
-                                        PlayerActions.StartArtistPlayback(
-                                            artistName = state.artist.name,
-                                            mediaId = mediaId
+                                        PlayerActions.Play(
+                                            index = state.tracks.indexOf(music),
+                                            tracks = state.tracks
                                         )
                                     )
                                 } else {

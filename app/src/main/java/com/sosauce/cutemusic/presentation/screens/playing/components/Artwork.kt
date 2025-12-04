@@ -59,13 +59,13 @@ fun Artwork(
     val artShape by rememberNpArtShape()
     val useShuffle by rememberShouldApplyShuffle()
     val pagerState =
-        rememberPagerState(initialPage = musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }
+        rememberPagerState(initialPage = musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.track.mediaId }
             .takeIf { it != -1 } ?: 0) { musicState.loadedMedias.size }
 
 
 
     if (useCarousel) {
-        var lastPage by remember { mutableIntStateOf(musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.mediaId }) }
+        var lastPage by remember { mutableIntStateOf(musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.track.mediaId }) }
 
         LaunchedEffect(pagerState.settledPage) {
             if (musicState.mediaIndex == pagerState.settledPage) return@LaunchedEffect
@@ -145,7 +145,7 @@ fun Artwork(
 
     } else {
 
-        val image = rememberAsyncImagePainter(ImageUtils.imageRequester(musicState.art, context))
+        val image = rememberAsyncImagePainter(ImageUtils.imageRequester(musicState.track.artUri, context))
         val imageState by image.state.collectAsStateWithLifecycle()
 
         when (imageState) {

@@ -46,7 +46,7 @@ fun CuteSlider(
             }
             tempSliderValue = null
         },
-        valueRange = 0f..musicState.duration.toFloat(),
+        valueRange = 0f..musicState.track.durationMs.toFloat(),
         enabled = true
     )
 
@@ -61,7 +61,7 @@ fun CuteSlider(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = musicState.duration.formatToReadableTime(),
+                text = musicState.track.durationMs.formatToReadableTime(),
                 color = MaterialTheme.colorScheme.primary
             )
         }

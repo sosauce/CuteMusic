@@ -25,7 +25,7 @@ fun TitleAndArtist(
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
-            text = musicState.title,
+            text = musicState.track.title,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMediumEmphasized,
             fontWeight = FontWeight.ExtraBold,
@@ -34,7 +34,7 @@ fun TitleAndArtist(
                 .basicMarquee()
         )
         Text(
-            text = musicState.artist,
+            text = musicState.track.artist,
             color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.titleLargeEmphasized,
             modifier = Modifier.basicMarquee()

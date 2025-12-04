@@ -15,21 +15,21 @@ coreKtx = "1.17.0"
 coreSplashscreen = "1.2.0"
 datastorePreferences = "1.1.7"
 kotlinxSerializationJson = "1.9.0"
-materialKolor = "5.0.0-alpha02"
+materialKolor = "5.0.0-alpha04"
 media3Common = "1.8.0"
 media3Exoplayer = "1.8.0"
 media3Session = "1.8.0"
 reorderable = "3.0.0" # https://github.com/Calvin-LL/Reorderable
 squigglyslider = "1.0.0"
 serialization = "2.2.21"
-taglib = "1.0.0-alpha25"
+taglib = "1.0.5"
 roomCompiler = "2.8.3"
 roomKtx = "2.8.3"
 ksp = "2.3.3"
 kmpalette = "3.1.0"
-material3 = "1.5.0-alpha08"
-nav3Core = "1.0.0-rc01"
-lifecycleViewmodelNav3 = "2.10.0-rc01"
+material3 = "1.5.0-alpha10"
+nav3Core = "1.0.0"
+lifecycleViewmodelNav3 = "2.10.0"
 
 
 
@@ -61,7 +61,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 squigglyslider = { module = "me.saket.squigglyslider:squigglyslider", version.ref = "squigglyslider" }
-taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
+taglib = { module = "io.github.kyant0:taglib", version.ref = "taglib" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 kmpalette-core = { module = "com.kmpalette:kmpalette-core", version.ref = "kmpalette" }

@@ -134,13 +134,13 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                     if (isLandscape) {
                         AlbumHeaderLandscape(
                             album = state.album,
-                            musics = sortedMusic,
+                            tracks = sortedMusic,
                             onHandlePlayerActions = onHandlePlayerActions
                         )
                     } else {
                         AlbumHeader(
                             album = state.album,
-                            musics = sortedMusic,
+                            tracks = sortedMusic,
                             onHandlePlayerActions = onHandlePlayerActions
                         )
                     }
@@ -208,9 +208,9 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                         onShortClick = { mediaId ->
                             if (selectedTracks.isEmpty()) {
                                 onHandlePlayerActions(
-                                    PlayerActions.StartAlbumPlayback(
-                                        albumName = music.album,
-                                        mediaId = mediaId
+                                    PlayerActions.Play(
+                                        index = state.tracks.indexOf(music),
+                                        tracks = state.tracks
                                     )
                                 )
                             } else {

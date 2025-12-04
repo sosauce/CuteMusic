@@ -25,7 +25,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
-import com.sosauce.cutemusic.presentation.shared_components.MusicStateDetailsDialog
+import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
@@ -54,8 +54,8 @@ fun QuickActionsRow(
 
 
     if (showDetailsDialog) {
-        MusicStateDetailsDialog(
-            musicState = musicState,
+        MusicDetailsDialog(
+            track = musicState.track,
             onDismissRequest = { showDetailsDialog = false }
         )
     }
@@ -73,7 +73,7 @@ fun QuickActionsRow(
 
     if (showPlaylistDialog) {
         PlaylistPicker(
-            mediaId = listOf(musicState.mediaId),
+            mediaId = listOf(musicState.track.mediaId),
             onDismissRequest = { showPlaylistDialog = false }
         )
     }

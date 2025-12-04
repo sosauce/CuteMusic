@@ -41,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -174,7 +175,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             )
                         }
                         AnimatedContent(
-                            targetState = musicState.title,
+                            targetState = musicState.track.title,
                             transitionSpec = { slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut() },
                             modifier = modifier.fillMaxWidth()
                         ) {
@@ -257,7 +258,8 @@ fun SharedTransitionScope.CuteSearchbar(
                                 },
                                 leadingIcon = {
                                     IconButton(
-                                        onClick = { isInScreenSelectionMode = true }
+                                        onClick = { isInScreenSelectionMode = true },
+                                        shapes = IconButtonDefaults.shapes()
                                     ) {
                                         Icon(
                                             painter = painterResource(
@@ -278,7 +280,8 @@ fun SharedTransitionScope.CuteSearchbar(
                                             sortingMenu?.invoke()
                                         }
                                         IconButton(
-                                            onClick = { showSortMenu = !showSortMenu }
+                                            onClick = { showSortMenu = !showSortMenu },
+                                            shapes = IconButtonDefaults.shapes()
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.sort),
@@ -286,7 +289,8 @@ fun SharedTransitionScope.CuteSearchbar(
                                             )
                                         }
                                         IconButton(
-                                            onClick = { onNavigate(Screen.Settings) }
+                                            onClick = { onNavigate(Screen.Settings) },
+                                            shapes = IconButtonDefaults.shapes()
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.settings_filled),

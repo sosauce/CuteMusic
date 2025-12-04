@@ -8,7 +8,6 @@ import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
 import com.sosauce.cutemusic.domain.repository.AlbumsRepository
 import com.sosauce.cutemusic.domain.repository.ArtistsRepository
 import com.sosauce.cutemusic.domain.repository.FoldersRepository
-import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.PlaylistsRepository
 import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
@@ -44,7 +43,6 @@ val appModule = module {
     singleOf(::AbstractTracksScanner)
     singleOf(::LyricsParser)
     singleOf(::FoldersRepository)
-    singleOf(::MediaStoreHelper)
     singleOf(::SafManager)
     singleOf(::AlbumsRepository)
     singleOf(::ArtistsRepository)

@@ -34,7 +34,6 @@ import kotlin.uuid.Uuid
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
     latestSafTracks: List<CuteTrack>,
-    onShortClick: (String) -> Unit,
     isPlayerReady: Boolean,
     currentMusicUri: String
 ) {
@@ -131,7 +130,6 @@ fun SettingsScreen(
             entry<SettingsScreens.Library> {
                 SettingsLibrary(
                     latestSafTracks = latestSafTracks,
-                    onShortClick = onShortClick,
                     isPlayerReady = isPlayerReady,
                     currentMusicUri = currentMusicUri,
                     onNavigateUp = backStack::removeLastOrNull

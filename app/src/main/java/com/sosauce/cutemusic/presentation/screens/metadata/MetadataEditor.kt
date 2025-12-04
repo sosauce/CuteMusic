@@ -4,6 +4,7 @@ package com.sosauce.cutemusic.presentation.screens.metadata
 
 import android.app.Activity
 import android.net.Uri
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -64,10 +65,10 @@ import com.sosauce.cutemusic.utils.ImageUtils
 
 @Composable
 fun MetadataEditor(
+    trackUri: Uri,
     fileName: String,
     onNavigateUp: () -> Unit,
-    metadataViewModel: MetadataViewModel,
-    onEditMusic: (ActivityResultLauncher<IntentSenderRequest>) -> Unit
+    metadataViewModel: MetadataViewModel
 ) {
 
     val metadataState by metadataViewModel.metadataState.collectAsStateWithLifecycle()
@@ -115,7 +116,11 @@ fun MetadataEditor(
                     modifier = Modifier.padding(end = 15.dp),
                     icon = R.drawable.check
                 ) {
-                    onEditMusic(editSongLauncher)
+                    val intentSender = MediaStore.createWriteRequest(
+                        context.contentResolver,
+                        listOf(trackUri)
+                    ).intentSender
+                    editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                 }
             }
         }

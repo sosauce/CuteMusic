@@ -69,11 +69,11 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
     val musicViewModel = koinViewModel<MusicViewModel>()
     val musicState by musicViewModel.musicState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(musicState.art) {
+    LaunchedEffect(musicState.track.artUri) {
         ImageUtils.loadNewArt(
             context = context,
             onImageLoad = onImageLoad,
-            art = musicState.art
+            art = musicState.track.artUri
         )
     }
     SharedTransitionLayout {
@@ -148,15 +148,8 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         SettingsScreen(
                             onNavigateUp = backStack::removeLastOrNull,
                             latestSafTracks = latestSafTracks,
-                            onShortClick = {
-                                musicViewModel.handlePlayerActions(
-                                    PlayerActions.StartPlayback(
-                                        it
-                                    )
-                                )
-                            },
                             isPlayerReady = musicState.isPlayerReady,
-                            currentMusicUri = musicState.uri,
+                            currentMusicUri = musicState.track.uri.toString(),
                         )
                     }
 
@@ -212,15 +205,10 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         )
 
                         MetadataEditor(
+                            trackUri = key.trackUri.toUri(),
                             fileName = key.trackPath.substringAfterLast("/"),
                             onNavigateUp = backStack::removeLastOrNull,
-                            metadataViewModel = metadataViewModel,
-                            onEditMusic = { intentSender ->
-                                musicViewModel.editMusic(
-                                    listOf(key.trackUri.toUri()),
-                                    intentSender
-                                )
-                            }
+                            metadataViewModel = metadataViewModel
                         )
                     }
 

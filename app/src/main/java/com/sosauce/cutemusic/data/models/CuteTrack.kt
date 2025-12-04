@@ -5,23 +5,23 @@ import android.os.Bundle
 import androidx.media3.common.MediaItem
 
 data class CuteTrack(
-    val mediaId: String,
-    val uri: Uri,
-    val artUri: Uri,
-    val title: String,
-    val artist: String,
-    val album: String,
-    val albumId: Long,
-    val artistId: Long,
-    val durationMs: Long,
-    val trackNumber: Int,
-    val year: Int,
-    val size: Long,
-    val folder: String,
-    val path: String,
-    val isSaf: Boolean,
-    val dateModified: Long,
-    val mediaItem: MediaItem
+    val mediaId: String = "",
+    val uri: Uri = Uri.EMPTY,
+    val artUri: Uri = Uri.EMPTY,
+    val title: String = "",
+    val artist: String = "",
+    val album: String = "",
+    val albumId: Long = 0,
+    val artistId: Long = 0,
+    val durationMs: Long = 0,
+    val trackNumber: Int = 0,
+    val year: Int = 0,
+    val size: Long = 0,
+    val folder: String = "",
+    val path: String = "",
+    val isSaf: Boolean = false,
+    val dateModified: Long = 0,
+    val mediaItem: MediaItem = MediaItem.EMPTY
 )
 
 //fun MediaItem.toCuteTrack(): CuteTrack {

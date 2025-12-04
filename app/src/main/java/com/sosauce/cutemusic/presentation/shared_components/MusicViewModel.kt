@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.CountDownTimer
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMap
@@ -44,18 +45,14 @@ import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.PlaybackService
 import com.sosauce.cutemusic.domain.actions.PlayerActions
-import com.sosauce.cutemusic.domain.repository.MediaStoreHelper
 import com.sosauce.cutemusic.domain.repository.SafManager
 import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.applyPlaybackPitch
 import com.sosauce.cutemusic.utils.applyPlaybackSpeed
 import com.sosauce.cutemusic.utils.applyShuffle
 import com.sosauce.cutemusic.utils.changeRepeatMode
-import com.sosauce.cutemusic.utils.playFromAlbum
-import com.sosauce.cutemusic.utils.playFromAll
-import com.sosauce.cutemusic.utils.playFromArtist
-import com.sosauce.cutemusic.utils.playFromFolder
-import com.sosauce.cutemusic.utils.playFromPlaylist
+import com.sosauce.cutemusic.utils.equalsIgnoreOrder
+import com.sosauce.cutemusic.utils.playOrPause
 import com.sosauce.cutemusic.utils.playRandom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -78,7 +75,6 @@ import java.time.Duration
 
 class MusicViewModel(
     private val application: Application,
-    private val mediaStoreHelper: MediaStoreHelper,
     private val abstractTracksScanner: AbstractTracksScanner,
     private val safManager: SafManager,
     private val lyricsParser: LyricsParser
@@ -143,23 +139,24 @@ class MusicViewModel(
                         it?.let { track ->
                             _musicState.update { state ->
                                 state.copy(
-                                    title = track.title,
-                                    artist = track.artist,
-                                    album = track.album,
-                                    mediaId = track.mediaId,
-                                    artistId = track.artistId,
-                                    art = track.artUri,
-                                    path = track.path,
-                                    uri = track.uri.toString(),
-                                    albumId = track.albumId,
-                                    size = track.size,
-                                    duration = track.durationMs,
+                                    track = track,
+//                                    title = track.title,
+//                                    artist = track.artist,
+//                                    album = track.album,
+//                                    mediaId = track.mediaId,
+//                                    artistId = track.artistId,
+//                                    art = track.artUri,
+//                                    path = track.path,
+//                                    uri = track.uri.toString(),
+//                                    albumId = track.albumId,
+//                                    size = track.size,
+//                                    duration = track.durationMs,
                                     lyrics = lyricsParser.parseLyrics(track.path),
                                     audioSessionAudio = mediaController!!.sessionExtras.getInt("audioSessionId", 0),
                                     mediaIndex = mediaController!!.currentMediaItemIndex
                                 )
                             }
-                        } ?: return@launch
+                        }
                     }
                 }
             }
@@ -254,25 +251,25 @@ class MusicViewModel(
                 }
             }
 
-            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                super.onTimelineChanged(timeline, reason)
-
-                viewModelScope.launch(Dispatchers.IO) {
-                    val allTracksList = allTracks.first()
-                    val trackMap = allTracksList.associateBy { it.mediaItem.mediaId }
-                    val loadedMedias = (0 until timeline.windowCount).mapNotNull { index ->
-                        val currentMediaItem = timeline.getWindow(index, Timeline.Window())
-
-                        val mediaId = currentMediaItem.mediaItem.mediaId
-                        trackMap[mediaId]
-                    }
-                    _musicState.update {
-                        it.copy(
-                            loadedMedias = loadedMedias
-                        )
-                    }
-                }
-            }
+//            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+//                super.onTimelineChanged(timeline, reason)
+//
+//                viewModelScope.launch(Dispatchers.IO) {
+//                    val allTracksList = allTracks.first()
+//                    val trackMap = allTracksList.associateBy { it.mediaItem.mediaId }
+//                    val loadedMedias = (0 until timeline.windowCount).mapNotNull { index ->
+//                        val currentMediaItem = timeline.getWindow(index, Timeline.Window())
+//
+//                        val mediaId = currentMediaItem.mediaItem.mediaId
+//                        trackMap[mediaId]
+//                    }
+//                    _musicState.update {
+//                        it.copy(
+//                            loadedMedias = loadedMedias
+//                        )
+//                    }
+//                }
+//            }
 
             override fun onEvents(player: Player, events: Player.Events) {
                 super.onEvents(player, events)
@@ -363,7 +360,7 @@ class MusicViewModel(
         val shuffle = musicState.value.shuffle
         val speed = musicState.value.speed
         val pitch = musicState.value.pitch
-        val mediaId = musicState.value.mediaId
+        val mediaId = musicState.value.track.mediaId
         val position = musicState.value.position
 
         runBlocking {
@@ -416,7 +413,7 @@ class MusicViewModel(
         when (action) {
             is PlayerActions.RestartSong -> mediaController!!.seekTo(0)
             is PlayerActions.PlayRandom -> mediaController!!.playRandom()
-            is PlayerActions.PlayOrPause -> if (mediaController!!.isPlaying) mediaController!!.pause() else mediaController!!.play()
+            is PlayerActions.PlayOrPause -> mediaController!!.playOrPause()
             is PlayerActions.SeekToNextMusic -> mediaController!!.seekToNextMediaItem()
             is PlayerActions.SeekToPreviousMusic -> mediaController!!.seekToPreviousMediaItem()
             is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
@@ -428,51 +425,24 @@ class MusicViewModel(
             is PlayerActions.ChangeRepeatMode -> mediaController!!.changeRepeatMode()
             is PlayerActions.SetSpeed -> mediaController!!.applyPlaybackSpeed(action.speed)
             is PlayerActions.SetPitch -> mediaController!!.applyPlaybackPitch(action.pitch)
-            is PlayerActions.StartAlbumPlayback -> {
-                viewModelScope.launch {
-                    mediaController!!.playFromAlbum(
-                        action.albumName,
-                        action.mediaId,
-                        allTracks.first()
-                    )
-                }
-            }
+            is PlayerActions.Play -> {
+                val mediaItemsToPlay = action.tracks.fastMap { it.mediaItem }
 
-            is PlayerActions.StartArtistPlayback -> {
-                viewModelScope.launch {
-                    mediaController!!.playFromArtist(
-                        action.artistName,
-                        action.mediaId,
-                        allTracks.first()
-                    )
+                // MediaController needs to update playlist
+                if (!action.tracks.equalsIgnoreOrder(musicState.value.loadedMedias)) {
+                    _musicState.update {
+                        it.copy(
+                            loadedMedias = action.tracks
+                        )
+                    }
+                    mediaController!!.clearMediaItems()
+                    mediaController!!.setMediaItems(mediaItemsToPlay)
                 }
-            }
-
-            is PlayerActions.StartFolderPlayback -> {
-                viewModelScope.launch {
-                    mediaController!!.playFromFolder(
-                        action.folder,
-                        allTracks.first()
-                    )
-                }
-            }
-
-            is PlayerActions.StartPlaylistPlayback -> {
-                viewModelScope.launch {
-                    mediaController!!.playFromPlaylist(
-                        action.playlistSongsId,
-                        action.mediaId,
-                        allTracks.first()
-                    )
-                }
-            }
-
-            is PlayerActions.StartPlayback -> {
-                viewModelScope.launch {
-                    mediaController!!.playFromAll(
-                        mediaId = action.mediaId,
-                        tracks = allTracks.first()
-                    )
+                if (action.random) {
+                    mediaController!!.playRandom()
+                } else {
+                    mediaController!!.seekTo(action.index, 0)
+                    mediaController!!.play()
                 }
             }
 
@@ -521,34 +491,16 @@ class MusicViewModel(
             )
 
             is PlayerActions.RemoveFromQueue -> {
-                val index = (0 until mediaController!!.mediaItemCount).first {
-                    mediaController!!.getMediaItemAt(it).mediaId == action.mediaId
-                }
+                val index = musicState.value.loadedMedias.indexOf(action.track)
                 mediaController!!.removeMediaItem(index)
             }
 
             is PlayerActions.AddToQueue -> {
-                val exists = (0 until mediaController!!.mediaItemCount).any {
-                    mediaController!!.getMediaItemAt(it).mediaId == action.cuteTrack.mediaId
-                }
+                val exists = musicState.value.loadedMedias.fastAny { it.mediaId == action.cuteTrack.mediaId }
                 if (!exists) {
                     mediaController!!.addMediaItem(MediaItem.fromUri(action.cuteTrack.uri))
                 }
             }
-
-
-        }
-    }
-
-    fun editMusic(
-        uris: List<Uri>,
-        intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            mediaStoreHelper.editMusic(
-                uris,
-                intentSenderLauncher
-            )
         }
     }
 }

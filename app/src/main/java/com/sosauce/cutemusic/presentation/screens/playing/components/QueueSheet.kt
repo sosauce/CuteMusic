@@ -47,7 +47,7 @@ fun QueueSheet(
                     QueueMusicListItem(
                         modifier = Modifier.scale(scale),
                         music = music,
-                        currentMusicUri = musicState.uri,
+                        currentMusicUri = musicState.track.uri.toString(),
                         onHandlePlayerActions = onHandlePlayerAction
                     )
                 }
