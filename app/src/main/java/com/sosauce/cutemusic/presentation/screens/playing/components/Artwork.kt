@@ -37,8 +37,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberArtworkShape
 import com.sosauce.cutemusic.data.datastore.rememberCarousel
-import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
 import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
@@ -56,7 +56,7 @@ fun Artwork(
 ) {
     val context = LocalContext.current
     val useCarousel by rememberCarousel()
-    val artShape by rememberNpArtShape()
+    var artworkShape by rememberArtworkShape()
     val useShuffle by rememberShouldApplyShuffle()
     val pagerState =
         rememberPagerState(initialPage = musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.track.mediaId }
@@ -96,26 +96,7 @@ fun Artwork(
             val imageState by image.state.collectAsStateWithLifecycle()
 
             when (imageState) {
-                is AsyncImagePainter.State.Error -> {
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .wrapContentSize()
-                            .fillMaxSize(0.9f)
-                            .clip(artShape.toShape())
-                            .background(MaterialTheme.colorScheme.surfaceContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.music_note_rounded),
-                            contentDescription = null,
-                            modifier = Modifier.size(110.dp),
-                            tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
-
-                        )
-                    }
-                }
-
+                is AsyncImagePainter.State.Error -> ErrorImage()
                 else -> {
                     Image(
                         painter = image,
@@ -136,7 +117,7 @@ fun Artwork(
                             .aspectRatio(1f)
                             .wrapContentSize()
                             .fillMaxSize(0.9f)
-                            .clip(artShape.toShape()),
+                            .clip(artworkShape.toShape()),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -149,26 +130,7 @@ fun Artwork(
         val imageState by image.state.collectAsStateWithLifecycle()
 
         when (imageState) {
-            is AsyncImagePainter.State.Error -> {
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .wrapContentSize()
-                        .fillMaxSize()
-                        .clip(artShape.toShape())
-                        .background(MaterialTheme.colorScheme.surfaceContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.music_note_rounded),
-                        contentDescription = null,
-                        modifier = Modifier.size(110.dp),
-                        tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
-
-                    )
-                }
-            }
-
+            is AsyncImagePainter.State.Error -> ErrorImage()
             else -> {
                 Image(
                     painter = image,
@@ -177,11 +139,35 @@ fun Artwork(
                         .aspectRatio(1f)
                         .wrapContentSize()
                         .fillMaxSize()
-                        .clip(artShape.toShape()),
+                        .clip(artworkShape.toShape()),
                     contentScale = ContentScale.Crop
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ErrorImage() {
+
+    var artworkShape by rememberArtworkShape()
+
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .wrapContentSize()
+            .fillMaxSize()
+            .clip(artworkShape.toShape())
+            .background(MaterialTheme.colorScheme.surfaceContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.music_note_rounded),
+            contentDescription = null,
+            modifier = Modifier.size(110.dp),
+            tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+
+        )
     }
 }
 

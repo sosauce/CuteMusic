@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen

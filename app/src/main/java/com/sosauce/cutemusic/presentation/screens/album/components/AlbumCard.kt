@@ -56,7 +56,7 @@ fun SharedTransitionScope.AlbumCard(
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
                 .sizeIn(maxHeight = 160.dp)
-                .clip(RoundedCornerShape(12.dp)),
+                .clip(RoundedCornerShape(15)),
             contentScale = ContentScale.Fit
         )
         Spacer(Modifier.height(10.dp))

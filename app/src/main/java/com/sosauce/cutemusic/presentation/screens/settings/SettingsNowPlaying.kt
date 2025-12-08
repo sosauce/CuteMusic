@@ -13,6 +13,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -20,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberArtworkShape
 import com.sosauce.cutemusic.data.datastore.rememberCarousel
-import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
 import com.sosauce.cutemusic.data.datastore.rememberSliderStyle
 import com.sosauce.cutemusic.data.datastore.rememberThumblessSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.rememberCuteSliderState
@@ -30,8 +31,9 @@ import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCa
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.ShapeSelector
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSelector
+import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.LazyRowWithScrollButton
-import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
+import com.sosauce.cutemusic.utils.ArtworkShape
 import com.sosauce.cutemusic.utils.SliderStyle
 import com.sosauce.cutemusic.utils.toShape
 
@@ -41,18 +43,22 @@ fun SettingsNowPlaying(
 ) {
 
     val scrollState = rememberScrollState()
-    var npArtShape by rememberNpArtShape()
+    var artworkShape by rememberArtworkShape()
     var sliderStyle by rememberSliderStyle()
     var useThumb by rememberThumblessSlider()
     var useCarousel by rememberCarousel()
     val shapes = listOf(
-        RoundedCornerShape(5).toString(),
-        MaterialShapes.Square.toString(),
-        MaterialShapes.Cookie9Sided.toString(),
-        MaterialShapes.Cookie12Sided.toString(),
-        MaterialShapes.Clover8Leaf.toString(),
-        MaterialShapes.Arrow.toString(),
-        MaterialShapes.Sunny.toString()
+        ArtworkShape.CLASSIC,
+        ArtworkShape.CIRCLE,
+        ArtworkShape.COOKIE_4,
+        ArtworkShape.COOKIE_9,
+        ArtworkShape.COOKIE_12,
+        ArtworkShape.CLOVER_8,
+        ArtworkShape.SUNNY,
+        ArtworkShape.ARROW,
+        ArtworkShape.DIAMOND,
+        ArtworkShape.BUN,
+        ArtworkShape.HEART
     )
     val sliders = listOf(
         SliderStyle.WAVY,
@@ -60,9 +66,10 @@ fun SettingsNowPlaying(
         SliderStyle.MATERIAL3
     )
 
-    ScaffoldWithBackArrow(
-        backArrowVisible = !scrollState.canScrollBackward,
-        onNavigateUp = onNavigateUp
+    Scaffold(
+        bottomBar = {
+            CuteNavigationButton(onNavigateUp = onNavigateUp)
+        }
     ) { pv ->
         Column(
             modifier = Modifier
@@ -88,9 +95,9 @@ fun SettingsNowPlaying(
                         items = shapes
                     ) { shape ->
                         ShapeSelector(
-                            onClick = { npArtShape = shape },
+                            onClick = { artworkShape = shape },
                             shape = shape.toShape(),
-                            isSelected = npArtShape == shape
+                            isSelected = artworkShape == shape
                         )
                     }
                 }

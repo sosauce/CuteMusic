@@ -9,36 +9,34 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.net.Uri
 import android.os.CountDownTimer
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMap
-import androidx.core.app.ShareCompat
+import androidx.core.graphics.component1
+import androidx.core.graphics.component2
+import androidx.core.graphics.component3
+import androidx.core.graphics.component4
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.sosauce.cutemusic.data.AbstractTracksScanner
 import com.sosauce.cutemusic.data.LyricsParser
-import com.sosauce.cutemusic.data.datastore.getMediaIndexToMediaIdMap
-import com.sosauce.cutemusic.data.datastore.getPauseOnMute
 import com.sosauce.cutemusic.data.datastore.getPitch
 import com.sosauce.cutemusic.data.datastore.getRepeatMode
+import com.sosauce.cutemusic.data.datastore.getSavedMediaId
+import com.sosauce.cutemusic.data.datastore.getSavedPosition
 import com.sosauce.cutemusic.data.datastore.getShouldShuffle
 import com.sosauce.cutemusic.data.datastore.getSpeed
-import com.sosauce.cutemusic.data.datastore.saveMediaIndexToMediaIdMap
 import com.sosauce.cutemusic.data.datastore.savePitch
 import com.sosauce.cutemusic.data.datastore.saveRepeatMode
+import com.sosauce.cutemusic.data.datastore.saveSavedMediaId
+import com.sosauce.cutemusic.data.datastore.saveSavedPosition
 import com.sosauce.cutemusic.data.datastore.saveShouldShuffle
 import com.sosauce.cutemusic.data.datastore.saveSpeed
 import com.sosauce.cutemusic.data.models.CuteTrack
@@ -51,10 +49,10 @@ import com.sosauce.cutemusic.utils.applyPlaybackPitch
 import com.sosauce.cutemusic.utils.applyPlaybackSpeed
 import com.sosauce.cutemusic.utils.applyShuffle
 import com.sosauce.cutemusic.utils.changeRepeatMode
+import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.equalsIgnoreOrder
 import com.sosauce.cutemusic.utils.playOrPause
 import com.sosauce.cutemusic.utils.playRandom
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -65,8 +63,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -92,6 +88,11 @@ class MusicViewModel(
         abstractTracksScanner.fetchLatestTracks(null, null),
         safManager.fetchLatestSafTracks()
     ) { local, saf -> local + saf }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
 
     val safTracks = safManager.fetchLatestSafTracks()
         .stateIn(
@@ -133,7 +134,8 @@ class MusicViewModel(
                 super.onMediaItemTransition(mediaItem, reason)
 
                 viewModelScope.launch {
-                    allTracks.first().fastFirstOrNull { track ->
+                    delay(100)
+                    allTracks.value.fastFirstOrNull { track ->
                         track.mediaItem == mediaItem
                     }.also {
                         it?.let { track ->
@@ -211,10 +213,8 @@ class MusicViewModel(
                         }
 
                         viewModelScope.launch {
-                            saveMediaIndexToMediaIdMap(
-                                pair = LastPlayed("", 0),
-                                context = application
-                            )
+                            saveSavedPosition(application, musicState.value.position)
+                            saveSavedMediaId(application, musicState.value.track.mediaId)
                         }
 
                         _musicState.update { MusicState() }
@@ -332,26 +332,27 @@ class MusicViewModel(
 
     private fun loadPlaybackPreferences() {
         viewModelScope.launch {
-            val repeatMode = getRepeatMode(application.applicationContext)//.first()
-            val shouldShuffle = getShouldShuffle(application.applicationContext)//.first()
-            val speed = getSpeed(application.applicationContext)//.first()
-            val pitch = getPitch(application.applicationContext)//.first()
-            val (id, position) = getMediaIndexToMediaIdMap(application).first()
+            val repeatMode = getRepeatMode(application)
+            val shouldShuffle = getShouldShuffle(application)
+            val pitch = getPitch(application)
+            val speed = getSpeed(application)
+            val position = getSavedPosition(application)
+            val mediaId = getSavedMediaId(application)
 
             mediaController!!.changeRepeatMode(repeatMode)
             mediaController!!.applyShuffle(shouldShuffle)
             mediaController!!.applyPlaybackSpeed(speed)
             mediaController!!.applyPlaybackPitch(pitch)
 
-            val index = (0 until mediaController!!.mediaItemCount).firstOrNull { i ->
-                mediaController!!.getMediaItemAt(i).mediaId == id
-            } ?: -1
-
-            if (index != -1) {
+            (0 until mediaController!!.mediaItemCount).firstOrNull { index ->
+                mediaController!!.getMediaItemAt(index).mediaId == mediaId
+            }?.let { mediaIndex ->
                 mediaController!!.prepare()
-                mediaController!!.seekTo(index, position)
+                mediaController!!.seekTo(mediaIndex, position)
+                _musicState.update {
+                    it.copy(track = allTracks.value[mediaIndex])
+                }
             }
-
         }
     }
 
@@ -363,17 +364,14 @@ class MusicViewModel(
         val mediaId = musicState.value.track.mediaId
         val position = musicState.value.position
 
+
         runBlocking {
-            saveRepeatMode(application.applicationContext, repeatMode)
-            saveShouldShuffle(application.applicationContext, shuffle)
-            saveSpeed(application.applicationContext, speed)
-            savePitch(application.applicationContext, pitch)
-
-            saveMediaIndexToMediaIdMap(
-                pair = LastPlayed(mediaId, position),
-                context = application.applicationContext
-            )
-
+            saveRepeatMode(application, repeatMode)
+            saveShouldShuffle(application, shuffle)
+            saveSpeed(application, speed)
+            savePitch(application, pitch)
+            saveSavedPosition(application, position)
+            saveSavedMediaId(application, mediaId)
         }
 
     }
@@ -393,11 +391,11 @@ class MusicViewModel(
             }
         }
 
-        application.applicationContext.registerReceiver(
+        application.registerReceiver(
             receiver,
             IntentFilter("android.media.STREAM_MUTE_CHANGED_ACTION")
         )
-        awaitClose { application.applicationContext.unregisterReceiver(receiver) }
+        awaitClose { application.unregisterReceiver(receiver) }
 
     }
 
@@ -485,14 +483,36 @@ class MusicViewModel(
                 sleepCountdownTimer?.start()
             }
 
-            is PlayerActions.ReArrangeQueue -> mediaController!!.moveMediaItem(
-                action.from,
-                action.to
-            )
+            is PlayerActions.ReArrangeQueue -> {
+                mediaController!!.moveMediaItem(
+                    action.from,
+                    action.to
+                )
+                val loadedMedias = musicState.value.loadedMedias.copyMutate {
+                    val itemToMove = this[action.from]
+                    removeAt(action.from)
+                    add(action.to, itemToMove)
+                }
+
+                _musicState.update {
+                    it.copy(
+                        loadedMedias = loadedMedias
+                    )
+                }
+            }
 
             is PlayerActions.RemoveFromQueue -> {
                 val index = musicState.value.loadedMedias.indexOf(action.track)
                 mediaController!!.removeMediaItem(index)
+
+                val loadedMedias = musicState.value.loadedMedias.copyMutate {
+                    remove(action.track)
+                }
+                _musicState.update {
+                    it.copy(
+                        loadedMedias = loadedMedias
+                    )
+                }
             }
 
             is PlayerActions.AddToQueue -> {

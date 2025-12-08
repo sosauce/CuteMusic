@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,8 +37,8 @@ import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
+import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
-import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
 import com.sosauce.cutemusic.utils.copyMutate
 
 @Composable
@@ -63,9 +64,10 @@ fun SettingsLibrary(
         )
     }
 
-    ScaffoldWithBackArrow(
-        backArrowVisible = !scrollState.canScrollBackward,
-        onNavigateUp = onNavigateUp
+    Scaffold(
+        bottomBar = {
+            CuteNavigationButton(onNavigateUp = onNavigateUp)
+        }
     ) { pv ->
         Column(
             modifier = Modifier

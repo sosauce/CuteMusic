@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.util.fastFilter
-import androidx.compose.ui.util.fastMap
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -82,10 +81,10 @@ fun Context.hasMusicPermission(): Boolean {
     return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 }
 
-fun Modifier.selfAlignHorizontally(): Modifier {
+fun Modifier.selfAlignHorizontally(align: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier {
     return then(Modifier
         .fillMaxWidth()
-        .wrapContentWidth())
+        .wrapContentWidth(align))
 }
 
 
@@ -397,14 +396,18 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 
 @Composable
 fun String.toShape(): Shape = when (this) {
-    RoundedCornerShape(5).toString() -> RoundedCornerShape(5)
-    MaterialShapes.Square.toString() -> MaterialShapes.Square.toShape()
-    MaterialShapes.Cookie9Sided.toString() -> MaterialShapes.Cookie9Sided.toShape()
-    MaterialShapes.Cookie12Sided.toString() -> MaterialShapes.Cookie12Sided.toShape()
-    MaterialShapes.Clover8Leaf.toString() -> MaterialShapes.Clover8Leaf.toShape()
-    MaterialShapes.Arrow.toString() -> MaterialShapes.Arrow.toShape()
-    MaterialShapes.Sunny.toString() -> MaterialShapes.Sunny.toShape()
-    else -> RoundedCornerShape(5)
+    ArtworkShape.CLASSIC -> RoundedCornerShape(10)
+    ArtworkShape.CIRCLE -> MaterialShapes.Circle.toShape()
+    ArtworkShape.COOKIE_4 -> MaterialShapes.Cookie4Sided.toShape()
+    ArtworkShape.COOKIE_9 -> MaterialShapes.Cookie9Sided.toShape()
+    ArtworkShape.COOKIE_12 -> MaterialShapes.Cookie12Sided.toShape()
+    ArtworkShape.CLOVER_8 -> MaterialShapes.Clover8Leaf.toShape()
+    ArtworkShape.SUNNY -> MaterialShapes.Sunny.toShape()
+    ArtworkShape.ARROW -> MaterialShapes.Arrow.toShape()
+    ArtworkShape.DIAMOND -> MaterialShapes.Diamond.toShape()
+    ArtworkShape.BUN -> MaterialShapes.Bun.toShape()
+    ArtworkShape.HEART -> MaterialShapes.Heart.toShape()
+    else -> RoundedCornerShape(10)
 }
 
 

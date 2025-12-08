@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,14 +39,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -88,12 +86,11 @@ fun LocalMusicListItem(
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
+    trailingContent: @Composable RowScope.() -> Unit = { DefaultMusicListItemTrailingContent(music, onNavigate, onHandlePlayerActions, playlistDropdownMenuItem) },
     isSelected: Boolean = false
 ) {
 
     val context = LocalContext.current
-    val currentScreen = LocalScreen.current
-    var isDropDownExpanded by remember { mutableStateOf(false) }
     val image = rememberAsyncImagePainter(ImageUtils.imageRequester(music.artUri, context))
     val imageState by image.state.collectAsStateWithLifecycle()
 
@@ -188,45 +185,58 @@ fun LocalMusicListItem(
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (currentScreen is Screen.AlbumsDetails && music.trackNumber != 0) {
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.tertiary
-                    ) {
-                        Text(
-                            text = music.trackNumber.toString(),
-                            color = MaterialTheme.colorScheme.onTertiary,
-                            modifier = Modifier.padding(3.dp)
-                        )
-                    }
-                }
-
-
-                IconButton(
-                    onClick = { isDropDownExpanded = true },
-                    shapes = IconButtonDefaults.shapes()
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null
-                    )
-                }
-
-                TrackDropdownMenu(
-                    track = music,
-                    isExpanded = isDropDownExpanded,
-                    onDismissRequest = { isDropDownExpanded = false },
-                    onNavigate = onNavigate,
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    playlistDropdownMenuItem = playlistDropdownMenuItem
-                )
-            }
+            ) { trailingContent() }
         }
     }
 }
 
 @Composable
-fun TrackDropdownMenu(
+private fun DefaultMusicListItemTrailingContent(
+    track: CuteTrack,
+    onNavigate: (Screen) -> Unit,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(track) },
+) {
+
+    val currentScreen = LocalScreen.current
+    var isDropDownExpanded by remember { mutableStateOf(false) }
+
+
+    if (currentScreen is Screen.AlbumsDetails && track.trackNumber != 0) {
+        Badge(
+            containerColor = MaterialTheme.colorScheme.tertiary
+        ) {
+            Text(
+                text = track.trackNumber.toString(),
+                color = MaterialTheme.colorScheme.onTertiary,
+                modifier = Modifier.padding(3.dp)
+            )
+        }
+    }
+
+
+    IconButton(
+        onClick = { isDropDownExpanded = true },
+        shapes = IconButtonDefaults.shapes()
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.more_vert),
+            contentDescription = null
+        )
+    }
+
+    TrackDropdownMenu(
+        track = track,
+        isExpanded = isDropDownExpanded,
+        onDismissRequest = { isDropDownExpanded = false },
+        onNavigate = onNavigate,
+        onHandlePlayerActions = onHandlePlayerActions,
+        playlistDropdownMenuItem = playlistDropdownMenuItem
+    )
+}
+
+@Composable
+private fun TrackDropdownMenu(
     track: CuteTrack,
     isExpanded: Boolean,
     onDismissRequest: () -> Unit,
@@ -425,87 +435,6 @@ fun TrackDropdownMenu(
             }
         )
     }
-}
-
-@Composable
-fun ReorderableCollectionItemScope.QueueMusicListItem(
-    modifier: Modifier = Modifier,
-    music: CuteTrack,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    currentMusicUri: String,
-) {
-    val context = LocalContext.current
-    val bgColor by animateColorAsState(
-        targetValue = if (currentMusicUri == music.uri.toString()) {
-            MaterialTheme.colorScheme.surfaceContainer
-        } else {
-            Color.Transparent
-        },
-        animationSpec = tween(500)
-    )
-
-    DropdownMenuItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(bgColor),
-        contentPadding = PaddingValues(0.dp),
-        onClick = {},
-        leadingIcon = {
-            AsyncImage(
-                model = ImageUtils.imageRequester(music.artUri, context),
-                stringResource(R.string.artwork),
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop,
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.padding(vertical = 15.dp)
-            ) {
-                Text(
-                    text = music.title,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.basicMarquee()
-                )
-                Text(
-                    text = music.artist,
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-        },
-        trailingIcon = {
-            Row {
-                IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.RemoveFromQueue(music)) },
-                    shapes = IconButtonDefaults.shapes()
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = null
-                    )
-                }
-                IconButton(
-                    onClick = {},
-                    enabled = false,
-                    modifier = Modifier.draggableHandle(),
-                    shapes = IconButtonDefaults.shapes()
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.drag_handle),
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-    )
 }
 @Composable
 fun SafMusicListItem(

@@ -44,3 +44,17 @@ object AnimationDirection {
 object CustomCommands {
     const val OPEN_EQ = "open equalizer"
 }
+
+object ArtworkShape {
+    const val CLASSIC = "classic"
+    const val CIRCLE = "circle"
+    const val COOKIE_4 = "cookie4"
+    const val COOKIE_9 = "cookie9"
+    const val COOKIE_12 = "cookie12"
+    const val CLOVER_8 = "clover8"
+    const val SUNNY = "sunny"
+    const val ARROW = "arrow"
+    const val DIAMOND = "diamond"
+    const val BUN = "bun"
+    const val HEART = "heart"
+}

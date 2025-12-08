@@ -4,25 +4,16 @@ package com.sosauce.cutemusic.domain.repository
 
 import android.content.Context
 import android.net.Uri
-import android.os.Bundle
 import android.os.ParcelFileDescriptor
-import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import com.kyant.taglib.Metadata
 import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.getSafTracks
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.getUriFromByteArray
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.withContext
 
 class SafManager(
     private val context: Context

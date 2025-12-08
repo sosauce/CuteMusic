@@ -117,11 +117,11 @@ suspend inline fun <reified T> saveCustomPreference(
     }
 }
 
-inline fun <reified T> getCustomPreference(
+suspend inline fun <reified T> getCustomPreference(
     key: Preferences.Key<String>,
     defaultValue: T,
     context: Context
-): Flow<T> {
+): T {
 
     return context.dataStore.data
         .map { preferences ->
@@ -131,7 +131,7 @@ inline fun <reified T> getCustomPreference(
             pref?.let { string ->
                 Json.decodeFromString(string)
             } ?: defaultValue
-        }
+        }.first()
 }
 
 

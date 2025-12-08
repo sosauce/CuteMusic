@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.presentation.screens.setup
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberMinTrackDuration
-import com.sosauce.cutemusic.data.datastore.rememberWhitelistedFolders
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
 

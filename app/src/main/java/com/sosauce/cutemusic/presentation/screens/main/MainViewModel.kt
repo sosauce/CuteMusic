@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.presentation.screens.main
 
-import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.cutemusic.data.AbstractTracksScanner

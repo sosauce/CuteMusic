@@ -27,6 +27,9 @@ sealed class Screen() : NavKey {
     data object Setup : Screen()
 
     @Serializable
+    data object Queue : Screen()
+
+    @Serializable
     data class AlbumsDetails(
         val name: String
     ) : Screen()

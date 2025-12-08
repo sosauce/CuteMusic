@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -17,7 +18,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberPauseOnMute
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCards
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
-import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
+import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 
 @Composable
 fun SettingsPlayback(
@@ -28,9 +29,10 @@ fun SettingsPlayback(
     var pauseOnMute by rememberPauseOnMute()
 
 
-    ScaffoldWithBackArrow(
-        backArrowVisible = !scrollState.canScrollBackward,
-        onNavigateUp = onNavigateUp
+    Scaffold(
+        bottomBar = {
+            CuteNavigationButton(onNavigateUp = onNavigateUp)
+        }
     ) { pv ->
         Column(
             modifier = Modifier

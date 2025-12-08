@@ -11,12 +11,8 @@ import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
 import com.sosauce.cutemusic.data.datastore.getWhitelistedFolders
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.observe
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
 /**

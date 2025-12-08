@@ -21,7 +21,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 40000
-        versionName = "3.1.0"
+        versionName = "3.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -127,4 +127,7 @@ android {
         implementation("androidx.compose.animation:animation-graphics-android:1.9.4")
         implementation(libs.colorpicker.compose)
     }
+}
+dependencies {
+    implementation(libs.androidx.compose.foundation)
 }

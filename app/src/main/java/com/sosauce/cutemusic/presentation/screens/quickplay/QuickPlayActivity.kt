@@ -2,7 +2,6 @@
 
 package com.sosauce.cutemusic.presentation.screens.quickplay
 
-import android.net.Uri
 import android.os.Bundle
 import android.os.Process
 import androidx.activity.ComponentActivity
@@ -31,14 +30,11 @@ import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.contentColorFor
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,8 +56,9 @@ import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.rememberNpArtShape
+import com.sosauce.cutemusic.data.datastore.rememberArtworkShape
 import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
@@ -95,8 +92,7 @@ class QuickPlayActivity : ComponentActivity() {
                     val state by viewModel.musicState.collectAsStateWithLifecycle()
                     val context = LocalContext.current
                     val interactionSources = List(5) { rememberInteractionSource() }
-                    val artShape by rememberNpArtShape()
-
+                    val artworkShape by rememberArtworkShape()
 
 
                     if (!viewModel.isSongLoaded) {
@@ -150,11 +146,11 @@ class QuickPlayActivity : ComponentActivity() {
                                     .wrapContentSize()
                             ) {
                                 AsyncImage(
-                                    model = remember { viewModel.loadAlbumArt(context, uri) },
+                                    model = state.track.artUri,
                                     contentDescription = stringResource(R.string.artwork),
                                     modifier = Modifier
                                         .fillMaxSize(0.9f)
-                                        .clip(artShape.toShape()),
+                                        .clip(artworkShape.toShape()),
                                     contentScale = ContentScale.Crop,
                                     onSuccess = { state ->
                                         artImageBitmap =

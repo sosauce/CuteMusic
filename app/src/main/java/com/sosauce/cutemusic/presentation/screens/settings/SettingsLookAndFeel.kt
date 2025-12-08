@@ -13,6 +13,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -25,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAppTheme
-import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
@@ -35,8 +35,8 @@ import com.sosauce.cutemusic.presentation.screens.settings.compenents.FontSelect
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCards
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.ThemeSelector
+import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.LazyRowWithScrollButton
-import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
 import com.sosauce.cutemusic.presentation.theme.nunitoFontFamily
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.anyDarkColorScheme
@@ -51,7 +51,6 @@ fun SettingsLookAndFeel(
     var useSystemFont by rememberUseSystemFont()
     var showXButton by rememberShowXButton()
     var showShuffleButton by rememberShowShuffleButton()
-    var showBackButton by rememberShowBackButton()
     var useMaterialArt by rememberUseArtTheme()
     var useExpressivePalette by rememberUseExpressivePalette()
     val themeItems = listOf(
@@ -119,9 +118,10 @@ fun SettingsLookAndFeel(
         )
     )
 
-    ScaffoldWithBackArrow(
-        backArrowVisible = !scrollState.canScrollBackward,
-        onNavigateUp = onNavigateUp
+    Scaffold(
+        bottomBar = {
+            CuteNavigationButton(onNavigateUp = onNavigateUp)
+        }
     ) { pv ->
         Column(
             modifier = Modifier
@@ -176,15 +176,8 @@ fun SettingsLookAndFeel(
                     checked = useExpressivePalette,
                     onCheckedChange = { useExpressivePalette = !useExpressivePalette },
                     topDp = 4.dp,
-                    bottomDp = 4.dp,
-                    text = stringResource(R.string.use_expr_palette)
-                )
-                SettingsCards(
-                    checked = showBackButton,
-                    onCheckedChange = { showBackButton = !showBackButton },
-                    topDp = 4.dp,
                     bottomDp = 24.dp,
-                    text = stringResource(R.string.show_back_button)
+                    text = stringResource(R.string.use_expr_palette)
                 )
             }
             SettingsWithTitle(

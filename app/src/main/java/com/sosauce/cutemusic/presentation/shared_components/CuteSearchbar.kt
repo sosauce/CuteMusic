@@ -63,7 +63,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.rememberShowBackButton
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.states.MusicState
@@ -96,7 +95,6 @@ fun SharedTransitionScope.CuteSearchbar(
     val currentScreen = LocalScreen.current
     val showXButton by rememberShowXButton()
     val showShuffleButton by rememberShowShuffleButton()
-    val showBackButton by rememberShowBackButton()
     var isInScreenSelectionMode by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
     val screenToLeadingIcon = mapOf(
@@ -130,7 +128,7 @@ fun SharedTransitionScope.CuteSearchbar(
                 .fillMaxWidth()
                 .padding(bottom = 4.dp)
         ) {
-            if (showBackButton && currentScreen.showBackButton()) {
+            if (currentScreen.showBackButton()) {
                 CuteNavigationButton(
                     onNavigateUp = { onNavigateUp?.invoke() }
                 )

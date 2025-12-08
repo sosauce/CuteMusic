@@ -15,7 +15,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.kyant.taglib.Metadata
@@ -125,15 +124,14 @@ class QuickPlayViewModel(
     }
 
 
-    fun loadAlbumArt(context: Context, uri: Uri): Bitmap? {
+    fun retrieveDuration(): Long {
         val retriever = MediaMetadataRetriever()
         return try {
-            retriever.setDataSource(context, uri)
-            val art = retriever.embeddedPicture
-            art?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+            retriever.setDataSource(application, trackUri)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            0
         } finally {
             retriever.release()
         }
@@ -145,7 +143,6 @@ class QuickPlayViewModel(
             val metadata = loadAudioMetadata(fd)
             val title = metadata?.propertyMap?.get("TITLE")?.getOrNull(0) ?: "<unknown>"
             val artist = metadata?.propertyMap?.get("ARTIST")?.joinToString(", ") ?: "<unknown>"
-            val duration = metadata?.propertyMap?.get("DURATION")?.getOrNull(0)
 
             val artUri =
                 TagLib.getFrontCover(fd.dup().detachFd())?.data?.getUriFromByteArray(application)
@@ -153,7 +150,7 @@ class QuickPlayViewModel(
             CuteTrack(
                 title = title,
                 artist = artist,
-                durationMs = duration?.toLong() ?: 67,
+                durationMs = retrieveDuration(),
                 artUri = artUri ?: Uri.EMPTY
             )
         } ?: throw IllegalArgumentException("Unable to open file descriptor for uri")

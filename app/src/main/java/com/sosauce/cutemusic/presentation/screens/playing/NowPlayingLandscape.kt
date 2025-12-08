@@ -145,7 +145,8 @@ fun SharedTransitionScope.NowPlayingLandscape(
                             musicState = musicState,
                             onShowLyrics = { showLyrics = true },
                             onShowSpeedCard = { showSpeedCard = true },
-                            onHandlePlayerActions = onHandlePlayerActions
+                            onHandlePlayerActions = onHandlePlayerActions,
+                            onNavigate = onNavigate
                         )
                     }
                 }

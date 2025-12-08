@@ -1,6 +1,5 @@
 package com.sosauce.cutemusic.data.states
 
-import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.media3.common.Player
 import com.sosauce.cutemusic.data.models.CuteTrack

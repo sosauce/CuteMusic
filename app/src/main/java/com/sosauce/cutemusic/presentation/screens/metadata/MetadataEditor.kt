@@ -7,7 +7,6 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -109,9 +108,7 @@ fun MetadataEditor(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                CuteNavigationButton(
-                    modifier = Modifier.padding(start = 15.dp)
-                ) { onNavigateUp() }
+                CuteNavigationButton(onNavigateUp = onNavigateUp)
                 CuteActionButton(
                     modifier = Modifier.padding(end = 15.dp),
                     icon = R.drawable.check

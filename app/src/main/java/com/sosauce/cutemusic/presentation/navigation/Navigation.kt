@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -28,8 +27,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.sosauce.cutemusic.data.datastore.rememberHasBeenThroughSetup
-import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.album.AlbumsScreen
@@ -43,6 +40,7 @@ import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataEditor
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.presentation.screens.playing.NowPlaying
+import com.sosauce.cutemusic.presentation.screens.playing.QueueScreen
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
@@ -239,6 +237,14 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             onHandlePlayerAction = musicViewModel::handlePlayerActions,
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlaylistAction = viewModel::handlePlaylistActions
+                        )
+                    }
+
+                    entry<Screen.Queue> {
+                        QueueScreen(
+                            musicState = musicState,
+                            onNavigateUp = backStack::removeLastOrNull,
+                            onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
                     }
                 }

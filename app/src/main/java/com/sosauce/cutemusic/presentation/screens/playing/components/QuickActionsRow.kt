@@ -24,6 +24,7 @@ import androidx.media3.common.Player
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.utils.rememberInteractionSource
@@ -35,22 +36,14 @@ fun QuickActionsRow(
     musicState: MusicState,
     onShowLyrics: () -> Unit,
     onShowSpeedCard: () -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    onNavigate: (Screen) -> Unit
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
-    var showQueueSheet by remember { mutableStateOf(false) }
     val interactionSources = List(6) { rememberInteractionSource() }
 
-
-    if (showQueueSheet) {
-        QueueSheet(
-            onDismissRequest = { showQueueSheet = false },
-            onHandlePlayerAction = onHandlePlayerActions,
-            musicState = musicState
-        )
-    }
 
 
     if (showDetailsDialog) {
@@ -144,7 +137,7 @@ fun QuickActionsRow(
             )
         }
         IconButton(
-            onClick = { showQueueSheet = true },
+            onClick = { onNavigate(Screen.Queue) },
             interactionSource = interactionSources[4],
             modifier = Modifier
                 .animateWidth(interactionSources[4])

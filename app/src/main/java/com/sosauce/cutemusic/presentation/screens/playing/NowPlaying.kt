@@ -148,7 +148,8 @@ private fun SharedTransitionScope.NowPlayingContent(
                     musicState = musicState,
                     onShowLyrics = onShowLyrics,
                     onShowSpeedCard = { showSpeedCard = true },
-                    onHandlePlayerActions = onHandlePlayerActions
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    onNavigate = onNavigate
                 )
             }
         }

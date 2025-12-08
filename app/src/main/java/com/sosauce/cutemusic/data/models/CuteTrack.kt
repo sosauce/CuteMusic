@@ -1,7 +1,6 @@
 package com.sosauce.cutemusic.data.models
 
 import android.net.Uri
-import android.os.Bundle
 import androidx.media3.common.MediaItem
 
 data class CuteTrack(

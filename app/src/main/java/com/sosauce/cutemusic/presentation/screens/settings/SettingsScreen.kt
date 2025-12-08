@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -25,7 +26,7 @@ import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsScreens
-import com.sosauce.cutemusic.presentation.shared_components.ScaffoldWithBackArrow
+import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -84,9 +85,10 @@ fun SettingsScreen(
         },
         entryProvider = entryProvider {
             entry<SettingsScreens.Settings> {
-                ScaffoldWithBackArrow(
-                    backArrowVisible = !scrollState.canScrollBackward,
-                    onNavigateUp = onNavigateUp
+                Scaffold(
+                    bottomBar = {
+                        CuteNavigationButton(onNavigateUp = onNavigateUp)
+                    }
                 ) { pv ->
                     Column(
                         modifier = Modifier
