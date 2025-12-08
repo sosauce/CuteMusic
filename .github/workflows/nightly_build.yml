@@ -43,9 +43,6 @@ jobs:
             echo "No changes detected since last nightly tag. Skipping build."
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
           
   build_and_release:
     runs-on: ubuntu-latest
