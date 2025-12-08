@@ -33,8 +33,6 @@ jobs:
         fileDir: 'app/'
         encodedString: ${{ secrets.SIGNING_KEY }}
       
-    - name: Clean Gradle
-      run: ./gradlew clean
 
     - name: Build Release APK
       run: ./gradlew assembleRelease
