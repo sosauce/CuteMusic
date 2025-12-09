@@ -5,6 +5,7 @@ package com.sosauce.cutemusic.data
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
@@ -43,13 +44,15 @@ class AbstractTracksScanner(
     ): List<CuteTrack> {
         val musics = mutableListOf<CuteTrack>()
 
+        Log.d("CuteFetching", "Start of fetch: whitelisted folder = $whitelistedFolders, minDuration = $minTrackDuration")
+
         if (whitelistedFolders.isEmpty()) return emptyList()
 
         val selection = buildString {
             append("${MediaStore.Audio.Media.DURATION} >= ?")
             append(" AND ${MediaStore.Audio.Media.IS_MUSIC} != ?")
             append(" AND ")
-            append(whitelistedFolders.joinToString(" AND ") { "${MediaStore.Audio.Media.DATA} LIKE ?" })
+            append(whitelistedFolders.joinToString(" OR ") { "${MediaStore.Audio.Media.DATA} LIKE ?" })
             extraSelection?.let {
                 append(" AND ")
                 append(it)
@@ -102,6 +105,8 @@ class AbstractTracksScanner(
             val yearColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
 
             while (cursor.moveToNext()) {
+
+
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn)
                 val artist = cursor.getString(artistColumn)
@@ -122,6 +127,8 @@ class AbstractTracksScanner(
 
                 val artUri = "$uri/albumart".toUri()
                 val mediaId = id.toString()
+
+                Log.d("CuteFetching", "Current music we're loping through $title")
 
                 musics.add(
                     CuteTrack(
@@ -147,7 +154,7 @@ class AbstractTracksScanner(
             }
 
         }
-
+        Log.d("CuteFetching", "Final musics we return = $musics")
         return musics
     }
 

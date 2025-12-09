@@ -64,6 +64,7 @@ import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.addOrRemove
 import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.ordered
+import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 // https://medium.com/@gregkorossy/hacking-lazylist-in-android-jetpack-compose-38afacb3df67
 @Composable
@@ -231,7 +232,9 @@ fun SharedTransitionScope.MainScreen(
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
-                                modifier = Modifier.padding(top = 15.dp)
+                                modifier = Modifier
+                                    .padding(top = 15.dp)
+                                    .selfAlignHorizontally()
                             )
                         }
                     } else {
