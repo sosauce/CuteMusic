@@ -39,7 +39,7 @@ jobs:
       env: 
         SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+        SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
     - uses: actions/upload-artifact@v4
       with:
         name: CuteMusic Release
