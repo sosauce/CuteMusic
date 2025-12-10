@@ -67,7 +67,7 @@ jobs:
           name: Vesion ${{ needs.build.outputs.versionName }}
           body_path: ${{ needs.build.outputs.versionName }}-changelog.txt
           prerelease: false
-          tag_name: ${{ needs.build.outputs.versionName }}
+          tag_name: v${{ needs.build.outputs.versionName }}
           files: |
             ./**/*.apk
         env:
