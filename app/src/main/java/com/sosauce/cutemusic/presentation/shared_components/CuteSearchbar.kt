@@ -35,7 +35,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -96,7 +95,6 @@ fun SharedTransitionScope.CuteSearchbar(
     val showXButton by rememberShowXButton()
     val showShuffleButton by rememberShowShuffleButton()
     var isInScreenSelectionMode by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
     val screenToLeadingIcon = mapOf(
         Screen.Main to R.drawable.music_note_rounded,
         Screen.Albums to R.drawable.album_filled,
@@ -270,22 +268,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                 },
                                 trailingIcon = {
                                     Row {
-                                        DropdownMenu(
-                                            expanded = showSortMenu,
-                                            onDismissRequest = { showSortMenu = false },
-                                            shape = RoundedCornerShape(24.dp)
-                                        ) {
-                                            sortingMenu?.invoke()
-                                        }
-                                        IconButton(
-                                            onClick = { showSortMenu = !showSortMenu },
-                                            shapes = IconButtonDefaults.shapes()
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.sort),
-                                                contentDescription = stringResource(R.string.sort)
-                                            )
-                                        }
+                                        sortingMenu?.invoke()
                                         IconButton(
                                             onClick = { onNavigate(Screen.Settings) },
                                             shapes = IconButtonDefaults.shapes()

@@ -42,12 +42,17 @@ android {
     }
 
 
+    val keystoreFile = file("release_key.jks")
     signingConfigs {
         create("release") {
-            storeFile = file("release_key.jks")
-            storePassword = System.getenv("KEY_STORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            } else {
+                println("No keystore found, APK will be unsigned")
+            }
         }
     }
 
@@ -55,6 +60,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -58,7 +58,6 @@ import coil3.toBitmap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberArtworkShape
 import com.sosauce.cutemusic.domain.actions.PlayerActions
-import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
 import com.sosauce.cutemusic.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme

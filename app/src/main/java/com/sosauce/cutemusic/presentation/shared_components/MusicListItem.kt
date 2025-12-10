@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -75,7 +74,6 @@ import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.LocalScreen
-import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
 fun LocalMusicListItem(
@@ -86,7 +84,7 @@ fun LocalMusicListItem(
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     playlistDropdownMenuItem: @Composable () -> Unit = { AddToPlaylistDropdownItem(music) },
-    trailingContent: @Composable RowScope.() -> Unit = { DefaultMusicListItemTrailingContent(music, onNavigate, onHandlePlayerActions, playlistDropdownMenuItem) },
+    trailingContent: @Composable () -> Unit = { DefaultMusicListItemTrailingContent(music, onNavigate, onHandlePlayerActions, playlistDropdownMenuItem) },
     isSelected: Boolean = false
 ) {
 

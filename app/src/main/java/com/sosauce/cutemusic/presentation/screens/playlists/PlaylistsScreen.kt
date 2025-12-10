@@ -15,11 +15,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -45,13 +47,13 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
-import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.screens.playlists.components.CreatePlaylistDialog
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
+import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.PlaylistSort
 import com.sosauce.cutemusic.utils.ordered
 import com.sosauce.cutemusic.utils.selfAlignHorizontally
@@ -104,51 +106,35 @@ fun SharedTransitionScope.PlaylistsScreen(
                 musicState = musicState,
                 sortingMenu = {
                     SortingDropdownMenu(
-                        isSortedByASC = isSortedByASC,
-                        onChangeSorting = { isSortedByASC = it },
-                        sortingOptions = {
-                            CuteDropdownMenuItem(
-                                onClick = { playlistSort = 0 },
-                                text = { Text(stringResource(R.string.name)) },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = playlistSort == 0,
-                                        onClick = null
-                                    )
+                        isSortedAscending = isSortedByASC,
+                        onChangeSorting = { isSortedByASC = true }
+                    ) {
+                        repeat(4) { i ->
+                            val text = when (i) {
+                                0 -> R.string.name
+                                1 -> R.string.number_of_tracks
+                                2 -> R.string.tags
+                                3 -> R.string.color
+                                else -> throw IndexOutOfBoundsException()
+                            }
+                            DropdownMenuItem(
+                                selected = playlistSort == i,
+                                onClick = { playlistSort = i },
+                                shapes = MenuDefaults.itemShapes(),
+                                colors = MenuDefaults.selectableItemColors(),
+                                text = { Text(stringResource(text)) },
+                                trailingIcon = {
+                                    if (playlistSort == i) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.check),
+                                            contentDescription = null
+                                        )
+                                    }
                                 }
                             )
-                            CuteDropdownMenuItem(
-                                onClick = { playlistSort = 1 },
-                                text = { Text("Number of tracks") },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = playlistSort == 1,
-                                        onClick = null
-                                    )
-                                }
-                            )
-                            CuteDropdownMenuItem(
-                                onClick = { playlistSort = 2 },
-                                text = { Text("Tags") },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = playlistSort == 2,
-                                        onClick = null
-                                    )
-                                }
-                            )
-                            CuteDropdownMenuItem(
-                                onClick = { playlistSort = 3 },
-                                text = { Text("Color") },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = playlistSort == 3,
-                                        onClick = null
-                                    )
-                                }
-                            )
+
                         }
-                    )
+                    }
                 },
                 onHandlePlayerActions = onHandlePlayerAction,
                 onNavigate = onNavigate,
@@ -157,7 +143,7 @@ fun SharedTransitionScope.PlaylistsScreen(
                         modifier = Modifier.offset(
                             12.dp,
                             12.dp
-                        ), // Why they didn't make the padding optional is beyond me
+                        ),
                         expanded = fabMenuExpanded,
                         button = {
                             ToggleFloatingActionButton(

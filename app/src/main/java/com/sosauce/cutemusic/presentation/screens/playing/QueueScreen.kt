@@ -4,8 +4,6 @@ package com.sosauce.cutemusic.presentation.screens.playing
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,17 +14,14 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
-import com.sosauce.cutemusic.utils.selfAlignHorizontally
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 

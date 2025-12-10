@@ -28,12 +28,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -67,11 +69,11 @@ import com.sosauce.cutemusic.presentation.screens.album.components.NumberOfTrack
 import com.sosauce.cutemusic.presentation.screens.artist.components.ArtistHeader
 import com.sosauce.cutemusic.presentation.screens.artist.components.ArtistHeaderLandscape
 import com.sosauce.cutemusic.presentation.screens.artist.components.NumberOfAlbums
-import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.SelectedBar
+import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.ordered
@@ -237,47 +239,35 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             size = state.tracks.size,
                             onAddToSelected = { selectedTracks.addAll(state.tracks.map { it.mediaId }) },
                             sortMenu = {
-                                Column {
-                                    IconButton(
-                                        onClick = { showTrackSort = !showTrackSort },
-                                        shapes = IconButtonDefaults.shapes()
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.sort),
-                                            contentDescription = null
-                                        )
-                                    }
-
-                                    DropdownMenu(
-                                        expanded = showTrackSort,
-                                        onDismissRequest = { showTrackSort = false },
-                                        shape = RoundedCornerShape(24.dp)
-                                    ) {
-                                        SortingDropdownMenu(
-                                            isSortedByASC = sortTracksAsc,
-                                            onChangeSorting = { sortTracksAsc = it }
-                                        ) {
-                                            repeat(5) { i ->
-                                                val text = when (i) {
-                                                    0 -> R.string.title
-                                                    1 -> R.string.artist
-                                                    2 -> R.string.album
-                                                    3 -> R.string.year
-                                                    4 -> R.string.date_modified
-                                                    else -> throw IndexOutOfBoundsException()
-                                                }
-                                                CuteDropdownMenuItem(
-                                                    onClick = { trackSort = i },
-                                                    text = { Text(stringResource(text)) },
-                                                    leadingIcon = {
-                                                        RadioButton(
-                                                            selected = trackSort == i,
-                                                            onClick = null
-                                                        )
-                                                    }
-                                                )
-                                            }
+                                SortingDropdownMenu(
+                                    isSortedAscending = sortTracksAsc,
+                                    onChangeSorting = { sortTracksAsc = it },
+                                ) {
+                                    repeat(5) { i ->
+                                        val text = when (i) {
+                                            0 -> R.string.title
+                                            1 -> R.string.artist
+                                            2 -> R.string.album
+                                            3 -> R.string.year
+                                            4 -> R.string.date_modified
+                                            else -> throw IndexOutOfBoundsException()
                                         }
+
+                                        DropdownMenuItem(
+                                            selected = trackSort == i,
+                                            onClick = { trackSort = i },
+                                            shapes = MenuDefaults.itemShapes(),
+                                            colors = MenuDefaults.selectableItemColors(),
+                                            text = { Text(stringResource(text)) },
+                                            trailingIcon = {
+                                                if (trackSort == i) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.check),
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            }
+                                        )
                                     }
                                 }
                             }

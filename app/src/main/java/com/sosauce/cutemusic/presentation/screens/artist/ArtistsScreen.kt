@@ -24,7 +24,9 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,11 +52,11 @@ import com.sosauce.cutemusic.data.models.Artist
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
-import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
+import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.ArtistSort
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.ordered
@@ -92,30 +95,34 @@ fun SharedTransitionScope.ArtistsScreen(
                         showSearchField = true,
                         sortingMenu = {
                             SortingDropdownMenu(
-                                isSortedByASC = isSortedByASC,
+                                isSortedAscending = isSortedByASC,
                                 onChangeSorting = { isSortedByASC = it },
-                                sortingOptions = {
+                            ) {
+                                repeat(3) { i ->
+                                    val text = when (i) {
+                                        0 -> R.string.name
+                                        1 -> R.string.number_of_tracks
+                                        2 -> R.string.number_of_albums
+                                        else -> throw IndexOutOfBoundsException()
+                                    }
 
-                                    repeat(3) { i ->
-                                        val text = when (i) {
-                                            0 -> R.string.name
-                                            1 -> R.string.number_of_tracks
-                                            2 -> R.string.number_of_albums
-                                            else -> throw IndexOutOfBoundsException()
-                                        }
-                                        CuteDropdownMenuItem(
-                                            onClick = { artistSort = i },
-                                            text = { Text(stringResource(text)) },
-                                            leadingIcon = {
-                                                RadioButton(
-                                                    selected = artistSort == i,
-                                                    onClick = null
+                                    DropdownMenuItem(
+                                        selected = artistSort == i,
+                                        onClick = { artistSort = i },
+                                        shapes = MenuDefaults.itemShapes(),
+                                        colors = MenuDefaults.selectableItemColors(),
+                                        text = { Text(stringResource(text)) },
+                                        trailingIcon = {
+                                            if (artistSort == i) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.check),
+                                                    contentDescription = null
                                                 )
                                             }
-                                        )
-                                    }
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         },
                         onHandlePlayerActions = onHandlePlayerActions,
                         onNavigate = onNavigate

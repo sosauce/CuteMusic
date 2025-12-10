@@ -19,11 +19,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -54,7 +56,6 @@ import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.album.components.NumberOfTracks
-import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.screens.playlists.components.EmptyPlaylist
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeader
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeaderLandscape
@@ -63,6 +64,7 @@ import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.RemoveFromPlaylistDropdownItem
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.copyMutate
@@ -153,48 +155,35 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                             NumberOfTracks(
                                 size = state.tracks.size,
                                 sortMenu = {
-                                    Column {
-                                        IconButton(
-                                            onClick = { showTrackSort = !showTrackSort },
-                                            shapes = IconButtonDefaults.shapes()
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.sort),
-                                                contentDescription = null
-                                            )
-                                        }
-
-                                        DropdownMenu(
-                                            expanded = showTrackSort,
-                                            onDismissRequest = { showTrackSort = false },
-                                            shape = RoundedCornerShape(24.dp)
-                                        ) {
-                                            SortingDropdownMenu(
-                                                isSortedByASC = sortTracksAsc,
-                                                onChangeSorting = { sortTracksAsc = it }
-                                            ) {
-                                                repeat(6) { i ->
-                                                    val text = when (i) {
-                                                        0 -> R.string.title
-                                                        1 -> R.string.artist
-                                                        2 -> R.string.album
-                                                        3 -> R.string.year
-                                                        4 -> R.string.date_modified
-                                                        5 -> R.string.as_added
-                                                        else -> throw IndexOutOfBoundsException()
-                                                    }
-                                                    CuteDropdownMenuItem(
-                                                        onClick = { trackSort = i },
-                                                        text = { Text(stringResource(text)) },
-                                                        leadingIcon = {
-                                                            RadioButton(
-                                                                selected = trackSort == i,
-                                                                onClick = null
-                                                            )
-                                                        }
-                                                    )
-                                                }
+                                    SortingDropdownMenu(
+                                        isSortedAscending = sortTracksAsc,
+                                        onChangeSorting = { sortTracksAsc = it }
+                                    ) {
+                                        repeat(6) { i ->
+                                            val text = when (i) {
+                                                0 -> R.string.title
+                                                1 -> R.string.artist
+                                                2 -> R.string.album
+                                                3 -> R.string.year
+                                                4 -> R.string.date_modified
+                                                5 -> R.string.as_added
+                                                else -> throw IndexOutOfBoundsException()
                                             }
+                                            DropdownMenuItem(
+                                                selected = trackSort == i,
+                                                onClick = { trackSort = i },
+                                                shapes = MenuDefaults.itemShapes(),
+                                                colors = MenuDefaults.selectableItemColors(),
+                                                text = { Text(stringResource(text)) },
+                                                trailingIcon = {
+                                                    if (trackSort == i) {
+                                                        Icon(
+                                                            painter = painterResource(R.drawable.check),
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                }
+                                            )
                                         }
                                     }
                                 }

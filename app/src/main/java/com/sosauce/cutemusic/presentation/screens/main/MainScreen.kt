@@ -8,13 +8,10 @@ package com.sosauce.cutemusic.presentation.screens.main
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,10 +19,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,15 +50,13 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.FolderHeader
-import com.sosauce.cutemusic.presentation.screens.main.components.SortingDropdownMenu
 import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
-import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
-import com.sosauce.cutemusic.presentation.shared_components.RoundedCheckbox
 import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.TrackSort
 import com.sosauce.cutemusic.utils.addOrRemove
@@ -95,67 +93,73 @@ fun SharedTransitionScope.MainScreen(
         Scaffold(
             contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CuteSearchbar(
-                        textFieldState = textFieldState,
-                        musicState = musicState,
-                        showSearchField = true,
-                        //showSearchField = !state.isScrollInProgress,
-                        sortingMenu = {
-                            SortingDropdownMenu(
-                                isSortedByASC = isSortedByASC,
-                                onChangeSorting = { isSortedByASC = it },
-                                sortingOptions = {
-                                    CuteDropdownMenuItem(
-                                        onClick = { groupByFolders = !groupByFolders },
-                                        text = { Text(stringResource(R.string.group_tracks)) },
-                                        leadingIcon = {
-                                            RoundedCheckbox(
-                                                checked = groupByFolders,
-                                                onCheckedChange = null
+                CuteSearchbar(
+                    modifier = Modifier.selfAlignHorizontally(),
+                    textFieldState = textFieldState,
+                    musicState = musicState,
+                    showSearchField = true,
+                    sortingMenu = {
+                        SortingDropdownMenu(
+                            isSortedAscending = isSortedByASC,
+                            onChangeSorting = { isSortedByASC = it },
+                            topContent = {
+                                DropdownMenuItem(
+                                    selected = groupByFolders,
+                                    onClick = { groupByFolders = !groupByFolders },
+                                    shapes = MenuDefaults.itemShapes(),
+                                    colors = MenuDefaults.selectableItemColors(),
+                                    text = { Text(stringResource(R.string.group_tracks)) },
+                                    trailingIcon = {
+                                        if (groupByFolders) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.check),
+                                                contentDescription = null
                                             )
                                         }
-                                    )
-
-                                    repeat(5) { i ->
-                                        val text = when (i) {
-                                            0 -> R.string.title
-                                            1 -> R.string.artist
-                                            2 -> R.string.album
-                                            3 -> R.string.year
-                                            4 -> R.string.date_modified
-                                            else -> throw IndexOutOfBoundsException()
-                                        }
-                                        CuteDropdownMenuItem(
-                                            onClick = { trackSort = i },
-                                            text = { Text(stringResource(text)) },
-                                            leadingIcon = {
-                                                RadioButton(
-                                                    selected = trackSort == i,
-                                                    onClick = null
-                                                )
-                                            }
-                                        )
                                     }
-                                }
-                            )
-                        },
-                        onHandlePlayerActions = onHandlePlayerAction,
-                        onNavigate = onNavigate,
-                        fab = {
-                            CuteActionButton(
-                                action = { onHandlePlayerAction(PlayerActions.PlayRandom) },
-                                modifier = Modifier.sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
                                 )
-                            )
+                            }
+                        ) {
+                            repeat(5) { i ->
+                                val text = when (i) {
+                                    0 -> R.string.title
+                                    1 -> R.string.artist
+                                    2 -> R.string.album
+                                    3 -> R.string.year
+                                    4 -> R.string.date_modified
+                                    else -> throw IndexOutOfBoundsException()
+                                }
+
+                                DropdownMenuItem(
+                                    selected = trackSort == i,
+                                    onClick = { trackSort = i },
+                                    shapes = MenuDefaults.itemShapes(),
+                                    colors = MenuDefaults.selectableItemColors(),
+                                    text = { Text(stringResource(text)) },
+                                    trailingIcon = {
+                                        if (trackSort == i) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.check),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                )
+                            }
                         }
-                    )
-                }
+                    },
+                    onHandlePlayerActions = onHandlePlayerAction,
+                    onNavigate = onNavigate,
+                    fab = {
+                        CuteActionButton(
+                            action = { onHandlePlayerAction(PlayerActions.PlayRandom) },
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
+                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                            )
+                        )
+                    }
+                )
             }
         ) { paddingValues ->
             LazyColumn(
