@@ -18,10 +18,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
@@ -42,10 +45,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RichTooltip
+import androidx.compose.material3.ShortNavigationBarItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,14 +66,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
 import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.states.MusicState
@@ -69,6 +97,7 @@ import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playing.components.PlayPauseButton
 import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedIconButton
+import com.sosauce.cutemusic.presentation.theme.CuteMusicTheme
 import com.sosauce.cutemusic.presentation.theme.nunitoFontFamily
 import com.sosauce.cutemusic.utils.LocalScreen
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
@@ -120,6 +149,7 @@ fun SharedTransitionScope.CuteSearchbar(
 //            )
 //            Spacer(Modifier.height(10.dp))
 //        }
+
 
         Row(
             modifier = Modifier
@@ -253,17 +283,32 @@ fun SharedTransitionScope.CuteSearchbar(
                                     )
                                 },
                                 leadingIcon = {
-                                    IconButton(
-                                        onClick = { isInScreenSelectionMode = true },
-                                        shapes = IconButtonDefaults.shapes()
+                                    var hasSeenTip by rememberHasSeenTip()
+                                    TooltipBox(
+                                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                        tooltip = {
+                                            RichTooltip(
+                                                caretShape = TooltipDefaults.caretShape(),
+                                                colors = TooltipDefaults.richTooltipColors(
+                                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                    contentColor = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
+                                                ),
+                                            ) { Text("Click me!") }
+                                        },
+                                        state = rememberTooltipState(initialIsVisible = !hasSeenTip, isPersistent = !hasSeenTip)
                                     ) {
-                                        Icon(
-                                            painter = painterResource(
-                                                screenToLeadingIcon[currentScreen]
-                                                    ?: R.drawable.search
-                                            ),
-                                            contentDescription = null
-                                        )
+                                        IconButton(
+                                            onClick = {
+                                                isInScreenSelectionMode = true
+                                                hasSeenTip = true
+                                            },
+                                            shapes = IconButtonDefaults.shapes()
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(screenToLeadingIcon[currentScreen] ?: R.drawable.search),
+                                                contentDescription = null
+                                            )
+                                        }
                                     }
                                 },
                                 trailingIcon = {
@@ -336,25 +381,19 @@ private fun ScreenSelection(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        screens.forEachIndexed { index, item ->
+        screens.fastForEachIndexed { index, item ->
             ToggleButton(
                 checked = currentScreen == item.screen,
                 onCheckedChange = {
                     item.onClick()
                     dismiss()
                 },
-                shapes =
-                    when (index) {
-                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        screens.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                    },
+                shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
                 interactionSource = interactionsSources[index],
                 modifier = Modifier
                     .weight(1f)
                     .animateWidth(interactionsSources[index])
             ) {
-
                 val icon =
                     if (currentScreen == item.screen) item.selectedIcon else item.unselectedIcon
 
@@ -379,6 +418,8 @@ private val screensToShowBack = listOf(
     Screen.AlbumsDetails,
     Screen.PlaylistDetails,
 )
+
+
 
 
 

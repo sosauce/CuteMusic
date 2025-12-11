@@ -22,6 +22,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.EQUALIZER_BANDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
@@ -196,6 +197,10 @@ fun rememberWhitelistedFolders() =
 @Composable
 fun rememberHasBeenThroughSetup() =
     rememberPreference(key = HAS_BEEN_THROUGH_SETUP, defaultValue = false)
+
+@Composable
+fun rememberHasSeenTip() =
+    rememberPreference(key = HAS_SEEN_TIP, defaultValue = false)
 
 suspend  fun getShouldShuffle(context: Context) =
     getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
