@@ -21,7 +21,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,13 +39,13 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.album.components.AlbumCard
-import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.AlbumSort
 import com.sosauce.cutemusic.utils.ordered
+import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 @Composable
 fun SharedTransitionScope.AlbumsScreen(
@@ -72,54 +71,50 @@ fun SharedTransitionScope.AlbumsScreen(
         Scaffold(
             contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CuteSearchbar(
-                        textFieldState = textFieldState,
-                        showSearchField = true,
-                        musicState = musicState,
-                        sortingMenu = {
-                            SortingDropdownMenu(
-                                isSortedAscending = isSortedByASC,
-                                onChangeSorting = { isSortedByASC = it },
-                                topContent = {
-                                    DropdownMenuItem(
-                                        onClick = { numberOfAlbumGrids = if (numberOfAlbumGrids == 4) 2 else numberOfAlbumGrids + 1 },
-                                        text = { Text(stringResource(R.string.no_of_grids)) },
-                                        trailingIcon = { Text("$numberOfAlbumGrids") }
-                                    )
-                                }
-                            ) {
-                                repeat(2) { i ->
-                                    val text = when (i) {
-                                        0 -> R.string.title
-                                        1 -> R.string.artist
-                                        else -> throw IndexOutOfBoundsException()
-                                    }
-                                    DropdownMenuItem(
-                                        selected = albumSort == i,
-                                        onClick = { albumSort = i },
-                                        shapes = MenuDefaults.itemShapes(),
-                                        colors = MenuDefaults.selectableItemColors(),
-                                        text = { Text(stringResource(text)) },
-                                        trailingIcon = {
-                                            if (albumSort == i) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.check),
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
+                CuteSearchbar(
+                    modifier = Modifier.selfAlignHorizontally(),
+                    textFieldState = textFieldState,
+                    showSearchField = true,
+                    musicState = musicState,
+                    sortingMenu = {
+                        SortingDropdownMenu(
+                            isSortedAscending = isSortedByASC,
+                            onChangeSorting = { isSortedByASC = it },
+                            topContent = {
+                                DropdownMenuItem(
+                                    onClick = { numberOfAlbumGrids = if (numberOfAlbumGrids == 4) 2 else numberOfAlbumGrids + 1 },
+                                    text = { Text(stringResource(R.string.no_of_grids)) },
+                                    trailingIcon = { Text("$numberOfAlbumGrids") }
+                                )
                             }
-                        },
-                        onHandlePlayerActions = onHandlePlayerActions,
-                        onNavigate = onNavigate
-                    )
-                }
+                        ) {
+                            repeat(2) { i ->
+                                val text = when (i) {
+                                    0 -> R.string.title
+                                    1 -> R.string.artist
+                                    else -> throw IndexOutOfBoundsException()
+                                }
+                                DropdownMenuItem(
+                                    selected = albumSort == i,
+                                    onClick = { albumSort = i },
+                                    shapes = MenuDefaults.itemShapes(),
+                                    colors = MenuDefaults.selectableItemColors(),
+                                    text = { Text(stringResource(text)) },
+                                    trailingIcon = {
+                                        if (albumSort == i) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.check),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    onNavigate = onNavigate
+                )
             }
         ) { paddingValues ->
             val orderedAlbums = state.albums.ordered(

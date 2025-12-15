@@ -21,7 +21,7 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
-import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -59,7 +59,7 @@ fun QueueScreen(
                     val scale by animateFloatAsState(
                         targetValue = if (isDragging) 1.05f else 1f
                     )
-                    LocalMusicListItem(
+                    MusicListItem(
                         modifier = Modifier.scale(scale),
                         music = track,
                         musicState = musicState,

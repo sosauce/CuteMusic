@@ -27,16 +27,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
@@ -69,9 +65,8 @@ import com.sosauce.cutemusic.presentation.screens.album.components.NumberOfTrack
 import com.sosauce.cutemusic.presentation.screens.artist.components.ArtistHeader
 import com.sosauce.cutemusic.presentation.screens.artist.components.ArtistHeaderLandscape
 import com.sosauce.cutemusic.presentation.screens.artist.components.NumberOfAlbums
-import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
-import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.SelectedBar
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.ImageUtils
@@ -108,11 +103,11 @@ fun SharedTransitionScope.ArtistDetailsScreen(
             bottomBar = {
                 AnimatedContent(
                     targetState = selectedTracks.isEmpty(),
-                    transitionSpec = { scaleIn() togetherWith scaleOut() },
-                    modifier = Modifier.selfAlignHorizontally()
+                    transitionSpec = { scaleIn() togetherWith scaleOut() }
                 ) {
                     if (it) {
                         CuteSearchbar(
+                            modifier = Modifier.selfAlignHorizontally(),
                             musicState = musicState,
                             onHandlePlayerActions = onHandlePlayerAction,
                             showSearchField = false,
@@ -121,6 +116,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                         )
                     } else {
                         SelectedBar(
+                            modifier = Modifier.selfAlignHorizontally(),
                             selectedElements = selectedTracks,
                             onClearSelected = selectedTracks::clear
                         )
@@ -282,7 +278,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                         ),
                         key = { it.mediaId }
                     ) { music ->
-                        LocalMusicListItem(
+                        MusicListItem(
                             modifier = Modifier.animateItem(),
                             music = music,
                             musicState = musicState,

@@ -49,7 +49,6 @@ fun SettingsLookAndFeel(
     val scrollState = rememberScrollState()
     var theme by rememberAppTheme()
     var useSystemFont by rememberUseSystemFont()
-    var showXButton by rememberShowXButton()
     var showShuffleButton by rememberShowShuffleButton()
     var useMaterialArt by rememberUseArtTheme()
     var useExpressivePalette by rememberUseExpressivePalette()
@@ -184,16 +183,9 @@ fun SettingsLookAndFeel(
                 title = R.string.cute_searchbar
             ) {
                 SettingsCards(
-                    checked = showXButton,
-                    onCheckedChange = { showXButton = !showXButton },
-                    topDp = 24.dp,
-                    bottomDp = 4.dp,
-                    text = stringResource(R.string.show_close_button)
-                )
-                SettingsCards(
                     checked = showShuffleButton,
                     onCheckedChange = { showShuffleButton = !showShuffleButton },
-                    topDp = 4.dp,
+                    topDp = 24.dp,
                     bottomDp = 24.dp,
                     text = stringResource(R.string.show_shuffle_btn)
                 )

@@ -12,7 +12,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,17 +21,12 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,9 +50,8 @@ import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.album.components.AlbumHeader
 import com.sosauce.cutemusic.presentation.screens.album.components.AlbumHeaderLandscape
 import com.sosauce.cutemusic.presentation.screens.album.components.NumberOfTracks
-import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
-import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.SelectedBar
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.TrackSort
@@ -104,11 +97,11 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             bottomBar = {
                 AnimatedContent(
                     targetState = selectedTracks.isEmpty(),
-                    transitionSpec = { scaleIn() togetherWith scaleOut() },
-                    modifier = Modifier.selfAlignHorizontally()
+                    transitionSpec = { scaleIn() togetherWith scaleOut() }
                 ) {
                     if (it) {
                         CuteSearchbar(
+                            modifier = Modifier.selfAlignHorizontally(),
                             musicState = musicState,
                             onHandlePlayerActions = onHandlePlayerActions,
                             showSearchField = false,
@@ -117,6 +110,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                         )
                     } else {
                         SelectedBar(
+                            modifier = Modifier.selfAlignHorizontally(),
                             selectedElements = selectedTracks,
                             onClearSelected = selectedTracks::clear
                         )
@@ -189,7 +183,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                     items = sortedMusic,
                     key = { it.mediaId }
                 ) { music ->
-                    LocalMusicListItem(
+                    MusicListItem(
                         modifier = Modifier.animateItem(),
                         music = music,
                         musicState = musicState,

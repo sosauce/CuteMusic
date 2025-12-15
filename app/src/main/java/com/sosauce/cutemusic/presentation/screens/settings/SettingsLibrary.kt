@@ -34,11 +34,12 @@ import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberMinTrackDuration
 import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
-import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.utils.copyMutate
 
 @Composable
@@ -123,25 +124,13 @@ fun SettingsLibrary(
                     }
 
                     latestSafTracks.fastForEach { safTrack ->
-                        Column(
-                            modifier = Modifier
-                                .padding(
-                                    vertical = 2.dp,
-                                    horizontal = 4.dp
-                                )
-                        ) {
-                            SafMusicListItem(
-                                onShortClick = { },
-                                music = safTrack,
-                                currentMusicUri = currentMusicUri,
-                                isPlayerReady = isPlayerReady,
-                                onDeleteFromSaf = {
-                                    safTracks = safTracks.toMutableSet().apply {
-                                        remove(safTrack.uri.toString())
-                                    }
-                                }
-                            )
-                        }
+                        MusicListItem(
+                            music = safTrack,
+                            musicState = MusicState(), // TODO pass real state
+                            onShortClick = {},
+                            onNavigate = {}, // TODO
+                            onHandlePlayerActions = {} // TODO
+                        )
                     }
                 }
             }

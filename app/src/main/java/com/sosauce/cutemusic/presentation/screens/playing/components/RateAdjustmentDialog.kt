@@ -47,7 +47,7 @@ fun RateAdjustmentDialog(
     val textFieldState = rememberTextFieldState(initialText = "%.2f".format(rate))
     val newRate =
         remember(textFieldState.text) { textFieldState.text.toString().toFloatOrNull() ?: 1.0f }
-    val isError = remember(newRate) { newRate > 2.0f || newRate < 0.5f }
+    val isError = remember(newRate) { newRate !in 0.5f..2.0f }
 
 
     AlertDialog(

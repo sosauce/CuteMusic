@@ -44,15 +44,14 @@ class AbstractTracksScanner(
     ): List<CuteTrack> {
         val musics = mutableListOf<CuteTrack>()
 
-        Log.d("CuteFetching", "Start of fetch: whitelisted folder = $whitelistedFolders, minDuration = $minTrackDuration")
-
         if (whitelistedFolders.isEmpty()) return emptyList()
 
         val selection = buildString {
-            append("${MediaStore.Audio.Media.DURATION} >= ?")
-            append(" AND ${MediaStore.Audio.Media.IS_MUSIC} != ?")
-            append(" AND ")
+            append("${MediaStore.Audio.Media.DURATION} >= ? AND ")
+            append("${MediaStore.Audio.Media.IS_MUSIC} != ? AND ")
+            append("(")
             append(whitelistedFolders.joinToString(" OR ") { "${MediaStore.Audio.Media.DATA} LIKE ?" })
+            append(")")
             extraSelection?.let {
                 append(" AND ")
                 append(it)
@@ -61,9 +60,9 @@ class AbstractTracksScanner(
         val selectionArgs = mutableListOf<String>().apply {
             add("${minTrackDuration * 1000}")
             add("0")
-            addAll(whitelistedFolders.map { "$it%" })
+            addAll(whitelistedFolders.map { "$it/%" })
             extraSelectionArgs?.let {
-                addAll(extraSelectionArgs)
+                addAll(it)
             }
         }.toTypedArray()
 
@@ -128,8 +127,6 @@ class AbstractTracksScanner(
                 val artUri = "$uri/albumart".toUri()
                 val mediaId = id.toString()
 
-                Log.d("CuteFetching", "Current music we're loping through $title")
-
                 musics.add(
                     CuteTrack(
                         mediaId = mediaId,
@@ -154,7 +151,6 @@ class AbstractTracksScanner(
             }
 
         }
-        Log.d("CuteFetching", "Final musics we return = $musics")
         return musics
     }
 

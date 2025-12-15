@@ -25,7 +25,7 @@ fun PlayingTopRow(
     modifier: Modifier = Modifier,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit
+    onShrinkToSearchbar: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -33,7 +33,7 @@ fun PlayingTopRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(
-            onClick = onNavigateUp,
+            onClick = onShrinkToSearchbar,
             shapes = IconButtonDefaults.shapes(),
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,

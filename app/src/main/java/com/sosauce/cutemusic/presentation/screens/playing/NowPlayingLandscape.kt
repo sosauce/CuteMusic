@@ -46,10 +46,10 @@ import com.sosauce.cutemusic.utils.SharedTransitionKeys
 
 @Composable
 fun SharedTransitionScope.NowPlayingLandscape(
-    onNavigateUp: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     musicState: MusicState,
-    onNavigate: (Screen) -> Unit
+    onNavigate: (Screen) -> Unit,
+    onShrinkToSearchbar: () -> Unit
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(false) }
@@ -58,9 +58,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
 
     var showDetailsDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        modifier = Modifier.padding(horizontal = 15.dp)
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
 
         if (showDetailsDialog) {
             MusicDetailsDialog(
@@ -77,9 +75,6 @@ fun SharedTransitionScope.NowPlayingLandscape(
         }
 
 
-
-
-
         if (showSpeedCard) {
             SpeedCard(
                 musicState = musicState,
@@ -94,6 +89,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(horizontal = 15.dp)
                 .fillMaxSize()
         ) {
             Column {
@@ -121,7 +117,7 @@ fun SharedTransitionScope.NowPlayingLandscape(
                         PlayingTopRow(
                             musicState = musicState,
                             onNavigate = onNavigate,
-                            onNavigateUp = onNavigateUp
+                            onShrinkToSearchbar = onShrinkToSearchbar
                         )
                         TitleAndArtist(
                             titleModifier = Modifier

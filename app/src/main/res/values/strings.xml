@@ -77,7 +77,7 @@
     <string name="folders">Folders</string>
     <string name="manage_shown_tabs">Manage shown tabs</string>
     <string name="set_sleep_timer">Set sleep timer</string>
-    <string name="go_to">Go to:</string>
+    <string name="go_to">Go to: %s</string>
     <string name="no_lyrics_note">No lyrics found !</string>
     <string name="open_eq">Equalizer</string>
     <string name="from_saf">This track comes from the S.A.F</string>

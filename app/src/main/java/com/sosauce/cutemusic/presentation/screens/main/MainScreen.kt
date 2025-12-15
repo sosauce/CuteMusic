@@ -9,7 +9,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberGroupByFolders
 import com.sosauce.cutemusic.data.datastore.rememberHiddenFolders
 import com.sosauce.cutemusic.data.datastore.rememberTrackSort
@@ -52,10 +50,9 @@ import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.main.components.FolderHeader
 import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
-import com.sosauce.cutemusic.presentation.shared_components.LocalMusicListItem
+import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
-import com.sosauce.cutemusic.presentation.shared_components.SafMusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.TrackSort
@@ -199,7 +196,7 @@ fun SharedTransitionScope.MainScreen(
                                 ),
                                 key = { it.mediaId }
                             ) { music ->
-                                LocalMusicListItem(
+                                MusicListItem(
                                     modifier = Modifier
                                         .animateItem()
                                         .padding(
@@ -256,52 +253,21 @@ fun SharedTransitionScope.MainScreen(
                                 items = orderedMusics,
                                 key = { it.mediaId }
                             ) { music ->
-                                Column(
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .padding(
-                                            vertical = 2.dp,
-                                            horizontal = 4.dp
+                                MusicListItem(
+                                    modifier = Modifier.animateItem(),
+                                    onShortClick = {
+                                        onHandlePlayerAction(
+                                            PlayerActions.Play(
+                                                index = state.tracks.indexOf(music),
+                                                tracks = state.tracks
+                                            )
                                         )
-                                ) {
-                                    if (!music.isSaf) {
-                                        LocalMusicListItem(
-                                            onShortClick = {
-                                                onHandlePlayerAction(
-                                                    PlayerActions.Play(
-                                                        index = state.tracks.indexOf(music),
-                                                        tracks = state.tracks
-                                                    )
-                                                )
-                                            },
-                                            music = music,
-                                            musicState = musicState,
-                                            onNavigate = { onNavigate(it) },
-                                            onHandlePlayerActions = onHandlePlayerAction
-                                        )
-                                    } else {
-                                        var safTracks by rememberAllSafTracks()
-
-                                        SafMusicListItem(
-                                            onShortClick = {
-                                                onHandlePlayerAction(
-                                                    PlayerActions.Play(
-                                                        index = state.tracks.indexOf(music),
-                                                        tracks = state.tracks
-                                                    )
-                                                )
-                                            },
-                                            music = music,
-                                            currentMusicUri = musicState.track.uri.toString(),
-                                            isPlayerReady = musicState.isPlayerReady,
-                                            onDeleteFromSaf = {
-                                                safTracks = safTracks.copyMutate {
-                                                    remove(music.uri.toString())
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
+                                    },
+                                    music = music,
+                                    musicState = musicState,
+                                    onNavigate = { onNavigate(it) },
+                                    onHandlePlayerActions = onHandlePlayerAction
+                                )
                             }
                         }
 

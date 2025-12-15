@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -122,6 +125,11 @@ fun SpeedAndPitchDialog(
                         },
                         valueRange = 0.5f..2f
                     )
+                    DefaultRatesSuggestions(
+                        onRateClick = { rate ->
+                            onHandlePlayerAction(PlayerActions.SetSpeed(rate))
+                        }
+                    )
                     //
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -173,7 +181,13 @@ fun SpeedAndPitchDialog(
                         },
                         valueRange = 0.5f..2f
                     )
+                    DefaultRatesSuggestions(
+                        onRateClick = { rate ->
+                            onHandlePlayerAction(PlayerActions.SetPitch(rate))
+                        }
+                    )
                 } else {
+                    // Snapped rate
                     Column {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -218,6 +232,12 @@ fun SpeedAndPitchDialog(
                             },
                             valueRange = 0.5f..2f
                         )
+                        DefaultRatesSuggestions(
+                            onRateClick = { rate ->
+                                onHandlePlayerAction(PlayerActions.SetSpeed(rate))
+                                onHandlePlayerAction(PlayerActions.SetPitch(rate))
+                            }
+                        )
                     }
                 }
                 Row(
@@ -236,4 +256,31 @@ fun SpeedAndPitchDialog(
             }
         }
     )
+}
+
+@Composable
+private fun DefaultRatesSuggestions(
+    onRateClick: (Float) -> Unit
+) {
+    val rates = listOf(
+        0.75f,
+        0.90f,
+        1.20f,
+        1.50f
+    )
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        items(
+            items = rates,
+            key = { it }
+        ) { rate ->
+            SuggestionChip(
+                onClick = { onRateClick(rate) },
+                label = { Text("$rate") }
+            )
+        }
+    }
+
 }

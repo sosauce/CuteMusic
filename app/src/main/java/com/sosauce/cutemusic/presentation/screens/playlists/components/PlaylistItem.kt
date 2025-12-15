@@ -18,13 +18,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -41,11 +45,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEachIndexed
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
-import com.sosauce.cutemusic.presentation.shared_components.CuteDropdownMenuItem
 import com.sosauce.cutemusic.presentation.shared_components.DeletionDialog
+import com.sosauce.cutemusic.presentation.shared_components.MoreOptions
 
 @Composable
 fun PlaylistItem(
@@ -58,7 +63,6 @@ fun PlaylistItem(
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
-
     val exportPlaylistLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
             uri?.let {
@@ -71,6 +75,24 @@ fun PlaylistItem(
             }
 
         }
+    val playlistOptions = listOf(
+        MoreOptions(
+            text = { stringResource(R.string.edit_playlist) },
+            onClick = { showEditDialog = true },
+            icon = R.drawable.edit_rounded
+        ),
+        MoreOptions(
+            text = { stringResource(R.string.export_playlist) },
+            onClick = { exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u") },
+            icon = R.drawable.export
+        ),
+        MoreOptions(
+            text = { stringResource(R.string.delete) },
+            onClick = { showDeletionDialog = true },
+            icon = R.drawable.trash_rounded,
+            tint = MaterialTheme.colorScheme.error
+        )
+    )
 
     if (showEditDialog) {
         EditPlaylist(
@@ -82,36 +104,9 @@ fun PlaylistItem(
 
     if (showDeletionDialog) {
         DeletionDialog(
-            onDismissRequest = { showDeletionDialog = false },
-            onDelete = {
-                onHandlePlaylistActions(
-                    PlaylistActions.DeletePlaylist(playlist)
-                )
-            }
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (playlist.emoji.isNotEmpty()) {
-                    Text(
-                        text = playlist.emoji,
-                        fontSize = 50.sp
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.playlist),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                }
-                Text(
-                    text = playlist.name,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-        }
+            track = playlist.toCuteTrack(),
+            onDismissRequest = { showDeletionDialog = false }
+        )
     }
 
     DropdownMenuItem(
@@ -183,47 +178,38 @@ fun PlaylistItem(
                     )
                 }
 
-                DropdownMenu(
+
+                DropdownMenuPopup(
                     expanded = isDropdownExpanded,
-                    onDismissRequest = { isDropdownExpanded = false },
-                    shape = RoundedCornerShape(24.dp)
+                    onDismissRequest = { isDropdownExpanded = false }
                 ) {
-                    CuteDropdownMenuItem(
-                        onClick = { showEditDialog = true },
-                        text = { Text(stringResource(R.string.edit_playlist)) },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.edit_rounded),
-                                contentDescription = null
+                    DropdownMenuGroup(
+                        shapes = MenuDefaults.groupShapes()
+                    ) {
+                        playlistOptions.fastForEachIndexed { index, option ->
+                            DropdownMenuItem(
+                                onClick = option.onClick,
+                                shape = when (index) {
+                                    0 -> MenuDefaults.leadingItemShape
+                                    playlistOptions.lastIndex -> MenuDefaults.trailingItemShape
+                                    else -> MenuDefaults.middleItemShape
+                                },
+                                text = {
+                                    Text(
+                                        text = option.text(),
+                                        color = option.tint ?: LocalContentColor.current
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(option.icon),
+                                        contentDescription = null,
+                                        tint = option.tint ?: LocalContentColor.current
+                                    )
+                                }
                             )
                         }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u") },
-                        text = { Text(stringResource(R.string.export_playlist)) },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.export),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    CuteDropdownMenuItem(
-                        onClick = { showDeletionDialog = true },
-                        text = {
-                            Text(
-                                text = stringResource(R.string.delete),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.trash_rounded),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    )
+                    }
                 }
             }
         }

@@ -76,7 +76,7 @@
     <string name="folders">Dossiers</string>
     <string name="manage_shown_tabs">Gérer les onglets visibles</string>
     <string name="set_sleep_timer">Fixer un temps de veille</string>
-    <string name="go_to">Aller à:</string>
+    <string name="go_to">Aller à: %s</string>
     <string name="no_lyrics_note">Pas de paroles trouvées !</string>
     <string name="open_eq">Égaliseur</string>
     <string name="from_saf">Cette musiques proviens du S.A.F</string>

@@ -73,7 +73,7 @@
     <string name="folders">文件夹</string>
     <string name="manage_shown_tabs">管理显示的标签页</string>
     <string name="set_sleep_timer">设置睡眠定时</string>
-    <string name="go_to">前往: </string>
+    <string name="go_to">前往: %s</string>
     <string name="no_lyrics_note">未发现歌词！</string>
     <string name="open_eq">均衡器</string>
     <string name="from_saf">这首歌通过S.A.F添加</string>

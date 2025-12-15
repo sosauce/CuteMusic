@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package com.sosauce.cutemusic.presentation.screens.metadata
 
@@ -30,12 +30,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -61,6 +65,7 @@ import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.ThreadDivider
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 @Composable
 fun MetadataEditor(
@@ -108,7 +113,18 @@ fun MetadataEditor(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                CuteNavigationButton(onNavigateUp = onNavigateUp)
+                FloatingActionButton(
+                    onClick = onNavigateUp,
+                    modifier = Modifier
+                        .padding(start = 15.dp),
+                    shape = MaterialShapes.Cookie9Sided.toShape(),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.back),
+                        contentDescription = null
+                    )
+                }
                 CuteActionButton(
                     modifier = Modifier.padding(end = 15.dp),
                     icon = R.drawable.check

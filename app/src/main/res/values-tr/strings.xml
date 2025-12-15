@@ -75,7 +75,7 @@
     <string name="folders">Klasörler</string>
     <string name="manage_shown_tabs">Gösterilen sekmeleri yönet</string>
     <string name="set_sleep_timer">Uyku zamanlayıcısını ayarla</string>
-    <string name="go_to">Git:</string>
+    <string name="go_to">Git: %s</string>
     <string name="no_lyrics_note">Sözler bulunamadı!</string>
     <string name="open_eq">Ekolayzer</string>
     <string name="from_saf">Bu parça S.A.F\'den geliyor</string>

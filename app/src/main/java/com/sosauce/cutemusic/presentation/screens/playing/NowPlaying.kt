@@ -58,7 +58,8 @@ fun SharedTransitionScope.NowPlaying(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    onShrinkToSearchbar: () -> Unit = {}
 ) {
     var showFullLyrics by remember { mutableStateOf(false) }
     val isLandscape = rememberIsLandscape()
@@ -68,7 +69,7 @@ fun SharedTransitionScope.NowPlaying(
             musicState = musicState,
             onHandlePlayerActions = onHandlePlayerActions,
             onNavigate = onNavigate,
-            onNavigateUp = onNavigateUp
+            onShrinkToSearchbar = onShrinkToSearchbar
         )
     } else {
         AnimatedContent(
@@ -85,8 +86,8 @@ fun SharedTransitionScope.NowPlaying(
                     musicState = musicState,
                     onHandlePlayerActions = onHandlePlayerActions,
                     onNavigate = onNavigate,
-                    onNavigateUp = onNavigateUp,
-                    onShowLyrics = { showFullLyrics = true }
+                    onShowLyrics = { showFullLyrics = true },
+                    onShrinkToSearchbar = onShrinkToSearchbar
                 )
             }
 
@@ -101,8 +102,8 @@ private fun SharedTransitionScope.NowPlayingContent(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit,
     onShowLyrics: () -> Unit,
+    onShrinkToSearchbar: () -> Unit
 ) {
     var snap by rememberSnapSpeedAndPitch()
     var showSpeedCard by remember { mutableStateOf(false) }
@@ -110,20 +111,21 @@ private fun SharedTransitionScope.NowPlayingContent(
     var showDetailsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier.padding(horizontal = 15.dp),
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
                     IconButton(
-                        onClick = onNavigateUp,
+                        onClick = onShrinkToSearchbar,
                         shapes = IconButtonDefaults.shapes(),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer,
                             contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
                         ),
                         modifier = Modifier
+                            .padding(start = 15.dp)
                             .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_down),
@@ -134,6 +136,7 @@ private fun SharedTransitionScope.NowPlayingContent(
                 },
                 actions = {
                     MoreOptionsButton(
+                        modifier = Modifier.padding(end = 15.dp),
                         musicState = musicState,
                         onNavigate = onNavigate
                     )
@@ -182,6 +185,7 @@ private fun SharedTransitionScope.NowPlayingContent(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(horizontal = 15.dp)
                 .verticalScroll(rememberScrollState()), // for smaller screens where it might not entirely fit
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)

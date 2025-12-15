@@ -9,9 +9,6 @@ sealed class Screen() : NavKey {
     data object Main : Screen()
 
     @Serializable
-    data object NowPlaying : Screen()
-
-    @Serializable
     data object Settings : Screen()
 
     @Serializable
