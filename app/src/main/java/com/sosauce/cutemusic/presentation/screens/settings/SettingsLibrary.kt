@@ -41,10 +41,11 @@ import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSett
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.utils.copyMutate
+import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 @Composable
 fun SettingsLibrary(
-    latestSafTracks: List<CuteTrack>,
+    safTracksUi: List<CuteTrack>,
     isPlayerReady: Boolean,
     currentMusicUri: String,
     onNavigateUp: () -> Unit
@@ -106,8 +107,7 @@ fun SettingsLibrary(
                         ),
                         modifier = Modifier
                             .padding(5.dp)
-                            .fillMaxWidth()
-                            .wrapContentWidth(),
+                            .selfAlignHorizontally(),
                         onClick = { safAudioPicker.launch(arrayOf("audio/*")) }
                     ) {
                         Row(
@@ -123,7 +123,7 @@ fun SettingsLibrary(
                         }
                     }
 
-                    latestSafTracks.fastForEach { safTrack ->
+                    safTracksUi.fastForEach { safTrack ->
                         MusicListItem(
                             music = safTrack,
                             musicState = MusicState(), // TODO pass real state

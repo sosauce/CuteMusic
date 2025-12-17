@@ -53,10 +53,12 @@ import com.sosauce.cutemusic.presentation.screens.playlists.components.EmptyPlay
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeader
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistHeaderLandscape
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
+import com.sosauce.cutemusic.presentation.shared_components.MoreOptions
 import com.sosauce.cutemusic.presentation.shared_components.MusicListItem
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.CuteTheme
 import com.sosauce.cutemusic.utils.TrackSort
+import com.sosauce.cutemusic.utils.copyMutate
 import com.sosauce.cutemusic.utils.ordered
 import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
@@ -75,7 +77,6 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     val theme by rememberAppTheme()
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val useExpressivePalette by rememberUseExpressivePalette()
-    var showTrackSort by remember { mutableStateOf(false) }
     var sortTracksAsc by rememberSaveable { mutableStateOf(true) }
     var trackSort by rememberTrackSort()
 
@@ -202,7 +203,26 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 music = music,
                                 musicState = musicState,
                                 onNavigate = { onNavigate(it) },
-                                onHandlePlayerActions = onHandlePlayerAction
+                                onHandlePlayerActions = onHandlePlayerAction,
+                                extraOptions = listOf(
+                                    MoreOptions(
+                                        text = { stringResource(R.string.remove_from_playlist) },
+                                        icon = R.drawable.playlist_remove,
+                                        onClick = {
+                                            onHandlePlaylistAction(
+                                                PlaylistActions.UpsertPlaylist(
+                                                    state.playlist.copy(
+                                                        musics = state.playlist.musics.copyMutate {
+                                                            remove(
+                                                                music.mediaId
+                                                            )
+                                                        }
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    )
+                                )
                             )
                         }
                     }

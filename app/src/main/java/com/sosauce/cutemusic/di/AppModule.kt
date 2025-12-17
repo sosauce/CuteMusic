@@ -20,6 +20,7 @@ import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewM
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.cutemusic.presentation.screens.quickplay.QuickPlayViewModel
 import com.sosauce.cutemusic.presentation.screens.settings.FoldersViewModel
+import com.sosauce.cutemusic.presentation.screens.settings.SafViewModel
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
@@ -58,4 +59,5 @@ val appModule = module {
     viewModelOf(::AlbumDetailsViewModel)
     viewModelOf(::MainViewModel)
     viewModelOf(::FoldersViewModel)
+    viewModelOf(::SafViewModel)
 }

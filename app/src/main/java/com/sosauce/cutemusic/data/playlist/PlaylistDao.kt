@@ -20,7 +20,7 @@ interface PlaylistDao {
     fun getPlaylists(): Flow<List<Playlist>>
 
     @Query("SELECT * FROM playlist WHERE id = :id")
-    fun getPlaylistDetails(id: Int): Playlist
+    fun getPlaylistDetails(id: Int): Flow<Playlist>
 
 
 }

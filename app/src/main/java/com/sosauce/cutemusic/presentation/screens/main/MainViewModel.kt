@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.cutemusic.data.AbstractTracksScanner
 import com.sosauce.cutemusic.data.models.CuteTrack
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -19,7 +20,7 @@ class MainViewModel(
 
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             abstractTracksScanner.fetchLatestTracks(null, null)
                 .collectLatest { tracks ->
                     _state.update {

@@ -6,6 +6,7 @@
 package com.sosauce.cutemusic.presentation.shared_components
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -181,7 +182,7 @@ fun SharedTransitionScope.CuteSearchbar(
             }
             .draggable(
                 state = dragState,
-                enabled = musicState.isPlayerReady,
+                enabled = musicState.isPlayerReady && !showFullPlayer,
                 orientation = Orientation.Vertical,
                 onDragStopped = {
                     scope.launch {
@@ -212,9 +213,7 @@ fun SharedTransitionScope.CuteSearchbar(
                     .fillMaxWidth(searchbarWidth)
                     .padding(end = rememberSearchbarRightPadding())
                     .imePadding()
-                    .graphicsLayer {
-                        alpha = searchbarAlpha
-                    }
+                    .graphicsLayer { alpha = searchbarAlpha }
             ) {
                 Row(
                     modifier = Modifier

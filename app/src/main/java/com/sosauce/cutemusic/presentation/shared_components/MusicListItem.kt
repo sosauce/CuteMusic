@@ -68,6 +68,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
+import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
@@ -75,6 +76,7 @@ import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.utils.ImageUtils
 import com.sosauce.cutemusic.utils.LocalScreen
+import com.sosauce.cutemusic.utils.copyMutate
 
 @Composable
 fun MusicListItem(
@@ -84,8 +86,8 @@ fun MusicListItem(
     onShortClick: (mediaId: String) -> Unit,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
-    trailingContent: @Composable () -> Unit = { DefaultMusicListItemTrailingContent(music, onNavigate, onHandlePlayerActions) },
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
+    extraOptions: List<MoreOptions> = emptyList()
 ) {
 
     val context = LocalContext.current
@@ -183,7 +185,15 @@ fun MusicListItem(
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically
-            ) { trailingContent() }
+            ) {
+                DefaultMusicListItemTrailingContent(
+                    track = music,
+                    onNavigate = onNavigate,
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    musicState = musicState,
+                    extraOptions = extraOptions
+                )
+            }
         }
     }
 }
@@ -191,8 +201,10 @@ fun MusicListItem(
 @Composable
 private fun DefaultMusicListItemTrailingContent(
     track: CuteTrack,
+    musicState: MusicState,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
+    extraOptions: List<MoreOptions> = emptyList()
 ) {
 
     val currentScreen = LocalScreen.current
@@ -224,27 +236,31 @@ private fun DefaultMusicListItemTrailingContent(
 
     TrackDropdownMenu(
         track = track,
+        musicState = musicState,
         isExpanded = isDropDownExpanded,
         onDismissRequest = { isDropDownExpanded = false },
         onNavigate = onNavigate,
-        onHandlePlayerActions = onHandlePlayerActions
+        onHandlePlayerActions = onHandlePlayerActions,
+        extraOptions = extraOptions
     )
 }
 
 @Composable
 private fun TrackDropdownMenu(
     track: CuteTrack,
+    musicState: MusicState,
     isExpanded: Boolean,
     onDismissRequest: () -> Unit,
     onNavigate: (Screen) -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    extraOptions: List<MoreOptions> = emptyList()
 ) {
 
     val context = LocalContext.current
-    val currentScreen = LocalScreen.current
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
+    var safTracks by rememberAllSafTracks()
     val trackOptions = listOf(
         MoreOptions(
             text = { stringResource(R.string.edit) },
@@ -257,7 +273,9 @@ private fun TrackDropdownMenu(
         MoreOptions(
             text = { stringResource(R.string.add_queue) },
             onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(track)) },
-            icon = R.drawable.add
+            icon = R.drawable.add,
+            enabled = track !in musicState.loadedMedias,
+            disabledText = { stringResource(R.string.already_in_queue) }
         ),
         MoreOptions(
             text = { stringResource(R.string.go_to, track.album) },
@@ -284,7 +302,16 @@ private fun TrackDropdownMenu(
             onClick = { showPlaylistDialog = true },
             icon = R.drawable.playlist_add
         )
-    )
+    ) + extraOptions
+    val onDeleteClick = remember {
+        {
+            if (track.isSaf) {
+                safTracks = safTracks.copyMutate { remove(track.uri.toString()) }
+            } else {
+                showDeletionDialog = true
+            }
+        }
+    }
 
 
     if (showDetailsDialog) {
@@ -319,12 +346,19 @@ private fun TrackDropdownMenu(
             trackOptions.fastForEachIndexed { index, option ->
                 DropdownMenuItem(
                     onClick = option.onClick,
+                    enabled = option.enabled,
                     shape = when (index) {
                         0 -> MenuDefaults.leadingItemShape
                         trackOptions.lastIndex -> MenuDefaults.trailingItemShape
                         else -> MenuDefaults.middleItemShape
                     },
-                    text = { Text(option.text()) },
+                    text = {
+                        if (option.enabled) {
+                            Text(option.text())
+                        } else {
+                            Text(option.disabledText!!())
+                        }
+                    },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(option.icon),
@@ -380,7 +414,7 @@ private fun TrackDropdownMenu(
                 )
             }
             FilledIconButton(
-                onClick = { showDeletionDialog = true },
+                onClick = onDeleteClick,
                 modifier = Modifier
                     .weight(1f)
                     .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
@@ -405,5 +439,7 @@ data class MoreOptions(
     val text: @Composable () -> String,
     val onClick: () -> Unit,
     val icon: Int,
-    val tint: Color? = null
+    val tint: Color? = null,
+    val enabled: Boolean = true,
+    val disabledText: (@Composable () -> String)? = null,
 )

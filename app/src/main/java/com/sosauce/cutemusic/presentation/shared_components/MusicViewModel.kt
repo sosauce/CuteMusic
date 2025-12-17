@@ -63,8 +63,6 @@ import java.time.Duration
 
 class MusicViewModel(
     private val application: Application,
-    private val abstractTracksScanner: AbstractTracksScanner,
-    private val safManager: SafManager,
     private val lyricsParser: LyricsParser
 ) : AndroidViewModel(application) {
 
@@ -73,44 +71,28 @@ class MusicViewModel(
     val musicState = _musicState.asStateFlow()
 
     var sleepCountdownTimer: CountDownTimer? = null
-
-    val safTracks = safManager.fetchLatestSafTracks()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList()
-        )
     private val playerListener =
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
-                viewModelScope.launch {
 
-                    _musicState.update {
-                        val newTrack = it.loadedMedias.fastFirstOrNull { track -> track.mediaId == mediaItem?.mediaId } ?: CuteTrack()
-                        saveSavedMediaId(application, newTrack.mediaId)
-                        it.copy(
-                            track = newTrack,
-                            lyrics = lyricsParser.parseLyrics(newTrack.path),
-                            audioSessionAudio = mediaController!!.sessionExtras.getInt("audioSessionId", 0),
-                            mediaIndex = mediaController!!.currentMediaItemIndex
-                        )
+                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) return
+
+                viewModelScope.launch {
+                    musicState.value.loadedMedias.fastFirstOrNull { track ->
+                        track.mediaId == mediaItem?.mediaId
+                    }?.also { track ->
+                        _musicState.update {
+                            saveSavedMediaId(application, track.mediaId)
+                            it.copy(
+                                track = track,
+                                lyrics = lyricsParser.parseLyrics(track.path),
+                                audioSessionAudio = mediaController!!.sessionExtras.getInt("audioSessionId", 0),
+                                mediaIndex = mediaController!!.currentMediaItemIndex
+                            )
+                        }
                     }
 
-//                    musicState.value.loadedMedias.fastFirstOrNull { track ->
-//                        track.mediaId == mediaItem?.mediaId
-//                    }?.also { track ->
-//                        _musicState.update { state ->
-//                            state.copy(
-//                                track = track,
-//                                lyrics = lyricsParser.parseLyrics(track.path),
-//                                audioSessionAudio = mediaController!!.sessionExtras.getInt("audioSessionId", 0),
-//                                mediaIndex = mediaController!!.currentMediaItemIndex
-//                            )
-//                        }
-//                        // TODO saveSavedPosition(application, position)
-//                        saveSavedMediaId(application, track.mediaId)
-//                    }
                 }
             }
 
@@ -178,7 +160,9 @@ class MusicViewModel(
                             saveSavedMediaId(application, musicState.value.track.mediaId)
                         }
 
-                        _musicState.update { MusicState() }
+                        _musicState.update {
+                            it.copy(track = CuteTrack())
+                        }
                     }
 
 

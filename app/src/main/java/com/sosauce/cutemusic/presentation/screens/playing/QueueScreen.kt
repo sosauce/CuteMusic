@@ -73,27 +73,27 @@ fun QueueScreen(
                                 )
                             )
                         },
-                        trailingContent = {
-                            IconButton(
-                                onClick = { onHandlePlayerAction(PlayerActions.RemoveFromQueue(track)) },
-                                shapes = IconButtonDefaults.shapes()
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.close),
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = {},
-                                shapes = IconButtonDefaults.shapes(),
-                                modifier = Modifier.draggableHandle()
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.drag_handle),
-                                    contentDescription = null
-                                )
-                            }
-                        }
+//                        trailingContent = {
+//                            IconButton(
+//                                onClick = { onHandlePlayerAction(PlayerActions.RemoveFromQueue(track)) },
+//                                shapes = IconButtonDefaults.shapes()
+//                            ) {
+//                                Icon(
+//                                    painter = painterResource(R.drawable.close),
+//                                    contentDescription = null
+//                                )
+//                            }
+//                            IconButton(
+//                                onClick = {},
+//                                shapes = IconButtonDefaults.shapes(),
+//                                modifier = Modifier.draggableHandle()
+//                            ) {
+//                                Icon(
+//                                    painter = painterResource(R.drawable.drag_handle),
+//                                    contentDescription = null
+//                                )
+//                            }
+//                        }
                     )
                 }
 

@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class
+)
 
 package com.sosauce.cutemusic.presentation.screens.playing.components
 
@@ -13,13 +15,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,9 +55,14 @@ import com.sosauce.cutemusic.data.datastore.rememberShouldApplyShuffle
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.utils.ImageUtils
+import com.sosauce.cutemusic.utils.ignoreParentPadding
 import com.sosauce.cutemusic.utils.toShape
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlin.math.absoluteValue
 
 @Composable
@@ -63,40 +75,44 @@ fun Artwork(
     val useCarousel by rememberCarousel()
     var artworkShape by rememberArtworkShape()
     val useShuffle by rememberShouldApplyShuffle()
-    val pagerState =
-        rememberPagerState(initialPage = musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.track.mediaId }
-            .takeIf { it != -1 } ?: 0) { musicState.loadedMedias.size }
 
 
 
     if (useCarousel) {
-        var lastPage by remember { mutableIntStateOf(musicState.loadedMedias.indexOfFirst { it.mediaId == musicState.track.mediaId }) }
+        val carouselState = rememberCarouselState(initialItem = musicState.mediaIndex) { musicState.loadedMedias.size }
 
-        LaunchedEffect(pagerState.settledPage) {
-            if (musicState.mediaIndex == pagerState.settledPage) return@LaunchedEffect
-            if (pagerState.settledPage != lastPage) {
-                snapshotFlow { pagerState.isScrollInProgress }
-                    .filter { !it }
-                    .first()
-                if (useShuffle) {
-                    onHandlePlayerActions(PlayerActions.PlayRandom)
-                } else onHandlePlayerActions(PlayerActions.SeekToMusicIndex(pagerState.settledPage))
-                lastPage = pagerState.settledPage
+        LaunchedEffect(carouselState, musicState.mediaIndex) {
+            if (!carouselState.isScrollInProgress &&
+                carouselState.currentItem != musicState.mediaIndex) {
+                carouselState.animateScrollToItem(musicState.mediaIndex)
             }
+
+            // Prevents music switching mid-scroll
+            snapshotFlow { carouselState.isScrollInProgress }
+                .collectLatest { isScrolling ->
+                    if (!isScrolling) {
+                        val settledPage = carouselState.currentItem
+                        if (settledPage != musicState.mediaIndex) {
+                            if (useShuffle) {
+                                onHandlePlayerActions(PlayerActions.PlayRandom)
+                            } else {
+                                onHandlePlayerActions(PlayerActions.SeekToMusicIndex(settledPage))
+                            }
+                        }
+                    }
+                }
         }
 
 
-        LaunchedEffect(musicState.mediaIndex) {
-            pagerState.animateScrollToPage(musicState.mediaIndex)
-        }
-
-        HorizontalPager(
-            state = pagerState,
-            key = { musicState.loadedMedias[it].mediaId },
-            //contentPadding = PaddingValues(horizontal = 5.dp),
+        HorizontalCenteredHeroCarousel(
+            state = carouselState,
             modifier = pagerModifier
+                .ignoreParentPadding()
+                .aspectRatio(1f)
+                .wrapContentSize()
+                .fillMaxSize(),
+            itemSpacing = 10.dp
         ) { page ->
-
             val image = rememberAsyncImagePainter(musicState.loadedMedias[page].artUri)
             val imageState by image.state.collectAsStateWithLifecycle()
 
@@ -107,22 +123,10 @@ fun Artwork(
                         painter = image,
                         contentDescription = stringResource(R.string.artwork),
                         modifier = Modifier
-                            .graphicsLayer {
-                                val pageOffset =
-                                    (pagerState.currentPage - page + pagerState.currentPageOffsetFraction).absoluteValue
-
-                                lerp(
-                                    start = 75.dp,
-                                    stop = 100.dp,
-                                    fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                                ).also { scale ->
-                                    scaleY = scale / 100.dp
-                                }
-                            }
                             .aspectRatio(1f)
                             .wrapContentSize()
-                            .fillMaxSize(0.9f)
-                            .clip(artworkShape.toShape()),
+                            .fillMaxSize()
+                            .maskClip(MaterialTheme.shapes.extraLarge),
                         contentScale = ContentScale.Crop
                     )
                 }

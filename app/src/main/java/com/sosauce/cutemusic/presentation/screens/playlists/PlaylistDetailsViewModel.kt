@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.sosauce.cutemusic.presentation.screens.playlists
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.cutemusic.data.models.CuteTrack
@@ -8,9 +11,11 @@ import com.sosauce.cutemusic.data.playlist.PlaylistDao
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.domain.repository.PlaylistsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,17 +31,18 @@ class PlaylistDetailsViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val playlist = dao.getPlaylistDetails(id)
-            _state.update { it.copy(playlist = playlist) }
-
-            playlistsRepository.fetchLatestPlaylistTracks(playlist.musics).collectLatest { tracks ->
-                _state.update {
-                    it.copy(
-                        tracks = tracks,
-                        isLoading = false
-                    )
+            dao.getPlaylistDetails(id)
+                .flatMapLatest { playlist ->
+                    _state.update { it.copy(playlist = playlist) }
+                    playlistsRepository.fetchLatestPlaylistTracks(playlist.musics)
+                }.collectLatest { tracks ->
+                    _state.update {
+                        it.copy(
+                            tracks = tracks,
+                            isLoading = false
+                        )
+                    }
                 }
-            }
         }
     }
 

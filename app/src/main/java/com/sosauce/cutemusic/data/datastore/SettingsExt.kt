@@ -14,6 +14,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -98,6 +99,17 @@ suspend fun <T> getPreference(
         .map { preference ->
             preference[key] ?: defaultValue
         }.first()
+
+fun <T> getPreferenceFlow(
+    key: Preferences.Key<T>,
+    defaultValue: T,
+    context: Context
+): Flow<T> =
+    context.dataStore.data
+        .map { preference ->
+            preference[key] ?: defaultValue
+        }
+
 
 suspend fun <T> savePreference(
     key: Preferences.Key<T>,

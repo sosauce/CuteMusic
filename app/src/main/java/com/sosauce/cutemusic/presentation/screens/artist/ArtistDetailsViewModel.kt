@@ -31,7 +31,7 @@ class ArtistDetailsViewModel(
                 )
             }
         }
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             artistsRepository.fetchLatestArtistTracks(artistName).collectLatest { tracks ->
                 _state.update {
                     it.copy(

@@ -167,6 +167,8 @@
     <string name="unknown">Unknown</string>
     <string name="tags">Tags</string>
     <string name="color">Color</string>
+    <string name="already_in_queue">Already in queue</string>
+    <string name="already_in_playlist">Track already in playlist</string>
 
     <plurals name="tracks">
         <item quantity="one">%d track</item>

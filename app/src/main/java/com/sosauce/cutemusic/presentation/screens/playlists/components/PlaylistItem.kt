@@ -5,11 +5,13 @@
 
 package com.sosauce.cutemusic.presentation.screens.playlists.components
 
+import android.view.MenuItem
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,13 +27,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +63,8 @@ fun PlaylistItem(
     modifier: Modifier = Modifier,
     playlist: Playlist,
     onHandlePlaylistActions: (PlaylistActions) -> Unit,
-    onClickPlaylist: () -> Unit
+    onClickPlaylist: () -> Unit,
+    enabled: Boolean = true
 ) {
 
     var isDropdownExpanded by remember { mutableStateOf(false) }
@@ -109,109 +116,126 @@ fun PlaylistItem(
         )
     }
 
-    DropdownMenuItem(
+    Surface(
         modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp)),
-        onClick = onClickPlaylist,
-        leadingIcon = {
-            Box(
-                modifier = Modifier
-                    .size(45.dp)
-                    .clip(RoundedCornerShape(5.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (playlist.emoji.isNotBlank()) {
-                    Text(
-                        text = playlist.emoji,
-                        fontSize = 20.sp
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.queue_music_rounded),
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier.padding(vertical = 15.dp)
-            ) {
-                Text(
-                    text = playlist.name,
-                    maxLines = 1,
-                    modifier = Modifier.basicMarquee()
-                )
-                Text(
-                    text = pluralStringResource(
-                        R.plurals.tracks,
-                        playlist.musics.size,
-                        playlist.musics.size
-                    ),
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
-                )
-            }
-        },
-        trailingIcon = {
+            .padding(3.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .clickable(
+                enabled = enabled,
+                onClick = onClickPlaylist
+            ),
+        color = Color.Transparent
+    ) {
+        CompositionLocalProvider(LocalContentColor provides if (enabled) LocalContentColor.current else MaterialTheme.colorScheme.onSurface.copy(0.38f)) {
             Row(
+                modifier = modifier
+                    .padding(vertical = 15.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (playlist.color != -1) {
-                    Box(
-                        modifier = Modifier
-                            .size(15.dp)
-                            .background(
-                                color = Color(playlist.color),
-                                shape = MaterialShapes.Circle.toShape()
-                            )
+                Box(
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                        .size(45.dp)
+                        .clip(RoundedCornerShape(5.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (playlist.emoji.isNotBlank()) {
+                        Text(
+                            text = playlist.emoji,
+                            fontSize = 20.sp
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.queue_music_rounded),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = playlist.name,
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
+                    )
+
+                    val bottomText = if (enabled) {
+                        pluralStringResource(
+                            R.plurals.tracks,
+                            playlist.musics.size,
+                            playlist.musics.size
+                        )
+                    } else {
+                        stringResource(R.string.already_in_playlist)
+                    }
+
+                    Text(
+                        text = bottomText,
+                        maxLines = 1,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(0.38f)
                     )
                 }
-                IconButton(
-                    onClick = { isDropdownExpanded = true }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null
-                    )
-                }
-
-
-                DropdownMenuPopup(
-                    expanded = isDropdownExpanded,
-                    onDismissRequest = { isDropdownExpanded = false }
-                ) {
-                    DropdownMenuGroup(
-                        shapes = MenuDefaults.groupShapes()
+                    if (playlist.color != -1) {
+                        Box(
+                            modifier = Modifier
+                                .size(15.dp)
+                                .background(
+                                    color = Color(playlist.color),
+                                    shape = MaterialShapes.Circle.toShape()
+                                )
+                        )
+                    }
+                    IconButton(
+                        onClick = { isDropdownExpanded = true }
                     ) {
-                        playlistOptions.fastForEachIndexed { index, option ->
-                            DropdownMenuItem(
-                                onClick = option.onClick,
-                                shape = when (index) {
-                                    0 -> MenuDefaults.leadingItemShape
-                                    playlistOptions.lastIndex -> MenuDefaults.trailingItemShape
-                                    else -> MenuDefaults.middleItemShape
-                                },
-                                text = {
-                                    Text(
-                                        text = option.text(),
-                                        color = option.tint ?: LocalContentColor.current
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(option.icon),
-                                        contentDescription = null,
-                                        tint = option.tint ?: LocalContentColor.current
-                                    )
-                                }
-                            )
+                        Icon(
+                            painter = painterResource(R.drawable.more_vert),
+                            contentDescription = null
+                        )
+                    }
+
+                    DropdownMenuPopup(
+                        expanded = isDropdownExpanded,
+                        onDismissRequest = { isDropdownExpanded = false }
+                    ) {
+                        DropdownMenuGroup(
+                            shapes = MenuDefaults.groupShapes()
+                        ) {
+                            playlistOptions.fastForEachIndexed { index, option ->
+                                DropdownMenuItem(
+                                    onClick = option.onClick,
+                                    shape = when (index) {
+                                        0 -> MenuDefaults.leadingItemShape
+                                        playlistOptions.lastIndex -> MenuDefaults.trailingItemShape
+                                        else -> MenuDefaults.middleItemShape
+                                    },
+                                    text = {
+                                        Text(
+                                            text = option.text(),
+                                            color = option.tint ?: LocalContentColor.current
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(option.icon),
+                                            contentDescription = null,
+                                            tint = option.tint ?: LocalContentColor.current
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    )
+
+    }
 }

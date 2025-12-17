@@ -14,12 +14,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.CuteTrack
@@ -27,6 +31,7 @@ import com.sosauce.cutemusic.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsScreens
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
+import org.koin.androidx.compose.koinViewModel
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -34,7 +39,6 @@ import kotlin.uuid.Uuid
 @Composable
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
-    latestSafTracks: List<CuteTrack>,
     isPlayerReady: Boolean,
     currentMusicUri: String
 ) {
@@ -83,6 +87,10 @@ fun SettingsScreen(
                 slideOutHorizontally { it },
             )
         },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        ),
         entryProvider = entryProvider {
             entry<SettingsScreens.Settings> {
                 Scaffold(
@@ -130,8 +138,12 @@ fun SettingsScreen(
             }
 
             entry<SettingsScreens.Library> {
+
+                val viewModel = koinViewModel<SafViewModel>()
+                val safTracks by viewModel.safTracks.collectAsStateWithLifecycle()
+
                 SettingsLibrary(
-                    latestSafTracks = latestSafTracks,
+                    safTracksUi = safTracks,
                     isPlayerReady = isPlayerReady,
                     currentMusicUri = currentMusicUri,
                     onNavigateUp = backStack::removeLastOrNull

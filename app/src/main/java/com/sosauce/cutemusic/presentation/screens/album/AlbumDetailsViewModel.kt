@@ -26,7 +26,7 @@ class AlbumDetailsViewModel(
             _state.update { it.copy(album = album) }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             albumsRepository.fetchLatestAlbumTracks(albumName).collectLatest { tracks ->
                 _state.update {
                     it.copy(

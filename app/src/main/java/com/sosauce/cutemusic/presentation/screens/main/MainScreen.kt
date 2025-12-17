@@ -149,7 +149,15 @@ fun SharedTransitionScope.MainScreen(
                     onNavigate = onNavigate,
                     fab = {
                         CuteActionButton(
-                            action = { onHandlePlayerAction(PlayerActions.PlayRandom) },
+                            action = {
+                                onHandlePlayerAction(
+                                    PlayerActions.Play(
+                                        index = 0,
+                                        tracks = state.tracks,
+                                        random = true
+                                    )
+                                )
+                            },
                             modifier = Modifier.sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.FAB),
                                 animatedVisibilityScope = LocalNavAnimatedContentScope.current

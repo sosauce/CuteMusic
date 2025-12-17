@@ -132,11 +132,8 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     }
 
                     entry<Screen.Settings> {
-                        val latestSafTracks by musicViewModel.safTracks.collectAsStateWithLifecycle()
-
                         SettingsScreen(
                             onNavigateUp = backStack::removeLastOrNull,
-                            latestSafTracks = latestSafTracks,
                             isPlayerReady = musicState.isPlayerReady,
                             currentMusicUri = musicState.track.uri.toString(),
                         )

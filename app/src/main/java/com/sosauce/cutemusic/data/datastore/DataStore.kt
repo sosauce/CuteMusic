@@ -224,8 +224,8 @@ suspend fun savePitch(context: Context, value: Float) =
 suspend fun getPauseOnMute(context: Context) =
     getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)
 
-suspend fun getSafTracks(context: Context) =
-    getPreference(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
+fun getSafTracks(context: Context) =
+    getPreferenceFlow(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
 
 suspend fun getRepeatMode(context: Context) =
     getPreference(key = REPEAT_MODE, defaultValue = Player.REPEAT_MODE_OFF, context = context)
