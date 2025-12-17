@@ -44,14 +44,6 @@ jobs:
       with:
         name: CuteMusic Release
         path: app/build/**/*.apk
-    - name: Generate Changelog Content
-      id: generate_changelog
-      uses: release-drafter/release-drafter@v5
-      with:
-        disable-prerelease: true 
-        publish: false
-    - name: Write Changelog to File
-      run: echo "${{ steps.generate_changelog.outputs.body }}" > ${{ needs.build.outputs.versionName }}-changelog.txt
 
   release:
     needs: [build]
@@ -65,7 +57,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Vesion ${{ needs.build.outputs.versionName }}
-          body_path: ${{ needs.build.outputs.versionName }}-changelog.txt
           prerelease: false
           tag_name: v${{ needs.build.outputs.versionName }}
           files: |
