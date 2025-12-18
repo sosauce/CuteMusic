@@ -30,9 +30,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.models.Playlist
+import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.utils.ImageUtils
 
 /**
@@ -70,10 +74,7 @@ fun DeletionDialog(
 
                     deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                     onDismissRequest()
-                },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
+                }
             ) {
                 Text(stringResource(R.string.delete))
             }
@@ -112,6 +113,73 @@ fun DeletionDialog(
                 )
                 Text(
                     text = track.artist,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmallEmphasized,
+                    modifier = Modifier.basicMarquee()
+                )
+
+            }
+        }
+    )
+}
+
+@Composable
+fun PlaylistDeletionDialog(
+    playlist: Playlist,
+    onDismissRequest: () -> Unit,
+    onHandlePlaylistAction: (PlaylistActions) -> Unit
+) {
+
+    val context = LocalContext.current
+    val deleteSongLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if (it.resultCode != Activity.RESULT_OK) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.error_deleting_song),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(stringResource(R.string.are_u_sure)) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onHandlePlaylistAction(PlaylistActions.DeletePlaylist(playlist))
+                    onDismissRequest()
+                }
+            ) {
+                Text(stringResource(R.string.delete))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.trash_rounded),
+                contentDescription = null
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = playlist.emoji,
+                    fontSize = 50.sp
+                )
+                Text(
+                    text = playlist.name,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmallEmphasized,
                     modifier = Modifier.basicMarquee()

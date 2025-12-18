@@ -42,9 +42,12 @@ android {
     }
 
 
-    val keystoreFile = file("release_key.jks")
+
     signingConfigs {
         create("release") {
+
+            val keystoreFile = file("release_key.jks")
+
             if (keystoreFile.exists()) {
                 storeFile = keystoreFile
                 storePassword = System.getenv("SIGNING_STORE_PASSWORD")
@@ -60,7 +63,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

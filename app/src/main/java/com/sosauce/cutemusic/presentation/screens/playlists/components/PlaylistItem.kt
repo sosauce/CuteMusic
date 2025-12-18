@@ -57,6 +57,7 @@ import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.presentation.shared_components.DeletionDialog
 import com.sosauce.cutemusic.presentation.shared_components.MoreOptions
+import com.sosauce.cutemusic.presentation.shared_components.PlaylistDeletionDialog
 
 @Composable
 fun PlaylistItem(
@@ -110,8 +111,9 @@ fun PlaylistItem(
     }
 
     if (showDeletionDialog) {
-        DeletionDialog(
-            track = playlist.toCuteTrack(),
+        PlaylistDeletionDialog(
+            playlist = playlist,
+            onHandlePlaylistAction = onHandlePlaylistActions,
             onDismissRequest = { showDeletionDialog = false }
         )
     }

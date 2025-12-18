@@ -12,11 +12,4 @@ data class Playlist(
     val musics: List<String> = emptyList(), // List of songs ID aka mediaId
     val color: Int = -1,
     val tags: List<String> = emptyList()
-) {
-    fun toCuteTrack(): CuteTrack {
-        return CuteTrack(
-            title = emoji,
-            artist = name
-        )
-    }
-}
+)
