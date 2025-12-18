@@ -1,1 +1,1 @@
-CuteMusic es una app de reproductor de música para Android que es simple, ligera y funciona sin conexión.
+CuteMusic es un reproductor de música para Android que es simple, ligero y funciona sin conexión.
