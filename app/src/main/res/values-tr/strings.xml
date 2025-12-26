@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CuteMusic</string>
-    <string name="empty" translatable="false" />
+    <string name="empty" translatable="false"/>
     <string name="theme">Tema</string>
     <string name="settings">Ayarlar</string>
     <string name="dark_mode">Karanlık mod</string>
@@ -109,4 +110,64 @@
         <item quantity="one">1 albüm</item>
         <item quantity="other">%d albüm</item>
     </plurals>
+    <string name="light_mode">Aydınlık</string>
+    <string name="system">Sistem</string>
+    <string name="no_of_grids">Izgara sayısı</string>
+    <string name="show_shuffle_btn">Karışık çalma düğmesini göster</string>
+    <string name="not_m3u_file">Bu m3u dosyası değil!</string>
+    <string name="m3u_saved_good">m3u dosyası başarıyla kaydedildi!</string>
+    <string name="import_playlist">Çalma listesini içe aktar</string>
+    <string name="export_playlist">Çalma listelerini dışa aktar</string>
+    <string name="edit_playlist">Çalma listesini düzenle</string>
+    <string name="remove_from_playlist">Çalma listesinden kaldır</string>
+    <string name="sort">Sıralama</string>
+    <string name="stop_playback">Oynatmayı durdur</string>
+    <string name="screen_selection">Ekran seçimi</string>
+    <string name="emoji">Emoji</string>
+    <string name="remove_emoji">Emojiyi kaldır</string>
+    <string name="look_and_feel">Görünüş ve hissiyat</string>
+    <string name="look_and_feel_desc">Müzik sizin, neden tarz da sizin olmasın ki?</string>
+    <string name="now_playing">Şu an çalan</string>
+    <string name="now_playing_desc">Kendi tarzınızı yapın !</string>
+    <string name="library">Kütüphane</string>
+    <string name="library_desc">Bütün parçalarınızı yönetin, aynı bir DJ gibi !</string>
+    <string name="more_desc">Kendi sayfalarını hak etmemiş olan diğer ayarlar.</string>
+    <string name="add_queue">Sıraya ekle</string>
+    <string name="import_lrc">.lrc dosyasını içe aktar</string>
+    <string name="slider">Kaydırıcı</string>
+    <string name="thumbless_slider">Baş parmaksız kaydırıcı</string>
+    <string name="default_text">Varsayılan</string>
+    <string name="font">Yazı tipi</string>
+    <string name="show_back_button">Geri düğmesini göster</string>
+    <string name="album">Albüm</string>
+    <string name="artist">Sanatçı</string>
+    <string name="shuffle">Karışık çalma</string>
+    <string name="no_result_found">Sonuç bulunamadı !</string>
+    <string name="better_luck_next_time">Bir dahaki sefere iyi şanslar !</string>
+    <string name="no_playlist_desc">Bir tane oluştursan havalı olurdun</string>
+    <string name="no_music_desc">O zaman uygulamayı niye kurdun ki ?</string>
+    <string name="are_u_sure">Emin misin ?</string>
+    <string name="lyrics">Sözler</string>
+    <string name="audio">Ses</string>
+    <string name="pause_on_mute">Susturulduğunda durdur</string>
+    <string name="pause_on_mute_desc">Cihazın sesi susturulduğunda oynatma durdurulacaktır</string>
+    <string name="its_empty_here">Burası bayağı boş</string>
+    <string name="empty_playlist_desc">*Cırcır böceği sesleri*</string>
+    <string name="date_modified">Son düzenleme tarihi</string>
+    <string name="name">İsim</string>
+    <string name="number_of_tracks">Parça sayısı</string>
+    <string name="number_of_albums">Albüm sayısı</string>
+    <string name="color_picker">Renk seçici</string>
+    <string name="save">Kaydet</string>
+    <string name="add">Ekle</string>
+    <string name="scan">Tara</string>
+    <string name="min_track_duration_desc">Belirtilen süreden kısa olan parçalar getirilmeyecektir.</string>
+    <string name="unknown">Bilinmeyen</string>
+    <string name="tags">Etiketler</string>
+    <string name="color">Renk</string>
+    <string name="already_in_queue">Çoktan sırada</string>
+    <string name="already_in_playlist">Parça çoktan çalma listesinde var</string>
+    <string name="art_as_bg">Kapağı arkaplan yap</string>
+    <string name="playback_controls">Oynatma kontrolleri</string>
+    <string name="playback_controls_desc">Gerçek müzik sevdalıları için !</string>
 </resources>
