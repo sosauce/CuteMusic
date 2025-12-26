@@ -51,7 +51,16 @@
 - Load and persist songs from anywhere using Android's S.A.F!
 - Part of the CuteApps ecosystem!
 - Makes you a cutie!
-   
+
+---
+<h1>🌐 Translation</h1>
+
+Please help with translations on the [Weblate](https://toolate.othing.xyz/projects/cutemusic).
+
+<a href="https://toolate.othing.xyz/projects/cutemusic">
+<img src="https://toolate.othing.xyz/widget/cutemusic/metadata/multi-auto.svg" alt="Translation status" />
+</a>
+
 ---
 <h1>💬 Contact Me</h1>
 
