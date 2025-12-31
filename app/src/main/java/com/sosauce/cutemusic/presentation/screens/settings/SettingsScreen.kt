@@ -80,7 +80,13 @@ fun SettingsScreen(
 
     NavDisplay(
         backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { 
+            if (backStack.size > 1) {
+                backStack.removeLastOrNull()
+            } else {
+                onNavigateUp()
+            }
+        },
         predictivePopTransitionSpec = {
             ContentTransform(
                 fadeIn(),
