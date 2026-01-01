@@ -53,6 +53,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -173,14 +174,14 @@ fun Uri.getBitrate(context: Context): Int {
 }
 
 fun Long.formatToReadableTime(): String {
-    val totalSeconds = this / 1000
-    val seconds = totalSeconds % 60
-    val totalMinutes = totalSeconds / 60
-    val minutes = totalMinutes % 60
-    val hours = totalMinutes / 60
-    return if (hours > 0)
-        String.format(Locale.getDefault(), "%d:%d:%02d", hours, minutes, seconds)
-    else String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+    val duration = this.milliseconds
+    return duration.toComponents { hours, minutes, seconds, _ ->
+        if (hours > 0) {
+            String.format(Locale.getDefault(), "%d:%d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+        }
+    }
 }
 
 fun PropertyMap.toModifiableMap(separator: String = ", "): MutableMap<String, String?> {
