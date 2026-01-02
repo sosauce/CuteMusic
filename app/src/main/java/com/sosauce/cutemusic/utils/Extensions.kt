@@ -177,7 +177,7 @@ fun Long.formatToReadableTime(): String {
     val duration = this.milliseconds
     return duration.toComponents { hours, minutes, seconds, _ ->
         if (hours > 0) {
-            String.format(Locale.getDefault(), "%d:%d:%02d", hours, minutes, seconds)
+            String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
         } else {
             String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
         }
