@@ -91,6 +91,7 @@
     <string name="not_blacklisted">Nicht auf der Blacklist</string>
     <string name="whitelisted">Auf der Whitelist</string>
     <string name="saf_manager">S.A.F-Manager</string>
+    <string name="saf">S.A.F</string>
     <string name="no_playlists">Keine Playlist gefunden !</string>
     <string name="alrdy_in_playlist">Titel ist bereits in der Playlist!</string>
     <string name="del_playlist">Lösche Playlist</string>
