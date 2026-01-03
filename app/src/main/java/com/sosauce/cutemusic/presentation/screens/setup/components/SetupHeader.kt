@@ -13,10 +13,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.sosauce.cutemusic.R
 
 @Composable
 fun SetupHeader(progress: () -> Float) {
@@ -24,7 +26,7 @@ fun SetupHeader(progress: () -> Float) {
         modifier = Modifier.statusBarsPadding()
     ) {
         Text(
-            text = "CuteMusic",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.displayLargeEmphasized.copy(
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 42.sp,

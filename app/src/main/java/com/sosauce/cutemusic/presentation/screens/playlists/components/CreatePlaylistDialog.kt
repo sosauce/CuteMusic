@@ -205,10 +205,10 @@ fun CreatePlaylistDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    Text("Color:")
+                    Text("${stringResource(R.string.color)}:")
                     if (playlist.color == -1) {
                         Text(
-                            text = "Click to add",
+                            text = stringResource(R.string.click_to_add),
                             modifier = Modifier.clickable { showColorPicker = true }
                         )
                     } else {
@@ -227,7 +227,7 @@ fun CreatePlaylistDialog(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Tags")
+                    Text(stringResource(R.string.tags))
                     IconButton(
                         onClick = { showNewTagDialog = true },
                         shapes = IconButtonDefaults.shapes()

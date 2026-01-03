@@ -67,7 +67,7 @@ fun NewTagDialog(
                 contentDescription = null
             )
         },
-        title = { Text("Add new tag") },
+        title = { Text(stringResource(R.string.playlist_tag_add)) },
         text = {
             Column {
                 OutlinedTextField(
@@ -82,7 +82,7 @@ fun NewTagDialog(
                     isError = isError,
                     supportingText = {
                         if (isError) {
-                            Text("Tag already exists for this playlist.")
+                            Text(stringResource(R.string.playlist_tag_exists))
                         }
                     }
                 )
@@ -96,7 +96,7 @@ fun NewTagDialog(
                         contentDescription = null
                     )
                     Text(
-                        text = "You can't edit tags once they're created, but you can delete them",
+                        text = stringResource(R.string.playlist_tag_no_edit),
                         style = MaterialTheme.typography.bodySmallEmphasized
                     )
                 }

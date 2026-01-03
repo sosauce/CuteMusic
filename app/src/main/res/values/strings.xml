@@ -27,9 +27,13 @@
     <string name="close">Close</string>
     <string name="more">More</string>
     <string name="hi_there">Hi there!</string>
-    <string name="permissio_needed">It seems like CuteMusic doesn\'t have the permission to access your tracks! You can grant it below!</string>
-    <string name="request_perm">Request permission</string>
-    <string name="no_musics_found">No tracks found !</string>
+    <string name="permission_needed">It seems like CuteMusic doesn\'t have the permission to access your tracks! You can grant it below!</string>
+    <string name="permission_granted">Permission granted, you shall continue…</string>
+    <string name="request_permission">Grant permission</string>
+    <string name="next_step">Next step</string>
+    <string name="no_music_title">No tracks found !</string>
+    <string name="no_music_desc">Why did you install the app then ?</string>
+    <string name="no_music_tip">Tip: Don\'t forget to whitelist folders you want to scan in settings!</string>
     <string name="error_deleting_song">There was an error deleting the song.</string>
     <string name="deleting_song_OK">Successfully deleted song.</string>
     <string name="okay">Okay</string>
@@ -41,6 +45,7 @@
     <string name="descending">Descending</string>
     <string name="playback_speed">Set playback speed</string>
     <string name="yes">Yes</string>
+    <string name="initial_folder_selection">Select folders you want to whitelist, others will be blacklisted</string>
     <string name="blacklisted_folders">Blacklisted folders</string>
     <string name="delete_folder">Delete folder</string>
     <string name="folder_delete_u_sure">Are you sure you want to delete this folder ?</string>
@@ -55,7 +60,7 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="ntg_playing">Nothing playing!</string>
-    <string name="UI">UI</string>
+    <string name="ui">UI</string>
     <string name="use_art">Material art</string>
     <string name="success">Success</string>
     <string name="error_saving">Error while saving changes.</string>
@@ -71,6 +76,7 @@
     <string name="rate">Rate</string>
     <string name="snap">Snap speed and pitch</string>
     <string name="new_rate">Enter new rate between 0.5 and 2</string>
+    <string name="rate_error">Rate should be in range of 0.5 and 2.</string>
     <string name="share">Share</string>
     <string name="show_close_button">Show close button</string>
     <string name="duration">Duration</string>
@@ -84,6 +90,7 @@
     <string name="open_saf">Open S.A.F to add tracks</string>
     <string name="blacklisted">Blacklisted</string>
     <string name="not_blacklisted">Not blacklisted</string>
+    <string name="whitelisted">Whitelisted</string>
     <string name="saf_manager">S.A.F manager</string>
     <string name="no_playlists">No playlist found !</string>
     <string name="alrdy_in_playlist">Track already in playlist!</string>
@@ -103,6 +110,7 @@
     <string name="song_loading">Song loading…</string>
     <string name="use_carousel">Use carousel</string>
     <string name="search_here">Search here</string>
+    <string name="click_hint">Click me!</string>
     <string name="no_of_grids">Number of grids</string>
     <string name="show_shuffle_btn">Show shuffle button</string>
     <string name="not_m3u_file">Not a m3u file!</string>
@@ -140,7 +148,6 @@
     <string name="no_result_found">No result found !</string>
     <string name="better_luck_next_time">Better luck next time !</string>
     <string name="no_playlist_desc">You\'d be cool if you created one</string>
-    <string name="no_music_desc">Why did you install the app then ?</string>
     <string name="no_album_desc">You rock singles and that\'s okay</string>
     <string name="no_artist_desc">I\'m sure you sing better anyways</string>
     <string name="are_u_sure">Are you sure ?</string>
@@ -162,11 +169,17 @@
     <string name="add">Add</string>
     <string name="use_expr_palette">Use expressive palette</string>
     <string name="scan">Scan</string>
+    <string name="min_track_length_hint">You can also decide to not query tracks shorter than the specified duration</string>
+    <string name="min_track_length_text">Min track duration</string>
     <string name="min_track_duration_desc">Tracks shorter than the specified duration will be not fetched.</string>
     <string name="as_added">As added</string>
     <string name="unknown">Unknown</string>
     <string name="tags">Tags</string>
     <string name="color">Color</string>
+    <string name="click_to_add">Click to add</string>
+    <string name="playlist_tag_add">Add new tag</string>
+    <string name="playlist_tag_exists">Tag already exists for this playlist.</string>
+    <string name="playlist_tag_no_edit">You can\'t edit tags once they\'re created, but you can delete them</string>
     <string name="already_in_queue">Already in queue</string>
     <string name="already_in_playlist">Track already in playlist</string>
 

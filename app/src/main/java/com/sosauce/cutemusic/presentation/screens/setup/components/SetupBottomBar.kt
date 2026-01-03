@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 
@@ -45,7 +46,7 @@ fun SetupBottomBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Next step",
+            text = stringResource(R.string.next_step),
             style = MaterialTheme.typography.bodyLargeEmphasized.copy(
                 color = if (!hasPermission) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
             )

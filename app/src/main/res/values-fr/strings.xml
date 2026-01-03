@@ -27,9 +27,9 @@
     <string name="close">Fermer</string>
     <string name="more">Plus</string>
     <string name="hi_there">Salut !</string>
-    <string name="permissio_needed">Il semblerait que CuteMusic n'ait pas l'autorisation d'accéder à vos titres. Vous pouvez l'accorder ci-dessous.</string>
-    <string name="request_perm">Demande d'autorisation</string>
-    <string name="no_musics_found">Aucun titre trouvé</string>
+    <string name="permission_needed">Il semblerait que CuteMusic n'ait pas l'autorisation d'accéder à vos titres. Vous pouvez l'accorder ci-dessous.</string>
+    <string name="request_permission">Demande d'autorisation</string>
+    <string name="no_music_title">Aucun titre trouvé</string>
     <string name="error_deleting_song">Une erreur s'est produite lors de la suppression du titre.</string>
     <string name="deleting_song_OK">Titre supprimé avec succès.</string>
     <string name="okay">OK</string>
@@ -55,7 +55,7 @@
     <string name="edit">Modifier</string>
     <string name="delete">Supprimer</string>
     <string name="ntg_playing">Rien ne fonctionne !</string>
-    <string name="UI">Interface utilisateur</string>
+    <string name="ui">Interface utilisateur</string>
     <string name="use_art">Art matériel</string>
     <string name="success">Succès</string>
     <string name="error_saving">Erreur lors de l'enregistrement des modifications.</string>

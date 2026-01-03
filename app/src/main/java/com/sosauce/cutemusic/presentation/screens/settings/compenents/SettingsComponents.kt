@@ -110,7 +110,7 @@ fun SliderSettingsCards(
     value: Int,
     topDp: Dp,
     bottomDp: Dp,
-    text: String,
+    text: Int,
     onValueChange: (Int) -> Unit,
     optionalDescription: Int? = null,
 ) {
@@ -145,7 +145,7 @@ fun SliderSettingsCards(
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    Text(text)
+                    Text(stringResource(text))
                 }
                 Text(animatedValue.toString())
             }
