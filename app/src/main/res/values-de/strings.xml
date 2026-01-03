@@ -171,11 +171,11 @@
     <string name="already_in_playlist">Titel ist schon in dieser Playlist</string>
 
     <plurals name="tracks">
-        <item quantity="one">%d track</item>
-        <item quantity="other">%d tracks</item>
+        <item quantity="one">%d Titel</item>
+        <item quantity="other">%d Titel</item>
     </plurals>
     <plurals name="albums">
-        <item quantity="one">%d album</item>
-        <item quantity="other">%d albums</item>
+        <item quantity="one">%d Album</item>
+        <item quantity="other">%d Alben</item>
     </plurals>
 </resources>
