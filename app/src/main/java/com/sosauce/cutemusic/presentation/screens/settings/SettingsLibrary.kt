@@ -85,7 +85,7 @@ fun SettingsLibrary(
                     onValueChange = { minTrackDuration = it },
                     topDp = 24.dp,
                     bottomDp = 24.dp,
-                    text = "Min track duration",
+                    text = R.string.min_track_length_text,
                     optionalDescription = R.string.min_track_duration_desc
                 )
             }

@@ -231,12 +231,12 @@ fun SharedTransitionScope.MainScreen(
                     if (state.tracks.isEmpty()) {
                         item {
                             NoXFound(
-                                headlineText = R.string.no_musics_found,
+                                headlineText = R.string.no_music_title,
                                 bodyText = R.string.no_music_desc,
                                 icon = R.drawable.music_note_rounded
                             )
                             Text(
-                                text = "Tip: Don't forget to whitelist folders you want to scan in settings!",
+                                text = stringResource(R.string.no_music_tip),
                                 style = MaterialTheme.typography.bodySmallEmphasized.copy(
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant

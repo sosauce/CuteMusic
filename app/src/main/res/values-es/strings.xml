@@ -27,9 +27,9 @@
     <string name="close">"Cerrar"</string>
     <string name="more">"Más"</string>
     <string name="hi_there">"¡Hola!"</string>
-    <string name="permissio_needed">"¡Parece que CuteMusic no tiene permiso para acceder a tu música! ¡Puedes otorgarlo a continuación!"</string>
-    <string name="request_perm">"Solicitar permisos"</string>
-    <string name="no_musics_found">"¡Canción no encontrada!"</string>
+    <string name="permission_needed">"¡Parece que CuteMusic no tiene permiso para acceder a tu música! ¡Puedes otorgarlo a continuación!"</string>
+    <string name="request_permission">"Solicitar permisos"</string>
+    <string name="no_music_title">"¡Canción no encontrada!"</string>
     <string name="error_deleting_song">"Hubo un error al eliminar la canción"</string>
     <string name="deleting_song_OK">"La canción ha sido eliminada exitosamente"</string>
     <string name="okay">"Vale"</string>
@@ -55,7 +55,7 @@
     <string name="edit">Editar</string>
     <string name="delete">Eliminar</string>
     <string name="ntg_playing">¡No se está reproduciendo nada!</string>
-    <string name="UI">IU</string>
+    <string name="ui">IU</string>
     <string name="use_art">Arte material</string>
     <string name="success">Éxito</string>
     <string name="error_saving">Error al guardar los cambios.</string>

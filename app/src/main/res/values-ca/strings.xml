@@ -27,9 +27,9 @@
     <string name="close">Tanca</string>
     <string name="more">Més</string>
     <string name="hi_there">Hola!</string>
-    <string name="permissio_needed">Sembla que CuteMusic no té permís per accedir a les teves pistes! Pots concedir-ho a continuació!</string>
-    <string name="request_perm">Sol·licita permís</string>
-    <string name="no_musics_found">No s\'han trobat pistes!</string>
+    <string name="permission_needed">Sembla que CuteMusic no té permís per accedir a les teves pistes! Pots concedir-ho a continuació!</string>
+    <string name="request_permission">Sol·licita permís</string>
+    <string name="no_music_title">No s\'han trobat pistes!</string>
     <string name="error_deleting_song">S\'ha produït un error en suprimir la cançó.</string>
     <string name="deleting_song_OK">Cançó suprimida correctament.</string>
     <string name="okay">D\'acord</string>
@@ -55,7 +55,7 @@
     <string name="edit">Edita</string>
     <string name="delete">Suprimeix</string>
     <string name="ntg_playing">No s\'està reproduint!</string>
-    <string name="UI">UI</string>
+    <string name="ui">UI</string>
     <string name="use_art">Art material</string>
     <string name="success">Èxit</string>
     <string name="error_saving">Error en desar els canvis.</string>
