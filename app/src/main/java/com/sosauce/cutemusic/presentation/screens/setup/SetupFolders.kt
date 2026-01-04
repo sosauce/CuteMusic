@@ -13,8 +13,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberMinTrackDuration
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
@@ -34,13 +36,13 @@ fun SetupFolders() {
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
             Text(
-                text = "Select folders you want to whitelist, others will be blacklisted",
+                text = stringResource(R.string.initial_folder_selection),
                 textAlign = TextAlign.Center
             )
             FoldersView()
             Spacer(Modifier.height(25.dp))
             Text(
-                text = "You can also decide to not query tracks shorter than the specified duration",
+                text = stringResource(R.string.min_track_length_hint),
                 textAlign = TextAlign.Center
             )
             SliderSettingsCards(
@@ -48,7 +50,7 @@ fun SetupFolders() {
                 onValueChange = { minTrackDuration = it },
                 topDp = 24.dp,
                 bottomDp = 24.dp,
-                text = "Min track duration"
+                text = R.string.min_track_length_text
             )
         }
     }

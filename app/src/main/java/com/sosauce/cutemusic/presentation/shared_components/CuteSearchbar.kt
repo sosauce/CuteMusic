@@ -357,7 +357,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                                                             contentColor = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
                                                         ),
-                                                    ) { Text("Click me!") }
+                                                    ) { Text(stringResource(R.string.click_hint)) }
                                                 },
                                                 state = rememberTooltipState(initialIsVisible = !hasSeenTip, isPersistent = !hasSeenTip)
                                             ) {

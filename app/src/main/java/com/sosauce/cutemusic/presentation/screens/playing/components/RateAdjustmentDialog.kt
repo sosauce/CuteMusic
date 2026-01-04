@@ -102,7 +102,7 @@ fun RateAdjustmentDialog(
                     isError = isError,
                     supportingText = {
                         if (isError) {
-                            Text("Rate should be in range of 0.5 and 2.")
+                            Text(stringResource(R.string.rate_error))
                         }
                     },
                     inputTransformation = RateInputTransformation

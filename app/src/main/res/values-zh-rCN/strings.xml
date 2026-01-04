@@ -26,9 +26,9 @@
     <string name="close">关闭</string>
     <string name="more">更多选项</string>
     <string name="hi_there">嘿，你好！</string>
-    <string name="permissio_needed">看起来可耐音乐没有访问存储曲目的权限！你可以在下方授予权限！</string>
-    <string name="request_perm">授权</string>
-    <string name="no_musics_found">没找到任何曲目</string>
+    <string name="permission_needed">看起来可耐音乐没有访问存储曲目的权限！你可以在下方授予权限！</string>
+    <string name="request_permission">授权</string>
+    <string name="no_music_title">没找到任何曲目</string>
     <string name="error_deleting_song">删除时出错</string>
     <string name="deleting_song_OK">成功删除</string>
     <string name="okay">好</string>
@@ -53,7 +53,7 @@
     <string name="edit">编辑</string>
     <string name="delete">删除</string>
     <string name="ntg_playing">无正在播放的内容</string>
-    <string name="UI">用户界面</string>
+    <string name="ui">用户界面</string>
     <string name="use_art">Material风格</string>
     <string name="success">成功</string>
     <string name="error_saving">保存时出错</string>

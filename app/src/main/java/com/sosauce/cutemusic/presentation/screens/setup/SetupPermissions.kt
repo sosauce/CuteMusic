@@ -16,6 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.sosauce.cutemusic.R
 
 @Composable
 fun SetupPermissions(
@@ -46,9 +48,9 @@ fun SetupPermissions(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (hasPermission) {
-                Text("Permission granted, you shall continue...")
+                Text(stringResource(R.string.permission_granted))
             } else {
-                Text("CuteMusic needs access to your music files")
+                Text(stringResource(R.string.permission_needed))
                 Button(
                     onClick = {
                         val permission =
@@ -61,7 +63,7 @@ fun SetupPermissions(
                     },
                     shapes = ButtonDefaults.shapes()
                 ) {
-                    Text("Grant permission")
+                    Text(stringResource(R.string.request_permission))
                 }
             }
         }

@@ -31,9 +31,9 @@
     <string name="close">Закрыть</string>
     <string name="more">Ещё</string>
     <string name="hi_there">Привет!</string>
-    <string name="permissio_needed">Похоже, у CuteMusic нет разрешения на доступ к вашим песням! Вы можете предоставить его ниже!</string>
-    <string name="request_perm">Запросить разрешение</string>
-    <string name="no_musics_found">Песен не найдено!</string>
+    <string name="permission_needed">Похоже, у CuteMusic нет разрешения на доступ к вашим песням! Вы можете предоставить его ниже!</string>
+    <string name="request_permission">Запросить разрешение</string>
+    <string name="no_music_title">Песен не найдено!</string>
     <string name="error_deleting_song">Произошла ошибка при удалении песни.</string>
     <string name="deleting_song_OK">Песня успешно удалена.</string>
     <string name="okay">Лады</string>
@@ -59,7 +59,7 @@
     <string name="edit">Изменить</string>
     <string name="delete">Удалить</string>
     <string name="ntg_playing">Ничего не играет!</string>
-    <string name="UI">Интерфейс</string>
+    <string name="ui">Интерфейс</string>
     <string name="use_art">Материальная тема</string>
     <string name="success">Успешно</string>
     <string name="error_saving">Ошибка при сохранении изменений.</string>

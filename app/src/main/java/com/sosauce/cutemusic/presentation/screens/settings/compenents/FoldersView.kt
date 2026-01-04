@@ -30,7 +30,7 @@ fun FoldersView() {
 
     if (whitelisted.isNotEmpty()) {
         Text(
-            text = "Whitelisted",
+            text = stringResource(R.string.whitelisted),
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(

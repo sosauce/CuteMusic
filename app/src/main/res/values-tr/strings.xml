@@ -27,9 +27,9 @@
     <string name="close">Kapat</string>
     <string name="more">Daha Fazla</string>
     <string name="hi_there">Merhaba!</string>
-    <string name="permissio_needed">Görünüşe göre CuteMusic, parçalarınıza erişim iznine sahip değil! Aşağıdan izin verebilirsiniz!</string>
-    <string name="request_perm">İzin iste</string>
-    <string name="no_musics_found">Parça bulunamadı!</string>
+    <string name="permission_needed">Görünüşe göre CuteMusic, parçalarınıza erişim iznine sahip değil! Aşağıdan izin verebilirsiniz!</string>
+    <string name="request_permission">İzin iste</string>
+    <string name="no_music_title">Parça bulunamadı!</string>
     <string name="error_deleting_song">Şarkı silinirken bir hata oluştu.</string>
     <string name="deleting_song_OK">Şarkı başarıyla silindi.</string>
     <string name="okay">Tamam</string>
@@ -54,7 +54,7 @@
     <string name="edit">Düzenle</string>
     <string name="delete">Sil</string>
     <string name="ntg_playing">Çalan bir şey yok!</string>
-    <string name="UI">UI</string>
+    <string name="ui">UI</string>
     <string name="use_art">Material tasarımı</string>
     <string name="success">Başarılı</string>
     <string name="error_saving">Değişiklikler kaydedilirken hata oluştu.</string>

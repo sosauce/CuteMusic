@@ -162,7 +162,7 @@ fun SettingsLookAndFeel(
                 }
             }
             SettingsWithTitle(
-                title = R.string.UI
+                title = R.string.ui
             ) {
                 SettingsCards(
                     checked = useMaterialArt,

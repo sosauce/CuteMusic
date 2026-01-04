@@ -127,7 +127,7 @@ fun MusicDetailsDialog(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 labelColor = contentColorFor(MaterialTheme.colorScheme.primary)
                             ),
-                            label = { Text("S.A.F") }
+                            label = { Text(stringResource(R.string.saf)) }
                         )
                     }
                     SuggestionChip(
