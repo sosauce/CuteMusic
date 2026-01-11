@@ -44,7 +44,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     private val widgetReceiver = WidgetBroadcastReceiver()
 
 
-
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         super.onMediaMetadataChanged(mediaMetadata)
         val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
@@ -77,7 +76,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             putInt("audioSessionId", audioSessionId)
         }
     }
-
 
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =

@@ -1,7 +1,6 @@
 package com.sosauce.cutemusic.presentation.screens.settings
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,11 +28,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
 import com.sosauce.cutemusic.data.datastore.rememberMinTrackDuration
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SliderSettingsCards
@@ -46,8 +48,9 @@ import com.sosauce.cutemusic.utils.selfAlignHorizontally
 @Composable
 fun SettingsLibrary(
     safTracksUi: List<CuteTrack>,
-    isPlayerReady: Boolean,
-    currentMusicUri: String,
+    musicState: MusicState,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    onNavigate: (Screen) -> Unit,
     onNavigateUp: () -> Unit
 ) {
 
@@ -56,15 +59,18 @@ fun SettingsLibrary(
     var safTracks by rememberAllSafTracks()
     var minTrackDuration by rememberMinTrackDuration()
 
-    val safAudioPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        safTracks = safTracks.copyMutate { add(it.toString()) }
+    val safAudioPicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+            safTracks = safTracks.copyMutate { addAll(uris.fastMap { it.toString() }) }
 
-        context.contentResolver.takePersistableUriPermission(
-            it ?: Uri.EMPTY,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        )
-    }
+            uris.fastForEach { uri ->
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            }
+        }
 
     Scaffold(
         bottomBar = {
@@ -123,13 +129,20 @@ fun SettingsLibrary(
                         }
                     }
 
-                    safTracksUi.fastForEach { safTrack ->
+                    safTracksUi.fastForEachIndexed { index, safTrack ->
                         MusicListItem(
                             music = safTrack,
-                            musicState = MusicState(), // TODO pass real state
-                            onShortClick = {},
-                            onNavigate = {}, // TODO
-                            onHandlePlayerActions = {} // TODO
+                            musicState = musicState,
+                            onShortClick = {
+                                onHandlePlayerActions(
+                                    PlayerActions.Play(
+                                        index,
+                                        safTracksUi
+                                    )
+                                )
+                            },
+                            onNavigate = onNavigate,
+                            onHandlePlayerActions = onHandlePlayerActions
                         )
                     }
                 }

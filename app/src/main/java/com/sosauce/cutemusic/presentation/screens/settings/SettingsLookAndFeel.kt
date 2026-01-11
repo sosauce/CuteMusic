@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAppTheme
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
-import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.datastore.rememberUseArtTheme
 import com.sosauce.cutemusic.data.datastore.rememberUseExpressivePalette
 import com.sosauce.cutemusic.data.datastore.rememberUseSystemFont

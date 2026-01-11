@@ -20,9 +20,9 @@
     <string name="artists">Исполнители</string>
     <plurals name="albums">
         <item quantity="one">Альбомы</item>
-        <item quantity="few"/>
-        <item quantity="many"/>
-        <item quantity="other"/>
+        <item quantity="few" />
+        <item quantity="many" />
+        <item quantity="other" />
     </plurals>
     <string name="music">Песни</string>
     <string name="cm_by_sosauce">CuteMusic от sosauce</string>

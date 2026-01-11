@@ -66,7 +66,8 @@ inline fun Modifier.thenIf(condition: Boolean, modifier: Modifier.() -> Modifier
     }
 }
 
-fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
+fun <T> List<T>.equalsIgnoreOrder(other: List<T>) =
+    this.size == other.size && this.toSet() == other.toSet()
 
 fun NavKey.showBackButton(): Boolean {
     return this is Screen.AlbumsDetails || this is Screen.ArtistsDetails || this is Screen.PlaylistDetails
@@ -83,9 +84,11 @@ fun Context.hasMusicPermission(): Boolean {
 }
 
 fun Modifier.selfAlignHorizontally(align: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier {
-    return then(Modifier
-        .fillMaxWidth()
-        .wrapContentWidth(align))
+    return then(
+        Modifier
+            .fillMaxWidth()
+            .wrapContentWidth(align)
+    )
 }
 
 
@@ -97,7 +100,6 @@ val MediaItem.uri: Uri
 
 val MediaItem.albumId
     get() = mediaMetadata.extras?.getLong("album_id") ?: 0
-
 
 
 fun Player.playRandom() {
@@ -284,28 +286,30 @@ fun List<CuteTrack>.ordered(
     ascending: Boolean,
     query: String
 ): List<CuteTrack> {
-    val sortedList = if (ascending) {
+
+    // Note to self: Having search first makes sorting only sort we want to display, which is more efficient
+    val searchedList = this.fastFilter { it.title.contains(query, true) }
+
+    return if (ascending) {
         when (sort) {
-            TrackSort.TITLE -> sortedBy { it.title }
-            TrackSort.ARTIST -> sortedBy { it.artist }
-            TrackSort.ALBUM -> sortedBy { it.album }
-            TrackSort.YEAR -> sortedBy { it.year }
-            TrackSort.DATE_MODIFIED -> sortedBy { it.dateModified }
-            TrackSort.AS_ADDED -> this
+            TrackSort.TITLE -> searchedList.sortedBy { it.title }
+            TrackSort.ARTIST -> searchedList.sortedBy { it.artist }
+            TrackSort.ALBUM -> searchedList.sortedBy { it.album }
+            TrackSort.YEAR -> searchedList.sortedBy { it.year }
+            TrackSort.DATE_MODIFIED -> searchedList.sortedBy { it.dateModified }
+            TrackSort.AS_ADDED -> searchedList
         }
     } else {
         when (sort) {
-            TrackSort.TITLE -> sortedByDescending { it.title }
-            TrackSort.ARTIST -> sortedByDescending { it.artist }
-            TrackSort.ALBUM -> sortedByDescending { it.album }
-            TrackSort.YEAR -> sortedByDescending { it.year }
-            TrackSort.DATE_MODIFIED -> sortedByDescending { it.dateModified }
-            TrackSort.AS_ADDED -> this.reversed()
+            TrackSort.TITLE -> searchedList.sortedByDescending { it.title }
+            TrackSort.ARTIST -> searchedList.sortedByDescending { it.artist }
+            TrackSort.ALBUM -> searchedList.sortedByDescending { it.album }
+            TrackSort.YEAR -> searchedList.sortedByDescending { it.year }
+            TrackSort.DATE_MODIFIED -> searchedList.sortedByDescending { it.dateModified }
+            TrackSort.AS_ADDED -> searchedList.reversed()
 
         }
     }
-
-    return sortedList.fastFilter { it.title.contains(query, true) }
 }
 
 fun List<Album>.ordered(
@@ -313,20 +317,19 @@ fun List<Album>.ordered(
     ascending: Boolean,
     query: String
 ): List<Album> {
-    val sortedList = if (ascending) {
+    val searchedList = this.fastFilter { it.name.contains(query, true) }
+
+    return if (ascending) {
         when (sort) {
-            AlbumSort.NAME -> sortedBy { it.name }
-            AlbumSort.ARTIST -> sortedBy { it.artist }
+            AlbumSort.NAME -> searchedList.sortedBy { it.name }
+            AlbumSort.ARTIST -> searchedList.sortedBy { it.artist }
         }
     } else {
         when (sort) {
-            AlbumSort.NAME -> sortedByDescending { it.name }
-            AlbumSort.ARTIST -> sortedByDescending { it.artist }
+            AlbumSort.NAME -> searchedList.sortedByDescending { it.name }
+            AlbumSort.ARTIST -> searchedList.sortedByDescending { it.artist }
         }
     }
-
-    return sortedList.fastFilter { it.name.contains(query, true) }
-
 }
 
 fun List<Artist>.ordered(
@@ -334,22 +337,21 @@ fun List<Artist>.ordered(
     ascending: Boolean,
     query: String
 ): List<Artist> {
-    val sortedList = if (ascending) {
+    val searchedList = this.fastFilter { it.name.contains(query, true) }
+
+    return if (ascending) {
         when (sort) {
-            ArtistSort.NAME -> sortedBy { it.name }
-            ArtistSort.NB_TRACKS -> sortedBy { it.numberTracks }
-            ArtistSort.NB_ALBUMS -> sortedBy { it.numberAlbums }
+            ArtistSort.NAME -> searchedList.sortedBy { it.name }
+            ArtistSort.NB_TRACKS -> searchedList.sortedBy { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> searchedList.sortedBy { it.numberAlbums }
         }
     } else {
         when (sort) {
-            ArtistSort.NAME -> sortedByDescending { it.name }
-            ArtistSort.NB_TRACKS -> sortedByDescending { it.numberTracks }
-            ArtistSort.NB_ALBUMS -> sortedByDescending { it.numberAlbums }
+            ArtistSort.NAME -> searchedList.sortedByDescending { it.name }
+            ArtistSort.NB_TRACKS -> searchedList.sortedByDescending { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> searchedList.sortedByDescending { it.numberAlbums }
         }
     }
-
-    return sortedList.fastFilter { it.name.contains(query, true) }
-
 }
 
 fun List<Playlist>.ordered(
@@ -357,24 +359,23 @@ fun List<Playlist>.ordered(
     ascending: Boolean,
     query: String
 ): List<Playlist> {
-    val sortedList = if (ascending) {
+    val searchedList = this.fastFilter { it.name.contains(query, true) }
+
+    return if (ascending) {
         when (sort) {
-            PlaylistSort.NAME -> sortedBy { it.name }
-            PlaylistSort.NB_TRACKS -> sortedBy { it.musics.size }
-            PlaylistSort.TAGS -> sortedBy { it.tags.size }
-            PlaylistSort.COLOR -> sortedBy { it.color }
+            PlaylistSort.NAME -> searchedList.sortedBy { it.name }
+            PlaylistSort.NB_TRACKS -> searchedList.sortedBy { it.musics.size }
+            PlaylistSort.TAGS -> searchedList.sortedBy { it.tags.size }
+            PlaylistSort.COLOR -> searchedList.sortedBy { it.color }
         }
     } else {
         when (sort) {
-            PlaylistSort.NAME -> sortedByDescending { it.name }
-            PlaylistSort.NB_TRACKS -> sortedByDescending { it.musics.size }
-            PlaylistSort.TAGS -> sortedByDescending { it.tags.size }
-            PlaylistSort.COLOR -> sortedByDescending { it.color }
+            PlaylistSort.NAME -> searchedList.sortedByDescending { it.name }
+            PlaylistSort.NB_TRACKS -> searchedList.sortedByDescending { it.musics.size }
+            PlaylistSort.TAGS -> searchedList.sortedByDescending { it.tags.size }
+            PlaylistSort.COLOR -> searchedList.sortedByDescending { it.color }
         }
     }
-
-    return sortedList.fastFilter { it.name.contains(query, true) }
-
 }
 
 fun <E> MutableSet<E>.addOrRemove(element: E) {

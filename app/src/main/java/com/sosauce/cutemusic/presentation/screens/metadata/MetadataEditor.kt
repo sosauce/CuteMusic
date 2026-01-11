@@ -62,10 +62,8 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.domain.actions.MetadataActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
-import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
 import com.sosauce.cutemusic.presentation.shared_components.ThreadDivider
 import com.sosauce.cutemusic.utils.ImageUtils
-import com.sosauce.cutemusic.utils.selfAlignHorizontally
 
 @Composable
 fun MetadataEditor(

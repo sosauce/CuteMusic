@@ -39,7 +39,6 @@ import com.sosauce.cutemusic.presentation.screens.main.MainScreen
 import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataEditor
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
-import com.sosauce.cutemusic.presentation.screens.playing.NowPlaying
 import com.sosauce.cutemusic.presentation.screens.playing.QueueScreen
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewModel
@@ -113,6 +112,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         MainScreen(
                             state = state,
                             musicState = musicState,
+                            textFieldState = viewModel.textFieldState,
                             onNavigate = backStack::navigate,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
@@ -134,8 +134,9 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     entry<Screen.Settings> {
                         SettingsScreen(
                             onNavigateUp = backStack::removeLastOrNull,
-                            isPlayerReady = musicState.isPlayerReady,
-                            currentMusicUri = musicState.track.uri.toString(),
+                            musicState = musicState,
+                            onNavigate = backStack::navigate,
+                            onHandlePlayerActions = musicViewModel::handlePlayerActions
                         )
                     }
 

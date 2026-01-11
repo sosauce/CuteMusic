@@ -16,7 +16,6 @@ import com.sosauce.cutemusic.utils.getUriFromByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
@@ -32,7 +31,6 @@ class SafManager(
             }
         }
         .flowOn(Dispatchers.IO)
-
 
 
     private fun uriToTrack(uri: Uri): CuteTrack {

@@ -5,15 +5,16 @@ package com.sosauce.cutemusic.data
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
 import com.sosauce.cutemusic.data.datastore.getWhitelistedFolders
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.observe
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
 /**
@@ -34,7 +35,7 @@ class AbstractTracksScanner(
                 whitelistedFolders = getWhitelistedFolders(context),
                 minTrackDuration = getMinTrackDuration(context)
             )
-        }
+        }.flowOn(Dispatchers.IO)
 
     private fun fetchTracks(
         extraSelection: String?,
@@ -43,6 +44,7 @@ class AbstractTracksScanner(
         minTrackDuration: Int
     ): List<CuteTrack> {
         val musics = mutableListOf<CuteTrack>()
+
 
         if (whitelistedFolders.isEmpty()) return emptyList()
 

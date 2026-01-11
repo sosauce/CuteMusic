@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,8 +21,16 @@ class ArtistDetailsViewModel(
     private val _state = MutableStateFlow(ArtistDetailsState(isLoading = true))
     val state = _state.asStateFlow()
 
+    val state2 = combine(
+        artistsRepository.fetchLatestArtistTracks(artistName),
+    ) { tracks ->
+        val artist = artistsRepository.fetchArtistDetails(artistName)
+        val albums = artistsRepository.fetchArtistAlbums(artistName)
+    }
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
+
             val artist = artistsRepository.fetchArtistDetails(artistName)
             val albums = artistsRepository.fetchArtistAlbums(artistName)
             _state.update {

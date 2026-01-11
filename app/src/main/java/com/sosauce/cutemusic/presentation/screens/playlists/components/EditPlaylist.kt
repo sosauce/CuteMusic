@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,10 +29,13 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFloatingActionButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,6 +51,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.emoji2.emojipicker.EmojiPickerView
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.Playlist
@@ -103,22 +108,37 @@ fun EditPlaylist(
 
 
     if (showEmojiPicker) {
-        ModalBottomSheet(
+        Dialog(
             onDismissRequest = { showEmojiPicker = false },
-            dragHandle = null
+            properties = DialogProperties(dismissOnBackPress = true, usePlatformDefaultWidth = true)
         ) {
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                factory = { ctx ->
-                    EmojiPickerView(ctx).apply {
-                        setOnEmojiPickedListener(onEmojiPickedListener = {
-                            newPlaylist = newPlaylist.copy(emoji = it.emoji)
-                        })
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                AndroidView(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize(),
+                    factory = { ctx ->
+                        EmojiPickerView(ctx).apply {
+                            setOnEmojiPickedListener(onEmojiPickedListener = {
+                                newPlaylist = newPlaylist.copy(emoji = it.emoji)
+                                showEmojiPicker = false
+                            })
+                        }
                     }
+                )
+                MediumFloatingActionButton(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    onClick = { showEmojiPicker = false },
+                    shape = MaterialShapes.Cookie9Sided.toShape()
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = null
+                    )
                 }
-            )
+            }
         }
     }
 

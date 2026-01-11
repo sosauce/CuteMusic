@@ -4,12 +4,9 @@ package com.sosauce.cutemusic.presentation.screens.album
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -82,7 +79,10 @@ fun SharedTransitionScope.AlbumsScreen(
                             onChangeSorting = { isSortedByASC = it },
                             topContent = {
                                 DropdownMenuItem(
-                                    onClick = { numberOfAlbumGrids = if (numberOfAlbumGrids == 4) 2 else numberOfAlbumGrids + 1 },
+                                    onClick = {
+                                        numberOfAlbumGrids =
+                                            if (numberOfAlbumGrids == 4) 2 else numberOfAlbumGrids + 1
+                                    },
                                     text = { Text(stringResource(R.string.no_of_grids)) },
                                     trailingIcon = { Text("$numberOfAlbumGrids") }
                                 )

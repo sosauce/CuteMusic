@@ -5,6 +5,7 @@ package com.sosauce.cutemusic.presentation.screens.playlists
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,6 +22,9 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,18 +43,21 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberPlaylistSort
 import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
+import com.sosauce.cutemusic.presentation.multiselect.rememberMultiSelectState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.CreatePlaylistDialog
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistItem
 import com.sosauce.cutemusic.presentation.shared_components.CuteSearchbar
 import com.sosauce.cutemusic.presentation.shared_components.NoResult
 import com.sosauce.cutemusic.presentation.shared_components.NoXFound
+import com.sosauce.cutemusic.presentation.shared_components.SelectedBar
 import com.sosauce.cutemusic.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.cutemusic.utils.PlaylistSort
 import com.sosauce.cutemusic.utils.ordered
@@ -73,6 +80,7 @@ fun SharedTransitionScope.PlaylistsScreen(
     var isSortedByASC by rememberSaveable { mutableStateOf(true) }
     var fabMenuExpanded by remember { mutableStateOf(false) }
     var playlistSort by rememberPlaylistSort()
+    val multiSelectState = rememberMultiSelectState<Playlist>()
 
 
     val importPlaylistLauncher =
@@ -98,101 +106,135 @@ fun SharedTransitionScope.PlaylistsScreen(
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            CuteSearchbar(
-                modifier = Modifier.selfAlignHorizontally(),
-                textFieldState = textFieldState,
-                musicState = musicState,
-                sortingMenu = {
-                    SortingDropdownMenu(
-                        isSortedAscending = isSortedByASC,
-                        onChangeSorting = { isSortedByASC = true }
-                    ) {
-                        repeat(4) { i ->
-                            val text = when (i) {
-                                0 -> R.string.name
-                                1 -> R.string.number_of_tracks
-                                2 -> R.string.tags
-                                3 -> R.string.color
-                                else -> throw IndexOutOfBoundsException()
+            AnimatedContent(multiSelectState.isInSelectionMode) {
+                if (it) {
+                    SelectedBar(
+                        modifier = Modifier.selfAlignHorizontally(),
+                        items = playlists,
+                        multiSelectState = multiSelectState,
+                        onToggleAll = {
+                            if (multiSelectState.selectedItems.size == playlists.size) {
+                                multiSelectState.clearSelected()
+                            } else {
+                                multiSelectState.toggleAll(playlists)
                             }
-                            DropdownMenuItem(
-                                selected = playlistSort == i,
-                                onClick = { playlistSort = i },
-                                shapes = MenuDefaults.itemShapes(),
-                                colors = MenuDefaults.selectableItemColors(),
-                                text = { Text(stringResource(text)) },
-                                trailingIcon = {
-                                    if (playlistSort == i) {
+                        }
+                    ) {
+                        IconButton(
+                            onClick = {
+                                multiSelectState.selectedItems.fastForEach { playlist ->
+                                    onHandlePlaylistAction(PlaylistActions.DeletePlaylist(playlist))
+                                }
+                            },
+                            shapes = IconButtonDefaults.shapes(),
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.trash_rounded_filled),
+                                contentDescription = null
+                            )
+                        }
+                    }
+                } else {
+                    CuteSearchbar(
+                        modifier = Modifier.selfAlignHorizontally(),
+                        textFieldState = textFieldState,
+                        musicState = musicState,
+                        sortingMenu = {
+                            SortingDropdownMenu(
+                                isSortedAscending = isSortedByASC,
+                                onChangeSorting = { isSortedByASC = true }
+                            ) {
+                                repeat(4) { i ->
+                                    val text = when (i) {
+                                        0 -> R.string.name
+                                        1 -> R.string.number_of_tracks
+                                        2 -> R.string.tags
+                                        3 -> R.string.color
+                                        else -> throw IndexOutOfBoundsException()
+                                    }
+                                    DropdownMenuItem(
+                                        selected = playlistSort == i,
+                                        onClick = { playlistSort = i },
+                                        shapes = MenuDefaults.itemShapes(),
+                                        colors = MenuDefaults.selectableItemColors(),
+                                        text = { Text(stringResource(text)) },
+                                        trailingIcon = {
+                                            if (playlistSort == i) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.check),
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        }
+                                    )
+
+                                }
+                            }
+                        },
+                        onHandlePlayerActions = onHandlePlayerAction,
+                        onNavigate = onNavigate,
+                        fab = {
+                            FloatingActionButtonMenu(
+                                modifier = Modifier.offset(
+                                    12.dp,
+                                    12.dp
+                                ),
+                                expanded = fabMenuExpanded,
+                                button = {
+                                    ToggleFloatingActionButton(
+                                        checked = fabMenuExpanded,
+                                        onCheckedChange = { fabMenuExpanded = !fabMenuExpanded },
+                                        containerSize = { 56.dp }
+                                    ) {
+                                        val icon by remember {
+                                            derivedStateOf {
+                                                if (checkedProgress > 0.5f) R.drawable.close else R.drawable.add
+                                            }
+                                        }
+
                                         Icon(
-                                            painter = painterResource(R.drawable.check),
-                                            contentDescription = null
+                                            painter = painterResource(icon),
+                                            contentDescription = null,
+                                            modifier = Modifier.animateIcon({ checkedProgress })
                                         )
                                     }
                                 }
-                            )
-
-                        }
-                    }
-                },
-                onHandlePlayerActions = onHandlePlayerAction,
-                onNavigate = onNavigate,
-                fab = {
-                    FloatingActionButtonMenu(
-                        modifier = Modifier.offset(
-                            12.dp,
-                            12.dp
-                        ),
-                        expanded = fabMenuExpanded,
-                        button = {
-                            ToggleFloatingActionButton(
-                                checked = fabMenuExpanded,
-                                onCheckedChange = { fabMenuExpanded = !fabMenuExpanded },
-                                containerSize = { 56.dp }
                             ) {
-                                val icon by remember {
-                                    derivedStateOf {
-                                        if (checkedProgress > 0.5f) R.drawable.close else R.drawable.add
-                                    }
-                                }
-
-                                Icon(
-                                    painter = painterResource(icon),
-                                    contentDescription = null,
-                                    modifier = Modifier.animateIcon({ checkedProgress })
+                                FloatingActionButtonMenuItem(
+                                    onClick = {
+                                        importPlaylistLauncher.launch(arrayOf("*/*"))
+                                        fabMenuExpanded = false
+                                    },
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.resource_import),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    text = { Text(stringResource(R.string.import_playlist)) },
+                                )
+                                FloatingActionButtonMenuItem(
+                                    onClick = {
+                                        showPlaylistCreatorDialog = true
+                                        fabMenuExpanded = false
+                                    },
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.playlist_add),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    text = { Text(stringResource(R.string.create_playlist)) },
                                 )
                             }
-                        }
-                    ) {
-                        FloatingActionButtonMenuItem(
-                            onClick = {
-                                importPlaylistLauncher.launch(arrayOf("*/*"))
-                                fabMenuExpanded = false
-                            },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.resource_import),
-                                    contentDescription = null
-                                )
-                            },
-                            text = { Text(stringResource(R.string.import_playlist)) },
-                        )
-                        FloatingActionButtonMenuItem(
-                            onClick = {
-                                showPlaylistCreatorDialog = true
-                                fabMenuExpanded = false
-                            },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.playlist_add),
-                                    contentDescription = null
-                                )
-                            },
-                            text = { Text(stringResource(R.string.create_playlist)) },
-                        )
-                    }
 
+                        }
+                    )
                 }
-            )
+            }
         }
     ) { paddingValues ->
         LazyColumn(
@@ -223,11 +265,24 @@ fun SharedTransitionScope.PlaylistsScreen(
                         items = orderedPlaylist,
                         key = { it.id }
                     ) { playlist ->
+
+                        val isSelected by remember {
+                            derivedStateOf { multiSelectState.isSelected(playlist) }
+                        }
+
                         PlaylistItem(
                             modifier = Modifier.animateItem(),
                             playlist = playlist,
+                            isSelected = isSelected,
                             onHandlePlaylistActions = onHandlePlaylistAction,
-                            onClickPlaylist = { onNavigate(Screen.PlaylistDetails(playlist.id)) }
+                            onClickPlaylist = {
+                                if (multiSelectState.isInSelectionMode) {
+                                    multiSelectState.toggle(playlist)
+                                } else {
+                                    onNavigate(Screen.PlaylistDetails(playlist.id))
+                                }
+                            },
+                            onLongClick = { multiSelectState.toggle(playlist) }
                         )
                     }
                 }

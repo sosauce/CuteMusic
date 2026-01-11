@@ -5,21 +5,23 @@
 
 package com.sosauce.cutemusic.presentation.screens.playlists.components
 
-import android.view.MenuItem
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
@@ -27,13 +29,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -55,9 +55,9 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.Playlist
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
-import com.sosauce.cutemusic.presentation.shared_components.DeletionDialog
 import com.sosauce.cutemusic.presentation.shared_components.MoreOptions
 import com.sosauce.cutemusic.presentation.shared_components.PlaylistDeletionDialog
+import com.sosauce.cutemusic.presentation.shared_components.SelectedItemLogo
 
 @Composable
 fun PlaylistItem(
@@ -65,12 +65,17 @@ fun PlaylistItem(
     playlist: Playlist,
     onHandlePlaylistActions: (PlaylistActions) -> Unit,
     onClickPlaylist: () -> Unit,
-    enabled: Boolean = true
+    onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    isSelected: Boolean = false
 ) {
 
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 0.9f else 1f
+    )
     val exportPlaylistLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
             uri?.let {
@@ -118,40 +123,56 @@ fun PlaylistItem(
         )
     }
 
-    Surface(
+    Box(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .padding(3.dp)
             .clip(RoundedCornerShape(24.dp))
-            .clickable(
-                enabled = enabled,
-                onClick = onClickPlaylist
-            ),
-        color = Color.Transparent
+            .combinedClickable(
+                onClick = onClickPlaylist,
+                onLongClick = onLongClick
+            )
     ) {
-        CompositionLocalProvider(LocalContentColor provides if (enabled) LocalContentColor.current else MaterialTheme.colorScheme.onSurface.copy(0.38f)) {
+        CompositionLocalProvider(
+            LocalContentColor provides if (enabled) LocalContentColor.current else MaterialTheme.colorScheme.onSurface.copy(
+                0.38f
+            )
+        ) {
             Row(
                 modifier = modifier
                     .padding(vertical = 15.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .size(45.dp)
-                        .clip(RoundedCornerShape(5.dp)),
-                    contentAlignment = Alignment.Center
+                AnimatedContent(
+                    targetState = isSelected,
+                    transitionSpec = { scaleIn() togetherWith scaleOut() },
+                    modifier = Modifier.padding(start = 10.dp)
                 ) {
-                    if (playlist.emoji.isNotBlank()) {
-                        Text(
-                            text = playlist.emoji,
-                            fontSize = 20.sp
-                        )
+                    if (it) {
+                        SelectedItemLogo()
                     } else {
-                        Icon(
-                            painter = painterResource(R.drawable.queue_music_rounded),
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(45.dp)
+                                .clip(RoundedCornerShape(5.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (playlist.emoji.isNotBlank()) {
+                                Text(
+                                    text = playlist.emoji,
+                                    fontSize = 20.sp
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(R.drawable.queue_music_rounded),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 Column(
@@ -178,7 +199,9 @@ fun PlaylistItem(
                     Text(
                         text = bottomText,
                         maxLines = 1,
-                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(0.38f)
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(
+                            0.38f
+                        )
                     )
                 }
                 Row(
@@ -238,6 +261,5 @@ fun PlaylistItem(
                 }
             }
         }
-
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CuteMusic</string>
-    <string name="empty" translatable="false"/>
+    <string name="empty" translatable="false" />
     <string name="theme">Tema</string>
     <string name="settings">Ayarlar</string>
     <string name="dark_mode">Karanlık mod</string>

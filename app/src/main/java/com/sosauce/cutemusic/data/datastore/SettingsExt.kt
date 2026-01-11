@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
@@ -14,8 +13,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -89,7 +86,7 @@ inline fun <reified T> rememberCustomPreference(
     }
 }
 
-
+// TODO these are ugly need to refactor
 suspend fun <T> getPreference(
     key: Preferences.Key<T>,
     defaultValue: T,
@@ -99,6 +96,7 @@ suspend fun <T> getPreference(
         .map { preference ->
             preference[key] ?: defaultValue
         }.first()
+
 
 fun <T> getPreferenceFlow(
     key: Preferences.Key<T>,

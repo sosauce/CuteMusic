@@ -5,6 +5,7 @@ package com.sosauce.cutemusic.presentation.screens.playing.components
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
@@ -45,8 +45,8 @@ import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.cutemusic.presentation.shared_components.DeletionDialog
-import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.presentation.shared_components.MoreOptions
+import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 
 @Composable
 fun MoreOptionsButton(
@@ -66,13 +66,18 @@ fun MoreOptionsButton(
         MoreOptions(
             text = { stringResource(R.string.open_eq) },
             onClick = {
-                val intent =
-                    Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicState.audioSessionAudio)
-                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                    }
-                activityResultLauncher.launch(intent)
+                try {
+                    val intent =
+                        Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicState.audioSessionAudio)
+                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                        }
+                    activityResultLauncher.launch(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Unable to open system equalizer", Toast.LENGTH_SHORT)
+                        .show()
+                }
             },
             icon = R.drawable.eq
         ),
@@ -80,7 +85,12 @@ fun MoreOptionsButton(
             text = { stringResource(R.string.edit) },
             onClick = {
                 showMoreDialog = false
-                onNavigate(Screen.MetadataEditor(musicState.track.path, musicState.track.uri.toString()))
+                onNavigate(
+                    Screen.MetadataEditor(
+                        musicState.track.path,
+                        musicState.track.uri.toString()
+                    )
+                )
             },
             icon = R.drawable.edit_rounded
         ),

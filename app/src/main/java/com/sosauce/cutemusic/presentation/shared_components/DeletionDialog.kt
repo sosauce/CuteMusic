@@ -3,6 +3,7 @@
 package com.sosauce.cutemusic.presentation.shared_components
 
 import android.app.Activity
+import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +35,6 @@ import coil3.compose.AsyncImage
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.models.Playlist
-import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.domain.actions.PlaylistActions
 import com.sosauce.cutemusic.utils.ImageUtils
 
@@ -67,12 +66,16 @@ fun DeletionDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    val intentSender = MediaStore.createDeleteRequest(
-                        context.contentResolver,
-                        listOf(track.uri)
-                    ).intentSender
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val intentSender = MediaStore.createDeleteRequest(
+                            context.contentResolver,
+                            listOf(track.uri)
+                        ).intentSender
 
-                    deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                        deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                    } else {
+                        context.contentResolver.delete(track.uri, null, null)
+                    }
                     onDismissRequest()
                 }
             ) {

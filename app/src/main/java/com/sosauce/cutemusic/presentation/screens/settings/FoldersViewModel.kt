@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class FoldersViewModel(
     private val foldersRepository: FoldersRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _folders = MutableStateFlow(emptyList<Folder>())
     val folders = _folders.asStateFlow()

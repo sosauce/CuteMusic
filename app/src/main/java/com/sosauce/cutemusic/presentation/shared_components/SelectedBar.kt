@@ -1,49 +1,43 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.sosauce.cutemusic.presentation.shared_components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.presentation.screens.playlists.components.PlaylistPicker
+import com.sosauce.cutemusic.presentation.multiselect.MultiSelectState
 import com.sosauce.cutemusic.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 
 @Composable
-fun SelectedBar(
+fun <T> SelectedBar(
     modifier: Modifier = Modifier,
-    selectedElements: List<String>,
-    onClearSelected: () -> Unit
+    items: List<T>,
+    multiSelectState: MultiSelectState<T>,
+    onToggleAll: () -> Unit,
+    actions: @Composable (RowScope.() -> Unit)
 ) {
-
-    var showPlaylistDialog by remember { mutableStateOf(false) }
-
-    if (showPlaylistDialog) {
-        PlaylistPicker(
-            mediaId = selectedElements,
-            onDismissRequest = { showPlaylistDialog = false },
-            onAddingFinished = onClearSelected
-        )
-    }
-
     Column(
         modifier = modifier
             .navigationBarsPadding()
@@ -53,42 +47,49 @@ fun SelectedBar(
             .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(
-                onClick = onClearSelected
+            TextButton(
+                onClick = multiSelectState::clearSelected,
+                shapes = ButtonDefaults.shapes()
             ) {
+                Row {
+                    Icon(
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text("${multiSelectState.selectedItems.size}")
+                }
+            }
+            TextButton(
+                onClick = onToggleAll,
+                shapes = ButtonDefaults.shapes()
+
+            ) {
+
+                val icon =
+                    if (items.size == multiSelectState.selectedItems.size) R.drawable.unselect_all else R.drawable.select_all
+
                 Icon(
-                    painter = painterResource(R.drawable.close),
+                    painter = painterResource(icon),
                     contentDescription = null
                 )
+                Spacer(Modifier.width(5.dp))
+
+                val text =
+                    if (items.size == multiSelectState.selectedItems.size) "Unselect all" else "Select all"
+
+                Text(text)
             }
-            Text(selectedElements.size.toString())
         }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = { showPlaylistDialog = true }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.playlist_add),
-                    contentDescription = null
-                )
-            }
-
-            IconButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.trash_rounded_filled),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
+        ) { actions() }
     }
 }

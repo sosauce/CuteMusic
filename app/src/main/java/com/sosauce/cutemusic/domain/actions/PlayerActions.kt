@@ -23,6 +23,7 @@ sealed interface PlayerActions {
         val tracks: List<CuteTrack>,
         val random: Boolean = false
     ) : PlayerActions
+
     data class UpdateCurrentPosition(
         val position: Long
     ) : PlayerActions

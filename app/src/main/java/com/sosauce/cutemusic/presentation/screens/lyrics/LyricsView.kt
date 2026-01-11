@@ -145,7 +145,8 @@ fun LyricsView(
                         Text(stringResource(R.string.no_lyrics_note))
                         Button(
                             onClick = {
-                                val query = "${musicState.track.title} ${musicState.track.artist} lyrics"
+                                val query =
+                                    "${musicState.track.title} ${musicState.track.artist} lyrics"
                                 val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
                                     putExtra(SearchManager.QUERY, query)
                                 }

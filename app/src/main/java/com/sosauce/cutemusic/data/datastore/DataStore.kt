@@ -1,44 +1,32 @@
 package com.sosauce.cutemusic.data.datastore
 
 import android.content.Context
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.media3.common.Player
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ALBUM_SORT
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.APPLY_SHUFFLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ARTWORK_SHAPE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.ART_AS_BACKGROUND
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.CAROUSEL
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.EQUALIZER_BANDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MEDIA_INDEX_TO_MEDIA_ID
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PITCH
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PLAYLIST_SORT
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.REPEAT_MODE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAF_TRACKS
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAVED_MEDIA_ID
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SAVED_POSITION
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SHOW_X_BUTTON
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SLIDER_STYLE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
-import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SPEED
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.SORT_TRACKS_ASCENDING
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.TRACK_SORT
@@ -46,11 +34,8 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_EXPRESSIVE_PALETTE
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
-import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.ArtworkShape
 import com.sosauce.cutemusic.utils.CuteTheme
-import com.sosauce.cutemusic.utils.EqBand
-import com.sosauce.cutemusic.utils.LastPlayed
 import com.sosauce.cutemusic.utils.SliderStyle
 
 private const val PREFERENCES_NAME = "settings"
@@ -65,14 +50,11 @@ data object PreferencesKeys {
     val SNAP_SPEED_N_PITCH = booleanPreferencesKey("snap_peed_n_pitch")
     val KILL_SERVICE = booleanPreferencesKey("kill_service")
     val USE_ART_THEME = booleanPreferencesKey("use_art_theme")
-    val APPLY_SHUFFLE = booleanPreferencesKey("apply_shuffle")
     val SHOW_X_BUTTON = booleanPreferencesKey("show_x_button")
     val SHOW_SHUFFLE_BUTTON = booleanPreferencesKey("show_shuffle_button")
     val SAF_TRACKS = stringSetPreferencesKey("saf_tracks")
     val GROUP_BY_FOLDERS = booleanPreferencesKey("GROUP_BY_FOLDERS")
     val CAROUSEL = booleanPreferencesKey("CAROUSEL")
-    val SPEED = floatPreferencesKey("SPEED")
-    val PITCH = floatPreferencesKey("PITCH")
     val MEDIA_INDEX_TO_MEDIA_ID = stringPreferencesKey("MEDIA_INDEX_TO_MEDIA_ID")
     val NUMBER_OF_ALBUM_GRIDS = intPreferencesKey("NUMBER_OF_ALBUM_GRIDS")
     val SLIDER_STYLE = stringPreferencesKey("SLIDER_STYLE")
@@ -83,16 +65,13 @@ data object PreferencesKeys {
     val TRACK_SORT = intPreferencesKey("TRACK_SORT")
     val ARTIST_SORT = intPreferencesKey("ARTIST_SORT")
     val PAUSE_ON_MUTE = booleanPreferencesKey("PAUSE_ON_MUTE")
-    val REPEAT_MODE = intPreferencesKey("REPEAT_MODE")
     val USE_EXPRESSIVE_PALETTE = booleanPreferencesKey("USE_EXPRESSIVE_PALETTE")
     val MIN_TRACK_DURATION = intPreferencesKey("MIN_TRACK_DURATION")
     val PLAYLIST_SORT = intPreferencesKey("PLAYLIST_SORT")
-    val EQUALIZER_BANDS = stringPreferencesKey("EQUALIZER_BANDS")
     val ARTWORK_SHAPE = stringPreferencesKey("ARTWORK_SHAPE")
-
     val HAS_BEEN_THROUGH_SETUP = booleanPreferencesKey("HAS_BEEN_THROUGH_SETUP")
-    val SAVED_POSITION = longPreferencesKey("SAVED_POSITION")
-    val SAVED_MEDIA_ID = stringPreferencesKey("SAVED_MEDIA_ID")
+    val SORT_TRACKS_ASCENDING = booleanPreferencesKey("SORT_TRACKS_ASCENDING")
+    val LAST_MUSIC_STATE = stringPreferencesKey("LAST_MUSIC_STATE")
 }
 
 
@@ -103,6 +82,7 @@ fun rememberAppTheme() =
 @Composable
 fun rememberUseSystemFont() =
     rememberPreference(key = USE_SYSTEM_FONT, defaultValue = false)
+
 @Composable
 fun rememberSnapSpeedAndPitch() =
     rememberPreference(key = SNAP_SPEED_N_PITCH, defaultValue = false)
@@ -112,16 +92,9 @@ fun rememberUseArtTheme() =
     rememberPreference(key = USE_ART_THEME, defaultValue = false)
 
 @Composable
-fun rememberShouldApplyShuffle() =
-    rememberPreference(key = APPLY_SHUFFLE, defaultValue = false)
-
-@Composable
-fun rememberShowXButton() =
-    rememberPreference(key = SHOW_X_BUTTON, defaultValue = true)
-
-@Composable
 fun rememberShowShuffleButton() =
     rememberPreference(key = SHOW_SHUFFLE_BUTTON, defaultValue = true)
+
 @Composable
 fun rememberAllSafTracks() =
     rememberPreference(key = SAF_TRACKS, defaultValue = emptySet())
@@ -187,10 +160,6 @@ fun rememberMinTrackDuration() =
     rememberPreference(key = MIN_TRACK_DURATION, defaultValue = 0)
 
 @Composable
-fun rememberEqBands() =
-    rememberCustomPreference(key = EQUALIZER_BANDS, defaultValue = emptyList<EqBand>())
-
-@Composable
 fun rememberWhitelistedFolders() =
     rememberPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet())
 
@@ -202,24 +171,9 @@ fun rememberHasBeenThroughSetup() =
 fun rememberHasSeenTip() =
     rememberPreference(key = HAS_SEEN_TIP, defaultValue = false)
 
-suspend  fun getShouldShuffle(context: Context) =
-    getPreference(key = APPLY_SHUFFLE, defaultValue = false, context = context)
-
-suspend fun saveShouldShuffle(context: Context, value: Boolean) =
-    savePreference(key = APPLY_SHUFFLE, value = value, context = context)
-
-
-suspend fun getSpeed(context: Context) =
-    getPreference(key = SPEED, defaultValue = 1.0f, context = context)
-
-suspend fun saveSpeed(context: Context, value: Float) =
-    savePreference(key = SPEED, value = value, context = context)
-
-suspend fun getPitch(context: Context) =
-    getPreference(key = PITCH, defaultValue = 1.0f, context = context)
-
-suspend fun savePitch(context: Context, value: Float) =
-    savePreference(key = PITCH, value = value, context = context)
+@Composable
+fun rememberSortTracksAscending() =
+    rememberPreference(key = SORT_TRACKS_ASCENDING, defaultValue = true)
 
 suspend fun getPauseOnMute(context: Context) =
     getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)
@@ -227,8 +181,6 @@ suspend fun getPauseOnMute(context: Context) =
 fun getSafTracks(context: Context) =
     getPreferenceFlow(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
 
-suspend fun getRepeatMode(context: Context) =
-    getPreference(key = REPEAT_MODE, defaultValue = Player.REPEAT_MODE_OFF, context = context)
 
 suspend fun getMinTrackDuration(context: Context) =
     getPreference(key = MIN_TRACK_DURATION, defaultValue = 0, context = context)
@@ -236,28 +188,6 @@ suspend fun getMinTrackDuration(context: Context) =
 suspend fun getWhitelistedFolders(context: Context) =
     getPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet(), context = context)
 
-suspend fun saveRepeatMode(context: Context, value: Int) =
-    savePreference(key = REPEAT_MODE, value = value, context = context)
-
-suspend fun getSavedPosition(context: Context) =
-    getPreference(
-        key = SAVED_POSITION,
-        defaultValue = 0,
-        context = context
-    )
-
-suspend fun saveSavedPosition(context: Context, value: Long) =
-    savePreference(key = SAVED_POSITION, value = value, context = context)
-
-suspend fun getSavedMediaId(context: Context) =
-    getPreference(
-        key = SAVED_MEDIA_ID,
-        defaultValue = "",
-        context = context
-    )
-
-suspend fun saveSavedMediaId(context: Context, value: String) =
-    savePreference(key = SAVED_MEDIA_ID, value = value, context = context)
 
 //suspend fun saveMediaIndexToMediaIdMap(pair: LastPlayed, context: Context) =
 //    saveCustomPreference(value = pair, key = MEDIA_INDEX_TO_MEDIA_ID, context = context)

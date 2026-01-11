@@ -6,15 +6,12 @@
 package com.sosauce.cutemusic.presentation.shared_components
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.PredictiveBackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.calculateTargetValue
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -22,28 +19,21 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.splineBasedDecay
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -59,7 +49,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -78,30 +67,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberHasSeenTip
 import com.sosauce.cutemusic.data.datastore.rememberShowShuffleButton
-import com.sosauce.cutemusic.data.datastore.rememberShowXButton
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
@@ -114,11 +95,8 @@ import com.sosauce.cutemusic.utils.SharedTransitionKeys
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import com.sosauce.cutemusic.utils.showBackButton
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.koin.core.component.getScopeName
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 
 @Composable
@@ -170,19 +148,18 @@ fun SharedTransitionScope.CuteSearchbar(
             )
         }
     }
-    val searchbarWidth = remember(yTranslation.value) { 0.85f + (1f - 0.85f) * (-yTranslation.value / 400) }
-    val searchbarAlpha = remember(yTranslation.value) { 1f + (-yTranslation.value / (thresholdY / 2)) }
+    val searchbarWidth =
+        remember(yTranslation.value) { 0.85f + (1f - 0.85f) * (-yTranslation.value / 400) }
+    val searchbarAlpha =
+        remember(yTranslation.value) { 1f + (-yTranslation.value / (thresholdY / 2)) }
 
     AnimatedContent(
         targetState = showFullPlayer,
         modifier = Modifier
             .fillMaxWidth()
-            .graphicsLayer {
-                translationY = yTranslation.value
-            }
             .draggable(
                 state = dragState,
-                enabled = musicState.isPlayerReady && !showFullPlayer,
+                enabled = musicState.isPlayerReady,
                 orientation = Orientation.Vertical,
                 onDragStopped = {
                     scope.launch {
@@ -196,6 +173,9 @@ fun SharedTransitionScope.CuteSearchbar(
                     }
                 }
             )
+            .graphicsLayer {
+                translationY = yTranslation.value
+            }
     ) { fullPlayer ->
         if (fullPlayer) {
             BackHandler { showFullPlayer = false }
@@ -349,17 +329,24 @@ fun SharedTransitionScope.CuteSearchbar(
                                         leadingIcon = {
                                             var hasSeenTip by rememberHasSeenTip()
                                             TooltipBox(
-                                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                                    TooltipAnchorPosition.Above
+                                                ),
                                                 tooltip = {
                                                     RichTooltip(
                                                         caretShape = TooltipDefaults.caretShape(),
                                                         colors = TooltipDefaults.richTooltipColors(
                                                             containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                                            contentColor = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
+                                                            contentColor = contentColorFor(
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                            )
                                                         ),
                                                     ) { Text(stringResource(R.string.click_hint)) }
                                                 },
-                                                state = rememberTooltipState(initialIsVisible = !hasSeenTip, isPersistent = !hasSeenTip)
+                                                state = rememberTooltipState(
+                                                    initialIsVisible = !hasSeenTip,
+                                                    isPersistent = !hasSeenTip
+                                                )
                                             ) {
                                                 IconButton(
                                                     onClick = {
@@ -369,7 +356,10 @@ fun SharedTransitionScope.CuteSearchbar(
                                                     shapes = IconButtonDefaults.shapes()
                                                 ) {
                                                     Icon(
-                                                        painter = painterResource(screenToLeadingIcon[currentScreen] ?: R.drawable.search),
+                                                        painter = painterResource(
+                                                            screenToLeadingIcon[currentScreen]
+                                                                ?: R.drawable.search
+                                                        ),
                                                         contentDescription = null
                                                     )
                                                 }

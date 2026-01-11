@@ -40,6 +40,7 @@ fun ColorPickerDialog(
 
     val controller = rememberColorPickerController()
     var hexCode by remember { mutableStateOf("") }
+    rememberScrollState()
 
     AlertDialog(
         onDismissRequest = onDismissRequest,

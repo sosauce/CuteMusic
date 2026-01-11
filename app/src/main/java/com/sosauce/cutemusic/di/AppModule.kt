@@ -3,6 +3,7 @@ package com.sosauce.cutemusic.di
 import androidx.room.Room
 import com.sosauce.cutemusic.data.AbstractTracksScanner
 import com.sosauce.cutemusic.data.LyricsParser
+import com.sosauce.cutemusic.data.datastore.UserPreferences
 import com.sosauce.cutemusic.data.playlist.MIGRATION_1_2
 import com.sosauce.cutemusic.data.playlist.PlaylistDatabase
 import com.sosauce.cutemusic.domain.repository.AlbumsRepository
@@ -48,6 +49,7 @@ val appModule = module {
     singleOf(::AlbumsRepository)
     singleOf(::ArtistsRepository)
     singleOf(::PlaylistsRepository)
+    singleOf(::UserPreferences)
     viewModelOf(::MusicViewModel)
     viewModelOf(::MetadataViewModel)
     viewModelOf(::PlaylistViewModel)

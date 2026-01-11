@@ -26,7 +26,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.models.CuteTrack
+import com.sosauce.cutemusic.data.states.MusicState
+import com.sosauce.cutemusic.domain.actions.PlayerActions
+import com.sosauce.cutemusic.presentation.navigation.Screen
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.cutemusic.presentation.screens.settings.compenents.SettingsScreens
@@ -39,8 +41,9 @@ import kotlin.uuid.Uuid
 @Composable
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
-    isPlayerReady: Boolean,
-    currentMusicUri: String
+    musicState: MusicState,
+    onHandlePlayerActions: (PlayerActions) -> Unit,
+    onNavigate: (Screen) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val backStack = rememberNavBackStack(SettingsScreens.Settings)
@@ -80,7 +83,7 @@ fun SettingsScreen(
 
     NavDisplay(
         backStack = backStack,
-        onBack = { 
+        onBack = {
             if (backStack.size > 1) {
                 backStack.removeLastOrNull()
             } else {
@@ -150,8 +153,9 @@ fun SettingsScreen(
 
                 SettingsLibrary(
                     safTracksUi = safTracks,
-                    isPlayerReady = isPlayerReady,
-                    currentMusicUri = currentMusicUri,
+                    musicState = musicState,
+                    onNavigate = onNavigate,
+                    onHandlePlayerActions = onHandlePlayerActions,
                     onNavigateUp = backStack::removeLastOrNull
                 )
             }

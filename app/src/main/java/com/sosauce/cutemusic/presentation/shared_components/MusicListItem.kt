@@ -9,12 +9,14 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,17 +38,10 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxDefaults
-import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -84,6 +80,7 @@ fun MusicListItem(
     music: CuteTrack,
     musicState: MusicState,
     onShortClick: (mediaId: String) -> Unit,
+    onLongClick: (() -> Unit)? = null,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isSelected: Boolean = false,
@@ -100,13 +97,23 @@ fun MusicListItem(
             Color.Transparent
         }
     )
-    Surface(
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 0.9f else 1f
+    )
+
+    Box(
         modifier = modifier
-            .padding(3.dp),
-        onClick = { onShortClick(music.mediaId) },
-        shape = RoundedCornerShape(24.dp),
-        color = bgColor,
-        contentColor = contentColorFor(bgColor)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .padding(3.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(bgColor)
+            .combinedClickable(
+                onClick = { onShortClick(music.mediaId) },
+                onLongClick = onLongClick
+            )
     ) {
         Row(
             modifier = modifier
@@ -119,19 +126,7 @@ fun MusicListItem(
                 modifier = Modifier.padding(start = 10.dp)
             ) {
                 if (it) {
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(MaterialShapes.Cookie9Sided.toShape())
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.check),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
+                    SelectedItemLogo()
                 } else {
                     when (imageState) {
                         is AsyncImagePainter.State.Error -> {
