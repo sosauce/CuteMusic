@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CuteMusic</string>
-    <string name="empty" translatable="false" />
+    <string name="empty" translatable="false"/>
     <string name="theme">Tema</string>
     <string name="settings">Ayarlar</string>
     <string name="dark_mode">Karanlık mod</string>
@@ -170,4 +170,26 @@
     <string name="art_as_bg">Kapağı arkaplan yap</string>
     <string name="playback_controls">Oynatma kontrolleri</string>
     <string name="playback_controls_desc">Gerçek müzik sevdalıları için !</string>
+    <string name="permission_granted">Yetki verildi, devam edebilirsin…</string>
+    <string name="next_step">Sonraki adım</string>
+    <string name="no_music_tip">İpucu: Ayarlarda taramak istediğiniz klasörleri beyaz listeye eklemeyi unutmayın!</string>
+    <string name="initial_folder_selection">Beyaz listeye eklemek istediğiniz klasörleri seçin, öbürleri kara listeye alınacaktır</string>
+    <string name="rate_error">Oran 0.5 ile 2 arasında olmalıdır.</string>
+    <string name="whitelisted">Beyaz Listelenmiş</string>
+    <string name="saf">S.A.F</string>
+    <string name="click_hint">Bana tıkla!</string>
+    <string name="seek_prev_song">Önceki şarkıya git</string>
+    <string name="seek_next_song">Sonraki şarkıya git</string>
+    <string name="cute_searchbar">SevimliAramaÇubuğu</string>
+    <string name="no_album_desc">Sen harika bir bekarsın ve bu sorun değil</string>
+    <string name="no_artist_desc">Zaten sen daha iyi şarkı söylüyorsun</string>
+    <string name="set">Ayarla</string>
+    <string name="use_expr_palette">Expressive paletini kullan</string>
+    <string name="min_track_length_hint">Belirtilen süreden daha kısa parçaları göstermemeyi de seçebilirsiniz</string>
+    <string name="min_track_length_text">Min parça süresi</string>
+    <string name="as_added">Eklendi</string>
+    <string name="click_to_add">Eklemek için tıkla</string>
+    <string name="playlist_tag_add">Yeni etiket ekle</string>
+    <string name="playlist_tag_exists">Bu playlistte zaten bu etiket mevcut.</string>
+    <string name="playlist_tag_no_edit">Etiketler oluşturulduktan sonra düzenlenemez, ancak silinebilir</string>
 </resources>
