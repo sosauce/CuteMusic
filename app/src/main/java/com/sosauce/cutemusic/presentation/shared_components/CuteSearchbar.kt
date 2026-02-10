@@ -159,7 +159,7 @@ fun SharedTransitionScope.CuteSearchbar(
             .fillMaxWidth()
             .draggable(
                 state = dragState,
-                enabled = musicState.isPlayerReady,
+                enabled = musicState.isPlayerReady && !showFullPlayer,
                 orientation = Orientation.Vertical,
                 onDragStopped = {
                     scope.launch {

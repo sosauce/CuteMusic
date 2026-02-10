@@ -32,7 +32,7 @@ import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
-import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsView
+import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsScreen
 import com.sosauce.cutemusic.presentation.screens.playing.components.ActionButtonsRow
 import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
@@ -52,7 +52,6 @@ fun SharedTransitionScope.NowPlayingLandscape(
     onShrinkToSearchbar: () -> Unit
 ) {
     var showSpeedCard by remember { mutableStateOf(false) }
-    var showLyrics by remember { mutableStateOf(false) }
     var snap by rememberSnapSpeedAndPitch()
     var showPlaylistDialog by remember { mutableStateOf(false) }
 
@@ -101,51 +100,41 @@ fun SharedTransitionScope.NowPlayingLandscape(
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
-            AnimatedContent(showLyrics) { targetState ->
-                if (targetState) {
-                    LyricsView(
-                        onHideLyrics = { showLyrics = false },
-                        musicState = musicState,
-                        onHandlePlayerActions = onHandlePlayerActions
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        PlayingTopRow(
-                            musicState = musicState,
-                            onNavigate = onNavigate,
-                            onShrinkToSearchbar = onShrinkToSearchbar
-                        )
-                        TitleAndArtist(
-                            titleModifier = Modifier
-                                .sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                                ),
-                            musicState = musicState
-                        )
-                        Spacer(Modifier.height(24.dp))
-                        CuteSlider(
-                            musicState = musicState,
-                            onHandlePlayerActions = onHandlePlayerActions
-                        )
-                        ActionButtonsRow(
-                            musicState = musicState,
-                            onHandlePlayerActions = onHandlePlayerActions
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        QuickActionsRow(
-                            musicState = musicState,
-                            onShowLyrics = { showLyrics = true },
-                            onShowSpeedCard = { showSpeedCard = true },
-                            onHandlePlayerActions = onHandlePlayerActions,
-                            onNavigate = onNavigate
-                        )
-                    }
-                }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                PlayingTopRow(
+                    musicState = musicState,
+                    onNavigate = onNavigate,
+                    onShrinkToSearchbar = onShrinkToSearchbar
+                )
+                TitleAndArtist(
+                    titleModifier = Modifier
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
+                            animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                        ),
+                    musicState = musicState
+                )
+                Spacer(Modifier.height(24.dp))
+                CuteSlider(
+                    musicState = musicState,
+                    onHandlePlayerActions = onHandlePlayerActions
+                )
+                ActionButtonsRow(
+                    musicState = musicState,
+                    onHandlePlayerActions = onHandlePlayerActions
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                QuickActionsRow(
+                    musicState = musicState,
+                    onShowSpeedCard = { showSpeedCard = true },
+                    onHandlePlayerActions = onHandlePlayerActions,
+                    onNavigate = onNavigate
+                )
             }
 
         }

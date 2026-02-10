@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
@@ -78,7 +80,6 @@ import com.sosauce.cutemusic.utils.selfAlignHorizontally
 @Composable
 fun SharedTransitionScope.MainScreen(
     state: MainState,
-    textFieldState: TextFieldState,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerAction: (PlayerActions) -> Unit
@@ -91,6 +92,7 @@ fun SharedTransitionScope.MainScreen(
     var trackSort by rememberTrackSort()
     var sortTracksAscending by rememberSortTracksAscending()
     val multiSelectState = rememberMultiSelectState<CuteTrack>()
+    val textFieldState = rememberTextFieldState()
 
 
     if (state.isLoading) {
@@ -340,7 +342,7 @@ fun SharedTransitionScope.MainScreen(
                             item { NoResult() }
                         } else {
                             items(
-                                items = state.tracks,
+                                items = state.tracks.fastFilter { it.title.contains(textFieldState.text, true) },
                                 key = { it.mediaId }
                             ) { music ->
 

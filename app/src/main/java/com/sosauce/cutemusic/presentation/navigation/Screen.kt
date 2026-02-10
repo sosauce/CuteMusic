@@ -27,6 +27,10 @@ sealed class Screen() : NavKey {
     data object Queue : Screen()
 
     @Serializable
+    data class Lyrics(
+        val trackPath: String
+    ) : Screen()
+    @Serializable
     data class AlbumsDetails(
         val name: String
     ) : Screen()

@@ -60,21 +60,23 @@ import com.sosauce.cutemusic.utils.selfAlignHorizontally
 import kotlinx.coroutines.launch
 
 @Composable
-fun LyricsView(
-    onHideLyrics: () -> Unit,
+fun LyricsScreen(
+    onNavigateBack: () -> Unit,
+    lyrics: List<Lyrics>,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
     val activity = LocalActivity.current
     val context = LocalContext.current
     val clipboardManager = LocalClipboard.current
-    rememberIsLandscape()
     val scope = rememberCoroutineScope()
-    var currentLyric by remember { mutableStateOf(Lyrics()) }
+    val currentLyricIndex by remember(musicState.position) {
+        derivedStateOf {
+            lyrics.indexOfLast { musicState.position >= it.timestamp }
+        }
+    }
     val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = if (musicState.lyrics.indexOf(currentLyric) != -1) musicState.lyrics.indexOf(
-            currentLyric
-        ) else 0
+        initialFirstVisibleItemIndex = if (currentLyricIndex!= -1) currentLyricIndex else 0
     )
 
     DisposableEffect(Unit) {
@@ -86,10 +88,9 @@ fun LyricsView(
         }
     }
 
-    LaunchedEffect(currentLyric) {
-        val indexOfCurrentLyric = musicState.lyrics.indexOf(currentLyric)
-        if (indexOfCurrentLyric != -1) {
-            lazyListState.animateScrollToItem(musicState.lyrics.indexOf(currentLyric))
+    LaunchedEffect(currentLyricIndex) {
+        if (currentLyricIndex != -1) {
+            lazyListState.animateScrollToItem(currentLyricIndex)
         }
     }
 
@@ -103,7 +104,7 @@ fun LyricsView(
                     .navigationBarsPadding(),
                 floatingActionButton = {
                     FloatingToolbarDefaults.VibrantFloatingActionButton(
-                        onClick = onHideLyrics
+                        onClick = onNavigateBack
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.close),
@@ -136,8 +137,7 @@ fun LyricsView(
             state = lazyListState,
             contentPadding = paddingValues
         ) {
-            // A bit wonky but works for now
-            if (musicState.lyrics.size <= 1 && musicState.lyrics.first().lineLyrics.isEmpty()) {
+            if (lyrics.isEmpty()) {
                 item {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -160,51 +160,23 @@ fun LyricsView(
                             Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
                             Text(stringResource(R.string.search_lyrics))
                         }
-
-//                            Button(
-//                                onClick = {/* force load lrc file in  */}
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(R.drawable.resource_import),
-//                                    contentDescription = null
-//                                )
-//                                Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-//                                Text(stringResource(R.string.import_lrc))
-//                            }
                     }
                 }
             } else {
                 itemsIndexed(
-                    items = musicState.lyrics,
+                    items = lyrics,
                     key = { _, lyric -> lyric.id }
                 ) { index, lyric ->
 
-                    val nextTimestamp = remember(index) {
-                        if (index < musicState.lyrics.lastIndex) {
-                            musicState.lyrics[index + 1].timestamp
-                        } else 0
-                    }
-
-                    val isCurrentLyric by remember(musicState.position) {
-                        derivedStateOf {
-                            musicState.position in lyric.timestamp until nextTimestamp
-                        }
-                    }
-
+                    val isCurrentLyric = index == currentLyricIndex
 
                     val color by animateColorAsState(
-                        targetValue = if (isCurrentLyric || lyric.timestamp == 0L) {
+                        targetValue = if (isCurrentLyric || lyric.timestamp == 0) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         }
                     )
-
-
-                    if (isCurrentLyric) {
-                        currentLyric = lyric
-                    }
-
 
                     Column(
                         modifier = Modifier
@@ -215,7 +187,7 @@ fun LyricsView(
                                 onClick = {
                                     onHandlePlayerActions(
                                         PlayerActions.SeekToSlider(
-                                            lyric.timestamp
+                                            lyric.timestamp.toLong()
                                         )
                                     )
                                 },

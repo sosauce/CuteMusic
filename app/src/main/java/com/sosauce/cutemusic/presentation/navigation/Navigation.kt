@@ -35,6 +35,8 @@ import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsScreen
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsScreen
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsViewModel
+import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsScreen
+import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsViewModel
 import com.sosauce.cutemusic.presentation.screens.main.MainScreen
 import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataEditor
@@ -112,7 +114,6 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         MainScreen(
                             state = state,
                             musicState = musicState,
-                            textFieldState = viewModel.textFieldState,
                             onNavigate = backStack::navigate,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
@@ -234,6 +235,19 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             musicState = musicState,
                             onNavigateUp = backStack::removeLastOrNull,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions
+                        )
+                    }
+
+                    entry<Screen.Lyrics> { key ->
+                        val viewModel = koinViewModel<LyricsViewModel>(
+                            parameters = { parametersOf(key.trackPath) }
+                        )
+                        val lyrics by viewModel.lyrics.collectAsStateWithLifecycle()
+                        LyricsScreen(
+                            onNavigateBack = backStack::removeLastOrNull,
+                            lyrics = lyrics,
+                            musicState = musicState,
+                            onHandlePlayerActions = musicViewModel::handlePlayerActions
                         )
                     }
                 }

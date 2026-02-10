@@ -47,7 +47,6 @@ import java.time.Duration
 
 class MusicViewModel(
     private val application: Application,
-    private val lyricsParser: LyricsParser,
     private val userPreferences: UserPreferences
 ) : AndroidViewModel(application) {
 
@@ -61,25 +60,21 @@ class MusicViewModel(
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
 
-                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) return
+                if (mediaItem == null) return
 
-                viewModelScope.launch {
-                    musicState.value.loadedMedias.fastFirstOrNull { track ->
-                        track.mediaId == mediaItem?.mediaId
-                    }?.also { track ->
-                        _musicState.update {
-                            it.copy(
-                                track = track,
-                                lyrics = lyricsParser.parseLyrics(track.path),
-                                audioSessionAudio = mediaController!!.sessionExtras.getInt(
-                                    "audioSessionId",
-                                    0
-                                ),
-                                mediaIndex = mediaController!!.currentMediaItemIndex
-                            )
-                        }
+                musicState.value.loadedMedias.fastFirstOrNull { track ->
+                    track.mediaId == mediaItem.mediaId
+                }?.also { track ->
+                    _musicState.update {
+                        it.copy(
+                            track = track,
+                            audioSessionAudio = mediaController!!.sessionExtras.getInt(
+                                "audioSessionId",
+                                0
+                            ),
+                            mediaIndex = mediaController!!.currentMediaItemIndex
+                        )
                     }
-
                 }
             }
 
@@ -243,7 +238,7 @@ class MusicViewModel(
                     savedMusicState.position
                 )
                 mediaController!!.prepare()
-                _musicState.update { it.copy(track = savedMusicState.track) }
+                _musicState.update { it.copy(track = savedMusicState.track, loadedMedias = savedMusicState.loadedMedias) }
             }
         }
     }
@@ -300,7 +295,6 @@ class MusicViewModel(
 
                 // MediaController needs to update playlist
                 if (action.tracks != musicState.value.loadedMedias) {
-                    println("loaded medias updated")
                     _musicState.update {
                         it.copy(
                             loadedMedias = action.tracks

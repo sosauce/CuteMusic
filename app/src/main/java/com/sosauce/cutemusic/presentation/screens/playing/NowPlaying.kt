@@ -41,7 +41,7 @@ import com.sosauce.cutemusic.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.navigation.Screen
-import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsView
+import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsScreen
 import com.sosauce.cutemusic.presentation.screens.playing.components.ActionButtonsRow
 import com.sosauce.cutemusic.presentation.screens.playing.components.Artwork
 import com.sosauce.cutemusic.presentation.screens.playing.components.CuteSlider
@@ -61,7 +61,6 @@ fun SharedTransitionScope.NowPlaying(
     onNavigateUp: () -> Unit,
     onShrinkToSearchbar: () -> Unit = {}
 ) {
-    var showFullLyrics by remember { mutableStateOf(false) }
     val isLandscape = rememberIsLandscape()
 
     if (isLandscape) {
@@ -72,29 +71,13 @@ fun SharedTransitionScope.NowPlaying(
             onShrinkToSearchbar = onShrinkToSearchbar
         )
     } else {
-        AnimatedContent(
-            targetState = showFullLyrics
-        ) { targetState ->
-            if (targetState) {
-                LyricsView(
-                    onHideLyrics = { showFullLyrics = false },
-                    musicState = musicState,
-                    onHandlePlayerActions = onHandlePlayerActions
-                )
-            } else {
-                NowPlayingContent(
-                    musicState = musicState,
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigate = onNavigate,
-                    onShowLyrics = { showFullLyrics = true },
-                    onShrinkToSearchbar = onShrinkToSearchbar
-                )
-            }
-
+            NowPlayingContent(
+                musicState = musicState,
+                onHandlePlayerActions = onHandlePlayerActions,
+                onNavigate = onNavigate,
+                onShrinkToSearchbar = onShrinkToSearchbar
+            )
         }
-    }
-
-
 }
 
 @Composable
@@ -102,7 +85,6 @@ private fun SharedTransitionScope.NowPlayingContent(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onShowLyrics: () -> Unit,
     onShrinkToSearchbar: () -> Unit
 ) {
     var snap by rememberSnapSpeedAndPitch()
@@ -149,7 +131,6 @@ private fun SharedTransitionScope.NowPlayingContent(
             ) {
                 QuickActionsRow(
                     musicState = musicState,
-                    onShowLyrics = onShowLyrics,
                     onShowSpeedCard = { showSpeedCard = true },
                     onHandlePlayerActions = onHandlePlayerActions,
                     onNavigate = onNavigate

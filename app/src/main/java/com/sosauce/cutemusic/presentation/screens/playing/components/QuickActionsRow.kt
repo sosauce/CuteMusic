@@ -34,7 +34,6 @@ import com.sosauce.cutemusic.utils.selfAlignHorizontally
 @Composable
 fun QuickActionsRow(
     musicState: MusicState,
-    onShowLyrics: () -> Unit,
     onShowSpeedCard: () -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit
@@ -76,7 +75,7 @@ fun QuickActionsRow(
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         IconButton(
-            onClick = onShowLyrics,
+            onClick = { onNavigate(Screen.Lyrics(musicState.track.path)) },
             interactionSource = interactionSources[0],
             modifier = Modifier
                 .animateWidth(interactionSources[0])

@@ -15,6 +15,7 @@ import com.sosauce.cutemusic.presentation.screens.album.AlbumDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.album.AlbumsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistDetailsViewModel
 import com.sosauce.cutemusic.presentation.screens.artist.ArtistsViewModel
+import com.sosauce.cutemusic.presentation.screens.lyrics.LyricsViewModel
 import com.sosauce.cutemusic.presentation.screens.main.MainViewModel
 import com.sosauce.cutemusic.presentation.screens.metadata.MetadataViewModel
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewModel
@@ -62,4 +63,5 @@ val appModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::FoldersViewModel)
     viewModelOf(::SafViewModel)
+    viewModelOf(::LyricsViewModel)
 }
