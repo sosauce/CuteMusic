@@ -43,7 +43,7 @@
 - Easy search across all your music/albums/artists!
 - Very fast and snappy!
 - No unnecessary permissions needed!
-- Material 3 Expressive deisgn!
+- Material 3 Expressive design!
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
