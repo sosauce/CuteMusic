@@ -7,7 +7,7 @@
     <string name="light_mode">Modo Claro</string>
     <string name="amoled_mode">Modo Amoled</string>
     <string name="version">Versión</string>
-    <string name="support">Soporte</string>
+    <string name="support">Apóyame</string>
     <string name="update">Buscar actualizaciones</string>
     <string name="about">Acerca de</string>
     <string name="size">Tamaño</string>
@@ -154,7 +154,7 @@
     <string name="are_u_sure">¿Realmente quieres hacerlo?</string>
     <string name="lyrics">Letras</string>
     <string name="playback_controls">Controles de reproducción</string>
-    <string name="playback_controls_desc">¡Para los verdaderos nerds de la música!</string>
+    <string name="playback_controls_desc">¡Para quienes realmente aman la música!</string>
     <string name="audio">Audio</string>
     <string name="pause_on_mute">Pausar al silenciar</string>
     <string name="pause_on_mute_desc">La reproducción se pausará cuando el volumen del dispositivo esté en silencio</string>
