@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -93,7 +92,6 @@ fun SharedTransitionScope.MainScreen(
     var sortTracksAscending by rememberSortTracksAscending()
     val multiSelectState = rememberMultiSelectState<CuteTrack>()
     val textFieldState = rememberTextFieldState()
-
 
     if (state.isLoading) {
         Box(
@@ -309,7 +307,7 @@ fun SharedTransitionScope.MainScreen(
                                     },
                                     onLongClick = { multiSelectState.toggle(music) },
                                     isSelected = isSelected,
-                                    music = music,
+                                    track = music,
                                     musicState = musicState,
                                     onNavigate = { onNavigate(it) },
                                     onHandlePlayerActions = onHandlePlayerAction
@@ -365,7 +363,7 @@ fun SharedTransitionScope.MainScreen(
                                         }
                                     },
                                     onLongClick = { multiSelectState.toggle(music) },
-                                    music = music,
+                                    track = music,
                                     musicState = musicState,
                                     onNavigate = { onNavigate(it) },
                                     isSelected = isSelected,

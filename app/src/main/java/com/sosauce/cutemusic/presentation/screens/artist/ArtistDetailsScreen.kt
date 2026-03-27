@@ -329,7 +329,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
 
                         MusicListItem(
                             modifier = Modifier.animateItem(),
-                            music = music,
+                            track = music,
                             musicState = musicState,
                             onShortClick = {
                                 if (multiSelectState.isInSelectionMode) {

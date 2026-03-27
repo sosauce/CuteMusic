@@ -54,11 +54,11 @@ import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 
 @Composable
-fun SharedTransitionScope.NowPlaying(
+fun NowPlaying(
+    modifier: Modifier = Modifier,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit,
     onShrinkToSearchbar: () -> Unit = {}
 ) {
     val isLandscape = rememberIsLandscape()
@@ -71,17 +71,19 @@ fun SharedTransitionScope.NowPlaying(
             onShrinkToSearchbar = onShrinkToSearchbar
         )
     } else {
-            NowPlayingContent(
-                musicState = musicState,
-                onHandlePlayerActions = onHandlePlayerActions,
-                onNavigate = onNavigate,
-                onShrinkToSearchbar = onShrinkToSearchbar
-            )
-        }
+        NowPlayingContent(
+            modifier = modifier,
+            musicState = musicState,
+            onHandlePlayerActions = onHandlePlayerActions,
+            onNavigate = onNavigate,
+            onShrinkToSearchbar = onShrinkToSearchbar
+        )
+    }
 }
 
 @Composable
-private fun SharedTransitionScope.NowPlayingContent(
+private fun NowPlayingContent(
+    modifier: Modifier = Modifier,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
@@ -93,6 +95,7 @@ private fun SharedTransitionScope.NowPlayingContent(
     var showDetailsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {},
@@ -166,8 +169,7 @@ private fun SharedTransitionScope.NowPlayingContent(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = 15.dp)
-                .verticalScroll(rememberScrollState()), // for smaller screens where it might not entirely fit
+                .padding(horizontal = 15.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -176,11 +178,6 @@ private fun SharedTransitionScope.NowPlayingContent(
                 onHandlePlayerActions = onHandlePlayerActions
             )
             TitleAndArtist(
-                titleModifier = Modifier
-                    .sharedBounds(
-                        sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                    ),
                 musicState = musicState
             )
             CuteSlider(

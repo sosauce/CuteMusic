@@ -69,7 +69,6 @@
     <string name="pitch">Perde</string>
     <string name="rate">Oran</string>
     <string name="snap">Hız ve perdeyi sabitle</string>
-    <string name="new_rate">0.5 ile 2 arasında yeni bir oran girin</string>
     <string name="share">Paylaş</string>
     <string name="show_close_button">CuteSearchbar\'da kapat düğmesini göster</string>
     <string name="duration">Süre</string>
@@ -174,7 +173,6 @@
     <string name="next_step">Sonraki adım</string>
     <string name="no_music_tip">İpucu: Ayarlarda taramak istediğiniz klasörleri beyaz listeye eklemeyi unutmayın!</string>
     <string name="initial_folder_selection">Beyaz listeye eklemek istediğiniz klasörleri seçin, öbürleri kara listeye alınacaktır</string>
-    <string name="rate_error">Oran 0.5 ile 2 arasında olmalıdır.</string>
     <string name="whitelisted">Beyaz Listelenmiş</string>
     <string name="saf">S.A.F</string>
     <string name="click_hint">Bana tıkla!</string>

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.sosauce.cutemusic.presentation.shared_components
 
 import androidx.compose.animation.animateColorAsState
@@ -15,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -61,7 +65,11 @@ fun SpeedAndPitchDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = onDismissRequest) {
+            TextButton(
+                onClick = onDismissRequest,
+                shapes = ButtonDefaults.shapes()
+
+            ) {
                 Text(text = stringResource(id = R.string.okay))
             }
         },
@@ -123,12 +131,7 @@ fun SpeedAndPitchDialog(
                                 )
                             )
                         },
-                        valueRange = 0.5f..2f
-                    )
-                    DefaultRatesSuggestions(
-                        onRateClick = { rate ->
-                            onHandlePlayerAction(PlayerActions.SetSpeed(rate))
-                        }
+                        valueRange = 0.5f..3f
                     )
                     //
                     Row(
@@ -179,12 +182,7 @@ fun SpeedAndPitchDialog(
                                 )
                             )
                         },
-                        valueRange = 0.5f..2f
-                    )
-                    DefaultRatesSuggestions(
-                        onRateClick = { rate ->
-                            onHandlePlayerAction(PlayerActions.SetPitch(rate))
-                        }
+                        valueRange = 0.5f..3f
                     )
                 } else {
                     // Snapped rate
@@ -230,13 +228,7 @@ fun SpeedAndPitchDialog(
                                 onHandlePlayerAction(PlayerActions.SetSpeed(it))
                                 onHandlePlayerAction(PlayerActions.SetPitch(it))
                             },
-                            valueRange = 0.5f..2f
-                        )
-                        DefaultRatesSuggestions(
-                            onRateClick = { rate ->
-                                onHandlePlayerAction(PlayerActions.SetSpeed(rate))
-                                onHandlePlayerAction(PlayerActions.SetPitch(rate))
-                            }
+                            valueRange = 0.5f..3f
                         )
                     }
                 }
@@ -256,31 +248,4 @@ fun SpeedAndPitchDialog(
             }
         }
     )
-}
-
-@Composable
-private fun DefaultRatesSuggestions(
-    onRateClick: (Float) -> Unit
-) {
-    val rates = listOf(
-        0.75f,
-        0.90f,
-        1.20f,
-        1.50f
-    )
-
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        items(
-            items = rates,
-            key = { it }
-        ) { rate ->
-            SuggestionChip(
-                onClick = { onRateClick(rate) },
-                label = { Text("$rate") }
-            )
-        }
-    }
-
 }

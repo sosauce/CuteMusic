@@ -67,7 +67,6 @@
     <string name="speed">速度</string>
     <string name="pitch">音高</string>
     <string name="snap">合并速度和音高</string>
-    <string name="new_rate">输入一个介于0.5与2之间的新值</string>
     <string name="share">分享</string>
     <string name="duration">时长</string>
     <string name="folders">文件夹</string>

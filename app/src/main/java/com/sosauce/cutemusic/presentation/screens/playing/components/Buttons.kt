@@ -69,7 +69,7 @@ fun PlayPauseButton(
 }
 
 @Composable
-fun SharedTransitionScope.ActionButtonsRow(
+fun ActionButtonsRow(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
@@ -96,12 +96,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.skip_previous),
-                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description),
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_PREVIOUS_BUTTON),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                            ),
+                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                     )
                 }
             },
@@ -147,12 +142,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                         .animateWidth(interactionSource = interactionSources[2])
                 ) {
                     AnimatedPlayPauseIcon(
-                        isPlaying = musicState.isPlaying,
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.PLAY_PAUSE_BUTTON),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                            )
+                        isPlaying = musicState.isPlaying
                     )
                 }
             },
@@ -193,12 +183,7 @@ fun SharedTransitionScope.ActionButtonsRow(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.skip_next),
-                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description),
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.SKIP_NEXT_BUTTON),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                            )
+                        contentDescription = stringResource(androidx.media3.session.R.string.media3_controls_seek_forward_description)
                     )
                 }
             },

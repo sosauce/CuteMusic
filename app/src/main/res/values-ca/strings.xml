@@ -70,7 +70,6 @@
     <string name="pitch">To</string>
     <string name="rate">Velocitat</string>
     <string name="snap">Velocitat i to de snap</string>
-    <string name="new_rate">Introdueix una nova velocitat entre 0,5 i 2</string>
     <string name="share">Comparteix</string>
     <string name="show_close_button">Mostra el botó de tancament a la barra CuteSearch</string>
     <string name="duration">Durada</string>

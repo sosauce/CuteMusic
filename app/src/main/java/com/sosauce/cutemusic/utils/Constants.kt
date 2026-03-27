@@ -36,14 +36,6 @@ object SliderStyle {
     const val MATERIAL3 = "MATERIAL3"
 }
 
-object AnimationDirection {
-    const val LEFT = -25f
-    const val RIGHT = 25f
-}
-
-object CustomCommands {
-    const val OPEN_EQ = "open equalizer"
-}
 
 object ArtworkShape {
     const val CLASSIC = "classic"
@@ -57,4 +49,9 @@ object ArtworkShape {
     const val DIAMOND = "diamond"
     const val BUN = "bun"
     const val HEART = "heart"
+}
+
+object CutePaletteStyle {
+    const val EXPRESSIVE = "Expressive"
+    const val FIDELITY = "Fidelity"
 }

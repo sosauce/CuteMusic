@@ -45,7 +45,7 @@ import com.sosauce.cutemusic.presentation.shared_components.MusicDetailsDialog
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
 
 @Composable
-fun SharedTransitionScope.NowPlayingLandscape(
+fun NowPlayingLandscape(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     musicState: MusicState,
     onNavigate: (Screen) -> Unit,
@@ -112,11 +112,6 @@ fun SharedTransitionScope.NowPlayingLandscape(
                     onShrinkToSearchbar = onShrinkToSearchbar
                 )
                 TitleAndArtist(
-                    titleModifier = Modifier
-                        .sharedBounds(
-                            sharedContentState = rememberSharedContentState(key = SharedTransitionKeys.CURRENTLY_PLAYING),
-                            animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                        ),
                     musicState = musicState
                 )
                 Spacer(Modifier.height(24.dp))

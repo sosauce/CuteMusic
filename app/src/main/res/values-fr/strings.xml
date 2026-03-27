@@ -75,8 +75,6 @@
     <string name="pitch">Hauteur</string>
     <string name="rate">Taux</string>
     <string name="snap">Vitesse et hauteur de l\’instantané</string>
-    <string name="new_rate">Saisissez un nouveau taux compris entre 0,5 et 2</string>
-    <string name="rate_error">Le taux doit se situer entre 0,5 et 2.</string>
     <string name="share">Partager</string>
     <string name="show_close_button">Afficher le bouton de fermeture</string>
     <string name="duration">Durée</string>

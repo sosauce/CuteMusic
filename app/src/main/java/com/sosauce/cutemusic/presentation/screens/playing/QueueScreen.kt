@@ -8,11 +8,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.painterResource
+import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteNavigationButton
@@ -56,7 +61,7 @@ fun QueueScreen(
                     )
                     MusicListItem(
                         modifier = Modifier.scale(scale),
-                        music = track,
+                        track = track,
                         musicState = musicState,
                         onNavigate = {},
                         onHandlePlayerActions = onHandlePlayerAction,
@@ -68,27 +73,27 @@ fun QueueScreen(
                                 )
                             )
                         },
-//                        trailingContent = {
-//                            IconButton(
-//                                onClick = { onHandlePlayerAction(PlayerActions.RemoveFromQueue(track)) },
-//                                shapes = IconButtonDefaults.shapes()
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(R.drawable.close),
-//                                    contentDescription = null
-//                                )
-//                            }
-//                            IconButton(
-//                                onClick = {},
-//                                shapes = IconButtonDefaults.shapes(),
-//                                modifier = Modifier.draggableHandle()
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(R.drawable.drag_handle),
-//                                    contentDescription = null
-//                                )
-//                            }
-//                        }
+                        trailingContent = {
+                            IconButton(
+                                onClick = { onHandlePlayerAction(PlayerActions.RemoveFromQueue(track)) },
+                                shapes = IconButtonDefaults.shapes()
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.close),
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(
+                                onClick = {},
+                                shapes = IconButtonDefaults.shapes(),
+                                modifier = Modifier.draggableHandle()
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.drag_handle),
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     )
                 }
 

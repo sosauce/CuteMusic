@@ -7,46 +7,68 @@ import android.content.Context
 import android.provider.MediaStore
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import com.sosauce.cutemusic.data.datastore.getMinTrackDuration
-import com.sosauce.cutemusic.data.datastore.getWhitelistedFolders
+import com.sosauce.cutemusic.data.datastore.UserPreferences
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlin.math.min
 
 /**
  * An abstract way of containing function related to scanning tracks, so any part of the app that needs to fetch tracks can use the same scanning rules
  */
 class AbstractTracksScanner(
-    private val context: Context
+    private val context: Context,
+    private val userPreferences: UserPreferences
 ) {
-
     fun fetchLatestTracks(
         extraSelection: String?,
-        extraSelectionArgs: Array<String>?
-    ): Flow<List<CuteTrack>> =
-        context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).mapLatest {
+        extraSelectionArgs: Array<String>?,
+        onlyHiddenTracks: Boolean = false
+    ): Flow<List<CuteTrack>> {
+
+
+
+        val mediaStoreFlow = context.contentResolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+        val hiddenTracksFlow = userPreferences.getHiddenTracks()
+        val whitelistedFoldersFlow = userPreferences.getWhitelistedFolders()
+        val minTrackDurationFlow = userPreferences.getMinTrackDuration()
+
+        println("hey uhm, $mediaStoreFlow, $hiddenTracksFlow, $whitelistedFoldersFlow, ${minTrackDurationFlow}")
+
+        return combine(
+            mediaStoreFlow,
+            hiddenTracksFlow,
+            whitelistedFoldersFlow,
+            minTrackDurationFlow
+        ) { _, hiddenTracks, whitelistedFolders, minTrackDuration ->
             fetchTracks(
                 extraSelection = extraSelection,
                 extraSelectionArgs = extraSelectionArgs,
-                whitelistedFolders = getWhitelistedFolders(context),
-                minTrackDuration = getMinTrackDuration(context)
+                whitelistedFolders = whitelistedFolders,
+                minTrackDuration = minTrackDuration,
+                hiddenTracks = hiddenTracks,
+                onlyHiddenTracks = onlyHiddenTracks
             )
         }.flowOn(Dispatchers.IO)
+    }
 
     private fun fetchTracks(
         extraSelection: String?,
         extraSelectionArgs: Array<String>?,
         whitelistedFolders: Set<String>,
-        minTrackDuration: Int
+        minTrackDuration: Int,
+        hiddenTracks: Set<String>,
+        onlyHiddenTracks: Boolean
     ): List<CuteTrack> {
         val musics = mutableListOf<CuteTrack>()
 
 
-        if (whitelistedFolders.isEmpty()) return emptyList()
+        if (whitelistedFolders.isEmpty() || (onlyHiddenTracks && hiddenTracks.isEmpty())) return emptyList()
 
         val selection = buildString {
             append("${MediaStore.Audio.Media.DURATION} >= ? AND ")
@@ -58,6 +80,11 @@ class AbstractTracksScanner(
                 append(" AND ")
                 append(it)
             }
+            if (hiddenTracks.isNotEmpty()) {
+                val placeholders = hiddenTracks.joinToString(",") { "?" }
+                val onlyHidden = if (onlyHiddenTracks) "IN" else "NOT IN"
+                append(" AND ${MediaStore.Audio.Media._ID} $onlyHidden ($placeholders)")
+            }
         }
         val selectionArgs = mutableListOf<String>().apply {
             add("${minTrackDuration * 1000}")
@@ -65,6 +92,9 @@ class AbstractTracksScanner(
             addAll(whitelistedFolders.map { "$it/%" })
             extraSelectionArgs?.let {
                 addAll(it)
+            }
+            if (hiddenTracks.isNotEmpty()) {
+                addAll(hiddenTracks)
             }
         }.toTypedArray()
 

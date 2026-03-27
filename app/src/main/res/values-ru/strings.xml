@@ -74,7 +74,6 @@
     <string name="pitch">Высота тона</string>
     <string name="rate">Темп</string>
     <string name="snap">Привязать скорость и высоту тона</string>
-    <string name="new_rate">Ввести новый темп от 0,5 до 2</string>
     <string name="share">Поделиться</string>
     <string name="show_close_button">Показывать кнопку закрытия</string>
     <string name="duration">Длительность</string>

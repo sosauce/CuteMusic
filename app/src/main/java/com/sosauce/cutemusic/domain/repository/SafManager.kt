@@ -10,7 +10,7 @@ import androidx.media3.common.MediaItem
 import com.kyant.taglib.Metadata
 import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.R
-import com.sosauce.cutemusic.data.datastore.getSafTracks
+import com.sosauce.cutemusic.data.datastore.UserPreferences
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.utils.getUriFromByteArray
 import kotlinx.coroutines.Dispatchers
@@ -20,11 +20,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
 class SafManager(
-    private val context: Context
+    private val context: Context,
+    private val userPreferences: UserPreferences
 ) {
 
 
-    fun fetchLatestSafTracks(): Flow<List<CuteTrack>> = getSafTracks(context)
+    fun fetchLatestSafTracks(): Flow<List<CuteTrack>> = userPreferences.getSafTracks()
         .mapLatest { tracks ->
             tracks.map { uri ->
                 uriToTrack(uri.toUri())

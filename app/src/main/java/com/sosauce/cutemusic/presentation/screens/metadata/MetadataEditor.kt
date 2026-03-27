@@ -10,7 +10,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,18 +23,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,8 +66,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.kyant.taglib.Picture
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.domain.actions.MetadataActions
 import com.sosauce.cutemusic.presentation.shared_components.CuteActionButton
@@ -143,69 +154,13 @@ fun MetadataEditor(
                 .padding(paddingValues)
                 .imePadding()
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconButton(
-                    onClick = { metadataViewModel.onHandleMetadataActions(MetadataActions.RemoveArtwork) },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = null
-                    )
-                }
-                if (metadataState.art != null) {
-                    AsyncImage(
-                        model = ImageUtils.imageRequester(metadataState.art?.data, context),
-                        contentDescription = stringResource(id = R.string.artwork),
-                        modifier = Modifier
-                            .size(200.dp)
-                            .padding(bottom = 10.dp)
-                            .clip(RoundedCornerShape(5))
-                            .clickable {
-                                photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(
-                                        ActivityResultContracts.PickVisualMedia.ImageOnly
-                                    )
-                                )
-                            },
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .padding(bottom = 10.dp)
-                            .clip(RoundedCornerShape(5))
-                            .clickable {
-                                photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(
-                                        ActivityResultContracts.PickVisualMedia.ImageOnly
-                                    )
-                                )
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.add_photo_rounded),
-                            contentDescription = stringResource(id = R.string.artwork),
-                            modifier = Modifier.size(134.dp), // Size of the parent container divided by 1.5
-                            contentScale = ContentScale.Crop,
-                            colorFilter = ColorFilter.tint(
-                                MaterialTheme.colorScheme.onBackground.copy(
-                                    0.9f
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-
-
-
+            MetadataArt(
+                modifier = Modifier
+                    .padding(vertical = 5.dp)
+                    .align(Alignment.CenterHorizontally),
+                art = metadataState.art,
+                onHandleMetadataActions = metadataViewModel::onHandleMetadataActions
+            )
             Column {
                 EditTextField(
                     initialValue = metadataState.mutablePropertiesMap["TITLE"],
@@ -336,13 +291,7 @@ fun MetadataEditor(
                             modifier = Modifier.basicMarquee()
                         )
                     },
-                    imeAction = ImeAction.Default,
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.lyrics_rounded),
-                            contentDescription = null
-                        )
-                    }
+                    imeAction = ImeAction.Default
                 ) { lyrics ->
                     metadataState.mutablePropertiesMap["LYRICS"] = lyrics
                 }
@@ -378,5 +327,81 @@ private fun EditTextField(
             .fillMaxWidth()
             .padding(horizontal = 10.dp, vertical = verticalPadding)
     )
+}
+
+@Composable
+private fun MetadataArt(
+    modifier: Modifier = Modifier,
+    art: Picture?,
+    onHandleMetadataActions: (MetadataActions) -> Unit
+) {
+
+    val context = LocalContext.current
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+            onHandleMetadataActions(
+                MetadataActions.UpdateAudioArt(
+                    it ?: Uri.EMPTY
+                )
+            )
+        }
+
+    Box(modifier = modifier) {
+        if (art != null) {
+            AsyncImage(
+                model = ImageUtils.imageRequester(art.data, context),
+                contentDescription = stringResource(id = R.string.artwork),
+                modifier = Modifier
+                    .size(230.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .clickable {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                contentScale = ContentScale.Crop,
+
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .clip(RoundedCornerShape(24.dp))
+                    .clickable {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    }
+                    .size(230.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.add),
+                    contentDescription = stringResource(id = R.string.artwork)
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = art != null,
+            enter = scaleIn(),
+            exit = scaleOut(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = 10.dp, y = (-20).dp)
+        ) {
+            FilledIconButton(
+                onClick = { onHandleMetadataActions(MetadataActions.RemoveArtwork) }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = null
+                )
+            }
+        }
+    }
 }
 

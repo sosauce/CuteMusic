@@ -75,8 +75,6 @@
     <string name="pitch">Tono</string>
     <string name="rate">Tasa</string>
     <string name="snap">Ajustar velocidad y tono al instante</string>
-    <string name="new_rate">Ingresa una nueva tasa entre 0.5 y 2</string>
-    <string name="rate_error">La tasa debe estar en el rango de 0.5 y 2.</string>
     <string name="share">Compartir</string>
     <string name="show_close_button">Mostrar botón de cerrar</string>
     <string name="duration">Duración</string>

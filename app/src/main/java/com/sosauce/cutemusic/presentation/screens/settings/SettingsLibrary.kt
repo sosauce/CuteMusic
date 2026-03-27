@@ -3,12 +3,16 @@ package com.sosauce.cutemusic.presentation.screens.settings
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -48,10 +52,12 @@ import com.sosauce.cutemusic.utils.selfAlignHorizontally
 @Composable
 fun SettingsLibrary(
     safTracksUi: List<CuteTrack>,
+    hiddenTracks: List<CuteTrack>,
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    onUnhideTrack: (String) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -79,7 +85,7 @@ fun SettingsLibrary(
     ) { pv ->
         Column(
             modifier = Modifier
-                .verticalScroll(scrollState)
+                //.verticalScroll(scrollState)
                 .padding(pv)
         ) {
 
@@ -96,6 +102,48 @@ fun SettingsLibrary(
                 )
             }
             FoldersView()
+            SettingsWithTitle(
+                title = R.string.hidden_tracks
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    if (hiddenTracks.isNotEmpty()) {
+                        hiddenTracks.fastForEach { track ->
+                            MusicListItem(
+                                track = track,
+                                musicState = musicState,
+                                onShortClick = { onUnhideTrack(track.mediaId) },
+                                onNavigate = onNavigate,
+                                onHandlePlayerActions = onHandlePlayerActions
+                            )
+                        }
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.hide),
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = "No hidden tracks!",
+                                style = MaterialTheme.typography.bodyMediumEmphasized.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                }
+            }
             SettingsWithTitle(
                 title = R.string.saf_manager
             ) {
@@ -131,7 +179,7 @@ fun SettingsLibrary(
 
                     safTracksUi.fastForEachIndexed { index, safTrack ->
                         MusicListItem(
-                            music = safTrack,
+                            track = safTrack,
                             musicState = musicState,
                             onShortClick = {
                                 onHandlePlayerActions(

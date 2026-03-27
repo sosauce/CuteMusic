@@ -18,6 +18,7 @@ import com.sosauce.cutemusic.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
+import com.sosauce.cutemusic.data.datastore.PreferencesKeys.HIDDEN_TRACKS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
 import com.sosauce.cutemusic.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
@@ -72,6 +73,7 @@ data object PreferencesKeys {
     val HAS_BEEN_THROUGH_SETUP = booleanPreferencesKey("HAS_BEEN_THROUGH_SETUP")
     val SORT_TRACKS_ASCENDING = booleanPreferencesKey("SORT_TRACKS_ASCENDING")
     val LAST_MUSIC_STATE = stringPreferencesKey("LAST_MUSIC_STATE")
+    val HIDDEN_TRACKS = stringSetPreferencesKey("HIDDEN_TRACKS")
 }
 
 
@@ -175,18 +177,15 @@ fun rememberHasSeenTip() =
 fun rememberSortTracksAscending() =
     rememberPreference(key = SORT_TRACKS_ASCENDING, defaultValue = true)
 
-suspend fun getPauseOnMute(context: Context) =
-    getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)
+@Composable
+fun rememberHiddenTracks() =
+    rememberPreference(key = HIDDEN_TRACKS, defaultValue = emptySet())
+//
+//suspend fun getPauseOnMute(context: Context) =
+//    getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)
 
-fun getSafTracks(context: Context) =
-    getPreferenceFlow(key = SAF_TRACKS, defaultValue = emptySet(), context = context)
 
 
-suspend fun getMinTrackDuration(context: Context) =
-    getPreference(key = MIN_TRACK_DURATION, defaultValue = 0, context = context)
-
-suspend fun getWhitelistedFolders(context: Context) =
-    getPreference(key = WHITELISTED_FOLDERS, defaultValue = emptySet(), context = context)
 
 
 //suspend fun saveMediaIndexToMediaIdMap(pair: LastPlayed, context: Context) =

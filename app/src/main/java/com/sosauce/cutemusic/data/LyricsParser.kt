@@ -38,10 +38,11 @@ class LyricsParser(private val context: Context) {
         } else {
 
             val autoParser = AutoParser.Builder().build()
-            val embeddedLyrics = loadEmbeddedLyrics(path)
+            val embeddedLyrics = loadEmbeddedLyrics(path) ?: return@withContext emptyList()
+
+            println("KITTY KAT: $embeddedLyrics")
 
             // Tries to load synced embedded lyrics, is embedded lyrics are unsynced, just return raw embedded lyrics
-
             autoParser.parse(embeddedLyrics)
                 .takeIf { it.lines.isNotEmpty() }
                 ?.lines?.fastMap { line -> (line as SyncedLine).toLyricLine() } ?: listOf(Lyrics(lineLyrics = embeddedLyrics))
@@ -78,12 +79,11 @@ class LyricsParser(private val context: Context) {
         }
     }
 
-    private fun loadEmbeddedLyrics(path: String): String {
-        val fd = getFileDescriptorFromPath(context, path)
-        return fd?.dup()?.detachFd()?.let {
-            TagLib.getMetadata(it)?.propertyMap?.get("LYRICS")?.getOrNull(0)
-                ?: ""
-        } ?: ""
+    private fun loadEmbeddedLyrics(path: String): String? {
+        val fd = getFileDescriptorFromPath(context, path) ?: return null
+        return fd.dup().detachFd()
+            .let { TagLib.getMetadata(it)?.propertyMap?.get("LYRICS")?.getOrNull(0) ?: "" }
+            .takeIf { it.isNotEmpty() }
     }
 
     @SuppressLint("Range")

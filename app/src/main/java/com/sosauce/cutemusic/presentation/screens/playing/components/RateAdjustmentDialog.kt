@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.sosauce.cutemusic.presentation.screens.playing.components
 
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,9 @@ import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonShapes
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -47,7 +52,7 @@ fun RateAdjustmentDialog(
     val textFieldState = rememberTextFieldState(initialText = "%.2f".format(rate))
     val newRate =
         remember(textFieldState.text) { textFieldState.text.toString().toFloatOrNull() ?: 1.0f }
-    val isError = remember(newRate) { newRate !in 0.5f..2.0f }
+    val isError = remember(newRate) { newRate !in 0.5f..3.0f }
 
 
     AlertDialog(
@@ -61,7 +66,8 @@ fun RateAdjustmentDialog(
         title = { Text(stringResource(id = title)) },
         dismissButton = {
             TextButton(
-                onClick = onDismissRequest
+                onClick = onDismissRequest,
+                shapes = ButtonDefaults.shapes()
             ) {
                 Text(text = stringResource(id = R.string.cancel))
             }
@@ -72,6 +78,7 @@ fun RateAdjustmentDialog(
                     onSetNewRate(newRate)
                     onDismissRequest()
                 },
+                shapes = ButtonDefaults.shapes(),
                 enabled = !isError
             ) {
                 Text(text = stringResource(id = R.string.set))
@@ -79,7 +86,7 @@ fun RateAdjustmentDialog(
         },
         text = {
             Column {
-                Text(stringResource(id = R.string.new_rate))
+                Text(stringResource(id = R.string.new_rate, 0.5, 3))
                 Spacer(Modifier.height(10.dp))
                 OutlinedTextField(
                     state = textFieldState,
@@ -102,7 +109,7 @@ fun RateAdjustmentDialog(
                     isError = isError,
                     supportingText = {
                         if (isError) {
-                            Text(stringResource(R.string.rate_error))
+                            Text(stringResource(R.string.rate_error, 0.5, 3))
                         }
                     },
                     inputTransformation = RateInputTransformation

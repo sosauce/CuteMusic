@@ -289,7 +289,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 },
                                 isSelected = isSelected,
                                 onLongClick = { multiSelectState.toggle(music) },
-                                music = music,
+                                track = music,
                                 musicState = musicState,
                                 onNavigate = { onNavigate(it) },
                                 onHandlePlayerActions = onHandlePlayerAction,

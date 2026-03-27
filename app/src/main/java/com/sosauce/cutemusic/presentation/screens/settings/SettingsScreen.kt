@@ -149,14 +149,18 @@ fun SettingsScreen(
             entry<SettingsScreens.Library> {
 
                 val viewModel = koinViewModel<SafViewModel>()
+                val hiddenTracksViewModel = koinViewModel<HiddenTracksViewModel>()
                 val safTracks by viewModel.safTracks.collectAsStateWithLifecycle()
+                val hiddenTracks by hiddenTracksViewModel.hiddenTracks.collectAsStateWithLifecycle()
 
                 SettingsLibrary(
                     safTracksUi = safTracks,
+                    hiddenTracks = hiddenTracks,
                     musicState = musicState,
                     onNavigate = onNavigate,
                     onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigateUp = backStack::removeLastOrNull
+                    onNavigateUp = backStack::removeLastOrNull,
+                    onUnhideTrack = hiddenTracksViewModel::unhideTrack
                 )
             }
 

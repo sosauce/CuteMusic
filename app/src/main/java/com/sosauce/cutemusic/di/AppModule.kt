@@ -22,6 +22,7 @@ import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistDetailsViewM
 import com.sosauce.cutemusic.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.cutemusic.presentation.screens.quickplay.QuickPlayViewModel
 import com.sosauce.cutemusic.presentation.screens.settings.FoldersViewModel
+import com.sosauce.cutemusic.presentation.screens.settings.HiddenTracksViewModel
 import com.sosauce.cutemusic.presentation.screens.settings.SafViewModel
 import com.sosauce.cutemusic.presentation.shared_components.MusicViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -64,4 +65,5 @@ val appModule = module {
     viewModelOf(::FoldersViewModel)
     viewModelOf(::SafViewModel)
     viewModelOf(::LyricsViewModel)
+    viewModelOf(::HiddenTracksViewModel)
 }

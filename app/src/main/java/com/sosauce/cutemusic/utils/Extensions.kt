@@ -11,6 +11,8 @@ import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -499,3 +501,8 @@ fun anyDarkColorScheme(): ColorScheme {
         darkColorScheme()
     }
 }
+
+val bouncySpec = spring<Float>(
+    dampingRatio = Spring.DampingRatioMediumBouncy,
+    stiffness = Spring.StiffnessLow
+)

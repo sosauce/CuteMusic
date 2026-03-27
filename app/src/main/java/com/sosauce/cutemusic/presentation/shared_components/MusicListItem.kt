@@ -16,12 +16,14 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,6 +31,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
@@ -58,6 +62,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -65,6 +71,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.sosauce.cutemusic.R
 import com.sosauce.cutemusic.data.datastore.rememberAllSafTracks
+import com.sosauce.cutemusic.data.datastore.rememberHiddenTracks
 import com.sosauce.cutemusic.data.models.CuteTrack
 import com.sosauce.cutemusic.data.states.MusicState
 import com.sosauce.cutemusic.domain.actions.PlayerActions
@@ -77,21 +84,30 @@ import com.sosauce.cutemusic.utils.copyMutate
 @Composable
 fun MusicListItem(
     modifier: Modifier = Modifier,
-    music: CuteTrack,
+    track: CuteTrack,
     musicState: MusicState,
     onShortClick: (mediaId: String) -> Unit,
     onLongClick: (() -> Unit)? = null,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     isSelected: Boolean = false,
-    extraOptions: List<MoreOptions> = emptyList()
+    extraOptions: List<MoreOptions> = emptyList(),
+    trailingContent: @Composable () -> Unit = {
+        DefaultMusicListItemTrailingContent(
+            track = track,
+            onNavigate = onNavigate,
+            onHandlePlayerActions = onHandlePlayerActions,
+            musicState = musicState,
+            extraOptions = extraOptions
+        )
+    }
 ) {
 
     val context = LocalContext.current
-    val image = rememberAsyncImagePainter(ImageUtils.imageRequester(music.artUri, context))
+    val image = rememberAsyncImagePainter(ImageUtils.imageRequester(track.artUri, context))
     val imageState by image.state.collectAsStateWithLifecycle()
     val bgColor by animateColorAsState(
-        targetValue = if (musicState.track.uri.toString() == music.uri.toString() && musicState.isPlayerReady) {
+        targetValue = if (musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady) {
             MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
         } else {
             Color.Transparent
@@ -100,6 +116,53 @@ fun MusicListItem(
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 0.9f else 1f
     )
+//    var showTrackCard by remember { mutableStateOf(false) }
+//
+//
+//    if (showTrackCard) {
+//        Popup(
+//            onDismissRequest = { showTrackCard = false },
+//            properties = PopupProperties(
+//                focusable = true,
+//                dismissOnBackPress = true,
+//                dismissOnClickOutside = true,
+//                usePlatformDefaultWidth = false
+//            )
+//        ) {
+//            Card(
+//                shape = RoundedCornerShape(24.dp),
+//                colors = CardDefaults.cardColors(
+//                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+//                )
+//            ) {
+//                Row(
+//                    modifier = Modifier.padding(10.dp)
+//                ) {
+//                    AsyncImage(
+//                        model = ImageUtils.imageRequester(track.artUri, context),
+//                        contentDescription = stringResource(R.string.artwork),
+//                        modifier = Modifier
+//                            .size(100.dp)
+//                            .clip(RoundedCornerShape(10.dp)),
+//                        contentScale = ContentScale.Crop
+//                    )
+//                    Column() {
+//                        Text(
+//                            text = track.title,
+//                            maxLines = 1,
+//                            style = MaterialTheme.typography.titleMediumEmphasized
+//                        )
+//                        Text(
+//                            text = track.artist,
+//                            maxLines = 1,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                            style = MaterialTheme.typography.bodyLargeEmphasized
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     Box(
         modifier = modifier
@@ -111,7 +174,7 @@ fun MusicListItem(
             .clip(RoundedCornerShape(24.dp))
             .background(bgColor)
             .combinedClickable(
-                onClick = { onShortClick(music.mediaId) },
+                onClick = { onShortClick(track.mediaId) },
                 onLongClick = onLongClick
             )
     ) {
@@ -148,11 +211,14 @@ fun MusicListItem(
 
                         else -> {
                             AsyncImage(
-                                model = ImageUtils.imageRequester(music.artUri, context),
+                                model = ImageUtils.imageRequester(track.artUri, context),
                                 contentDescription = stringResource(R.string.artwork),
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(RoundedCornerShape(10.dp)),
+//                                    .clickable {
+//                                        showTrackCard = true
+//                                    },
                                 contentScale = ContentScale.Crop
                             )
                         }
@@ -165,13 +231,13 @@ fun MusicListItem(
                     .weight(1f)
             ) {
                 Text(
-                    text = music.title,
+                    text = track.title,
                     maxLines = 1,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.basicMarquee()
                 )
                 Text(
-                    text = music.artist,
+                    text = track.artist,
                     maxLines = 1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyLargeEmphasized,
@@ -180,15 +246,7 @@ fun MusicListItem(
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically
-            ) {
-                DefaultMusicListItemTrailingContent(
-                    track = music,
-                    onNavigate = onNavigate,
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    musicState = musicState,
-                    extraOptions = extraOptions
-                )
-            }
+            ) { trailingContent() }
         }
     }
 }
@@ -256,6 +314,7 @@ private fun TrackDropdownMenu(
     var showDeletionDialog by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var safTracks by rememberAllSafTracks()
+    var hiddenTracks by rememberHiddenTracks()
     val trackOptions = listOf(
         MoreOptions(
             text = { stringResource(R.string.edit) },
@@ -271,6 +330,11 @@ private fun TrackDropdownMenu(
             icon = R.drawable.add,
             enabled = track !in musicState.loadedMedias,
             disabledText = { stringResource(R.string.already_in_queue) }
+        ),
+        MoreOptions(
+            text = { stringResource(R.string.hide_from_tracklist) },
+            onClick = { hiddenTracks = hiddenTracks.copyMutate { add(track.mediaId) } },
+            icon = R.drawable.hide
         ),
         MoreOptions(
             text = { stringResource(R.string.go_to, track.album) },

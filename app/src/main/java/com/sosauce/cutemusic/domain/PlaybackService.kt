@@ -86,7 +86,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     @UnstableApi
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(applicationContext)
+        val player: Player = ExoPlayer.Builder(applicationContext)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()

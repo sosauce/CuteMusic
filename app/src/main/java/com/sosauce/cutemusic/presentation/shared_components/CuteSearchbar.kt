@@ -9,9 +9,14 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -19,6 +24,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -30,7 +36,6 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -53,12 +58,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +80,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -92,11 +100,11 @@ import com.sosauce.cutemusic.presentation.shared_components.animations.AnimatedI
 import com.sosauce.cutemusic.presentation.theme.nunitoFontFamily
 import com.sosauce.cutemusic.utils.LocalScreen
 import com.sosauce.cutemusic.utils.SharedTransitionKeys
+import com.sosauce.cutemusic.utils.bouncySpec
 import com.sosauce.cutemusic.utils.rememberInteractionSource
 import com.sosauce.cutemusic.utils.rememberSearchbarRightPadding
 import com.sosauce.cutemusic.utils.showBackButton
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 
 @Composable
@@ -124,76 +132,116 @@ fun SharedTransitionScope.CuteSearchbar(
     )
     val scope = rememberCoroutineScope()
     var showFullPlayer by rememberSaveable { mutableStateOf(false) }
-    val density = LocalDensity.current
-    val thresholdY = with(density) { 200.dp.toPx() }
-    val yTranslation = remember {
-        Animatable(0f).apply {
-            if (showFullPlayer) {
-                updateBounds(
-                    lowerBound = 0f,
-                    upperBound = thresholdY
-                )
-            } else {
-                updateBounds(
-                    lowerBound = -thresholdY,
-                    upperBound = thresholdY
-                )
-            }
-        }
-    }
-    val dragState = rememberDraggableState { dragAmount ->
-        scope.launch {
-            yTranslation.snapTo(
-                yTranslation.value + (dragAmount * (1 - (yTranslation.value / thresholdY).absoluteValue))
-            )
-        }
-    }
-    val searchbarWidth =
-        remember(yTranslation.value) { 0.85f + (1f - 0.85f) * (-yTranslation.value / 400) }
-    val searchbarAlpha =
-        remember(yTranslation.value) { 1f + (-yTranslation.value / (thresholdY / 2)) }
+    val windowInfo = LocalWindowInfo.current
+
+
+
 
     AnimatedContent(
         targetState = showFullPlayer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .draggable(
-                state = dragState,
-                enabled = musicState.isPlayerReady && !showFullPlayer,
-                orientation = Orientation.Vertical,
-                onDragStopped = {
-                    scope.launch {
-                        if (yTranslation.value > 0) {
-                            onHandlePlayerActions(PlayerActions.StopPlayback)
-                            yTranslation.animateTo(0f)
-                        } else {
-                            showFullPlayer = true
-                            yTranslation.snapTo(0f)
-                        }
-                    }
-                }
-            )
-            .graphicsLayer {
-                translationY = yTranslation.value
-            }
+        transitionSpec = { fadeIn() togetherWith fadeOut() }
     ) { fullPlayer ->
         if (fullPlayer) {
+
+            val halfScreen = windowInfo.containerSize.height / 2f
+            val yTranslationPlaying = remember { Animatable(halfScreen) }
+
+            // enter in bounce
+            LaunchedEffect(Unit) {
+                yTranslationPlaying.animateTo(0f, bouncySpec)
+            }
+
+            val playingDragState = rememberDraggableState { dragAmount ->
+
+                val value = (yTranslationPlaying.value + dragAmount).coerceAtLeast(0f) // always keep the value positive or else it's a shithole to manage
+
+                scope.launch {
+                    yTranslationPlaying.snapTo(value)
+                }
+            }
+
             BackHandler { showFullPlayer = false }
             NowPlaying(
+                modifier = Modifier
+                    .draggable(
+                        state = playingDragState,
+                        orientation = Orientation.Vertical,
+                        onDragStopped = {
+                            val targetValue = yTranslationPlaying.value
+                            val minDistance = windowInfo.containerSize.height / 8
+
+                            if (targetValue >= minDistance) {
+                                showFullPlayer = false
+                            } else {
+                                scope.launch {
+                                    yTranslationPlaying.animateTo(0f, bouncySpec)
+                                }
+                            }
+                        }
+                    )
+                    .graphicsLayer {
+                        translationY = yTranslationPlaying.value
+                    },
                 musicState = musicState,
                 onHandlePlayerActions = onHandlePlayerActions,
                 onNavigate = onNavigate,
-                onNavigateUp = { onNavigateUp?.invoke() },
                 onShrinkToSearchbar = { showFullPlayer = false }
             )
         } else {
+
+
+
+            val oneFourthOfHeight = windowInfo.containerSize.height / 4f
+            val yTranslationSearchbar = remember { Animatable(0f) }
+
+
+            val searchbarDragState = rememberDraggableState { dragAmount ->
+                scope.launch {
+                    // reminder: dragging up gives a negative value
+                    val newValue = yTranslationSearchbar.value + dragAmount
+                    val upLimit = -oneFourthOfHeight
+
+                    val finalValue = if (newValue < 0) {
+                        newValue.coerceAtLeast(upLimit)
+                    } else {
+                        newValue
+                    }
+
+                    yTranslationSearchbar.snapTo(finalValue)
+                }
+            }
+
+
             Column(
                 modifier = modifier
                     .navigationBarsPadding()
-                    .fillMaxWidth(searchbarWidth)
+                    .fillMaxWidth(0.85f)
                     .padding(end = rememberSearchbarRightPadding())
                     .imePadding()
-                    .graphicsLayer { alpha = searchbarAlpha }
+                    .draggable(
+                        state = searchbarDragState,
+                        orientation = Orientation.Vertical,
+                        enabled = musicState.isPlayerReady,
+                        onDragStopped = {
+                            val targetValue = yTranslationSearchbar.value
+
+                            if (targetValue <= -oneFourthOfHeight / 2) {
+                                showFullPlayer = true
+                            } else if (targetValue > 0) {
+                                onHandlePlayerActions(PlayerActions.StopPlayback)
+                                scope.launch {
+                                    yTranslationSearchbar.animateTo(0f, bouncySpec)
+                                }
+                            } else {
+                                scope.launch {
+                                    yTranslationSearchbar.animateTo(0f, bouncySpec)
+                                }
+                            }
+                        }
+                    )
+                    .graphicsLayer {
+                        translationY = yTranslationSearchbar.value
+                    }
             ) {
                 Row(
                     modifier = Modifier
@@ -396,6 +444,7 @@ fun SharedTransitionScope.CuteSearchbar(
             }
         }
     }
+
 }
 
 @Composable
@@ -446,6 +495,9 @@ private fun ScreenSelection(
                 },
                 shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
                 interactionSource = interactionsSources[index],
+                colors = ToggleButtonDefaults.toggleButtonColors(
+                    containerColor = Color.Transparent
+                ),
                 modifier = Modifier
                     .weight(1f)
                     .animateWidth(interactionsSources[index])
@@ -467,12 +519,6 @@ private data class ScreenCategory(
     val onClick: () -> Unit,
     @param:DrawableRes val unselectedIcon: Int,
     @param:DrawableRes val selectedIcon: Int
-)
-
-private val screensToShowBack = listOf(
-    Screen.ArtistsDetails,
-    Screen.AlbumsDetails,
-    Screen.PlaylistDetails,
 )
 
 

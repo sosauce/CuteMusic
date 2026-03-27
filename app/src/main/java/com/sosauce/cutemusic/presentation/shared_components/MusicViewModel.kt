@@ -2,6 +2,7 @@
 
 package com.sosauce.cutemusic.presentation.shared_components
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -16,11 +17,16 @@ import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Metadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.extractor.metadata.id3.ChapterFrame
+import androidx.media3.extractor.metadata.vorbis.VorbisComment
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+import com.kyant.taglib.TagLib
 import com.sosauce.cutemusic.data.LyricsParser
 import com.sosauce.cutemusic.data.datastore.UserPreferences
 import com.sosauce.cutemusic.data.models.CuteTrack
@@ -57,6 +63,7 @@ class MusicViewModel(
     var sleepCountdownTimer: CountDownTimer? = null
     private val playerListener =
         object : Player.Listener {
+
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
 
@@ -65,6 +72,8 @@ class MusicViewModel(
                 musicState.value.loadedMedias.fastFirstOrNull { track ->
                     track.mediaId == mediaItem.mediaId
                 }?.also { track ->
+
+
                     _musicState.update {
                         it.copy(
                             track = track,

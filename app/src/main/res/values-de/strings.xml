@@ -74,8 +74,6 @@
     <string name="pitch">Tonhöhe</string>
     <string name="rate">Rate</string>
     <string name="snap">Schnelligkeit und Tonhöhe</string>
-    <string name="new_rate">Geben Sie einen neuen Wert zwischen 0,5 und 2 ein.</string>
-    <string name="rate_error">Die Rate sollte zwischen 0,5 und 2 liegen.</string>
     <string name="share">Teilen</string>
     <string name="show_close_button">Zeige den Schließen-Button</string>
     <string name="duration">Dauer</string>
