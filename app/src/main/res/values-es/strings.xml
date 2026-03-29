@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">CuteMusic</string>
     <string name="empty" translatable="false" />
     <string name="theme">Tema</string>
     <string name="settings">Ajustes</string>
@@ -21,7 +20,7 @@
     <string name="artists">Artistas</string>
     <string name="albums">Álbumes</string>
     <string name="music">Pistas</string>
-    <string name="cm_by_sosauce">CuteMusic por sosauce</string>
+    <string name="cm_by_sosauce">Chocola por sosauce</string>
     <string name="app_icon">Icono de la app</string>
     <string name="search">Buscar</string>
     <string name="close">Cerrar</string>

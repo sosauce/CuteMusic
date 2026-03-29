@@ -1,1 +1,1 @@
-CuteMusic est un lecteur de musique hors ligne simple et minialiste pour Android.
+Chocola est un lecteur de musique beau et puissant pour Android!

@@ -1,12 +1,13 @@
-<i>CuteMusic</i> is a simple, lightweight and open-source offline music player app for Android, using Material 3/You & Monet theming. It's Very fast and snappy!
+Chocola is a simple, lightweight and open-source offline music player app for Android, using Material 3 Expressive. It's Very fast and snappy!
 
 - Play any song from anywhere just by sharing the audio file to the app without downloading it!
 - Easy search across all your music/albums/artists!
 - Very fast and snappy!
 - No unnecessary permissions needed!
-- Material 3/You & Monet theming (+ Amoled mode)!
+- Material 3 Expressive design!
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
-- Playlist support !
-- Material art: Color scheme dynamically changes depending on currently playing song's artwork !
+- Playlists support!
+- Load and persist songs from anywhere using Android's S.A.F!
+- Makes you a cutie!

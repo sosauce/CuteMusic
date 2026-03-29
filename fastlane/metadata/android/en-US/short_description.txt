@@ -1,1 +1,1 @@
-CuteMusic is a simple, lightweight and offline music player app for Android.
+Chocola is a cute and powerful offline music player app for Android!

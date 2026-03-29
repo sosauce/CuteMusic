@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">CuteMusic</string>
     <string name="theme">Tema</string>
     <string name="settings">Setări</string>
     <string name="dark_mode">Mod de întunecare</string>
@@ -18,7 +17,7 @@
     <string name="artwork">Artă</string>
     <string name="artists">Artiști</string>
     <string name="albums">Albume</string>
-    <string name="cm_by_sosauce">CuteMusic de sosauce</string>
+    <string name="cm_by_sosauce">Chocola de sosauce</string>
     <string name="app_icon">Iconiță aplicație</string>
     <string name="search">Căutare</string>
     <string name="close">Închide</string>

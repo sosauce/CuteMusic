@@ -16,11 +16,11 @@
  <a href="https://github.com/sosauce/CuteMusic/releases">
    <image src="https://i.ibb.co/q0mdc4Z/get-it-on-github.png" height="80"/>
  </a>
-  <a href="https://apt.izzysoft.de/fdroid/index/apk/com.sosauce.cutemusic">
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/chocola">
    <image src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"/>
  </a>
 
-   <a href="https://f-droid.org/en/packages/com.sosauce.cutemusic/">
+   <a href="https://f-droid.org/en/packages/chocola/">
    <image src="https://f-droid.org/badge/get-it-on.png" height="80"/>
  </a>
 <p align="center">I recommend installing from GitHub, as it guarantees access to the latest update.</p>
