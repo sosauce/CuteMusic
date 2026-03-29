@@ -189,4 +189,8 @@
     <string name="playlist_tag_add">Yeni etiket ekle</string>
     <string name="playlist_tag_exists">Bu playlistte zaten bu etiket mevcut.</string>
     <string name="playlist_tag_no_edit">Etiketler oluşturulduktan sonra düzenlenemez, ancak silinebilir</string>
+    <string name="new_rate">%1$.1f ile %2$d arasında olacak yeni bir oran gir</string>
+    <string name="rate_error">Oran %1$.1f ile %2$d arasında olmalıdır.</string>
+    <string name="hide_from_tracklist">Şarkı listesinden gizle</string>
+    <string name="hidden_tracks">Gizli şarkılar</string>
 </resources>
