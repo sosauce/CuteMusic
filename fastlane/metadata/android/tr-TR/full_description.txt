@@ -1,0 +1,12 @@
+Chocola, Android'de Material 3/You & Monet temalarıyla süslenmiş, basit, hafif ve açık kaynaklı, internet bağlantısı gerektirmeyen bir müzik çalma uygulamasıdır. Çok hızlı ve akıcı!
+
+- Herhangi bir şarkıyı indirmeden, ses dosyasını uygulamada açarak istediğin yerden çal!
+- Tüm müziklerinize, albümlerinize ve sanatçılarınız arasında kolayca arama yapın!
+- Çok hızlı ve akıcı!
+- Gereksiz izinler istemez!
+- Material 3/You & Monet temaları (+ AMOLED modu)!
+- Klasörleri karalisteleme özelliği!
+- Güzel yatay kullanıcı arayüzü!
+- Etiket Düzenleyici!
+- Çalma listesi desteği!
+- Material tasarım: Renk şeması, o anda çalınan şarkının kapak resmine göre dinamik olarak güncellenir!
