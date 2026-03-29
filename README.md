@@ -1,6 +1,6 @@
 <p align=center><image src="https://i.ibb.co/N6qJFWMw/icon.png" height="200" style="border-radius: 50%;" /></p>
 <h1 align="center">Chocola</h1>
-<p align="center">Chocola <a href="https://medium.com/p/1a1f37640370">formerly CuteMusic</a> is a cute and powerful offline music player for Android!</p>
+<p align="center">Chocola (<a href="https://medium.com/p/1a1f37640370">formerly CuteMusic</a>) is a cute and powerful offline music player for Android!</p>
 
  <p align="center">
    <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f5a6bd"/>
