@@ -1,26 +1,26 @@
-<p align=center><image src="https://i.ibb.co/SdMsJs7/cute-music-icon.png" height="200" /></p>
-<h1 align="center">CuteMusic</h1>
-<p align="center">CuteMusic is a cute and powerful offline music player for Android!</p>
+<p align=center><image src="https://i.ibb.co/N6qJFWMw/icon.png" height="200" style="border-radius: 50%;" /></p>
+<h1 align="center">Chocola</h1>
+<p align="center">Chocola <a href="https://medium.com/p/1a1f37640370">formerly CuteMusic</a> is a cute and powerful offline music player for Android!</p>
 
  <p align="center">
-   <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9"/>
-   <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9"/>
-   <image src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin"/>
+   <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f5a6bd"/>
+   <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=f5a6bd"/>
+   <image src="https://img.shields.io/badge/Kotlin-100%25-f5a6bd?style=for-the-badge&logo=Kotlin"/>
  </p> 
  <p align="center">
    <a href="https://github.com/sosauce/CuteMusic/blob/main/README_ES.MD">
-     <img src="https://img.shields.io/badge/Disponible_en-español-blue?style=for-the-badge" alt="Disponible en español"/>
+     <img src="https://img.shields.io/badge/Disponible_en-español-blue?style=for-the-badge&color=f5a6bd" alt="Disponible en español"/>
    </a>
 </p>
  <p align="center">
  <a href="https://github.com/sosauce/CuteMusic/releases">
    <image src="https://i.ibb.co/q0mdc4Z/get-it-on-github.png" height="80"/>
  </a>
-  <a href="https://apt.izzysoft.de/fdroid/index/apk/com.sosauce.cutemusic">
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/chocola">
    <image src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80"/>
  </a>
 
-   <a href="https://f-droid.org/en/packages/com.sosauce.cutemusic/">
+   <a href="https://f-droid.org/en/packages/chocola/">
    <image src="https://f-droid.org/badge/get-it-on.png" height="80"/>
  </a>
 <p align="center">I recommend installing from GitHub, as it guarantees access to the latest update.</p>
@@ -49,7 +49,6 @@
 - Tag Editor!
 - Playlists support!
 - Load and persist songs from anywhere using Android's S.A.F!
-- Part of the CuteApps ecosystem!
 - Makes you a cutie!
    
 ---
@@ -67,7 +66,7 @@ If you wish to support me, you can see how to do so on my [website](https://sosa
 ---
 <h1>⚠️ Copyright</h1>
 
-<p>Copyright (c)2025 sosauce
+<p>Copyright (c)2026 sosauce
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

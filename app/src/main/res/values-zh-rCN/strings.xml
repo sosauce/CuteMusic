@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">可耐音乐</string>
     <string name="theme">主题</string>
     <string name="settings">设置</string>
     <string name="dark_mode">暗色模式</string>
@@ -20,7 +19,7 @@
     <string name="artists">创作者</string>
     <string name="albums">专辑</string>
     <string name="music">曲目</string>
-    <string name="cm_by_sosauce">CuteMusic by sosauce</string>
+    <string name="cm_by_sosauce">Chocola by sosauce</string>
     <string name="app_icon">应用图标</string>
     <string name="search">搜索</string>
     <string name="close">关闭</string>

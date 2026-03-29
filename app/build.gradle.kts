@@ -11,17 +11,17 @@ plugins {
 
 
 android {
-    namespace = "com.sosauce.cutemusic"
+    namespace = "com.sosauce.chocola"
     compileSdk = 36
 
     defaultConfig {
 
 
-        applicationId = "com.sosauce.cutemusic"
+        applicationId = "com.sosauce.cutemusic" // Do not change to chocola, will require people who installed it as CuteMusic to re-install the app, and we'd have to create a new F-droid app page etc...
         minSdk = 26
         targetSdk = 36
-        versionCode = 40006
-        versionName = "3.1.7"
+        versionCode = 50000
+        versionName = "4.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -37,7 +37,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                output.outputFileName = "CM_${variant.versionName}.apk"
+                output.outputFileName = "Chocola_${variant.versionName}.apk"
             }
     }
 

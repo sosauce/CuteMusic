@@ -1,1 +1,1 @@
-CuteMusic es un reproductor de música para Android. Simple, ligero, offline
+Chocola es un reproductor de música para Android. Simple, ligero, offline
