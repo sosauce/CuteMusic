@@ -1,6 +1,6 @@
-<p align=center><image src="https://i.ibb.co/SdMsJs7/cute-music-icon.png" height="200" /></p>
-<h1 align="center">CuteMusic</h1>
-<p align="center">CuteMusic is a cute and powerful offline music player for Android!</p>
+<p align=center><image src="https://i.ibb.co/N6qJFWMw/icon.png" height="200" style="border-radius: 50%;" /></p>
+<h1 align="center">Chocola</h1>
+<p align="center">Chocola <a href="https://medium.com/p/1a1f37640370">formerly CuteMusic</a> is a cute and powerful offline music player for Android!</p>
 
  <p align="center">
    <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9"/>
@@ -49,7 +49,6 @@
 - Tag Editor!
 - Playlists support!
 - Load and persist songs from anywhere using Android's S.A.F!
-- Part of the CuteApps ecosystem!
 - Makes you a cutie!
    
 ---
@@ -67,7 +66,7 @@ If you wish to support me, you can see how to do so on my [website](https://sosa
 ---
 <h1>⚠️ Copyright</h1>
 
-<p>Copyright (c)2025 sosauce
+<p>Copyright (c)2026 sosauce
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
