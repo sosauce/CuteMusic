@@ -1,1 +1,1 @@
-Basit, hızlı ve internet gerektirmeyen bir müzik çalma uygulaması.
+Chocola; basit, hızlı ve internet gerektirmeyen bir müzik çalma uygulamasıdır!
