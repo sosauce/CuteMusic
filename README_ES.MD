@@ -10,12 +10,6 @@
  </p> 
 
 <p align="center">
-   <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9" />
-   <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=%23F9B3A9" />
-   <img src="https://img.shields.io/badge/Kotlin-100%25-%23F9B3A9?style=for-the-badge&logo=Kotlin" />
-</p>
-
-<p align="center">
   <a href="https://github.com/sosauce/CuteMusic/releases">
     <img src="https://i.ibb.co/q0mdc4Z/get-it-on-github.png" height="80" />
   </a>
