@@ -23,10 +23,14 @@
 
 <p align="center">Recomendamos la instalación desde GitHub, ya que garantiza el acceso a las últimas actualizaciones.</p>
 
-<p align="center">
-  <img src="https://i.postimg.cc/tJS44wR7/1.png" height="512" />
-  <img src="https://i.postimg.cc/wxZK99gL/2.png" height="512" />
-  <img src="https://i.postimg.cc/4NvTPrRc/3.png" height="512" />
+
+<p align=center>
+ <img height="512" alt="1" src="https://github.com/user-attachments/assets/82108efb-4030-4603-adac-a53bcc21fee3" />
+ <img height="512" alt="2" src="https://github.com/user-attachments/assets/1a713055-84a3-48e8-b9b4-03b692429da1" />
+ <img height="512" alt="3" src="https://github.com/user-attachments/assets/f5be5d07-d588-4304-ad1b-ce6552a1be53" />
+ <img height="512" alt="5" src="https://github.com/user-attachments/assets/96009e6e-af5e-4d15-8d6a-15cc83274d1a" />
+ <img height="512" alt="4" src="https://github.com/user-attachments/assets/40750ad9-7f18-4213-9c33-6a74d8f4a20e" />
+
 </p>
 
 <h1>👀 Resumen</h1>
