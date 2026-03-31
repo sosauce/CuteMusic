@@ -1,9 +1,13 @@
-<p align="center">
-  <img src="https://i.ibb.co/SdMsJs7/cute-music-icon.png" height="200" />
-</p>
 
-<h1 align="center">CuteMusic</h1>
-<p align="center">CuteMusic es una aplicación sencilla, ligera y de código abierto para reproducir música offline en Android, desarrollada en Jetpack Compose y Media3.</p>
+<p align=center><image src="https://i.ibb.co/N6qJFWMw/icon.png" height="200" style="border-radius: 50%;" /></p>
+<h1 align="center">Chocola</h1>
+<p align="center">Chocola es una aplicación sencilla, ligera y de código abierto para reproducir música offline en Android, desarrollada en Jetpack Compose y Media3.</p>
+
+ <p align="center">
+   <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f5a6bd"/>
+   <img src="https://img.shields.io/github/v/release/sosauce/CuteMusic?style=for-the-badge&logo=github&color=f5a6bd"/>
+   <image src="https://img.shields.io/badge/Kotlin-100%25-f5a6bd?style=for-the-badge&logo=Kotlin"/>
+ </p> 
 
 <p align="center">
    <img src="https://img.shields.io/github/downloads/sosauce/CuteMusic/total?style=for-the-badge&logo=github&color=f9b3a9" />
