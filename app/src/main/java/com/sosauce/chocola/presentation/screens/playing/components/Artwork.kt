@@ -23,6 +23,9 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -45,7 +48,9 @@ import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.ignoreParentPadding
 import com.sosauce.chocola.utils.toShape
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun Artwork(
@@ -57,35 +62,51 @@ fun Artwork(
     val useCarousel by rememberCarousel()
     var artworkShape by rememberArtworkShape()
 
-
-
     if (useCarousel) {
         val carouselState =
             rememberCarouselState(initialItem = musicState.mediaIndex) { musicState.loadedMedias.size }
 
-        LaunchedEffect(carouselState, musicState.mediaIndex) {
+        var isProgrammaticScroll by remember { mutableStateOf(false) }
+
+        // Sync carousel position when playback changes track externally
+        LaunchedEffect(musicState.mediaIndex) {
             if (!carouselState.isScrollInProgress &&
                 carouselState.currentItem != musicState.mediaIndex
             ) {
+                isProgrammaticScroll = true
                 carouselState.animateScrollToItem(musicState.mediaIndex)
+                isProgrammaticScroll = false
             }
+        }
 
-            // Prevents music switching mid-scroll
+        // Use rememberUpdatedState to always read latest values inside the long-lived LaunchedEffect
+        val currentMediaIndex by rememberUpdatedState(musicState.mediaIndex)
+        val currentShuffle by rememberUpdatedState(musicState.shuffle)
+        val currentTrackCount by rememberUpdatedState(musicState.loadedMedias.size)
+
+        // Dispatch track change when user finishes swiping
+        LaunchedEffect(carouselState) {
             snapshotFlow { carouselState.isScrollInProgress }
-                .collectLatest { isScrolling ->
-                    if (!isScrolling) {
-                        val settledPage = carouselState.currentItem
-                        if (settledPage != musicState.mediaIndex) {
-                            if (musicState.shuffle) {
-                                onHandlePlayerActions(PlayerActions.PlayRandom)
+                .filter { !it }
+                .map { carouselState.currentItem }
+                .distinctUntilChanged()
+                .collect { settledItem ->
+                    if (currentTrackCount == 0) return@collect
+                    val safeIndex = settledItem.coerceIn(0, currentTrackCount - 1)
+                    if (isProgrammaticScroll) return@collect
+                    if (safeIndex != currentMediaIndex) {
+                        if (currentShuffle) {
+                            if (safeIndex > currentMediaIndex) {
+                                onHandlePlayerActions(PlayerActions.SeekToNextMusic)
                             } else {
-                                onHandlePlayerActions(PlayerActions.SeekToMusicIndex(settledPage))
+                                onHandlePlayerActions(PlayerActions.SeekToPreviousMusic)
                             }
+                        } else {
+                            onHandlePlayerActions(PlayerActions.SeekToMusicIndex(safeIndex))
                         }
                     }
                 }
         }
-
 
         HorizontalCenteredHeroCarousel(
             state = carouselState,
