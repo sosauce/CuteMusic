@@ -67,7 +67,7 @@ fun CreatePlaylistDialog(
     onDismissRequest: () -> Unit
 ) {
     val playlistViewModel = koinViewModel<PlaylistViewModel>()
-    val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+    val state by playlistViewModel.state.collectAsStateWithLifecycle()
     val localizedPlaylist = stringResource(R.string.playlist)
     var playlist by remember { mutableStateOf(Playlist()) }
     val name = rememberTextFieldState()
@@ -77,7 +77,7 @@ fun CreatePlaylistDialog(
 
     LaunchedEffect(name.text) {
         val newName = if (name.text.isEmpty()) {
-            "$localizedPlaylist ${playlists.size + 1}"
+            "$localizedPlaylist ${state.playlists.size + 1}"
         } else name.text.toString()
         playlist = playlist.copy(
             name = newName

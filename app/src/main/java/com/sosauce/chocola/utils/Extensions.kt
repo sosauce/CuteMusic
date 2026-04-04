@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -34,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
@@ -111,6 +113,8 @@ fun Player.playRandom() {
     val randomIndex = Random.nextInt(mediaItemCount)
     seekTo(randomIndex, 0)
     play()
+    shuffleModeEnabled = true
+
 }
 
 fun Player.playOrPause() {
@@ -122,7 +126,7 @@ fun Player.changeRepeatMode(
 ) {
 
     if (initialRepeatMode != null) {
-        this.repeatMode = initialRepeatMode
+        repeatMode = initialRepeatMode
     } else {
 
         val repeatMode = when (repeatMode) {
@@ -506,3 +510,22 @@ val bouncySpec = spring<Float>(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessLow
 )
+
+
+fun String.toLyricsAlignment(): TextAlign {
+    return when(this) {
+        LyricsAlignment.START -> TextAlign.Start
+        LyricsAlignment.CENTERED -> TextAlign.Center
+        LyricsAlignment.END -> TextAlign.End
+        else -> TextAlign.Start
+    }
+}
+
+@Composable
+fun MenuDefaults.getItemShape(index: Int, lastIndex: Int): Shape {
+    return when(index) {
+        0 -> leadingItemShape
+        lastIndex -> trailingItemShape
+        else -> middleItemShape
+    }
+}

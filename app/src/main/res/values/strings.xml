@@ -185,6 +185,11 @@
     <string name="rate_error">Rate should be in range of %1$.1f and %2$d.</string>
     <string name="hide_from_tracklist">Hide from tracklist</string>
     <string name="hidden_tracks">Hidden tracks</string>
+    <string name="show_album_name">Show album name</string>
+    <string name="alignment">Alignment</string>
+    <string name="font_size">Font size</string>
+    <string name="select_all">Select all</string>
+    <string name="unselect_all">Unselect all</string>
 
 
 

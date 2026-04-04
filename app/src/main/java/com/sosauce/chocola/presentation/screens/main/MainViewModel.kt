@@ -29,7 +29,7 @@ class MainViewModel(
     val textFieldState = TextFieldState()
     private val userQuery = snapshotFlow { textFieldState.text }.debounce(250)
 
-    private val _state = MutableStateFlow(MainState(isLoading = true))
+    private val _state = MutableStateFlow(MainState(isLoading = true, textFieldState = textFieldState))
     val state = _state.asStateFlow()
 
 
@@ -39,19 +39,18 @@ class MainViewModel(
                 abstractTracksScanner.fetchLatestTracks(null, null),
                 userQuery,
                 userPreferences.getTrackSort,
-                userPreferences.getSortTracksAscending
+                userPreferences.sortTracksAscending
             ) { tracks, query, trackSort, ascending ->
-                tracks.ordered(trackSort, ascending, query.toString())
+                val newTracks = tracks.ordered(trackSort, ascending, query.toString())
+                MainState(
+                    tracks = newTracks,
+                    isLoading = false,
+                    isSearching = query.isNotEmpty(),
+                    textFieldState = textFieldState
+                )
             }
                 .flowOn(Dispatchers.Default)
-                .collectLatest { newTracks ->
-                    _state.update {
-                        it.copy(
-                            tracks = newTracks,
-                            isLoading = false
-                        )
-                    }
-                }
+                .collectLatest { state -> _state.update { state } }
         }
     }
 
@@ -61,5 +60,7 @@ class MainViewModel(
 
 data class MainState(
     val isLoading: Boolean = false,
-    val tracks: List<CuteTrack> = emptyList()
+    val tracks: List<CuteTrack> = emptyList(),
+    val isSearching: Boolean = false,
+    val textFieldState: TextFieldState = TextFieldState()
 )

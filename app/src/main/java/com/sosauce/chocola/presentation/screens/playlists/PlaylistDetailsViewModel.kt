@@ -56,7 +56,7 @@ class PlaylistDetailsViewModel(
                     combine(
                         playlistsRepository.fetchLatestPlaylistTracks(playlist.musics),
                         userPreferences.getTrackSort,
-                        userPreferences.getSortTracksAscending
+                        userPreferences.sortTracksAscending
                     ) { tracks, sort, ascending ->
                         println("loof - ${tracks.ordered(sort, ascending, query = "")}")
                         playlist to tracks.ordered(sort, ascending, query = "")

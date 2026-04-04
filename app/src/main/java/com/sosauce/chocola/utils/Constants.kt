@@ -55,3 +55,9 @@ object CutePaletteStyle {
     const val EXPRESSIVE = "Expressive"
     const val FIDELITY = "Fidelity"
 }
+
+object LyricsAlignment {
+    const val START = "Start"
+    const val CENTERED = "Centered"
+    const val END = "End"
+}

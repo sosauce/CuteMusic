@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberPauseOnMute
-import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsCards
+import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsSwitch
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
 
@@ -42,7 +42,7 @@ fun SettingsPlayback(
             SettingsWithTitle(
                 title = R.string.audio
             ) {
-                SettingsCards(
+                SettingsSwitch(
                     checked = pauseOnMute,
                     onCheckedChange = { pauseOnMute = !pauseOnMute },
                     topDp = 24.dp,

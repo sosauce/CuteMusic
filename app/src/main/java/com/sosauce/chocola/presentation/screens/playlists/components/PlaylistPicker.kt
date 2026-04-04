@@ -44,7 +44,7 @@ fun PlaylistPicker(
 ) {
     val context = LocalContext.current
     val playlistViewModel = koinViewModel<PlaylistViewModel>()
-    val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+    val state by playlistViewModel.state.collectAsStateWithLifecycle()
     var showPlaylistCreatorDialog by remember { mutableStateOf(false) }
 
 
@@ -78,7 +78,7 @@ fun PlaylistPicker(
             }
 
             items(
-                items = playlists,
+                items = state.playlists,
                 key = { it.id }
             ) { playlist ->
                 PlaylistItem(

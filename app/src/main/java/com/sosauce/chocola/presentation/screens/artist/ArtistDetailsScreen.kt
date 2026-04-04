@@ -67,7 +67,6 @@ import com.sosauce.chocola.data.datastore.rememberTrackSort
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
-import com.sosauce.chocola.presentation.multiselect.rememberMultiSelectState
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.album.components.NumberOfTracks
 import com.sosauce.chocola.presentation.screens.artist.components.ArtistHeader
@@ -80,6 +79,7 @@ import com.sosauce.chocola.presentation.shared_components.SelectedBar
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.selfAlignHorizontally
+import com.sosauce.sweetselect.rememberSweetSelectState
 
 @Composable
 fun SharedTransitionScope.ArtistDetailsScreen(
@@ -94,7 +94,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
     val isLandscape = rememberIsLandscape()
     var sortTracksAscending by rememberSortTracksAscending()
     var trackSort by rememberTrackSort()
-    val multiSelectState = rememberMultiSelectState<CuteTrack>()
+    val multiSelectState = rememberSweetSelectState<CuteTrack>()
 
 
     if (state.isLoading) {
@@ -131,7 +131,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
 
                             if (showPlaylistDialog) {
                                 PlaylistPicker(
-                                    mediaId = multiSelectState.selectedItems.fastMap { it.mediaId },
+                                    mediaId = multiSelectState.selectedItems.map { it.mediaId },
                                     onDismissRequest = { showPlaylistDialog = false },
                                     onAddingFinished = multiSelectState::clearSelected
                                 )
@@ -152,12 +152,12 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                         val intentSender = MediaStore.createDeleteRequest(
                                             context.contentResolver,
-                                            multiSelectState.selectedItems.fastMap { it.uri }
+                                            multiSelectState.selectedItems.map { it.uri }
                                         ).intentSender
 
                                         deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                                     } else {
-                                        multiSelectState.selectedItems.fastForEach {
+                                        multiSelectState.selectedItems.forEach {
                                             context.contentResolver.delete(it.uri, null, null)
                                         }
                                     }

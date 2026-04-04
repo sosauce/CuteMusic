@@ -1,12 +1,15 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class,
+    FlowPreview::class
 )
 
 package com.sosauce.chocola.presentation.screens.main
 
+import android.content.ContentProviderOperation
 import android.os.Build
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,11 +38,14 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +65,6 @@ import com.sosauce.chocola.data.datastore.rememberTrackSort
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
-import com.sosauce.chocola.presentation.multiselect.rememberMultiSelectState
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.main.components.FolderHeader
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
@@ -74,6 +79,13 @@ import com.sosauce.chocola.utils.SharedTransitionKeys
 import com.sosauce.chocola.utils.addOrRemove
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
+import com.sosauce.sweetselect.rememberSweetSelectState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // https://medium.com/@gregkorossy/hacking-lazylist-in-android-jetpack-compose-38afacb3df67
 @Composable
@@ -90,8 +102,8 @@ fun SharedTransitionScope.MainScreen(
     var groupByFolders by rememberGroupByFolders()
     var trackSort by rememberTrackSort()
     var sortTracksAscending by rememberSortTracksAscending()
-    val multiSelectState = rememberMultiSelectState<CuteTrack>()
-    val textFieldState = rememberTextFieldState()
+    val multiSelectState = rememberSweetSelectState<CuteTrack>()
+    val scope = rememberCoroutineScope()
 
     if (state.isLoading) {
         Box(
@@ -126,7 +138,7 @@ fun SharedTransitionScope.MainScreen(
 
                             if (showPlaylistDialog) {
                                 PlaylistPicker(
-                                    mediaId = multiSelectState.selectedItems.fastMap { it.mediaId },
+                                    mediaId = multiSelectState.selectedItems.map { it.mediaId },
                                     onDismissRequest = { showPlaylistDialog = false },
                                     onAddingFinished = multiSelectState::clearSelected
                                 )
@@ -147,13 +159,27 @@ fun SharedTransitionScope.MainScreen(
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                         val intentSender = MediaStore.createDeleteRequest(
                                             context.contentResolver,
-                                            multiSelectState.selectedItems.fastMap { it.uri }
+                                            multiSelectState.selectedItems.map { it.uri }
                                         ).intentSender
 
                                         deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                                     } else {
-                                        multiSelectState.selectedItems.fastForEach {
-                                            context.contentResolver.delete(it.uri, null, null)
+                                        scope.launch(Dispatchers.IO) {
+                                            val ops = arrayListOf<ContentProviderOperation>()
+
+                                            multiSelectState.selectedItems.forEach { item ->
+                                                ops.add(
+                                                    ContentProviderOperation.newDelete(item.uri).build()
+                                                )
+                                            }
+
+                                            runCatching {
+                                                context.contentResolver.applyBatch(MediaStore.AUTHORITY, ops)
+                                            }.onFailure {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
                                         }
                                     }
                                 },
@@ -171,7 +197,7 @@ fun SharedTransitionScope.MainScreen(
                     } else {
                         CuteSearchbar(
                             modifier = Modifier.selfAlignHorizontally(),
-                            textFieldState = textFieldState,
+                            textFieldState = state.textFieldState,
                             musicState = musicState,
                             showSearchField = true,
                             sortingMenu = {
@@ -252,95 +278,99 @@ fun SharedTransitionScope.MainScreen(
                 state = lazyState,
                 contentPadding = paddingValues
             ) {
-                if (groupByFolders) {
-                    val categories = state.tracks
-                        .groupBy { it.folder }
-                        .toSortedMap()
-                        .map {
-                            Category(
-                                name = it.key,
-                                tracks = it.value
-                            )
-                        }
 
 
-                    categories.fastForEach { category ->
-                        item {
-                            FolderHeader(
-                                category = category,
-                                isHidden = category.name in hiddenFolders,
-                                onToggleVisibility = {
-                                    hiddenFolders =
-                                        hiddenFolders.copyMutate { addOrRemove(category.name) }
-                                },
-                                onHandlePlayerAction = onHandlePlayerAction
-                            )
-                        }
-                        if (category.name !in hiddenFolders) {
-                            items(
-                                items = category.tracks,
-                                key = { it.mediaId }
-                            ) { music ->
-
-                                val isSelected by remember {
-                                    derivedStateOf { multiSelectState.isSelected(music) }
-                                }
-
-                                MusicListItem(
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .padding(
-                                            vertical = 2.dp,
-                                            horizontal = 4.dp
-                                        ),
-                                    onShortClick = {
-                                        if (multiSelectState.isInSelectionMode) {
-                                            multiSelectState.toggle(music)
-                                        } else {
-                                            onHandlePlayerAction(
-                                                PlayerActions.Play(
-                                                    index = state.tracks.indexOf(music),
-                                                    tracks = state.tracks
-                                                )
-                                            )
-                                        }
-                                    },
-                                    onLongClick = { multiSelectState.toggle(music) },
-                                    isSelected = isSelected,
-                                    track = music,
-                                    musicState = musicState,
-                                    onNavigate = { onNavigate(it) },
-                                    onHandlePlayerActions = onHandlePlayerAction
-                                )
-                            }
-                        }
+                if (state.tracks.isEmpty() && !state.isSearching) {
+                    item {
+                        NoXFound(
+                            headlineText = R.string.no_music_title,
+                            bodyText = R.string.no_music_desc,
+                            icon = R.drawable.music_note_rounded
+                        )
+                        Text(
+                            text = stringResource(R.string.no_music_tip),
+                            style = MaterialTheme.typography.bodySmallEmphasized.copy(
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier
+                                .padding(top = 15.dp)
+                                .selfAlignHorizontally()
+                        )
                     }
                 } else {
-                    if (state.tracks.isEmpty()) {
-                        item {
-                            NoXFound(
-                                headlineText = R.string.no_music_title,
-                                bodyText = R.string.no_music_desc,
-                                icon = R.drawable.music_note_rounded
-                            )
-                            Text(
-                                text = stringResource(R.string.no_music_tip),
-                                style = MaterialTheme.typography.bodySmallEmphasized.copy(
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                modifier = Modifier
-                                    .padding(top = 15.dp)
-                                    .selfAlignHorizontally()
-                            )
-                        }
-                    } else {
+                    if (groupByFolders) {
+                        val categories = state.tracks
+                            .groupBy { it.folder }
+                            .toSortedMap()
+                            .map {
+                                Category(
+                                    name = it.key,
+                                    tracks = it.value
+                                )
+                            }
+                        if (state.tracks.isEmpty()) {
+                            item { NoResult() }
+                        } else {
+                            categories.fastForEach { category ->
+                                item  {
+                                    FolderHeader(
+                                        category = category,
+                                        isHidden = category.name in hiddenFolders,
+                                        onToggleVisibility = {
+                                            hiddenFolders =
+                                                hiddenFolders.copyMutate { addOrRemove(category.name) }
+                                        },
+                                        onHandlePlayerAction = onHandlePlayerAction
+                                    )
+                                }
+                                if (category.name !in hiddenFolders) {
+                                    items(
+                                        items = category.tracks,
+                                        key = { it.mediaId }
+                                    ) { music ->
 
+                                        val isSelected by remember {
+                                            derivedStateOf { multiSelectState.isSelected(music) }
+                                        }
+
+                                        MusicListItem(
+                                            modifier = Modifier
+                                                .animateItem()
+                                                .padding(
+                                                    vertical = 2.dp,
+                                                    horizontal = 4.dp
+                                                ),
+                                            onShortClick = {
+                                                if (multiSelectState.isInSelectionMode) {
+                                                    multiSelectState.toggle(music)
+                                                } else {
+                                                    onHandlePlayerAction(
+                                                        PlayerActions.Play(
+                                                            index = state.tracks.indexOf(music),
+                                                            tracks = state.tracks
+                                                        )
+                                                    )
+                                                }
+                                            },
+                                            onLongClick = { multiSelectState.toggle(music) },
+                                            isSelected = isSelected,
+                                            track = music,
+                                            musicState = musicState,
+                                            onNavigate = { onNavigate(it) },
+                                            onHandlePlayerActions = onHandlePlayerAction
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
                         if (state.tracks.isEmpty()) {
                             item { NoResult() }
                         } else {
                             items(
-                                items = state.tracks.fastFilter { it.title.contains(textFieldState.text, true) },
+                                items = state.tracks,
                                 key = { it.mediaId }
                             ) { music ->
 
@@ -365,15 +395,15 @@ fun SharedTransitionScope.MainScreen(
                                     onLongClick = { multiSelectState.toggle(music) },
                                     track = music,
                                     musicState = musicState,
-                                    onNavigate = { onNavigate(it) },
+                                    onNavigate = onNavigate,
                                     isSelected = isSelected,
                                     onHandlePlayerActions = onHandlePlayerAction
                                 )
                             }
                         }
-
                     }
                 }
+
             }
         }
     }

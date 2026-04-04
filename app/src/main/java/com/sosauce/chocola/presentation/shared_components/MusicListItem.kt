@@ -74,6 +74,7 @@ import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPic
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.LocalScreen
 import com.sosauce.chocola.utils.copyMutate
+import androidx.core.net.toUri
 
 @Composable
 fun MusicListItem(
@@ -233,8 +234,9 @@ fun MusicListItem(
                 Text(
                     text = track.artist,
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyLargeEmphasized,
+                    style = MaterialTheme.typography.bodyLargeEmphasized.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
                     modifier = Modifier.basicMarquee()
                 )
             }
@@ -275,10 +277,19 @@ private fun DefaultMusicListItemTrailingContent(
         onClick = { isDropDownExpanded = true },
         shapes = IconButtonDefaults.shapes()
     ) {
-        Icon(
-            painter = painterResource(R.drawable.more_vert),
-            contentDescription = null
-        )
+        AnimatedContent(isDropDownExpanded) {
+            if (it) {
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = null
+                )
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.more_vert),
+                    contentDescription = null
+                )
+            }
+        }
     }
 
     TrackDropdownMenu(
@@ -321,7 +332,7 @@ private fun TrackDropdownMenu(
         MoreOptions(
             text = { stringResource(R.string.add_queue) },
             onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(track)) },
-            icon = R.drawable.add,
+            icon = R.drawable.add_to_queue,
             enabled = track !in musicState.loadedMedias,
             disabledText = { stringResource(R.string.already_in_queue) }
         ),
@@ -447,7 +458,7 @@ private fun TrackDropdownMenu(
                 onClick = {
                     ShareCompat.IntentBuilder(context)
                         .setType("audio/*")
-                        .setStream(Uri.parse(track.path)) // this instead of passing the path allows to see the file name in the share sheet
+                        .setStream(track.path.toUri()) // this instead of passing the path allows to see the file name in the share sheet
                         .setChooserTitle("Share track")
                         .startChooser()
                 },

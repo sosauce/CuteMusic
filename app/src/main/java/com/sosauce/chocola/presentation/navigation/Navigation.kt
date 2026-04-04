@@ -203,10 +203,10 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     entry<Screen.Playlists> {
 
                         val playlistViewModel = koinViewModel<PlaylistViewModel>()
-                        val playlists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
+                        val state by playlistViewModel.state.collectAsStateWithLifecycle()
 
                         PlaylistsScreen(
-                            playlists = playlists,
+                            state = state,
                             onHandlePlaylistAction = playlistViewModel::handlePlaylistActions,
                             musicState = musicState,
                             onNavigate = backStack::navigate,

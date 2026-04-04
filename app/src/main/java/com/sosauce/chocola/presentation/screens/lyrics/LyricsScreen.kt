@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -38,16 +39,21 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.datastore.rememberLyricsAlignment
+import com.sosauce.chocola.data.datastore.rememberLyricsFontSize
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.domain.model.Lyrics
@@ -55,6 +61,7 @@ import com.sosauce.chocola.presentation.screens.playing.components.PlayPauseButt
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconButton
 import com.sosauce.chocola.utils.ICON_TEXT_SPACING
 import com.sosauce.chocola.utils.selfAlignHorizontally
+import com.sosauce.chocola.utils.toLyricsAlignment
 import kotlinx.coroutines.launch
 
 @Composable
@@ -68,6 +75,8 @@ fun LyricsScreen(
     val context = LocalContext.current
     val clipboardManager = LocalClipboard.current
     val scope = rememberCoroutineScope()
+    val lyricsAlignment by rememberLyricsAlignment()
+    val lyricsFontSize by rememberLyricsFontSize()
     val currentLyricIndex by remember(musicState.position) {
         derivedStateOf {
             lyrics.indexOfLast { musicState.position >= it.timestamp }
@@ -135,14 +144,18 @@ fun LyricsScreen(
             state = lazyListState,
             contentPadding = paddingValues
         ) {
-
-            println("i really love u nana: $lyrics")
             if (lyrics.isEmpty()) {
                 item {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(stringResource(R.string.no_lyrics_note))
+                        Text(
+                            text = stringResource(R.string.no_lyrics_note),
+                            style = MaterialTheme.typography.displaySmallEmphasized.copy(
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Spacer(Modifier.height(10.dp))
                         Button(
                             onClick = {
                                 val query =
@@ -159,7 +172,9 @@ fun LyricsScreen(
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(ICON_TEXT_SPACING.dp))
-                            Text(stringResource(R.string.search_lyrics))
+                            Text(
+                                text = stringResource(R.string.search_lyrics)
+                            )
                         }
                     }
                 }
@@ -208,8 +223,17 @@ fun LyricsScreen(
                     ) {
                         Text(
                             text = lyric.lineLyrics,
-                            style = MaterialTheme.typography.titleLargeEmphasized.copy(color),
-                            modifier = Modifier.padding(15.dp)
+                            style = MaterialTheme.typography.titleLargeEmphasized.copy(
+                                color = color,
+                                fontSize = lyricsFontSize.sp,
+                                textAlign = lyricsAlignment.toLyricsAlignment()
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                                .graphicsLayer {
+                                    alpha = if (isCurrentLyric) 1f else 0.3f
+                                },
                         )
                     }
                 }

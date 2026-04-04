@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAlbumGrids
 import com.sosauce.chocola.data.datastore.rememberAlbumSort
+import com.sosauce.chocola.data.datastore.rememberSortAlbumsAscending
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
@@ -51,8 +52,7 @@ fun SharedTransitionScope.AlbumsScreen(
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
 ) {
-    val textFieldState = rememberTextFieldState()
-    var isSortedByASC by rememberSaveable { mutableStateOf(true) } // I prolly should change this
+    var isSortedByASC by rememberSortAlbumsAscending()
     var albumSort by rememberAlbumSort()
     val lazyState = rememberLazyGridState()
     var numberOfAlbumGrids by rememberAlbumGrids()
@@ -70,7 +70,7 @@ fun SharedTransitionScope.AlbumsScreen(
             bottomBar = {
                 CuteSearchbar(
                     modifier = Modifier.selfAlignHorizontally(),
-                    textFieldState = textFieldState,
+                    textFieldState = state.textFieldState,
                     showSearchField = true,
                     musicState = musicState,
                     sortingMenu = {
@@ -117,17 +117,12 @@ fun SharedTransitionScope.AlbumsScreen(
                 )
             }
         ) { paddingValues ->
-            val orderedAlbums = state.albums.ordered(
-                sort = AlbumSort.entries[albumSort],
-                ascending = isSortedByASC,
-                query = textFieldState.text.toString()
-            )
             LazyVerticalGrid(
-                columns = GridCells.Fixed(if (orderedAlbums.isEmpty() || state.albums.isEmpty()) 1 else numberOfAlbumGrids),
+                columns = GridCells.Fixed(if (state.albums.isEmpty()) 1 else numberOfAlbumGrids),
                 contentPadding = paddingValues,
                 state = lazyState
             ) {
-                if (state.albums.isEmpty()) {
+                if (state.albums.isEmpty() && !state.isSearching) {
                     item {
                         NoXFound(
                             headlineText = R.string.no_albums_found,
@@ -136,11 +131,11 @@ fun SharedTransitionScope.AlbumsScreen(
                         )
                     }
                 } else {
-                    if (orderedAlbums.isEmpty()) {
+                    if (state.albums.isEmpty()) {
                         item { NoResult() }
                     } else {
                         items(
-                            items = orderedAlbums,
+                            items = state.albums,
                             key = { it.id }
                         ) { album ->
                             AlbumCard(
@@ -154,7 +149,5 @@ fun SharedTransitionScope.AlbumsScreen(
             }
         }
     }
-
-
 }
 

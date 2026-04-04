@@ -31,7 +31,7 @@ import com.sosauce.chocola.data.datastore.rememberUseArtTheme
 import com.sosauce.chocola.data.datastore.rememberUseExpressivePalette
 import com.sosauce.chocola.data.datastore.rememberUseSystemFont
 import com.sosauce.chocola.presentation.screens.settings.compenents.FontSelector
-import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsCards
+import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsSwitch
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.chocola.presentation.screens.settings.compenents.ThemeSelector
 import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
@@ -163,14 +163,14 @@ fun SettingsLookAndFeel(
             SettingsWithTitle(
                 title = R.string.ui
             ) {
-                SettingsCards(
+                SettingsSwitch(
                     checked = useMaterialArt,
                     onCheckedChange = { useMaterialArt = !useMaterialArt },
                     topDp = 24.dp,
                     bottomDp = 4.dp,
                     text = stringResource(R.string.use_art)
                 )
-                SettingsCards(
+                SettingsSwitch(
                     checked = useExpressivePalette,
                     onCheckedChange = { useExpressivePalette = !useExpressivePalette },
                     topDp = 4.dp,
@@ -181,7 +181,7 @@ fun SettingsLookAndFeel(
             SettingsWithTitle(
                 title = R.string.cute_searchbar
             ) {
-                SettingsCards(
+                SettingsSwitch(
                     checked = showShuffleButton,
                     onCheckedChange = { showShuffleButton = !showShuffleButton },
                     topDp = 24.dp,
