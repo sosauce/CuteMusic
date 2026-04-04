@@ -45,6 +45,8 @@ import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.formatToReadableTime
 import com.sosauce.chocola.utils.getBitrate
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun MusicDetailsDialog(
@@ -99,7 +101,7 @@ fun MusicDetailsDialog(
                             modifier = Modifier
                                 .size(100.dp)
                                 .padding(15.dp)
-                                .clip(RoundedCornerShape(15)),
+                                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
                             contentScale = ContentScale.Crop
                         )
                         Column {
