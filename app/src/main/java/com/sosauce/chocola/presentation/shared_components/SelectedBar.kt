@@ -56,14 +56,12 @@ fun <T> SelectedBar(
                 onClick = multiSelectState::clearSelected,
                 shapes = ButtonDefaults.shapes()
             ) {
-                Row {
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = null
-                    )
-                    Spacer(Modifier.width(5.dp))
-                    Text("${multiSelectState.selectedItems.size}")
-                }
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(5.dp))
+                Text("${multiSelectState.selectedItems.size}")
             }
             TextButton(
                 onClick = onToggleAll,

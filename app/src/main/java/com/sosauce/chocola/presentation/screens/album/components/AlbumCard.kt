@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -27,6 +28,8 @@ import coil3.compose.AsyncImage
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.models.Album
 import com.sosauce.chocola.utils.ImageUtils
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun SharedTransitionScope.AlbumCard(
@@ -40,7 +43,7 @@ fun SharedTransitionScope.AlbumCard(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .clickable { onClick() }
+            .clickable(onClick = onClick)
             .padding(15.dp)
     ) {
         AsyncImage(
@@ -51,13 +54,13 @@ fun SharedTransitionScope.AlbumCard(
             ),
             contentDescription = stringResource(id = R.string.artwork),
             modifier = Modifier
+                .size(160.dp)
                 .sharedElement(
                     sharedContentState = rememberSharedContentState(key = album.id),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
-                .sizeIn(maxHeight = 160.dp)
-                .clip(RoundedCornerShape(15)),
-            contentScale = ContentScale.Fit
+                .clip(SquircleShape(percent = 50, smoothing = CornerSmoothing.Full)),
+            contentScale = ContentScale.Crop
         )
         Spacer(Modifier.height(10.dp))
         Column {
@@ -65,25 +68,14 @@ fun SharedTransitionScope.AlbumCard(
                 text = album.name,
                 maxLines = 1,
                 style = MaterialTheme.typography.titleMediumEmphasized,
-                modifier = Modifier
-//                    .sharedElement(
-//                        sharedContentState = rememberSharedContentState(key = album.name + album.id),
-//                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                    )
-                    .basicMarquee()
+                modifier = Modifier.basicMarquee()
             )
             Text(
                 text = album.artist,
                 style = MaterialTheme.typography.bodyLargeEmphasized.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
-                modifier = Modifier
-                    .basicMarquee()
-//                    .sharedElement(
-//                        sharedContentState = rememberSharedContentState(key = album.artist + album.id),
-//                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
-//                    )
-
+                modifier = Modifier.basicMarquee()
             )
         }
     }

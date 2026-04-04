@@ -75,6 +75,8 @@ import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.LocalScreen
 import com.sosauce.chocola.utils.copyMutate
 import androidx.core.net.toUri
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun MusicListItem(
@@ -159,25 +161,17 @@ fun MusicListItem(
 //        }
 //    }
 
-    Box(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .padding(3.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(bgColor)
-            .combinedClickable(
-                onClick = { onShortClick(track.mediaId) },
-                onLongClick = onLongClick
-            )
-    ) {
-        Row(
-            modifier = modifier
-                .padding(vertical = 15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+
+    CuteListItem(
+         modifier = modifier
+             .graphicsLayer {
+                 scaleX = scale
+                 scaleY = scale
+             },
+        backgroundColor = bgColor,
+        onClick = { onShortClick(track.mediaId) },
+        onLongClick = onLongClick,
+        leadingContent = {
             AnimatedContent(
                 targetState = isSelected,
                 transitionSpec = { scaleIn() togetherWith scaleOut() },
@@ -191,7 +185,7 @@ fun MusicListItem(
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .clip(SquircleShape(smoothing = CornerSmoothing.Full))
                                     .background(MaterialTheme.colorScheme.surfaceContainer),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -210,7 +204,7 @@ fun MusicListItem(
                                 contentDescription = stringResource(R.string.artwork),
                                 modifier = Modifier
                                     .size(50.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
+                                    .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
 //                                    .clickable {
 //                                        showTrackCard = true
 //                                    },
@@ -220,30 +214,23 @@ fun MusicListItem(
                     }
                 }
             }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .weight(1f)
-            ) {
-                Text(
-                    text = track.title,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    modifier = Modifier.basicMarquee()
-                )
-                Text(
-                    text = track.artist,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodyLargeEmphasized.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) { trailingContent() }
-        }
+        },
+        trailingContent = trailingContent
+    ) {
+        Text(
+            text = track.title,
+            maxLines = 1,
+            style = MaterialTheme.typography.titleMediumEmphasized,
+            modifier = Modifier.basicMarquee()
+        )
+        Text(
+            text = track.artist,
+            maxLines = 1,
+            style = MaterialTheme.typography.bodyLargeEmphasized.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.basicMarquee()
+        )
     }
 }
 

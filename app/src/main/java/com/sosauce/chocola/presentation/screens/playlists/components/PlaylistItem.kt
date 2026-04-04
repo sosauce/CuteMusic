@@ -58,6 +58,8 @@ import com.sosauce.chocola.domain.actions.PlaylistActions
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.PlaylistDeletionDialog
 import com.sosauce.chocola.presentation.shared_components.SelectedItemLogo
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun PlaylistItem(
@@ -157,7 +159,7 @@ fun PlaylistItem(
                         Box(
                             modifier = Modifier
                                 .size(45.dp)
-                                .clip(RoundedCornerShape(5.dp)),
+                                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
                             contentAlignment = Alignment.Center
                         ) {
                             if (playlist.emoji.isNotBlank()) {

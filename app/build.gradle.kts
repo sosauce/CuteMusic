@@ -147,5 +147,6 @@ android {
         implementation(libs.androidx.compose.foundation)
         implementation(libs.colorpicker.compose)
         implementation(libs.sweetselect.compose)
+        implementation(libs.squircle.shape)
     }
 }

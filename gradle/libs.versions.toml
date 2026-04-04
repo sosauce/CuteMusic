@@ -23,6 +23,7 @@ media3Session = "1.10.0"
 reorderable = "3.0.0" # https://github.com/Calvin-LL/Reorderable
 squigglyslider = "1.0.0"
 serialization = "2.3.20"
+squircleShape = "5.2.0"
 sweetselectCompose = "1.0.1"
 taglib = "1.0.5"
 roomCompiler = "2.8.4"
@@ -66,6 +67,7 @@ lyrics-core = { module = "com.mocharealm.accompanist:lyrics-core", version.ref =
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 squigglyslider = { module = "me.saket.squigglyslider:squigglyslider", version.ref = "squigglyslider" }
+squircle-shape = { module = "com.stoyanvuchev:squircle-shape", version.ref = "squircleShape" }
 sweetselect-compose = { module = "io.github.sosauce:sweetselect-compose", version.ref = "sweetselectCompose" }
 taglib = { module = "io.github.kyant0:taglib", version.ref = "taglib" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }

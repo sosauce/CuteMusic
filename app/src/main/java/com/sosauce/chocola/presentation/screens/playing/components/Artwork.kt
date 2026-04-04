@@ -48,6 +48,7 @@ import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.ignoreParentPadding
 import com.sosauce.chocola.utils.toShape
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -90,10 +91,10 @@ fun Artwork(
                 .filter { !it }
                 .map { carouselState.currentItem }
                 .distinctUntilChanged()
-                .collect { settledItem ->
-                    if (currentTrackCount == 0) return@collect
+                .collectLatest { settledItem ->
+                    if (currentTrackCount == 0) return@collectLatest
                     val safeIndex = settledItem.coerceIn(0, currentTrackCount - 1)
-                    if (isProgrammaticScroll) return@collect
+                    if (isProgrammaticScroll) return@collectLatest
                     if (safeIndex != currentMediaIndex) {
                         if (currentShuffle) {
                             if (safeIndex > currentMediaIndex) {

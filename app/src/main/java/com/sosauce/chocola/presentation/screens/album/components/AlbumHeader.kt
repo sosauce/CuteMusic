@@ -43,6 +43,8 @@ import com.sosauce.chocola.utils.rememberInteractionSource
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun SharedTransitionScope.AlbumHeader(
@@ -172,7 +174,7 @@ fun SharedTransitionScope.AlbumHeader(
                     sharedContentState = rememberSharedContentState(key = album.id),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
-                .clip(RoundedCornerShape(12.dp)),
+                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
             contentScale = ContentScale.Crop
         )
         Spacer(Modifier.height(10.dp))

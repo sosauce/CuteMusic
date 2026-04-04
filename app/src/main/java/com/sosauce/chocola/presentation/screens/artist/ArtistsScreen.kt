@@ -50,6 +50,7 @@ import com.sosauce.chocola.data.models.Artist
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
+import com.sosauce.chocola.presentation.shared_components.CuteListItem
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
@@ -58,6 +59,8 @@ import com.sosauce.chocola.utils.ArtistSort
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.ordered
 import com.sosauce.chocola.utils.selfAlignHorizontally
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun SharedTransitionScope.ArtistsScreen(
@@ -144,24 +147,11 @@ fun SharedTransitionScope.ArtistsScreen(
                             items = state.artists,
                             key = { it.id }
                         ) { artist ->
-                            Column(
-                                modifier = Modifier
-                                    .animateItem()
-                                    .padding(
-                                        vertical = 2.dp,
-                                        horizontal = 4.dp
-                                    )
-                            ) {
-                                ArtistItem(
-                                    artist = artist,
-                                    modifier = Modifier
-                                        .padding(
-                                            vertical = 2.dp,
-                                            horizontal = 4.dp
-                                        ),
-                                    onClick = { onNavigate(Screen.ArtistsDetails(artist.name)) }
-                                )
-                            }
+                            ArtistItem(
+                                modifier = Modifier.animateItem(),
+                                artist = artist,
+                                onClick = { onNavigate(Screen.ArtistsDetails(artist.name)) }
+                            )
                         }
                     }
                 }
@@ -181,14 +171,10 @@ fun SharedTransitionScope.ArtistItem(
 
     val context = LocalContext.current
 
-
-    DropdownMenuItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp)),
-        contentPadding = PaddingValues(0.dp),
+    CuteListItem(
+        modifier = modifier,
         onClick = onClick,
-        leadingIcon = {
+        leadingContent = {
             AsyncImage(
                 model = ImageUtils.imageRequester(
                     ImageUtils.getAlbumArt(artist.albumId)
@@ -203,53 +189,42 @@ fun SharedTransitionScope.ArtistItem(
                         sharedContentState = rememberSharedContentState(key = artist.id),
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                     )
-                    .clip(RoundedCornerShape(10.dp)),
+                    .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
                 contentScale = ContentScale.Crop,
             )
-        },
-        text = {
-            Column(
-                modifier = Modifier.padding(vertical = 15.dp)
-            ) {
-                Text(
-                    text = artist.name,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    modifier = Modifier
-                        .basicMarquee()
-//                        .sharedBounds(
-//                            sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
-//                            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-//                        )
-                )
-                Text(
-                    text = buildString {
-                        append(
-                            pluralStringResource(
-                                R.plurals.tracks,
-                                artist.numberTracks,
-                                artist.numberTracks
-                            )
-                        )
-                        if (artist.numberAlbums > 0) {
-                            append(" & ")
-                            append(
-                                pluralStringResource(
-                                    R.plurals.albums,
-                                    artist.numberAlbums,
-                                    artist.numberAlbums
-                                )
-                            )
-                        }
-                    },
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodyLargeEmphasized.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                    modifier = Modifier.basicMarquee()
-                )
-
-            }
         }
-    )
+    ) {
+        Text(
+            text = artist.name,
+            maxLines = 1,
+            style = MaterialTheme.typography.titleMediumEmphasized,
+            modifier = Modifier.basicMarquee()
+        )
+        Text(
+            text = buildString {
+                append(
+                    pluralStringResource(
+                        R.plurals.tracks,
+                        artist.numberTracks,
+                        artist.numberTracks
+                    )
+                )
+                if (artist.numberAlbums > 0) {
+                    append(" & ")
+                    append(
+                        pluralStringResource(
+                            R.plurals.albums,
+                            artist.numberAlbums,
+                            artist.numberAlbums
+                        )
+                    )
+                }
+            },
+            maxLines = 1,
+            style = MaterialTheme.typography.bodyLargeEmphasized.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+            modifier = Modifier.basicMarquee()
+        )
+    }
 }
