@@ -4,6 +4,8 @@ package com.sosauce.chocola.presentation.screens.settings
 
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -89,6 +91,18 @@ fun SettingsScreen(
             } else {
                 onNavigateUp()
             }
+        },
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally { it } + fadeIn(),
+                initialContentExit = fadeOut()
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally { -it } + fadeIn(),
+                initialContentExit = fadeOut()
+            )
         },
         predictivePopTransitionSpec = {
             ContentTransform(

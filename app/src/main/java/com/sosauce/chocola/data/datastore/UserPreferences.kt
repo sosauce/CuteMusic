@@ -2,15 +2,22 @@ package com.sosauce.chocola.data.datastore
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import com.sosauce.chocola.data.datastore.PreferencesKeys.ALBUM_SORT
+import com.sosauce.chocola.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HIDDEN_TRACKS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.LAST_MUSIC_STATE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PLAYLIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SAF_TRACKS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ALBUMS_ASCENDING
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ARTISTS_ASCENDING
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_PLAYLISTS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_TRACKS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.TRACK_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
 import com.sosauce.chocola.data.states.MusicState
+import com.sosauce.chocola.utils.AlbumSort
+import com.sosauce.chocola.utils.ArtistSort
 import com.sosauce.chocola.utils.PlaylistSort
 import com.sosauce.chocola.utils.TrackSort
 import com.sosauce.chocola.utils.copyMutate
@@ -27,13 +34,34 @@ class UserPreferences(
         TrackSort.entries[sort]
     }
 
-    val getSortTracksAscending = context.dataStore.data.map {
-        it[SORT_TRACKS_ASCENDING] ?: true
+    val getArtistsSort = context.dataStore.data.map {
+        val sort = it[ARTIST_SORT] ?: 0
+        ArtistSort.entries[sort]
     }
 
-    val getPlaylistSort = context.dataStore.data.map {
+    val getAlbumsSort = context.dataStore.data.map {
+        val sort = it[ALBUM_SORT] ?: 0
+        AlbumSort.entries[sort]
+    }
+
+    val getPlaylistsSort = context.dataStore.data.map {
         val sort = it[PLAYLIST_SORT] ?: 0
         PlaylistSort.entries[sort]
+    }
+
+    val sortTracksAscending = context.dataStore.data.map {
+        it[SORT_TRACKS_ASCENDING] ?: true
+    }
+    val sortArtistsAscending = context.dataStore.data.map {
+        it[SORT_ARTISTS_ASCENDING] ?: true
+    }
+
+    val sortAlbumsAscending = context.dataStore.data.map {
+        it[SORT_ALBUMS_ASCENDING] ?: true
+    }
+
+    val sortPlaylistsAscending = context.dataStore.data.map {
+        it[SORT_PLAYLISTS_ASCENDING] ?: true
     }
 
     fun getHiddenTracks() = context.dataStore.data.map {

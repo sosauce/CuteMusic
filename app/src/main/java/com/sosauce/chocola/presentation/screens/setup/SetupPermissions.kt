@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import com.sosauce.chocola.R
 
 @Composable
@@ -50,7 +51,10 @@ fun SetupPermissions(
             if (hasPermission) {
                 Text(stringResource(R.string.permission_granted))
             } else {
-                Text(stringResource(R.string.permission_needed))
+                Text(
+                    text = stringResource(R.string.permission_needed),
+                    textAlign = TextAlign.Center
+                )
                 Button(
                     onClick = {
                         val permission =

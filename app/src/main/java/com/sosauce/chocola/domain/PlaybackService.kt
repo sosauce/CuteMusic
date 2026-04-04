@@ -179,7 +179,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
 
     @UnstableApi
     override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
         mediaLibrarySession?.run {
             player.release()
             release()
@@ -190,6 +189,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             unregisterReceiver(it)
         }
         pauseAllPlayersAndStopSelf()
+        super.onTaskRemoved(rootIntent)
     }
 
 

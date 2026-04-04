@@ -23,6 +23,7 @@ media3Session = "1.10.0"
 reorderable = "3.0.0" # https://github.com/Calvin-LL/Reorderable
 squigglyslider = "1.0.0"
 serialization = "2.3.20"
+sweetselectCompose = "1.0.1"
 taglib = "1.0.5"
 roomCompiler = "2.8.4"
 roomKtx = "2.8.4"
@@ -40,6 +41,7 @@ foundation = "1.10.6"
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeAnimation" }
+androidx-compose-animation-graphics-android = { module = "androidx.compose.animation:animation-graphics-android", version.ref = "composeAnimation" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -64,6 +66,7 @@ lyrics-core = { module = "com.mocharealm.accompanist:lyrics-core", version.ref =
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 squigglyslider = { module = "me.saket.squigglyslider:squigglyslider", version.ref = "squigglyslider" }
+sweetselect-compose = { module = "io.github.sosauce:sweetselect-compose", version.ref = "sweetselectCompose" }
 taglib = { module = "io.github.kyant0:taglib", version.ref = "taglib" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }

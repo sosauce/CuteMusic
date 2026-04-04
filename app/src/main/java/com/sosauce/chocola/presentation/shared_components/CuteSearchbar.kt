@@ -12,6 +12,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -64,6 +67,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -251,6 +255,7 @@ fun SharedTransitionScope.CuteSearchbar(
                         fab?.invoke()
                     }
                 }
+                val animatedPosition by animateFloatAsState(musicState.position.toFloat(), tween(500))
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(24.dp))
@@ -262,7 +267,7 @@ fun SharedTransitionScope.CuteSearchbar(
                             val fraction = if (musicState.track.durationMs == 0L) {
                                 0f
                             } else {
-                                musicState.position.toFloat() / musicState.track.durationMs.toFloat()
+                                animatedPosition / musicState.track.durationMs.toFloat()
                             }
 
                             val drawWidth = size.width * fraction

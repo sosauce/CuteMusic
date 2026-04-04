@@ -45,6 +45,7 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.AsyncImage
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberArtistSort
+import com.sosauce.chocola.data.datastore.rememberSortArtistsAscending
 import com.sosauce.chocola.data.models.Artist
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
@@ -66,10 +67,9 @@ fun SharedTransitionScope.ArtistsScreen(
     onHandlePlayerActions: (PlayerActions) -> Unit,
 ) {
 
-    val textFieldState = rememberTextFieldState()
-    var isSortedByASC by rememberSaveable { mutableStateOf(true) }
     val lazyState = rememberLazyListState()
     var artistSort by rememberArtistSort()
+    var isSortedByASC by rememberSortArtistsAscending()
 
     if (state.isLoading) {
         Box(
@@ -84,7 +84,7 @@ fun SharedTransitionScope.ArtistsScreen(
             bottomBar = {
                 CuteSearchbar(
                     modifier = Modifier.selfAlignHorizontally(),
-                    textFieldState = textFieldState,
+                    textFieldState = state.textFieldState,
                     musicState = musicState,
                     showSearchField = true,
                     sortingMenu = {
@@ -127,27 +127,21 @@ fun SharedTransitionScope.ArtistsScreen(
                 contentPadding = paddingValues,
                 state = lazyState
             ) {
-                if (state.artists.isEmpty()) {
+                if (state.artists.isEmpty() && !state.isSearching) {
                     item {
                         NoXFound(
                             headlineText = R.string.no_artists_found,
-                            bodyText = R.string.no_artists_found,
+                            bodyText = R.string.no_artist_desc,
                             icon = R.drawable.artist_rounded
                         )
                     }
                 } else {
 
-                    val orderedArtists = state.artists.ordered(
-                        sort = ArtistSort.entries[artistSort],
-                        ascending = isSortedByASC,
-                        query = textFieldState.text.toString()
-                    )
-
-                    if (orderedArtists.isEmpty()) {
+                    if (state.artists.isEmpty()) {
                         item { NoResult() }
                     } else {
                         items(
-                            items = orderedArtists,
+                            items = state.artists,
                             key = { it.id }
                         ) { artist ->
                             Column(

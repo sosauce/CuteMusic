@@ -1,34 +1,70 @@
+@file:OptIn(FlowPreview::class)
+
 package com.sosauce.chocola.presentation.screens.playlists
 
 import android.app.Application
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.datastore.UserPreferences
 import com.sosauce.chocola.data.models.Playlist
 import com.sosauce.chocola.data.playlist.PlaylistDao
 import com.sosauce.chocola.domain.actions.PlaylistActions
+import com.sosauce.chocola.presentation.screens.album.AlbumsState
+import com.sosauce.chocola.utils.ordered
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlaylistViewModel(
     private val application: Application,
-    private val dao: PlaylistDao
+    private val dao: PlaylistDao,
+    private val userPreferences: UserPreferences
 ) : AndroidViewModel(application) {
 
+    val textFieldState = TextFieldState()
+    private val userQuery = snapshotFlow { textFieldState.text }.debounce(250)
 
-    val allPlaylists = dao.getPlaylists()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Companion.WhileSubscribed(5000),
-            emptyList()
-        )
+    private val _state = MutableStateFlow(PlaylistsState(isLoading = true))
+    val state = _state.asStateFlow()
+
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            combine(
+                dao.getPlaylists(),
+                userPreferences.getPlaylistsSort,
+                userPreferences.sortPlaylistsAscending,
+                userQuery
+            ) { playlists, sort, ascending, query ->
+
+                val sortedPlaylists = playlists.ordered(sort, ascending, query.toString())
+
+                PlaylistsState(
+                    playlists = sortedPlaylists,
+                    isLoading = false,
+                    textFieldState = textFieldState,
+                    isSearching = query.isNotEmpty()
+                )
+
+            }.collectLatest { newState -> _state.update { newState } }
+        }
+    }
 
 
     fun handlePlaylistActions(action: PlaylistActions) {
@@ -151,5 +187,11 @@ class PlaylistViewModel(
 
         return ""
     }
-
 }
+
+data class PlaylistsState(
+    val isLoading: Boolean = false,
+    val playlists: List<Playlist> = emptyList(),
+    val textFieldState: TextFieldState = TextFieldState(),
+    val isSearching: Boolean = false
+)

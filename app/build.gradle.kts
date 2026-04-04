@@ -142,9 +142,10 @@ android {
         implementation(libs.androidx.lifecycle.viewmodel.navigation3)
         implementation("dev.chrisbanes.haze:haze:1.7.2")
         implementation("dev.chrisbanes.haze:haze-materials:1.7.2")
-        implementation("androidx.compose.animation:animation-graphics-android:1.10.5")
+        implementation(libs.androidx.compose.animation.graphics.android)
         implementation(libs.lyrics.core)
         implementation(libs.androidx.compose.foundation)
         implementation(libs.colorpicker.compose)
+        implementation(libs.sweetselect.compose)
     }
 }

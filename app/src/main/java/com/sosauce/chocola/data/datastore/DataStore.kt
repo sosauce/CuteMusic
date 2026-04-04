@@ -19,14 +19,20 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HAS_SEEN_TIP
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HIDDEN_FOLDERS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HIDDEN_TRACKS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.LYRICS_ALIGNMENT
+import com.sosauce.chocola.data.datastore.PreferencesKeys.LYRICS_FONT_SIZE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.chocola.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PLAYLIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SAF_TRACKS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_ALBUM_NAME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SLIDER_STYLE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ALBUMS_ASCENDING
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ARTISTS_ASCENDING
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_PLAYLISTS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_TRACKS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.THEME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
@@ -37,6 +43,7 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
 import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.CuteTheme
+import com.sosauce.chocola.utils.LyricsAlignment
 import com.sosauce.chocola.utils.SliderStyle
 
 private const val PREFERENCES_NAME = "settings"
@@ -74,6 +81,14 @@ data object PreferencesKeys {
     val SORT_TRACKS_ASCENDING = booleanPreferencesKey("SORT_TRACKS_ASCENDING")
     val LAST_MUSIC_STATE = stringPreferencesKey("LAST_MUSIC_STATE")
     val HIDDEN_TRACKS = stringSetPreferencesKey("HIDDEN_TRACKS")
+    val SHOW_ALBUM_NAME = booleanPreferencesKey("SHOW_ALBUM_NAME")
+    val LYRICS_ALIGNMENT = stringPreferencesKey("LYRICS_ALIGNMENT")
+    val LYRICS_FONT_SIZE = intPreferencesKey("LYRICS_FONT_SIZE")
+
+    val SORT_ARTISTS_ASCENDING = booleanPreferencesKey("SORT_ARTISTS_ASCENDING")
+    val SORT_ALBUMS_ASCENDING = booleanPreferencesKey("SORT_ALBUMS_ASCENDING")
+    val SORT_PLAYLISTS_ASCENDING = booleanPreferencesKey("SORT_PLAYLISTS_ASCENDING")
+
 }
 
 
@@ -180,6 +195,30 @@ fun rememberSortTracksAscending() =
 @Composable
 fun rememberHiddenTracks() =
     rememberPreference(key = HIDDEN_TRACKS, defaultValue = emptySet())
+
+@Composable
+fun rememberShowAlbumName() =
+    rememberPreference(key = SHOW_ALBUM_NAME, defaultValue = false)
+
+@Composable
+fun rememberLyricsAlignment() =
+    rememberPreference(key = LYRICS_ALIGNMENT, defaultValue = LyricsAlignment.START)
+
+@Composable
+fun rememberLyricsFontSize() =
+    rememberPreference(key = LYRICS_FONT_SIZE, defaultValue = 22)
+
+@Composable
+fun rememberSortArtistsAscending() =
+    rememberPreference(key = SORT_ARTISTS_ASCENDING, defaultValue = true)
+
+@Composable
+fun rememberSortAlbumsAscending() =
+    rememberPreference(key = SORT_ALBUMS_ASCENDING, defaultValue = true)
+
+@Composable
+fun rememberSortPlaylistsAscending() =
+    rememberPreference(key = SORT_PLAYLISTS_ASCENDING, defaultValue = true)
 //
 //suspend fun getPauseOnMute(context: Context) =
 //    getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)

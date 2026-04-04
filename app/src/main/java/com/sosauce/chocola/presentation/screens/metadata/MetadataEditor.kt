@@ -360,8 +360,8 @@ private fun MetadataArt(
         } else {
             Box(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .clickable {
                         photoPickerLauncher.launch(
                             PickVisualMediaRequest(

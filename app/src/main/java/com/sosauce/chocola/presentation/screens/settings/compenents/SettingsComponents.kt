@@ -2,6 +2,7 @@
 
 package com.sosauce.chocola.presentation.screens.settings.compenents
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
@@ -10,22 +11,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuGroup
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberSliderStyle
 import com.sosauce.chocola.presentation.screens.playing.components.rememberCuteSliderState
@@ -51,7 +61,7 @@ import com.sosauce.chocola.presentation.screens.settings.ThemeItem
 
 
 @Composable
-fun SettingsCards(
+fun SettingsSwitch(
     modifier: Modifier = Modifier,
     checked: Boolean,
     topDp: Dp,
@@ -101,6 +111,81 @@ fun SettingsCards(
                     uncheckedBorderColor = Color.Transparent
                 )
             )
+        }
+    }
+}
+
+@Composable
+fun <T> SettingsDropdownMenu(
+    value: T,
+    topDp: Dp,
+    bottomDp: Dp,
+    text: Int,
+    optionalDescription: Int? = null,
+    dropdownContent: @Composable (ColumnScope.() -> Unit)
+) {
+
+    var expanded by remember { mutableStateOf(false) }
+
+
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        shape = RoundedCornerShape(
+            topStart = topDp,
+            topEnd = topDp,
+            bottomStart = bottomDp,
+            bottomEnd = bottomDp
+        )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(15.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Column {
+                    Text(stringResource(text))
+                    optionalDescription?.let {
+                        Text(
+                            text = stringResource(it),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+            TextButton(
+                onClick = { expanded = true },
+                shapes = ButtonDefaults.shapes()
+            ) {
+                AnimatedContent(
+                    targetState = value
+                ) {
+                    Text(
+                        text = it.toString(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 15.sp
+                    )
+                }
+
+
+                DropdownMenuPopup(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuGroup(
+                        shapes = MenuDefaults.groupShapes(),
+                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    ) { dropdownContent() }
+                }
+            }
         }
     }
 }
