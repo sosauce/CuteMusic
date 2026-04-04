@@ -61,7 +61,6 @@ fun MoreOptionsButton(
     var showMoreDialog by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
-    var useCarousel by rememberCarousel()
     val activityResultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val moreOptions = listOf(
@@ -120,11 +119,6 @@ fun MoreOptionsButton(
             text = { stringResource(R.string.add_to_playlist) },
             onClick = { showPlaylistDialog = true },
             icon = R.drawable.playlist_add
-        ),
-        MoreOptions(
-            text = { stringResource(R.string.use_carousel) },
-            onClick = { useCarousel = !useCarousel },
-            icon = R.drawable.carousel
         )
     )
 
