@@ -104,7 +104,7 @@
         <item quantity="one">1 parça</item>
         <item quantity="other">%d parça</item>
     </plurals>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">1 albüm</item>
         <item quantity="other">%d albüm</item>
     </plurals>

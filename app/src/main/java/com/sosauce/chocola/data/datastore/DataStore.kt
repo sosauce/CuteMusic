@@ -23,9 +23,11 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.LYRICS_ALIGNMENT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.LYRICS_FONT_SIZE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
 import com.sosauce.chocola.data.datastore.PreferencesKeys.NUMBER_OF_ALBUM_GRIDS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.PALETTE_STYLE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PLAYLIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SAF_TRACKS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.SEEK_BUTTONS_DURATION
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_ALBUM_NAME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SLIDER_STYLE
@@ -38,10 +40,10 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.THEME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
 import com.sosauce.chocola.data.datastore.PreferencesKeys.TRACK_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_ART_THEME
-import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_EXPRESSIVE_PALETTE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
 import com.sosauce.chocola.utils.ArtworkShape
+import com.sosauce.chocola.utils.CutePaletteStyle
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.LyricsAlignment
 import com.sosauce.chocola.utils.SliderStyle
@@ -73,7 +75,6 @@ data object PreferencesKeys {
     val TRACK_SORT = intPreferencesKey("TRACK_SORT")
     val ARTIST_SORT = intPreferencesKey("ARTIST_SORT")
     val PAUSE_ON_MUTE = booleanPreferencesKey("PAUSE_ON_MUTE")
-    val USE_EXPRESSIVE_PALETTE = booleanPreferencesKey("USE_EXPRESSIVE_PALETTE")
     val MIN_TRACK_DURATION = intPreferencesKey("MIN_TRACK_DURATION")
     val PLAYLIST_SORT = intPreferencesKey("PLAYLIST_SORT")
     val ARTWORK_SHAPE = stringPreferencesKey("ARTWORK_SHAPE")
@@ -88,6 +89,8 @@ data object PreferencesKeys {
     val SORT_ARTISTS_ASCENDING = booleanPreferencesKey("SORT_ARTISTS_ASCENDING")
     val SORT_ALBUMS_ASCENDING = booleanPreferencesKey("SORT_ALBUMS_ASCENDING")
     val SORT_PLAYLISTS_ASCENDING = booleanPreferencesKey("SORT_PLAYLISTS_ASCENDING")
+    val PALETTE_STYLE = stringPreferencesKey("PALETTE_STYLE")
+    val SEEK_BUTTONS_DURATION = intPreferencesKey("SEEK_BUTTONS_DURATION")
 
 }
 
@@ -169,10 +172,6 @@ fun rememberPauseOnMute() =
     rememberPreference(key = PAUSE_ON_MUTE, defaultValue = false)
 
 @Composable
-fun rememberUseExpressivePalette() =
-    rememberPreference(key = USE_EXPRESSIVE_PALETTE, defaultValue = false)
-
-@Composable
 fun rememberMinTrackDuration() =
     rememberPreference(key = MIN_TRACK_DURATION, defaultValue = 0)
 
@@ -219,6 +218,14 @@ fun rememberSortAlbumsAscending() =
 @Composable
 fun rememberSortPlaylistsAscending() =
     rememberPreference(key = SORT_PLAYLISTS_ASCENDING, defaultValue = true)
+
+@Composable
+fun rememberPaletteStyle() =
+    rememberPreference(key = PALETTE_STYLE, defaultValue = CutePaletteStyle.FIDELITY)
+
+@Composable
+fun rememberSeekButtonsDuration() =
+    rememberPreference(key = SEEK_BUTTONS_DURATION, defaultValue = 5)
 //
 //suspend fun getPauseOnMute(context: Context) =
 //    getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)

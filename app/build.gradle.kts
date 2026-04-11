@@ -121,7 +121,6 @@ android {
         implementation(libs.androidx.media3.common)
         implementation(libs.androidx.media3.exoplayer)
         implementation(libs.androidx.media3.session)
-        implementation(libs.squigglyslider)
         implementation(libs.androidx.compose.animation)
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.koin.android)
@@ -148,5 +147,7 @@ android {
         implementation(libs.colorpicker.compose)
         implementation(libs.sweetselect.compose)
         implementation(libs.squircle.shape)
+        implementation(libs.cloudy)
+
     }
 }

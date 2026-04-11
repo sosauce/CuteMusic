@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.core.app.ShareCompat
 import com.sosauce.chocola.R
-import com.sosauce.chocola.data.datastore.rememberCarousel
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker

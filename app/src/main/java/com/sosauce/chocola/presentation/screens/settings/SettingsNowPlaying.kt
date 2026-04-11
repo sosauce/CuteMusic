@@ -14,7 +14,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberArtworkShape
@@ -39,7 +37,6 @@ import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsSwit
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.chocola.presentation.screens.settings.compenents.ShapeSelector
 import com.sosauce.chocola.presentation.screens.settings.compenents.SliderSelector
-import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
 import com.sosauce.chocola.presentation.shared_components.LazyRowWithScrollButton
 import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.LyricsAlignment
@@ -48,9 +45,7 @@ import com.sosauce.chocola.utils.getItemShape
 import com.sosauce.chocola.utils.toShape
 
 @Composable
-fun SettingsNowPlaying(
-    onNavigateUp: () -> Unit
-) {
+fun SettingsNowPlaying() {
 
     val scrollState = rememberScrollState()
     var artworkShape by rememberArtworkShape()
@@ -86,41 +81,35 @@ fun SettingsNowPlaying(
         LyricsAlignment.END
     )
 
-    Scaffold(
-        bottomBar = {
-            CuteNavigationButton(onNavigateUp = onNavigateUp)
-        }
-    ) { pv ->
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(pv)
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+    ) {
+        SettingsWithTitle(
+            title = R.string.artwork
         ) {
-            SettingsWithTitle(
-                title = R.string.artwork
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(
+                    topStart = 24.dp,
+                    topEnd = 24.dp,
+                    bottomStart = 4.dp,
+                    bottomEnd = 4.dp
+                )
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(
-                        topStart = 24.dp,
-                        topEnd = 24.dp,
-                        bottomStart = 4.dp,
-                        bottomEnd = 4.dp
+                LazyRowWithScrollButton(
+                    items = shapes
+                ) { shape ->
+                    ShapeSelector(
+                        onClick = { artworkShape = shape },
+                        shape = shape.toShape(),
+                        isSelected = artworkShape == shape
                     )
-                ) {
-                    LazyRowWithScrollButton(
-                        items = shapes
-                    ) { shape ->
-                        ShapeSelector(
-                            onClick = { artworkShape = shape },
-                            shape = shape.toShape(),
-                            isSelected = artworkShape == shape
-                        )
-                    }
                 }
+            }
 //                SettingsCards(
 //                    checked = artAsBackground,
 //                    onCheckedChange = { artAsBackground = !artAsBackground },
@@ -128,88 +117,87 @@ fun SettingsNowPlaying(
 //                    bottomDp = 4.dp,
 //                    text = stringResource(R.string.art_as_bg)
 //                )
-                SettingsSwitch(
-                    checked = useCarousel,
-                    onCheckedChange = { useCarousel = !useCarousel },
-                    topDp = 4.dp,
-                    bottomDp = 24.dp,
-                    text = stringResource(R.string.use_carousel)
+            SettingsSwitch(
+                checked = useCarousel,
+                onCheckedChange = { useCarousel = !useCarousel },
+                topDp = 4.dp,
+                bottomDp = 24.dp,
+                text = stringResource(R.string.use_carousel)
+            )
+        }
+        SettingsWithTitle(
+            title = R.string.slider
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(
+                    topStart = 24.dp,
+                    topEnd = 24.dp,
+                    bottomStart = 4.dp,
+                    bottomEnd = 4.dp
                 )
-            }
-            SettingsWithTitle(
-                title = R.string.slider
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(
-                        topStart = 24.dp,
-                        topEnd = 24.dp,
-                        bottomStart = 4.dp,
-                        bottomEnd = 4.dp
-                    )
-                ) {
-                    LazyRowWithScrollButton(
-                        items = sliders
-                    ) { slider ->
-                        SliderSelector(
-                            onClick = { sliderStyle = slider },
-                            isSelected = sliderStyle == slider
-                        ) { slider.toSlider(rememberCuteSliderState(enabled = false)) }
-                    }
+                LazyRowWithScrollButton(
+                    items = sliders
+                ) { slider ->
+                    SliderSelector(
+                        onClick = { sliderStyle = slider },
+                        isSelected = sliderStyle == slider
+                    ) { slider.toSlider(rememberCuteSliderState(enabled = false)) }
                 }
-                SettingsSwitch(
-                    checked = useThumb,
-                    onCheckedChange = { useThumb = !useThumb },
-                    topDp = 4.dp,
-                    bottomDp = 24.dp,
-                    text = stringResource(R.string.thumbless_slider)
-                )
             }
+            SettingsSwitch(
+                checked = useThumb,
+                onCheckedChange = { useThumb = !useThumb },
+                topDp = 4.dp,
+                bottomDp = 24.dp,
+                text = stringResource(R.string.thumbless_slider)
+            )
+        }
 
-            SettingsWithTitle(
-                title = R.string.ui
+        SettingsWithTitle(
+            title = R.string.ui
+        ) {
+            SettingsSwitch(
+                checked = showAlbumName,
+                onCheckedChange = { showAlbumName = !showAlbumName },
+                topDp = 24.dp,
+                bottomDp = 24.dp,
+                text = stringResource(R.string.show_album_name)
+            )
+        }
+        SettingsWithTitle(
+            title = R.string.lyrics
+        ) {
+            SettingsDropdownMenu(
+                value = lyricsAlignment,
+                topDp = 24.dp,
+                bottomDp = 4.dp,
+                text = R.string.alignment
             ) {
-                SettingsSwitch(
-                    checked = showAlbumName,
-                    onCheckedChange = { showAlbumName = !showAlbumName },
-                    topDp = 24.dp,
-                    bottomDp = 24.dp,
-                    text = stringResource(R.string.show_album_name)
-                )
-            }
-            SettingsWithTitle(
-                title = R.string.lyrics
-            ) {
-                SettingsDropdownMenu(
-                    value = lyricsAlignment,
-                    topDp = 24.dp,
-                    bottomDp = 4.dp,
-                    text = R.string.alignment
-                ) {
-                    lyricsAlignmentOptions.fastForEachIndexed { index, alignment ->
-                        DropdownMenuItem(
-                            onClick = { lyricsAlignment = alignment },
-                            shape = MenuDefaults.getItemShape(index, lyricsAlignmentOptions.lastIndex),
-                            text = { Text(alignment) }
-                        )
-                    }
+                lyricsAlignmentOptions.fastForEachIndexed { index, alignment ->
+                    DropdownMenuItem(
+                        onClick = { lyricsAlignment = alignment },
+                        shape = MenuDefaults.getItemShape(index, lyricsAlignmentOptions.lastIndex),
+                        text = { Text(alignment) }
+                    )
                 }
-                SettingsDropdownMenu(
-                    value = lyricsFontSize,
-                    topDp = 4.dp,
-                    bottomDp = 24.dp,
-                    text = R.string.font_size
-                ) {
-                    (20..40).forEachIndexed { index, size ->
-                        DropdownMenuItem(
-                            onClick = { lyricsFontSize = size },
-                            shape = MenuDefaults.getItemShape(index, 40),
-                            text = { Text(size.toString()) }
-                        )
-                    }
+            }
+            SettingsDropdownMenu(
+                value = lyricsFontSize,
+                topDp = 4.dp,
+                bottomDp = 24.dp,
+                text = R.string.font_size
+            ) {
+                (20..40).forEachIndexed { index, size ->
+                    DropdownMenuItem(
+                        onClick = { lyricsFontSize = size },
+                        shape = MenuDefaults.getItemShape(index, 40),
+                        text = { Text(size.toString()) }
+                    )
                 }
             }
         }

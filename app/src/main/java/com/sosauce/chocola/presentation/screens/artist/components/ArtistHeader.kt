@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -36,6 +35,8 @@ import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.rememberInteractionSource
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun SharedTransitionScope.ArtistHeader(
@@ -61,7 +62,7 @@ fun SharedTransitionScope.ArtistHeader(
                     sharedContentState = rememberSharedContentState(key = artist.id),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 )
-                .clip(RoundedCornerShape(12.dp)),
+                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
             contentScale = ContentScale.Crop
         )
         Spacer(Modifier.height(10.dp))

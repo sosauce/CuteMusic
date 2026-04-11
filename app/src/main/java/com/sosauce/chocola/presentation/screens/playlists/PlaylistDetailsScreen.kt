@@ -45,17 +45,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastMap
 import com.materialkolor.DynamicMaterialExpressiveTheme
-import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAppTheme
 import com.sosauce.chocola.data.datastore.rememberIsLandscape
+import com.sosauce.chocola.data.datastore.rememberPaletteStyle
 import com.sosauce.chocola.data.datastore.rememberTrackSort
-import com.sosauce.chocola.data.datastore.rememberUseExpressivePalette
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
@@ -69,11 +66,13 @@ import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPic
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
-import com.sosauce.chocola.presentation.shared_components.SelectedBar
+import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
+import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
+import com.sosauce.chocola.utils.toPaletteStyle
 import com.sosauce.sweetselect.rememberSweetSelectState
 
 @Composable
@@ -91,7 +90,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
     val isLandscape = rememberIsLandscape()
     val theme by rememberAppTheme()
     val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useExpressivePalette by rememberUseExpressivePalette()
+    val paletteStyle by rememberPaletteStyle()
     var sortTracksAsc by rememberSaveable { mutableStateOf(true) }
     var trackSort by rememberTrackSort()
     val multiSelectState = rememberSweetSelectState<CuteTrack>()
@@ -106,7 +105,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
             isDark = if (theme == CuteTheme.SYSTEM) isSystemInDarkTheme else if (theme == CuteTheme.AMOLED) true else theme == CuteTheme.DARK,
             isAmoled = theme == CuteTheme.AMOLED,
             specVersion = ColorSpec.SpecVersion.SPEC_2025,
-            style = if (useExpressivePalette) PaletteStyle.Expressive else PaletteStyle.Fidelity
+            style = paletteStyle.toPaletteStyle()
         )
     ) {
         if (state.isLoading) {
@@ -124,65 +123,12 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                         targetState = multiSelectState.isInSelectionMode
                     ) {
                         if (it) {
-                            SelectedBar(
+                            TracksSelectedBar(
                                 modifier = Modifier.selfAlignHorizontally(),
+                                tracks = state.tracks,
                                 multiSelectState = multiSelectState,
-                                items = state.tracks,
-                                onToggleAll = {
-                                    if (multiSelectState.selectedItems.size == state.tracks.size) {
-                                        multiSelectState.clearSelected()
-                                    } else {
-                                        multiSelectState.toggleAll(state.tracks)
-                                    }
-                                }
-                            ) {
-                                var showPlaylistDialog by remember { mutableStateOf(false) }
-                                val deleteSongLauncher =
-                                    rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
-
-                                if (showPlaylistDialog) {
-                                    PlaylistPicker(
-                                        mediaId = multiSelectState.selectedItems.map { it.mediaId },
-                                        onDismissRequest = { showPlaylistDialog = false },
-                                        onAddingFinished = multiSelectState::clearSelected
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = { showPlaylistDialog = true },
-                                    shapes = IconButtonDefaults.shapes()
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.playlist_add),
-                                        contentDescription = null
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                            val intentSender = MediaStore.createDeleteRequest(
-                                                context.contentResolver,
-                                                multiSelectState.selectedItems.map { it.uri }
-                                            ).intentSender
-
-                                            deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-                                        } else {
-                                            multiSelectState.selectedItems.forEach {
-                                                context.contentResolver.delete(it.uri, null, null)
-                                            }
-                                        }
-                                    },
-                                    shapes = IconButtonDefaults.shapes(),
-                                    colors = IconButtonDefaults.iconButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.error
-                                    )
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.trash_rounded_filled),
-                                        contentDescription = null
-                                    )
-                                }
-                            }
+                                onHandlePlayerActions = onHandlePlayerAction
+                            )
                         } else {
                             CuteSearchbar(
                                 onHandlePlayerActions = onHandlePlayerAction,

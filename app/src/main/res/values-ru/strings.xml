@@ -18,7 +18,7 @@
     <string name="no_artists_found">Исполнители не найдены!</string>
     <string name="artwork">Обложка</string>
     <string name="artists">Исполнители</string>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">Альбомы</item>
         <item quantity="few" />
         <item quantity="many" />

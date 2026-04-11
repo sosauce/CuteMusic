@@ -38,6 +38,7 @@ val appModule = module {
             name = "playlist.db"
         )
             .addMigrations(MIGRATION_1_2)
+            //.addCallback(DEFAULT_PLAYLISTS_CALLBACK)
             .build()
             .dao
     }

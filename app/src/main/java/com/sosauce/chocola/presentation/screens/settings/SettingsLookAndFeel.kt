@@ -13,10 +13,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -26,31 +24,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAppTheme
+import com.sosauce.chocola.data.datastore.rememberPaletteStyle
 import com.sosauce.chocola.data.datastore.rememberShowShuffleButton
 import com.sosauce.chocola.data.datastore.rememberUseArtTheme
-import com.sosauce.chocola.data.datastore.rememberUseExpressivePalette
 import com.sosauce.chocola.data.datastore.rememberUseSystemFont
 import com.sosauce.chocola.presentation.screens.settings.compenents.FontSelector
+import com.sosauce.chocola.presentation.screens.settings.compenents.PaletteSelector
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsSwitch
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.chocola.presentation.screens.settings.compenents.ThemeSelector
-import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
 import com.sosauce.chocola.presentation.shared_components.LazyRowWithScrollButton
 import com.sosauce.chocola.presentation.theme.nunitoFontFamily
+import com.sosauce.chocola.utils.CutePaletteStyle
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.anyDarkColorScheme
 import com.sosauce.chocola.utils.anyLightColorScheme
 
 @Composable
-fun SettingsLookAndFeel(
-    onNavigateUp: () -> Unit
-) {
+fun SettingsLookAndFeel() {
     val scrollState = rememberScrollState()
     var theme by rememberAppTheme()
     var useSystemFont by rememberUseSystemFont()
     var showShuffleButton by rememberShowShuffleButton()
     var useMaterialArt by rememberUseArtTheme()
-    var useExpressivePalette by rememberUseExpressivePalette()
+    var paletteStyle by rememberPaletteStyle()
     val themeItems = listOf(
         ThemeItem(
             onClick = { theme = CuteTheme.SYSTEM },
@@ -116,84 +113,101 @@ fun SettingsLookAndFeel(
         )
     )
 
-    Scaffold(
-        bottomBar = {
-            CuteNavigationButton(onNavigateUp = onNavigateUp)
-        }
-    ) { pv ->
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(pv)
+    val paletteItems = listOf(
+        CutePaletteStyle.FIDELITY,
+        CutePaletteStyle.EXPRESSIVE,
+        CutePaletteStyle.TONAL_SPOT,
+        CutePaletteStyle.NEUTRAL,
+        CutePaletteStyle.VIBRANT,
+        CutePaletteStyle.MONOCHROME,
+        CutePaletteStyle.FRUIT_SALAD
+    )
+
+
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+    ) {
+        SettingsWithTitle(
+            title = R.string.theme
         ) {
-            SettingsWithTitle(
-                title = R.string.theme
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    LazyRowWithScrollButton(
-                        items = themeItems
-                    ) { theme ->
-                        ThemeSelector(theme)
-                    }
+                LazyRowWithScrollButton(
+                    items = themeItems
+                ) { theme ->
+                    ThemeSelector(theme)
                 }
             }
-            SettingsWithTitle(
-                title = R.string.font
+        }
+        SettingsWithTitle(
+            title = R.string.palette
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    LazyRowWithScrollButton(
-                        items = fontItems
-                    ) { font ->
-                        FontSelector(font)
-                    }
+                LazyRowWithScrollButton(
+                    items = paletteItems
+                ) { palette ->
+                    PaletteSelector(
+                        isSelected = palette == paletteStyle,
+                        onSelectNewPalette = { paletteStyle = palette },
+                        paletteStyle = palette
+                    )
                 }
             }
-            SettingsWithTitle(
-                title = R.string.ui
+        }
+        SettingsWithTitle(
+            title = R.string.font
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                SettingsSwitch(
-                    checked = useMaterialArt,
-                    onCheckedChange = { useMaterialArt = !useMaterialArt },
-                    topDp = 24.dp,
-                    bottomDp = 4.dp,
-                    text = stringResource(R.string.use_art)
-                )
-                SettingsSwitch(
-                    checked = useExpressivePalette,
-                    onCheckedChange = { useExpressivePalette = !useExpressivePalette },
-                    topDp = 4.dp,
-                    bottomDp = 24.dp,
-                    text = stringResource(R.string.use_expr_palette)
-                )
+                LazyRowWithScrollButton(
+                    items = fontItems
+                ) { font ->
+                    FontSelector(font)
+                }
             }
-            SettingsWithTitle(
-                title = R.string.cute_searchbar
-            ) {
-                SettingsSwitch(
-                    checked = showShuffleButton,
-                    onCheckedChange = { showShuffleButton = !showShuffleButton },
-                    topDp = 24.dp,
-                    bottomDp = 24.dp,
-                    text = stringResource(R.string.show_shuffle_btn)
-                )
-            }
+        }
+        SettingsWithTitle(
+            title = R.string.ui
+        ) {
+            SettingsSwitch(
+                checked = useMaterialArt,
+                onCheckedChange = { useMaterialArt = !useMaterialArt },
+                topDp = 24.dp,
+                bottomDp = 24.dp,
+                text = stringResource(R.string.use_art)
+            )
+        }
+        SettingsWithTitle(
+            title = R.string.cute_searchbar
+        ) {
+            SettingsSwitch(
+                checked = showShuffleButton,
+                onCheckedChange = { showShuffleButton = !showShuffleButton },
+                topDp = 24.dp,
+                bottomDp = 24.dp,
+                text = stringResource(R.string.show_shuffle_btn)
+            )
         }
     }
 }
 
-@Immutable
 data class ThemeItem(
     val onClick: () -> Unit,
     val backgroundColor: Color,
@@ -202,7 +216,6 @@ data class ThemeItem(
     val iconAndTint: Pair<Int, Color>
 )
 
-@Immutable
 data class FontItem(
     val onClick: () -> Unit,
     val fontStyle: FontStyle,

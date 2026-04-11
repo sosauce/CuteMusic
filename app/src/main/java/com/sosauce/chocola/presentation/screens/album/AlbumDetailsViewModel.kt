@@ -2,19 +2,23 @@ package com.sosauce.chocola.presentation.screens.album
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sosauce.chocola.data.datastore.UserPreferences
 import com.sosauce.chocola.data.models.Album
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.domain.repository.AlbumsRepository
+import com.sosauce.chocola.utils.ordered
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AlbumDetailsViewModel(
     private val albumName: String,
-    private val albumsRepository: AlbumsRepository
+    private val albumsRepository: AlbumsRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AlbumDetailsState(isLoading = true))
@@ -27,10 +31,21 @@ class AlbumDetailsViewModel(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            albumsRepository.fetchLatestAlbumTracks(albumName).collectLatest { tracks ->
+            combine(
+                albumsRepository.fetchLatestAlbumTracks(albumName),
+                userPreferences.getTrackSort,
+                userPreferences.sortTracksAscending
+            ) { tracks, sort, ascending ->
+                tracks.ordered(sort, ascending, "").sortedWith(
+                    compareBy(
+                        { it.trackNumber == 0 },
+                        { it.trackNumber }
+                    )
+                )
+            }.collectLatest { sortedTracks ->
                 _state.update {
                     it.copy(
-                        tracks = tracks,
+                        tracks = sortedTracks,
                         isLoading = false
                     )
                 }

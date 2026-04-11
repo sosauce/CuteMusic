@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.utils.rememberFocusRequester
+import com.sosauce.chocola.utils.round
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import kotlinx.coroutines.android.awaitFrame
 
@@ -48,7 +49,7 @@ fun RateAdjustmentDialog(
         focusRequest.requestFocus()
     }
 
-    val textFieldState = rememberTextFieldState(initialText = "%.2f".format(rate))
+    val textFieldState = rememberTextFieldState(initialText = rate.toDouble().round(2).toString())
     val newRate =
         remember(textFieldState.text) { textFieldState.text.toString().toFloatOrNull() ?: 1.0f }
     val isError = remember(newRate) { newRate !in 0.5f..3.0f }

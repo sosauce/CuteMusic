@@ -14,7 +14,7 @@ import com.sosauce.chocola.R
 fun NumberOfAlbums(size: Int) {
     Text(
         text = pluralStringResource(
-            R.plurals.albums,
+            R.plurals.albums_plural,
             size,
             size
         ),

@@ -43,6 +43,6 @@ sealed interface PlayerActions {
     ) : PlayerActions
 
     data class AddToQueue(
-        val cuteTrack: CuteTrack
+        val cuteTracks: List<CuteTrack>
     ) : PlayerActions
 }

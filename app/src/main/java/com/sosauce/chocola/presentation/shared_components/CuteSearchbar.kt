@@ -13,15 +13,13 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -30,9 +28,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -67,7 +67,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -352,7 +351,7 @@ fun SharedTransitionScope.CuteSearchbar(
                         ) {
                             AnimatedContent(
                                 targetState = isInScreenSelectionMode,
-                                transitionSpec = { scaleIn() togetherWith scaleOut() }
+                                transitionSpec = { slideInVertically { it } + fadeIn() togetherWith slideOutVertically { it } + fadeOut() }
                             ) {
                                 if (it) {
                                     ScreenSelection(
@@ -480,33 +479,42 @@ private fun ScreenSelection(
         )
     )
 
-    ButtonGroup(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .defaultMinSize(
+                minWidth = TextFieldDefaults.MinWidth,
+                minHeight = TextFieldDefaults.MinHeight,
+            ),
+        verticalArrangement = Arrangement.Center
     ) {
-        screens.fastForEachIndexed { index, item ->
-            ToggleButton(
-                checked = currentScreen == item.screen,
-                onCheckedChange = {
-                    item.onClick()
-                    dismiss()
-                },
-                shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
-                interactionSource = interactionsSources[index],
-                colors = ToggleButtonDefaults.toggleButtonColors(
-                    containerColor = Color.Transparent
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .animateWidth(interactionsSources[index])
-            ) {
-                val icon =
-                    if (currentScreen == item.screen) item.selectedIcon else item.unselectedIcon
+        ButtonGroup(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            screens.fastForEachIndexed { index, item ->
+                ToggleButton(
+                    checked = currentScreen == item.screen,
+                    onCheckedChange = {
+                        item.onClick()
+                        dismiss()
+                    },
+                    shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
+                    interactionSource = interactionsSources[index],
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .animateWidth(interactionsSources[index])
+                ) {
+                    val icon =
+                        if (currentScreen == item.screen) item.selectedIcon else item.unselectedIcon
 
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = null
-                )
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = null
+                    )
+                }
             }
         }
     }

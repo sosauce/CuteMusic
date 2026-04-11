@@ -6,7 +6,9 @@ import android.content.Context
 import android.provider.MediaStore
 import com.sosauce.chocola.data.AbstractTracksScanner
 import com.sosauce.chocola.data.models.Album
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class AlbumsRepository(
@@ -51,7 +53,7 @@ class AlbumsRepository(
         return albums.distinctBy { it.name }
     }
 
-    fun fetchAlbumDetails(albumName: String): Album {
+    suspend fun fetchAlbumDetails(albumName: String): Album = withContext(Dispatchers.IO) {
         context.contentResolver.query(
             MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
             arrayOf(
@@ -72,7 +74,7 @@ class AlbumsRepository(
                 val name = cursor.getString(nameColumn)
                 val artist = cursor.getString(artistColumn)
 
-                return Album(
+                return@withContext Album(
                     id = id,
                     name = name,
                     artist = artist
@@ -80,7 +82,7 @@ class AlbumsRepository(
             }
         }
 
-        return Album(Random.nextLong())
+        return@withContext Album(Random.nextLong())
     }
 
 }

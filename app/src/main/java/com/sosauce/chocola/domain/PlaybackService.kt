@@ -90,6 +90,9 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()
+            .apply {
+                pauseAtEndOfMediaItems = true
+            }
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, this)
             .setId(CUTE_MUSIC_ID)

@@ -190,6 +190,11 @@
     <string name="font_size">Font size</string>
     <string name="select_all">Select all</string>
     <string name="unselect_all">Unselect all</string>
+    <string name="palette">Palette</string>
+    <string name="no_hidden_tracks">No hidden tracks!</string>
+    <string name="no_saf_tracks">No S.A.F tracks!</string>
+    <string name="playback">Playback</string>
+    <string name="seek_buttons_duration">Seek buttons duration</string>
 
 
 
@@ -197,7 +202,7 @@
         <item quantity="one">%d track</item>
         <item quantity="other">%d tracks</item>
     </plurals>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">%d album</item>
         <item quantity="other">%d albums</item>
     </plurals>

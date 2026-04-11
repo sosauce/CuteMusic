@@ -7,6 +7,7 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HIDDEN_TRACKS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.LAST_MUSIC_STATE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
+import com.sosauce.chocola.data.datastore.PreferencesKeys.PAUSE_ON_MUTE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.PLAYLIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ALBUMS_ASCENDING
@@ -63,6 +64,8 @@ class UserPreferences(
     val sortPlaylistsAscending = context.dataStore.data.map {
         it[SORT_PLAYLISTS_ASCENDING] ?: true
     }
+
+    fun getPauseOnMute() = context.dataStore.data.map { it[PAUSE_ON_MUTE] ?: false }
 
     fun getHiddenTracks() = context.dataStore.data.map {
         it[HIDDEN_TRACKS] ?: emptySet()

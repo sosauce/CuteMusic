@@ -35,6 +35,7 @@ import com.sosauce.chocola.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsScreens
 import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
+import com.sosauce.chocola.utils.navigateBack
 import org.koin.androidx.compose.koinViewModel
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -83,48 +84,55 @@ fun SettingsScreen(
 
     )
 
-    NavDisplay(
-        backStack = backStack,
-        onBack = {
-            if (backStack.size > 1) {
-                backStack.removeLastOrNull()
-            } else {
-                onNavigateUp()
-            }
-        },
-        transitionSpec = {
-            ContentTransform(
-                targetContentEnter = slideInHorizontally { it } + fadeIn(),
-                initialContentExit = fadeOut()
-            )
-        },
-        popTransitionSpec = {
-            ContentTransform(
-                targetContentEnter = slideInHorizontally { -it } + fadeIn(),
-                initialContentExit = fadeOut()
-            )
-        },
-        predictivePopTransitionSpec = {
-            ContentTransform(
-                fadeIn(),
-                slideOutHorizontally { it },
-            )
-        },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
-        ),
-        entryProvider = entryProvider {
-            entry<SettingsScreens.Settings> {
-                Scaffold(
-                    bottomBar = {
-                        CuteNavigationButton(onNavigateUp = onNavigateUp)
+    Scaffold(
+        bottomBar = {
+            CuteNavigationButton(
+                onNavigateUp = {
+                    if (backStack.size == 1) {
+                        onNavigateUp()
+                    } else {
+                        backStack.navigateBack()
                     }
-                ) { pv ->
+                }
+            )
+        }
+    ) { paddingValues ->
+        NavDisplay(
+            backStack = backStack,
+            modifier = Modifier.padding(paddingValues),
+            onBack = {
+                if (backStack.size == 1) {
+                    onNavigateUp()
+                } else {
+                    backStack.navigateBack()
+                }
+            },
+            transitionSpec = {
+                ContentTransform(
+                    targetContentEnter = slideInHorizontally { it } + fadeIn(),
+                    initialContentExit = fadeOut()
+                )
+            },
+            popTransitionSpec = {
+                ContentTransform(
+                    targetContentEnter = slideInHorizontally { -it } + fadeIn(),
+                    initialContentExit = fadeOut()
+                )
+            },
+            predictivePopTransitionSpec = {
+                ContentTransform(
+                    fadeIn(),
+                    slideOutHorizontally { it },
+                )
+            },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            entryProvider = entryProvider {
+                entry<SettingsScreens.Settings> {
                     Column(
-                        modifier = Modifier
-                            .verticalScroll(scrollState)
-                            .padding(pv)
+                        modifier = Modifier.verticalScroll(scrollState)
                     ) {
                         AboutCard()
                         Spacer(Modifier.height(20.dp))
@@ -140,46 +148,40 @@ fun SettingsScreen(
                         }
                     }
                 }
+
+                entry<SettingsScreens.LookAndFeel> {
+                    SettingsLookAndFeel()
+                }
+
+                entry<SettingsScreens.NowPlaying> {
+                    SettingsNowPlaying()
+                }
+
+                entry<SettingsScreens.Playback> {
+                    SettingsPlayback()
+                }
+
+                entry<SettingsScreens.Library> {
+
+                    val viewModel = koinViewModel<SafViewModel>()
+                    val hiddenTracksViewModel = koinViewModel<HiddenTracksViewModel>()
+                    val safTracks by viewModel.safTracks.collectAsStateWithLifecycle()
+                    val hiddenTracks by hiddenTracksViewModel.hiddenTracks.collectAsStateWithLifecycle()
+
+                    SettingsLibrary(
+                        safTracksUi = safTracks,
+                        hiddenTracks = hiddenTracks,
+                        musicState = musicState,
+                        onNavigate = onNavigate,
+                        onHandlePlayerActions = onHandlePlayerActions,
+                        onUnhideTrack = hiddenTracksViewModel::unhideTrack
+                    )
+                }
+
             }
+        )
+    }
 
-            entry<SettingsScreens.LookAndFeel> {
-                SettingsLookAndFeel(
-                    onNavigateUp = backStack::removeLastOrNull
-                )
-            }
-
-            entry<SettingsScreens.NowPlaying> {
-                SettingsNowPlaying(
-                    onNavigateUp = backStack::removeLastOrNull
-                )
-            }
-
-            entry<SettingsScreens.Playback> {
-                SettingsPlayback(
-                    onNavigateUp = backStack::removeLastOrNull
-                )
-            }
-
-            entry<SettingsScreens.Library> {
-
-                val viewModel = koinViewModel<SafViewModel>()
-                val hiddenTracksViewModel = koinViewModel<HiddenTracksViewModel>()
-                val safTracks by viewModel.safTracks.collectAsStateWithLifecycle()
-                val hiddenTracks by hiddenTracksViewModel.hiddenTracks.collectAsStateWithLifecycle()
-
-                SettingsLibrary(
-                    safTracksUi = safTracks,
-                    hiddenTracks = hiddenTracks,
-                    musicState = musicState,
-                    onNavigate = onNavigate,
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigateUp = backStack::removeLastOrNull,
-                    onUnhideTrack = hiddenTracksViewModel::unhideTrack
-                )
-            }
-
-        }
-    )
 }
 
 @Immutable

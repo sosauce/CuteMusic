@@ -144,7 +144,7 @@
         <item quantity="one">%d 个歌曲</item>
         <item quantity="other">%d 个歌曲</item>
     </plurals>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">%d 个专辑</item>
         <item quantity="other">%d 个专辑</item>
     </plurals>

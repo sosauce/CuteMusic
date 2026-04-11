@@ -3,25 +3,28 @@
 package com.sosauce.chocola.presentation.screens.playing.components
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.data.datastore.rememberThumblessSlider
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedSlider
 import com.sosauce.chocola.utils.SliderStyle
 import com.sosauce.chocola.utils.rememberInteractionSource
-import me.saket.squiggles.SquigglySlider
 
 
 @Composable
@@ -34,51 +37,53 @@ fun String.toSlider(
     val hideThumb by rememberThumblessSlider()
     when (this) {
         SliderStyle.WAVY -> {
-
-            val width by animateDpAsState(
-                targetValue = if (isDragging) 6.dp else 4.dp
-            )
-            val amplitude by animateDpAsState(
-                targetValue = if (isPlaying) 5.dp else 0.dp
-            )
-            val squigglesSpec = remember(width, amplitude) {
-                SquigglySlider.SquigglesSpec(
-                    wavelength = 40.dp,
-                    amplitude = amplitude,
-                    strokeWidth = width
-                )
-            }
-
-            CuteSquigglySlider(
+            Slider(
                 value = state.value,
                 onValueChange = state.onValueChange,
                 onValueChangeFinished = state.onValueChangeFinished,
                 valueRange = state.valueRange,
                 enabled = state.enabled,
                 interactionSource = interactionSource,
-                squigglesSpec = squigglesSpec,
-                colors = SliderDefaults.colors(
-                    disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
-                    disabledThumbColor = MaterialTheme.colorScheme.primary,
-                ),
-                thumb = {
-                    val height by animateDpAsState(
-                        targetValue = if (hideThumb) 0.dp else (squigglesSpec.strokeWidth * 6).coerceAtLeast(
-                            16.dp
-                        ),
+                track = { sliderState2 ->
+
+                    val animatedHeight by animateDpAsState(
+                        if (sliderState2.isDragging) 7.dp else 4.dp
+                    )
+                    val trackStroke = Stroke(
+                        width =
+                            with(LocalDensity.current) {
+                                animatedHeight.toPx()
+                            },
+                        cap = StrokeCap.Round,
                     )
 
-                    SquigglySlider.Thumb(
-                        interactionSource = interactionSource,
-                        colors = SliderDefaults.colors(
-                            disabledThumbColor = MaterialTheme.colorScheme.primary
-                        ),
-                        enabled = state.enabled,
-                        thumbSize = DpSize(
-                            width = squigglesSpec.strokeWidth.coerceAtLeast(4.dp),
-                            height = height
-                        )
+                    LinearWavyProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = {
+                            if (state.valueRange.endInclusive > 0) {
+                                sliderState2.value / state.valueRange.endInclusive
+                            } else 0f
+                        },
+                        stopSize = 0.dp,
+                        trackStroke = trackStroke,
+                        amplitude = { if (isPlaying && !sliderState2.isDragging) 1f else 0f }
                     )
+                },
+                thumb = {
+                    if (!hideThumb) {
+                        val animatedHeight by animateDpAsState(
+                            if (it.isDragging) 40.dp else 35.dp
+                        )
+
+                        val animatedWidth by animateDpAsState(
+                            if (it.isDragging) 10.dp else 6.dp
+                        )
+
+                        SliderDefaults.Thumb(
+                            interactionSource = remember { MutableInteractionSource() },
+                            thumbSize = DpSize(animatedWidth, animatedHeight)
+                        )
+                    }
                 }
             )
         }

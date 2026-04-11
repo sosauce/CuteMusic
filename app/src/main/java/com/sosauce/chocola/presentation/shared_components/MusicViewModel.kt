@@ -3,14 +3,11 @@
 package com.sosauce.chocola.presentation.shared_components
 
 import android.app.Application
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.database.ContentObserver
 import android.media.AudioManager
 import android.os.CountDownTimer
-import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.AndroidViewModel
@@ -39,6 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -207,20 +205,20 @@ class MusicViewModel(
                 )
             }
 
-//        viewModelScope.launch {
-//            getPauseOnMute(application.applicationContext).collectLatest { pauseOnMute ->
-//                if (pauseOnMute) {
-//                    observeIsMuted().collectLatest { isMute ->
-//                        if (isMute) mediaController!!.pause()
-//                    }
-//                }
-//            }
-//
-//        }
+        viewModelScope.launch {
+            userPreferences.getPauseOnMute().collectLatest { pauseOnMute ->
+                if (pauseOnMute) {
+                    observeIsMuted().collectLatest { isMute ->
+                        if (isMute) mediaController!!.pause()
+                    }
+                }
+            }
+
+        }
     }
 
 
-    // I'm not a big fan of allat but it works
+    // I'm not a big fan of allat, but it works
     private fun loadPlaybackPreferences() {
         viewModelScope.launch {
 
@@ -248,24 +246,21 @@ class MusicViewModel(
 
     // https://stackoverflow.com/a/78301908/28577483
     private fun observeIsMuted() = callbackFlow {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (intent?.getIntExtra("android.media.VOLUME_CHANGED_ACTION", 0)) {
-                    AudioManager.STREAM_MUSIC -> trySend(
-                        intent.getBooleanExtra(
-                            "android.media.EXTRA_STREAM_VOLUME_MUTED",
-                            false
-                        )
-                    )
-                }
+        val audioManager =
+            application.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val volumeObserver = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                val cv = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                if (cv == 0) trySend(true)
             }
         }
 
-        application.registerReceiver(
-            receiver,
-            IntentFilter("android.media.STREAM_MUTE_CHANGED_ACTION")
+        application.contentResolver.registerContentObserver(
+            android.provider.Settings.System.CONTENT_URI,
+            true,
+            volumeObserver
         )
-        awaitClose { application.unregisterReceiver(receiver) }
+        awaitClose { application.contentResolver.unregisterContentObserver(volumeObserver) }
 
     }
 
@@ -384,10 +379,16 @@ class MusicViewModel(
             }
 
             is PlayerActions.AddToQueue -> {
-                val exists =
-                    musicState.value.loadedMedias.fastAny { it.mediaId == action.cuteTrack.mediaId }
-                if (!exists) {
-                    mediaController!!.addMediaItem(MediaItem.fromUri(action.cuteTrack.uri))
+                val mediaItems = action.cuteTracks.fastMap { MediaItem.fromUri(it.uri) }
+                mediaController!!.addMediaItems(mediaItems)
+
+                val loadedMedias = musicState.value.loadedMedias.copyMutate {
+                    addAll(action.cuteTracks)
+                }
+                _musicState.update {
+                    it.copy(
+                        loadedMedias = loadedMedias
+                    )
                 }
             }
         }

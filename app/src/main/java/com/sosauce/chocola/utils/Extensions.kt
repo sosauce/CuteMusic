@@ -16,7 +16,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
@@ -43,8 +42,10 @@ import androidx.compose.ui.util.fastFilter
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.kyant.taglib.PropertyMap
+import com.materialkolor.PaletteStyle
 import com.sosauce.chocola.data.datastore.rememberIsLandscape
 import com.sosauce.chocola.data.models.Album
 import com.sosauce.chocola.data.models.Artist
@@ -53,9 +54,12 @@ import com.sosauce.chocola.data.models.Playlist
 import com.sosauce.chocola.presentation.navigation.Screen
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
+import kotlin.math.round
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -269,23 +273,6 @@ inline fun <E> Set<E>.copyMutate(block: MutableSet<E>.() -> Unit): Set<E> {
     return toMutableSet().apply(block)
 }
 
-inline fun <E, K : Comparable<K>> List<E>.ordered(
-    sortAsc: Boolean,
-    filterSelector: (E) -> Boolean,
-    crossinline sortingSelector: (E) -> K?
-): List<E> {
-    val filtered = this.filter(filterSelector)
-    return if (!sortAsc)
-        filtered.sortedByDescending(sortingSelector)
-    else filtered.sortedBy(sortingSelector)
-}
-
-//fun List<MediaItem>.ordered(
-//    ascending: Boolean
-//): List<MediaItem> {
-// return emptyList()
-//}
-
 
 fun List<CuteTrack>.ordered(
     sort: TrackSort,
@@ -294,48 +281,52 @@ fun List<CuteTrack>.ordered(
 ): List<CuteTrack> {
 
     // Note to self: Having search first makes sorting only sort we want to display, which is more efficient
-    val searchedList = this.fastFilter { it.title.contains(query, true) }
+    val searchedList = this.fastFilter { it.title.contains(query, true) }.toMutableList()
 
-    return if (ascending) {
+    // In place sorting!!
+    if (ascending) {
         when (sort) {
-            TrackSort.TITLE -> searchedList.sortedBy { it.title }
-            TrackSort.ARTIST -> searchedList.sortedBy { it.artist }
-            TrackSort.ALBUM -> searchedList.sortedBy { it.album }
-            TrackSort.YEAR -> searchedList.sortedBy { it.year }
-            TrackSort.DATE_MODIFIED -> searchedList.sortedBy { it.dateModified }
-            TrackSort.AS_ADDED -> searchedList
+            TrackSort.TITLE -> searchedList.sortBy { it.title }
+            TrackSort.ARTIST -> searchedList.sortBy { it.artist }
+            TrackSort.ALBUM -> searchedList.sortBy { it.album }
+            TrackSort.YEAR -> searchedList.sortBy { it.year }
+            TrackSort.DATE_MODIFIED -> searchedList.sortBy { it.dateModified }
+            TrackSort.AS_ADDED -> Unit
         }
     } else {
         when (sort) {
-            TrackSort.TITLE -> searchedList.sortedByDescending { it.title }
-            TrackSort.ARTIST -> searchedList.sortedByDescending { it.artist }
-            TrackSort.ALBUM -> searchedList.sortedByDescending { it.album }
-            TrackSort.YEAR -> searchedList.sortedByDescending { it.year }
-            TrackSort.DATE_MODIFIED -> searchedList.sortedByDescending { it.dateModified }
-            TrackSort.AS_ADDED -> searchedList.reversed()
-
+            TrackSort.TITLE -> searchedList.sortByDescending { it.title }
+            TrackSort.ARTIST -> searchedList.sortByDescending { it.artist }
+            TrackSort.ALBUM -> searchedList.sortByDescending { it.album }
+            TrackSort.YEAR -> searchedList.sortByDescending { it.year }
+            TrackSort.DATE_MODIFIED -> searchedList.sortByDescending { it.dateModified }
+            TrackSort.AS_ADDED -> searchedList.reverse()
         }
     }
+
+    return searchedList
 }
+
 
 fun List<Album>.ordered(
     sort: AlbumSort,
     ascending: Boolean,
     query: String
 ): List<Album> {
-    val searchedList = this.fastFilter { it.name.contains(query, true) }
+    val result = this.fastFilter { it.name.contains(query, true) }.toMutableList()
 
-    return if (ascending) {
+    if (ascending) {
         when (sort) {
-            AlbumSort.NAME -> searchedList.sortedBy { it.name }
-            AlbumSort.ARTIST -> searchedList.sortedBy { it.artist }
+            AlbumSort.NAME -> result.sortBy { it.name }
+            AlbumSort.ARTIST -> result.sortBy { it.artist }
         }
     } else {
         when (sort) {
-            AlbumSort.NAME -> searchedList.sortedByDescending { it.name }
-            AlbumSort.ARTIST -> searchedList.sortedByDescending { it.artist }
+            AlbumSort.NAME -> result.sortByDescending { it.name }
+            AlbumSort.ARTIST -> result.sortByDescending { it.artist }
         }
     }
+    return result
 }
 
 fun List<Artist>.ordered(
@@ -343,21 +334,22 @@ fun List<Artist>.ordered(
     ascending: Boolean,
     query: String
 ): List<Artist> {
-    val searchedList = this.fastFilter { it.name.contains(query, true) }
+    val result = this.fastFilter { it.name.contains(query, true) }.toMutableList()
 
-    return if (ascending) {
+    if (ascending) {
         when (sort) {
-            ArtistSort.NAME -> searchedList.sortedBy { it.name }
-            ArtistSort.NB_TRACKS -> searchedList.sortedBy { it.numberTracks }
-            ArtistSort.NB_ALBUMS -> searchedList.sortedBy { it.numberAlbums }
+            ArtistSort.NAME -> result.sortBy { it.name }
+            ArtistSort.NB_TRACKS -> result.sortBy { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> result.sortBy { it.numberAlbums }
         }
     } else {
         when (sort) {
-            ArtistSort.NAME -> searchedList.sortedByDescending { it.name }
-            ArtistSort.NB_TRACKS -> searchedList.sortedByDescending { it.numberTracks }
-            ArtistSort.NB_ALBUMS -> searchedList.sortedByDescending { it.numberAlbums }
+            ArtistSort.NAME -> result.sortByDescending { it.name }
+            ArtistSort.NB_TRACKS -> result.sortByDescending { it.numberTracks }
+            ArtistSort.NB_ALBUMS -> result.sortByDescending { it.numberAlbums }
         }
     }
+    return result
 }
 
 fun List<Playlist>.ordered(
@@ -365,23 +357,24 @@ fun List<Playlist>.ordered(
     ascending: Boolean,
     query: String
 ): List<Playlist> {
-    val searchedList = this.fastFilter { it.name.contains(query, true) }
+    val result = this.fastFilter { it.name.contains(query, true) }.toMutableList()
 
-    return if (ascending) {
+    if (ascending) {
         when (sort) {
-            PlaylistSort.NAME -> searchedList.sortedBy { it.name }
-            PlaylistSort.NB_TRACKS -> searchedList.sortedBy { it.musics.size }
-            PlaylistSort.TAGS -> searchedList.sortedBy { it.tags.size }
-            PlaylistSort.COLOR -> searchedList.sortedBy { it.color }
+            PlaylistSort.NAME -> result.sortBy { it.name }
+            PlaylistSort.NB_TRACKS -> result.sortBy { it.musics.size }
+            PlaylistSort.TAGS -> result.sortBy { it.tags.size }
+            PlaylistSort.COLOR -> result.sortBy { it.color }
         }
     } else {
         when (sort) {
-            PlaylistSort.NAME -> searchedList.sortedByDescending { it.name }
-            PlaylistSort.NB_TRACKS -> searchedList.sortedByDescending { it.musics.size }
-            PlaylistSort.TAGS -> searchedList.sortedByDescending { it.tags.size }
-            PlaylistSort.COLOR -> searchedList.sortedByDescending { it.color }
+            PlaylistSort.NAME -> result.sortByDescending { it.name }
+            PlaylistSort.NB_TRACKS -> result.sortByDescending { it.musics.size }
+            PlaylistSort.TAGS -> result.sortByDescending { it.tags.size }
+            PlaylistSort.COLOR -> result.sortByDescending { it.color }
         }
     }
+    return result
 }
 
 fun <E> MutableSet<E>.addOrRemove(element: E) {
@@ -408,7 +401,7 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 
 @Composable
 fun String.toShape(): Shape = when (this) {
-    ArtworkShape.CLASSIC -> RoundedCornerShape(10)
+    ArtworkShape.CLASSIC -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
     ArtworkShape.CIRCLE -> MaterialShapes.Circle.toShape()
     ArtworkShape.COOKIE_4 -> MaterialShapes.Cookie4Sided.toShape()
     ArtworkShape.COOKIE_9 -> MaterialShapes.Cookie9Sided.toShape()
@@ -419,7 +412,7 @@ fun String.toShape(): Shape = when (this) {
     ArtworkShape.DIAMOND -> MaterialShapes.Diamond.toShape()
     ArtworkShape.BUN -> MaterialShapes.Bun.toShape()
     ArtworkShape.HEART -> MaterialShapes.Heart.toShape()
-    else -> RoundedCornerShape(10)
+    else -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
 }
 
 
@@ -511,6 +504,11 @@ val bouncySpec = spring<Float>(
     stiffness = Spring.StiffnessLow
 )
 
+val bouncySpecDp = spring<Dp>(
+    dampingRatio = Spring.DampingRatioMediumBouncy,
+    stiffness = Spring.StiffnessLow
+)
+
 
 fun String.toLyricsAlignment(): TextAlign {
     return when(this) {
@@ -527,5 +525,30 @@ fun MenuDefaults.getItemShape(index: Int, lastIndex: Int): Shape {
         0 -> leadingItemShape
         lastIndex -> trailingItemShape
         else -> middleItemShape
+    }
+}
+
+fun Double.round(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return round(this * multiplier) / multiplier
+}
+
+fun NavBackStack<NavKey>.navigateBack() {
+    // Popping the only screen will crash so this avoids it
+    if (size == 1) return
+    removeLastOrNull()
+}
+
+fun String.toPaletteStyle(): PaletteStyle {
+    return when (this) {
+        CutePaletteStyle.EXPRESSIVE -> PaletteStyle.Expressive
+        CutePaletteStyle.FIDELITY -> PaletteStyle.Fidelity
+        CutePaletteStyle.TONAL_SPOT -> PaletteStyle.TonalSpot
+        CutePaletteStyle.NEUTRAL -> PaletteStyle.Neutral
+        CutePaletteStyle.VIBRANT -> PaletteStyle.Vibrant
+        CutePaletteStyle.MONOCHROME -> PaletteStyle.Monochrome
+        CutePaletteStyle.FRUIT_SALAD -> PaletteStyle.FruitSalad
+        else -> throw IllegalArgumentException("Not a valid palette!")
     }
 }

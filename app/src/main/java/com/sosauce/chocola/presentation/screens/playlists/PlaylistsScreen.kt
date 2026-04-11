@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,7 +36,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +44,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberPlaylistSort
 import com.sosauce.chocola.data.datastore.rememberSortPlaylistsAscending
@@ -60,10 +57,8 @@ import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistIte
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
-import com.sosauce.chocola.presentation.shared_components.SelectedBar
+import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
-import com.sosauce.chocola.utils.PlaylistSort
-import com.sosauce.chocola.utils.ordered
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
 
@@ -119,17 +114,10 @@ fun SharedTransitionScope.PlaylistsScreen(
             bottomBar = {
                 AnimatedContent(multiSelectState.isInSelectionMode) {
                     if (it) {
-                        SelectedBar(
+                        SelectedBarSurface(
                             modifier = Modifier.selfAlignHorizontally(),
                             items = state.playlists,
-                            multiSelectState = multiSelectState,
-                            onToggleAll = {
-                                if (multiSelectState.selectedItems.size == state.playlists.size) {
-                                    multiSelectState.clearSelected()
-                                } else {
-                                    multiSelectState.toggleAll(state.playlists)
-                                }
-                            }
+                            multiSelectState = multiSelectState
                         ) {
                             IconButton(
                                 onClick = {

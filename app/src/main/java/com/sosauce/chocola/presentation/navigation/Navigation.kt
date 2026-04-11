@@ -53,6 +53,7 @@ import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.LocalScreen
 import com.sosauce.chocola.utils.LocalSharedTransitionScope
 import com.sosauce.chocola.utils.hasMusicPermission
+import com.sosauce.chocola.utils.navigateBack
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -82,7 +83,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
         ) {
             NavDisplay(
                 backStack = backStack,
-                onBack = { backStack.removeLastOrNull() },
+                onBack = { backStack.navigateBack() },
                 modifier = Modifier.background(MaterialTheme.colorScheme.background),
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
@@ -134,7 +135,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
 
                     entry<Screen.Settings> {
                         SettingsScreen(
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             musicState = musicState,
                             onNavigate = backStack::navigate,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions
@@ -150,7 +151,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
 
                         AlbumDetailsScreen(
                             state = state,
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             musicState = musicState,
                             onNavigate = backStack::navigate,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions
@@ -180,7 +181,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         ArtistDetailsScreen(
                             state = state,
                             onNavigate = backStack::navigate,
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions,
                             musicState = musicState
                         )
@@ -195,7 +196,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         MetadataEditor(
                             trackUri = key.trackUri.toUri(),
                             fileName = key.trackPath.substringAfterLast("/"),
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             metadataViewModel = metadataViewModel
                         )
                     }
@@ -225,7 +226,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                             musicState = musicState,
                             onNavigate = backStack::navigate,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions,
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             onHandlePlaylistAction = viewModel::handlePlaylistActions
                         )
                     }
@@ -233,7 +234,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                     entry<Screen.Queue> {
                         QueueScreen(
                             musicState = musicState,
-                            onNavigateUp = backStack::removeLastOrNull,
+                            onNavigateUp = backStack::navigateBack,
                             onHandlePlayerAction = musicViewModel::handlePlayerActions
                         )
                     }
@@ -244,7 +245,7 @@ fun Nav(onImageLoad: (ImageBitmap?) -> Unit) {
                         )
                         val lyrics by viewModel.lyrics.collectAsStateWithLifecycle()
                         LyricsScreen(
-                            onNavigateBack = backStack::removeLastOrNull,
+                            onNavigateBack = backStack::navigateBack,
                             lyrics = lyrics,
                             musicState = musicState,
                             onHandlePlayerActions = musicViewModel::handlePlayerActions

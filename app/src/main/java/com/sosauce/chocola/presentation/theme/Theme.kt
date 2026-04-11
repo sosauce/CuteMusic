@@ -18,16 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import com.kmpalette.color
 import com.kmpalette.rememberDominantColorState
 import com.materialkolor.DynamicMaterialExpressiveTheme
-import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAppTheme
+import com.sosauce.chocola.data.datastore.rememberPaletteStyle
 import com.sosauce.chocola.data.datastore.rememberUseArtTheme
-import com.sosauce.chocola.data.datastore.rememberUseExpressivePalette
 import com.sosauce.chocola.data.datastore.rememberUseSystemFont
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.anyDarkColorScheme
+import com.sosauce.chocola.utils.toPaletteStyle
 
 @Composable
 fun CuteMusicTheme(
@@ -38,8 +38,8 @@ fun CuteMusicTheme(
     val useArtTheme by rememberUseArtTheme()
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val paletteState = rememberDominantColorState()
-    val useExpressivePalette by rememberUseExpressivePalette()
     val useSystemFont by rememberUseSystemFont()
+    val paletteStyle by rememberPaletteStyle()
     val seedColor = if (useArtTheme && artImageBitmap != null) {
         paletteState.result?.paletteOrNull?.vibrantSwatch?.color
             ?: MaterialTheme.colorScheme.primary
@@ -58,7 +58,7 @@ fun CuteMusicTheme(
         isDark = if (theme == CuteTheme.SYSTEM) isSystemInDarkTheme else if (theme == CuteTheme.AMOLED) true else theme == CuteTheme.DARK,
         isAmoled = theme == CuteTheme.AMOLED,
         specVersion = ColorSpec.SpecVersion.SPEC_2025,
-        style = if (useExpressivePalette) PaletteStyle.Expressive else PaletteStyle.Fidelity
+        style = paletteStyle.toPaletteStyle()
     )
 
     DynamicMaterialExpressiveTheme(

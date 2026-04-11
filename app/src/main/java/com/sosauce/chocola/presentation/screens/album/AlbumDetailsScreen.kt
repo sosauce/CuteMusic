@@ -5,11 +5,6 @@
 
 package com.sosauce.chocola.presentation.screens.album
 
-import android.os.Build
-import android.provider.MediaStore
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -28,9 +23,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,14 +35,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastMap
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberIsLandscape
+import com.sosauce.chocola.data.datastore.rememberSortTracksAscending
 import com.sosauce.chocola.data.datastore.rememberTrackSort
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.data.states.MusicState
@@ -59,11 +49,10 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.album.components.AlbumHeader
 import com.sosauce.chocola.presentation.screens.album.components.AlbumHeaderLandscape
 import com.sosauce.chocola.presentation.screens.album.components.NumberOfTracks
-import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
-import com.sosauce.chocola.presentation.shared_components.SelectedBar
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
+import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
 import com.sosauce.chocola.utils.TrackSort
 import com.sosauce.chocola.utils.ordered
 import com.sosauce.chocola.utils.selfAlignHorizontally
@@ -77,10 +66,9 @@ fun SharedTransitionScope.AlbumDetailsScreen(
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit
 ) {
-    val context = LocalContext.current
     val lazyState = rememberLazyListState()
     val isLandscape = rememberIsLandscape()
-    var sortTracksAsc by rememberSaveable { mutableStateOf(true) }
+    var sortTracksAsc by rememberSortTracksAscending()
     var trackSort by rememberTrackSort()
     val multiSelectState = rememberSweetSelectState<CuteTrack>()
 
@@ -93,18 +81,6 @@ fun SharedTransitionScope.AlbumDetailsScreen(
             ContainedLoadingIndicator()
         }
     } else {
-
-        val sortedMusic = state.tracks.ordered(
-            sort = TrackSort.entries[trackSort],
-            ascending = sortTracksAsc,
-            query = ""
-        ).sortedWith(
-            compareBy(
-                { it.trackNumber == 0 },
-                { it.trackNumber }
-            )
-        )
-
         Scaffold(
             contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
@@ -112,66 +88,12 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                     targetState = multiSelectState.isInSelectionMode
                 ) {
                     if (it) {
-                        SelectedBar(
+                        TracksSelectedBar(
                             modifier = Modifier.selfAlignHorizontally(),
+                            tracks = state.tracks,
                             multiSelectState = multiSelectState,
-                            items = state.tracks,
-                            onToggleAll = {
-                                if (multiSelectState.selectedItems.size == state.tracks.size) {
-                                    multiSelectState.clearSelected()
-                                } else {
-                                    multiSelectState.toggleAll(state.tracks)
-                                }
-                            }
-                        ) {
-                            var showPlaylistDialog by remember { mutableStateOf(false) }
-                            val deleteSongLauncher =
-                                rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
-
-                            if (showPlaylistDialog) {
-                                PlaylistPicker(
-                                    mediaId = multiSelectState.selectedItems.map { it.mediaId },
-                                    onDismissRequest = { showPlaylistDialog = false },
-                                    onAddingFinished = multiSelectState::clearSelected
-                                )
-                            }
-
-
-                            IconButton(
-                                onClick = { showPlaylistDialog = true },
-                                shapes = IconButtonDefaults.shapes()
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.playlist_add),
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                        val intentSender = MediaStore.createDeleteRequest(
-                                            context.contentResolver,
-                                            multiSelectState.selectedItems.map { it.uri }
-                                        ).intentSender
-
-                                        deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-                                    } else {
-                                        multiSelectState.selectedItems.forEach {
-                                            context.contentResolver.delete(it.uri, null, null)
-                                        }
-                                    }
-                                },
-                                shapes = IconButtonDefaults.shapes(),
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.trash_rounded_filled),
-                                    contentDescription = null
-                                )
-                            }
-                        }
+                            onHandlePlayerActions = onHandlePlayerActions
+                        )
                     } else {
                         CuteSearchbar(
                             modifier = Modifier.selfAlignHorizontally(),
@@ -196,13 +118,13 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                     if (isLandscape) {
                         AlbumHeaderLandscape(
                             album = state.album,
-                            tracks = sortedMusic,
+                            tracks = state.tracks,
                             onHandlePlayerActions = onHandlePlayerActions
                         )
                     } else {
                         AlbumHeader(
                             album = state.album,
-                            tracks = sortedMusic,
+                            tracks = state.tracks,
                             onHandlePlayerActions = onHandlePlayerActions
                         )
                     }
@@ -246,7 +168,7 @@ fun SharedTransitionScope.AlbumDetailsScreen(
                 }
 
                 items(
-                    items = sortedMusic,
+                    items = state.tracks,
                     key = { it.mediaId }
                 ) { music ->
 

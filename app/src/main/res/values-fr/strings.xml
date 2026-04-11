@@ -185,7 +185,7 @@
         <item quantity="one">%d titre</item>
         <item quantity="other">%d titres</item>
     </plurals>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">%d album</item>
         <item quantity="other">%d albums</item>
     </plurals>

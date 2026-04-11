@@ -8,12 +8,13 @@ import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -51,13 +53,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.materialkolor.DynamicMaterialExpressiveTheme
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.datastore.rememberAppTheme
 import com.sosauce.chocola.data.datastore.rememberSliderStyle
 import com.sosauce.chocola.presentation.screens.playing.components.rememberCuteSliderState
 import com.sosauce.chocola.presentation.screens.playing.components.toSlider
 import com.sosauce.chocola.presentation.screens.settings.FontItem
 import com.sosauce.chocola.presentation.screens.settings.FontStyle
 import com.sosauce.chocola.presentation.screens.settings.ThemeItem
+import com.sosauce.chocola.utils.CuteTheme
+import com.sosauce.chocola.utils.toPaletteStyle
 
 
 @Composable
@@ -265,14 +273,10 @@ fun ThemeSelector(theme: ThemeItem) {
         targetValue = if (theme.isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
     )
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(10.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { theme.onClick() }
+
+
+    SelectorSurface(
+        onClick = theme.onClick
     ) {
         Box(
             modifier = Modifier
@@ -293,21 +297,15 @@ fun ThemeSelector(theme: ThemeItem) {
                 tint = theme.iconAndTint.second,
             )
         }
-        Spacer(Modifier.weight(1f))
         Text(theme.text)
     }
 }
 
 @Composable
 fun FontSelector(fontItem: FontItem) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(10.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { fontItem.onClick() }
+
+    SelectorSurface(
+        onClick = fontItem.onClick
     ) {
         Box(
             modifier = Modifier
@@ -322,12 +320,74 @@ fun FontSelector(fontItem: FontItem) {
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             contentAlignment = Alignment.Center
         ) { fontItem.text() }
-        Spacer(Modifier.weight(1f))
         Text(
             text = if (fontItem.fontStyle == FontStyle.SYSTEM) stringResource(R.string.system) else stringResource(
                 R.string.default_text
             )
         )
+    }
+}
+
+@Composable
+fun PaletteSelector(
+    isSelected: Boolean,
+    paletteStyle: String,
+    onSelectNewPalette: () -> Unit
+) {
+    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val theme by rememberAppTheme()
+
+    val state = rememberDynamicMaterialThemeState(
+        seedColor = MaterialTheme.colorScheme.primary,
+        isDark = if (theme == CuteTheme.SYSTEM) isSystemInDarkTheme else if (theme == CuteTheme.AMOLED) true else theme == CuteTheme.DARK,
+        isAmoled = theme == CuteTheme.AMOLED,
+        specVersion = ColorSpec.SpecVersion.SPEC_2025,
+        style = paletteStyle.toPaletteStyle()
+    )
+
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+    )
+
+    DynamicMaterialExpressiveTheme(
+        state = state,
+        animate = true
+    ) {
+        val dynamicColors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.tertiary,
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.secondaryContainer,
+        )
+
+        SelectorSurface(
+            onClick = onSelectNewPalette
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clip(ShapeDefaults.Medium)
+                    .width(60.dp)
+                    .border(
+                        width = if (isSelected) 2.dp else 0.dp,
+                        color = borderColor,
+                        shape = ShapeDefaults.Medium
+                    ),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                dynamicColors.forEach { color ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(24.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(color)
+                    )
+                }
+            }
+            Text(paletteStyle)
+        }
     }
 }
 
@@ -341,14 +401,8 @@ fun ShapeSelector(
         targetValue = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
     )
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(10.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onClick() }
+    SelectorSurface(
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -375,15 +429,8 @@ fun SliderSelector(
         targetValue = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
     )
 
-
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(10.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onClick() }
+    SelectorSurface(
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -406,4 +453,21 @@ fun SliderSelector(
             }
         }
     }
+}
+
+@Composable
+private fun SelectorSurface(
+    onClick: () -> Unit,
+    content: @Composable (ColumnScope.() -> Unit)
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(10.dp)
+            //.height(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        content = content
+    )
 }

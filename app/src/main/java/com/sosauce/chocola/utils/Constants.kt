@@ -7,7 +7,7 @@ const val ICON_TEXT_SPACING = 5
 const val WIDGET_NEW_DATA = "WIDGET_NEW_DATA"
 const val WIDGET_NEW_IS_PLAYING = "WIDGET_NEW_IS_PLAYING"
 const val WIDGET_ACTION_BROADCAST = "WIDGET_NEW_DATA"
-const val GITHUB_RELEASES = "https://github.com/sosauce/CuteMusic/releases"
+const val GITHUB_RELEASES = "https://github.com/sosauce/Chocola/releases"
 const val SUPPORT_PAGE = "https://sosauce.github.io/support/"
 
 
@@ -54,6 +54,11 @@ object ArtworkShape {
 object CutePaletteStyle {
     const val EXPRESSIVE = "Expressive"
     const val FIDELITY = "Fidelity"
+    const val TONAL_SPOT = "Tonal spot"
+    const val NEUTRAL = "Neutral"
+    const val VIBRANT = "Vibrant"
+    const val MONOCHROME = "Monochrome"
+    const val FRUIT_SALAD = "Fruit salad"
 }
 
 object LyricsAlignment {

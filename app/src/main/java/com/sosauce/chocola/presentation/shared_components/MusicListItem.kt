@@ -5,10 +5,9 @@
 
 package com.sosauce.chocola.presentation.shared_components
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -16,11 +15,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -59,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.core.app.ShareCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
@@ -73,8 +71,8 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.LocalScreen
+import com.sosauce.chocola.utils.bouncySpecDp
 import com.sosauce.chocola.utils.copyMutate
-import androidx.core.net.toUri
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 
@@ -83,6 +81,8 @@ fun MusicListItem(
     modifier: Modifier = Modifier,
     track: CuteTrack,
     musicState: MusicState,
+    backgroundColor: Color = Color.Transparent,
+    shape: Shape = CuteListItemDefaults.defaultShape,
     onShortClick: (mediaId: String) -> Unit,
     onLongClick: (() -> Unit)? = null,
     onNavigate: (Screen) -> Unit,
@@ -94,7 +94,6 @@ fun MusicListItem(
             track = track,
             onNavigate = onNavigate,
             onHandlePlayerActions = onHandlePlayerActions,
-            musicState = musicState,
             extraOptions = extraOptions
         )
     }
@@ -103,12 +102,17 @@ fun MusicListItem(
     val context = LocalContext.current
     val image = rememberAsyncImagePainter(ImageUtils.imageRequester(track.artUri, context))
     val imageState by image.state.collectAsStateWithLifecycle()
-    val bgColor by animateColorAsState(
+    val bgColor = if (musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady) {
+        MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
+    } else {
+        //MaterialTheme.colorScheme.surfaceContainer
+        backgroundColor
+    }
+    val cornerRadius by animateDpAsState(
         targetValue = if (musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady) {
-            MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
-        } else {
-            Color.Transparent
-        }
+            24.dp
+        } else 4.dp,
+        animationSpec = bouncySpecDp
     )
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 0.9f else 1f
@@ -169,6 +173,7 @@ fun MusicListItem(
                  scaleY = scale
              },
         backgroundColor = bgColor,
+        shape = shape,
         onClick = { onShortClick(track.mediaId) },
         onLongClick = onLongClick,
         leadingContent = {
@@ -237,7 +242,6 @@ fun MusicListItem(
 @Composable
 private fun DefaultMusicListItemTrailingContent(
     track: CuteTrack,
-    musicState: MusicState,
     onNavigate: (Screen) -> Unit,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     extraOptions: List<MoreOptions> = emptyList()
@@ -281,7 +285,6 @@ private fun DefaultMusicListItemTrailingContent(
 
     TrackDropdownMenu(
         track = track,
-        musicState = musicState,
         isExpanded = isDropDownExpanded,
         onDismissRequest = { isDropDownExpanded = false },
         onNavigate = onNavigate,
@@ -293,7 +296,6 @@ private fun DefaultMusicListItemTrailingContent(
 @Composable
 private fun TrackDropdownMenu(
     track: CuteTrack,
-    musicState: MusicState,
     isExpanded: Boolean,
     onDismissRequest: () -> Unit,
     onNavigate: (Screen) -> Unit,
@@ -318,10 +320,8 @@ private fun TrackDropdownMenu(
         ),
         MoreOptions(
             text = { stringResource(R.string.add_queue) },
-            onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(track)) },
-            icon = R.drawable.add_to_queue,
-            enabled = track !in musicState.loadedMedias,
-            disabledText = { stringResource(R.string.already_in_queue) }
+            onClick = { onHandlePlayerActions(PlayerActions.AddToQueue(listOf(track))) },
+            icon = R.drawable.add_to_queue
         ),
         MoreOptions(
             text = { stringResource(R.string.hide_from_tracklist) },
@@ -494,3 +494,19 @@ data class MoreOptions(
     val enabled: Boolean = true,
     val disabledText: (@Composable () -> String)? = null,
 )
+
+
+object CuteListItemDefaults {
+    val leadingItemShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomEnd = 4.dp, bottomStart = 4.dp)
+    val trailingItemShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomEnd = 24.dp, bottomStart = 24.dp)
+    val middleItemShape = RoundedCornerShape(4.dp)
+    val defaultShape = RoundedCornerShape(24.dp)
+
+    fun getItemShape(index: Int, lastIndex: Int): Shape {
+        return when(index) {
+            0 -> leadingItemShape
+            lastIndex -> trailingItemShape
+            else -> middleItemShape
+        }
+    }
+}

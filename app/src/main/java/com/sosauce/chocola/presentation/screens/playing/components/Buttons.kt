@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -29,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.datastore.rememberSeekButtonsDuration
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedPlayPauseIcon
@@ -72,6 +72,8 @@ fun ActionButtonsRow(
 ) {
 
     val interactionSources = List(5) { rememberInteractionSource() }
+    val seekButtonsDuration by rememberSeekButtonsDuration()
+    val seekDurationInSeconds = seekButtonsDuration * 1000L
 
 
     ButtonGroup(
@@ -85,6 +87,10 @@ fun ActionButtonsRow(
                 FilledIconButton(
                     onClick = { onHandlePlayerActions(PlayerActions.SeekToPreviousMusic) },
                     shapes = IconButtonDefaults.shapes(),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.tertiary)
+                    ),
                     interactionSource = interactionSources[0],
                     modifier = Modifier
                         .weight(1f)
@@ -102,7 +108,7 @@ fun ActionButtonsRow(
         customItem(
             {
                 IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.RewindTo(5000)) },
+                    onClick = { onHandlePlayerActions(PlayerActions.RewindTo(seekDurationInSeconds)) },
                     shapes = IconButtonDefaults.shapes(),
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -110,7 +116,8 @@ fun ActionButtonsRow(
                     ),
                     interactionSource = interactionSources[1],
                     modifier = Modifier
-                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow))
+                        .weight(1f)
+                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
                         .animateWidth(interactionSource = interactionSources[1])
                 ) {
                     Icon(
@@ -123,18 +130,16 @@ fun ActionButtonsRow(
         )
         customItem(
             {
-                FilledIconToggleButton(
-                    checked = musicState.isPlaying,
-                    onCheckedChange = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
-                    shapes = IconButtonDefaults.toggleableShapes(),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
-                        checkedContainerColor = MaterialTheme.colorScheme.primary,
-                        checkedContentColor = contentColorFor(MaterialTheme.colorScheme.primary)
+                FilledIconButton(
+                    onClick = { onHandlePlayerActions(PlayerActions.PlayOrPause) },
+                    shapes = IconButtonDefaults.shapes(),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.primary)
                     ),
                     interactionSource = interactionSources[2],
                     modifier = Modifier
+                        .weight(1.5f)
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
                         .animateWidth(interactionSource = interactionSources[2])
                 ) {
@@ -148,7 +153,7 @@ fun ActionButtonsRow(
         customItem(
             {
                 IconButton(
-                    onClick = { onHandlePlayerActions(PlayerActions.SeekTo(5000)) },
+                    onClick = { onHandlePlayerActions(PlayerActions.SeekTo(seekDurationInSeconds)) },
                     shapes = IconButtonDefaults.shapes(),
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -156,7 +161,8 @@ fun ActionButtonsRow(
                     ),
                     interactionSource = interactionSources[3],
                     modifier = Modifier
-                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow))
+                        .weight(1f)
+                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
                         .animateWidth(interactionSource = interactionSources[3])
                 ) {
                     Icon(
@@ -172,6 +178,10 @@ fun ActionButtonsRow(
                 FilledIconButton(
                     onClick = { onHandlePlayerActions(PlayerActions.SeekToNextMusic) },
                     shapes = IconButtonDefaults.shapes(),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.tertiary)
+                    ),
                     interactionSource = interactionSources[4],
                     modifier = Modifier
                         .weight(1f)

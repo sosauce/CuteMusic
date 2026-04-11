@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +38,6 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.settings.compenents.FoldersView
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsWithTitle
 import com.sosauce.chocola.presentation.screens.settings.compenents.SliderSettingsCards
-import com.sosauce.chocola.presentation.shared_components.CuteNavigationButton
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
@@ -52,12 +49,10 @@ fun SettingsLibrary(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
     onNavigate: (Screen) -> Unit,
-    onNavigateUp: () -> Unit,
     onUnhideTrack: (String) -> Unit
 ) {
 
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
     var safTracks by rememberAllSafTracks()
     var minTrackDuration by rememberMinTrackDuration()
 
@@ -73,106 +68,96 @@ fun SettingsLibrary(
                 )
             }
         }
-
-    Scaffold(
-        bottomBar = {
-            CuteNavigationButton(onNavigateUp = onNavigateUp)
-        }
-    ) { pv ->
-        Column(
-            modifier = Modifier
-                //.verticalScroll(scrollState)
-                .padding(pv)
+    Column {
+        SettingsWithTitle(
+            title = R.string.scan
         ) {
-
-            SettingsWithTitle(
-                title = R.string.scan
+            SliderSettingsCards(
+                value = minTrackDuration,
+                onValueChange = { minTrackDuration = it },
+                topDp = 24.dp,
+                bottomDp = 24.dp,
+                text = R.string.min_track_length_text,
+                optionalDescription = R.string.min_track_duration_desc
+            )
+        }
+        FoldersView()
+        SettingsWithTitle(
+            title = R.string.hidden_tracks
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                SliderSettingsCards(
-                    value = minTrackDuration,
-                    onValueChange = { minTrackDuration = it },
-                    topDp = 24.dp,
-                    bottomDp = 24.dp,
-                    text = R.string.min_track_length_text,
-                    optionalDescription = R.string.min_track_duration_desc
-                )
-            }
-            FoldersView()
-            SettingsWithTitle(
-                title = R.string.hidden_tracks
-            ) {
-                Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    if (hiddenTracks.isNotEmpty()) {
-                        hiddenTracks.fastForEach { track ->
-                            MusicListItem(
-                                track = track,
-                                musicState = musicState,
-                                onShortClick = { onUnhideTrack(track.mediaId) },
-                                onNavigate = onNavigate,
-                                onHandlePlayerActions = onHandlePlayerActions
+                if (hiddenTracks.isNotEmpty()) {
+                    hiddenTracks.fastForEach { track ->
+                        MusicListItem(
+                            track = track,
+                            musicState = musicState,
+                            onShortClick = { onUnhideTrack(track.mediaId) },
+                            onNavigate = onNavigate,
+                            onHandlePlayerActions = onHandlePlayerActions
+                        )
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.hide),
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.no_hidden_tracks),
+                            style = MaterialTheme.typography.bodyMediumEmphasized.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        }
-                    } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(15.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.hide),
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(
-                                text = "No hidden tracks!",
-                                style = MaterialTheme.typography.bodyMediumEmphasized.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            )
-                        }
+                        )
                     }
                 }
             }
-            SettingsWithTitle(
-                title = R.string.saf_manager
+        }
+        SettingsWithTitle(
+            title = R.string.saf_manager
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    shape = RoundedCornerShape(24.dp)
+                        .padding(5.dp)
+                        .selfAlignHorizontally(),
+                    onClick = { safAudioPicker.launch(arrayOf("audio/*")) }
                 ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .selfAlignHorizontally(),
-                        onClick = { safAudioPicker.launch(arrayOf("audio/*")) }
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.open),
-                                contentDescription = null
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Text(stringResource(R.string.open_saf))
-                        }
+                        Icon(
+                            painter = painterResource(R.drawable.open),
+                            contentDescription = null
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(stringResource(R.string.open_saf))
                     }
+                }
 
+                if (safTracksUi.isNotEmpty()) {
                     safTracksUi.fastForEachIndexed { index, safTrack ->
                         MusicListItem(
                             track = safTrack,
@@ -187,6 +172,25 @@ fun SettingsLibrary(
                             },
                             onNavigate = onNavigate,
                             onHandlePlayerActions = onHandlePlayerActions
+                        )
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.db_off),
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.no_saf_tracks),
+                            style = MaterialTheme.typography.bodyMediumEmphasized.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }

@@ -4,15 +4,18 @@ package com.sosauce.chocola.presentation.screens.album
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -22,13 +25,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAlbumGrids
 import com.sosauce.chocola.data.datastore.rememberAlbumSort
@@ -41,8 +44,6 @@ import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
-import com.sosauce.chocola.utils.AlbumSort
-import com.sosauce.chocola.utils.ordered
 import com.sosauce.chocola.utils.selfAlignHorizontally
 
 @Composable
@@ -119,8 +120,8 @@ fun SharedTransitionScope.AlbumsScreen(
         ) { paddingValues ->
             LazyVerticalGrid(
                 columns = GridCells.Fixed(if (state.albums.isEmpty()) 1 else numberOfAlbumGrids),
-                contentPadding = paddingValues,
-                state = lazyState
+                contentPadding = paddingValues + PaddingValues(horizontal = 5.dp),
+                state = lazyState,
             ) {
                 if (state.albums.isEmpty() && !state.isSearching) {
                     item {
@@ -134,12 +135,13 @@ fun SharedTransitionScope.AlbumsScreen(
                     if (state.albums.isEmpty()) {
                         item { NoResult() }
                     } else {
-                        items(
+                        itemsIndexed(
                             items = state.albums,
-                            key = { it.id }
-                        ) { album ->
+                            key = { _, album -> album.id }
+                        ) { index, album ->
                             AlbumCard(
-                                modifier = Modifier.animateItem(),
+                                modifier = Modifier.animateContentSize().animateItem(),
+                                shape = getAlbumCardShape(index, state.albums.size, numberOfAlbumGrids),
                                 album = album,
                                 onClick = { onNavigate(Screen.AlbumsDetails(album.name)) }
                             )
@@ -149,5 +151,24 @@ fun SharedTransitionScope.AlbumsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun getAlbumCardShape(index: Int, totalItems: Int, columns: Int): Shape {
+    val row = index / columns
+    val col = index % columns
+    val lastRow = (totalItems - 1) / columns
+    val isLastRow = row == lastRow
+    val isLastItem = index == totalItems - 1
+
+    val cornerSize = 24.dp
+    val flat = 0.dp
+
+    return RoundedCornerShape(
+        topStart = if (row == 0 && col == 0) cornerSize else flat,
+        topEnd = if (row == 0 && (col == columns - 1 || isLastItem)) cornerSize else flat,
+        bottomStart = if (isLastRow && col == 0) cornerSize else flat,
+        bottomEnd = if (isLastItem || (isLastRow && col == columns - 1)) cornerSize else flat
+    )
 }
 

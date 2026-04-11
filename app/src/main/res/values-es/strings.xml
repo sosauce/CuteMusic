@@ -185,7 +185,7 @@
         <item quantity="one">%d pista</item>
         <item quantity="other">%d pistas</item>
     </plurals>
-    <plurals name="albums">
+    <plurals name="albums_plural">
         <item quantity="one">%d álbum</item>
         <item quantity="other">%d álbumes</item>
     </plurals>

@@ -6,13 +6,6 @@
 
 package com.sosauce.chocola.presentation.screens.main
 
-import android.content.ContentProviderOperation
-import android.os.Build
-import android.provider.MediaStore
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -24,38 +17,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastMap
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberGroupByFolders
@@ -67,25 +51,19 @@ import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.main.components.FolderHeader
-import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.presentation.shared_components.CuteActionButton
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
 import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
-import com.sosauce.chocola.presentation.shared_components.SelectedBar
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
+import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
 import com.sosauce.chocola.utils.SharedTransitionKeys
 import com.sosauce.chocola.utils.addOrRemove
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // https://medium.com/@gregkorossy/hacking-lazylist-in-android-jetpack-compose-38afacb3df67
 @Composable
@@ -96,14 +74,12 @@ fun SharedTransitionScope.MainScreen(
     onHandlePlayerAction: (PlayerActions) -> Unit
 ) {
 
-    val context = LocalContext.current
     val lazyState = rememberLazyListState()
     var hiddenFolders by rememberHiddenFolders()
     var groupByFolders by rememberGroupByFolders()
     var trackSort by rememberTrackSort()
     var sortTracksAscending by rememberSortTracksAscending()
     val multiSelectState = rememberSweetSelectState<CuteTrack>()
-    val scope = rememberCoroutineScope()
 
     if (state.isLoading) {
         Box(
@@ -120,80 +96,12 @@ fun SharedTransitionScope.MainScreen(
                     targetState = multiSelectState.isInSelectionMode
                 ) {
                     if (it) {
-                        SelectedBar(
+                        TracksSelectedBar(
                             modifier = Modifier.selfAlignHorizontally(),
+                            tracks = state.tracks,
                             multiSelectState = multiSelectState,
-                            items = state.tracks,
-                            onToggleAll = {
-                                if (multiSelectState.selectedItems.size == state.tracks.size) {
-                                    multiSelectState.clearSelected()
-                                } else {
-                                    multiSelectState.toggleAll(state.tracks)
-                                }
-                            }
-                        ) {
-                            var showPlaylistDialog by remember { mutableStateOf(false) }
-                            val deleteSongLauncher =
-                                rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
-
-                            if (showPlaylistDialog) {
-                                PlaylistPicker(
-                                    mediaId = multiSelectState.selectedItems.map { it.mediaId },
-                                    onDismissRequest = { showPlaylistDialog = false },
-                                    onAddingFinished = multiSelectState::clearSelected
-                                )
-                            }
-
-
-                            IconButton(
-                                onClick = { showPlaylistDialog = true },
-                                shapes = IconButtonDefaults.shapes()
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.playlist_add),
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                        val intentSender = MediaStore.createDeleteRequest(
-                                            context.contentResolver,
-                                            multiSelectState.selectedItems.map { it.uri }
-                                        ).intentSender
-
-                                        deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-                                    } else {
-                                        scope.launch(Dispatchers.IO) {
-                                            val ops = arrayListOf<ContentProviderOperation>()
-
-                                            multiSelectState.selectedItems.forEach { item ->
-                                                ops.add(
-                                                    ContentProviderOperation.newDelete(item.uri).build()
-                                                )
-                                            }
-
-                                            runCatching {
-                                                context.contentResolver.applyBatch(MediaStore.AUTHORITY, ops)
-                                            }.onFailure {
-                                                withContext(Dispatchers.Main) {
-                                                    Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                shapes = IconButtonDefaults.shapes(),
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.trash_rounded_filled),
-                                    contentDescription = null
-                                )
-                            }
-                        }
+                            onHandlePlayerActions = onHandlePlayerAction
+                        )
                     } else {
                         CuteSearchbar(
                             modifier = Modifier.selfAlignHorizontally(),
@@ -278,8 +186,6 @@ fun SharedTransitionScope.MainScreen(
                 state = lazyState,
                 contentPadding = paddingValues
             ) {
-
-
                 if (state.tracks.isEmpty() && !state.isSearching) {
                     item {
                         NoXFound(
@@ -369,31 +275,32 @@ fun SharedTransitionScope.MainScreen(
                         if (state.tracks.isEmpty()) {
                             item { NoResult() }
                         } else {
-                            items(
+                            itemsIndexed(
                                 items = state.tracks,
-                                key = { it.mediaId }
-                            ) { music ->
+                                key = { _, track -> track.mediaId }
+                            ) { index, track ->
 
                                 val isSelected by remember {
-                                    derivedStateOf { multiSelectState.isSelected(music) }
+                                    derivedStateOf { multiSelectState.isSelected(track) }
                                 }
 
                                 MusicListItem(
                                     modifier = Modifier.animateItem(),
+
                                     onShortClick = {
                                         if (multiSelectState.isInSelectionMode) {
-                                            multiSelectState.toggle(music)
+                                            multiSelectState.toggle(track)
                                         } else {
                                             onHandlePlayerAction(
                                                 PlayerActions.Play(
-                                                    index = state.tracks.indexOf(music),
+                                                    index = state.tracks.indexOf(track),
                                                     tracks = state.tracks
                                                 )
                                             )
                                         }
                                     },
-                                    onLongClick = { multiSelectState.toggle(music) },
-                                    track = music,
+                                    onLongClick = { multiSelectState.toggle(track) },
+                                    track = track,
                                     musicState = musicState,
                                     onNavigate = onNavigate,
                                     isSelected = isSelected,
