@@ -19,10 +19,10 @@
     <string name="artwork">Обложка</string>
     <string name="artists">Исполнители</string>
     <plurals name="albums_plural">
-        <item quantity="one">Альбомы</item>
-        <item quantity="few" />
-        <item quantity="many" />
-        <item quantity="other" />
+        <item quantity="one">%d альбом</item>
+        <item quantity="few">%d альбома</item>
+        <item quantity="many">%d альбомов</item>
+        <item quantity="other">%d альбомов</item>
     </plurals>
     <string name="music">Песни</string>
     <string name="cm_by_sosauce">Chocola от sosauce</string>
@@ -178,4 +178,16 @@
         <item quantity="many">%d песен</item>
         <item quantity="other">%d песен</item>
     </plurals>
+    <string name="albums">Альбомы</string>
+    <string name="permission_granted">Разрешение получено, можно продолжать…</string>
+    <string name="next_step">Следующий шаг</string>
+    <string name="no_music_tip">Совет: Не забудьте про папки, которые вы хотите сканировать в настройках!</string>
+    <string name="initial_folder_selection">Выберите папки для списка, другие будут включены в чёрный список</string>
+    <string name="whitelisted">Белый список</string>
+    <string name="saf">S.A.F</string>
+    <string name="click_hint">Нажми меня!</string>
+    <string name="min_track_length_hint">Вы также можете решить не запрашивать треки короче, чем указанная продолжительность</string>
+    <string name="min_track_length_text">Мин длительность песни</string>
+    <string name="click_to_add">Нажмите, чтобы добавить</string>
+    <string name="playlist_tag_add">Добавить новый тег</string>
 </resources>
