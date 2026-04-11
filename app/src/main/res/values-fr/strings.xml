@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="empty" translatable="false" />
     <string name="theme">Thème</string>
     <string name="settings">Paramètres</string>
     <string name="dark_mode">Sombre</string>
@@ -180,7 +180,6 @@
     <string name="playlist_tag_no_edit">Vous ne pouvez pas modifier les balises une fois qu\’elles sont créées, mais vous pouvez les supprimer.</string>
     <string name="already_in_queue">Déjà dans la file d\’attente</string>
     <string name="already_in_playlist">Ce titre est déjà dans la playlist.</string>
-
     <plurals name="tracks">
         <item quantity="one">%d titre</item>
         <item quantity="other">%d titres</item>
@@ -189,4 +188,4 @@
         <item quantity="one">%d album</item>
         <item quantity="other">%d albums</item>
     </plurals>
-</resources>    
+</resources>
