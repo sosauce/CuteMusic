@@ -36,7 +36,6 @@ class AbstractTracksScanner(
         val whitelistedFoldersFlow = userPreferences.getWhitelistedFolders()
         val minTrackDurationFlow = userPreferences.getMinTrackDuration()
 
-        println("hey uhm, $mediaStoreFlow, $hiddenTracksFlow, $whitelistedFoldersFlow, ${minTrackDurationFlow}")
 
         return combine(
             mediaStoreFlow,
