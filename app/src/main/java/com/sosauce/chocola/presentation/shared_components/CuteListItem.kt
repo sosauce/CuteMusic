@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,7 +28,7 @@ fun CuteListItem(
     onLongClick: (() -> Unit)? = null,
     leadingContent: @Composable () -> Unit,
     trailingContent: (@Composable () -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Box(
         modifier = modifier

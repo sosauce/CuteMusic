@@ -8,12 +8,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.sosauce.chocola.R
+import com.sosauce.chocola.utils.bouncySpec
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,15 +40,16 @@ fun <T> LazyRowWithScrollButton(
         androidx.compose.animation.AnimatedVisibility(
             visible = state.canScrollForward,
             modifier = Modifier.align(Alignment.CenterEnd),
-            enter = slideInHorizontally { it },
-            exit = slideOutHorizontally { it }
+            enter = slideInHorizontally(bouncySpec()) { it },
+            exit = slideOutHorizontally(bouncySpec()) { it }
         ) {
             IconButton(
                 onClick = {
                     scope.launch {
                         state.animateScrollToItem(items.lastIndex)
                     }
-                }
+                },
+                shapes = IconButtonDefaults.shapes()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_right),

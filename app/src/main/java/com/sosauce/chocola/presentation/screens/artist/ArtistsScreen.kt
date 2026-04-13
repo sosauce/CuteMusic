@@ -167,11 +167,7 @@ fun SharedTransitionScope.ArtistItem(
         onClick = onClick,
         leadingContent = {
             AsyncImage(
-                model = ImageUtils.imageRequester(
-                    ImageUtils.getAlbumArt(artist.albumId)
-                        ?: androidx.media3.session.R.drawable.media3_icon_album,
-                    context
-                ),
+                model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(artist.albumId), context),
                 contentDescription = stringResource(R.string.artwork),
                 modifier = Modifier
                     .padding(start = 10.dp)
@@ -189,7 +185,12 @@ fun SharedTransitionScope.ArtistItem(
             text = artist.name,
             maxLines = 1,
             style = MaterialTheme.typography.titleMediumEmphasized,
-            modifier = Modifier.basicMarquee()
+            modifier = Modifier
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(artist.name + artist.id),
+                    animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                )
+                .basicMarquee()
         )
         Text(
             text = buildString {

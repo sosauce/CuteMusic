@@ -2,20 +2,36 @@
 
 package com.sosauce.chocola.presentation.screens.playing.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -27,6 +43,7 @@ import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.presentation.shared_components.MusicDetailsDialog
+import com.sosauce.chocola.utils.formatToReadableTime
 import com.sosauce.chocola.utils.rememberInteractionSource
 import com.sosauce.chocola.utils.selfAlignHorizontally
 
@@ -35,133 +52,138 @@ import com.sosauce.chocola.utils.selfAlignHorizontally
 fun QuickActionsRow(
     musicState: MusicState,
     onShowSpeedCard: () -> Unit,
-    onHandlePlayerActions: (PlayerActions) -> Unit,
-    onNavigate: (Screen) -> Unit
+    onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
-    var showDetailsDialog by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-    var showPlaylistDialog by remember { mutableStateOf(false) }
-    val interactionSources = List(6) { rememberInteractionSource() }
-
-
-
-    if (showDetailsDialog) {
-        MusicDetailsDialog(
-            track = musicState.track,
-            onDismissRequest = { showDetailsDialog = false }
-        )
-    }
 
     if (showTimePicker) {
         CuteTimePicker(
-            initialMillis = musicState.sleepTimerRemainingDuration,
+            currentTimerTime = musicState.sleepTimerRemainingDuration,
             onDismissRequest = { showTimePicker = false },
             onSetTimer = { hours, minutes ->
                 showTimePicker = false
                 onHandlePlayerActions(PlayerActions.SetSleepTimer(hours, minutes))
-            }
+            },
+            onCancelTimer = { onHandlePlayerActions(PlayerActions.CancelSleepTimer) }
         )
     }
 
-    if (showPlaylistDialog) {
-        PlaylistPicker(
-            mediaId = listOf(musicState.track.mediaId),
-            onDismissRequest = { showPlaylistDialog = false }
-        )
-    }
 
-    ButtonGroup(
-        modifier = Modifier.selfAlignHorizontally(),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+
+    Row(
+        modifier = Modifier.padding(horizontal = 15.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = { onNavigate(Screen.Lyrics(musicState.track.path)) },
-            interactionSource = interactionSources[0],
-            modifier = Modifier
-                .animateWidth(interactionSources[0])
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.lyrics_filled),
-                contentDescription = null
-            )
-        }
-        IconButton(
-            onClick = onShowSpeedCard,
-            interactionSource = interactionSources[1],
-            modifier = Modifier
-                .animateWidth(interactionSources[1])
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.speed_filled),
-                contentDescription = null
 
-            )
-        }
-        ToggleButton(
-            checked = musicState.shuffle,
-            onCheckedChange = { onHandlePlayerActions(PlayerActions.Shuffle) },
-            interactionSource = interactionSources[2],
-            colors = ToggleButtonDefaults.toggleButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .animateWidth(interactionSources[2])
+        ButtonGroup(
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.shuffle),
-                contentDescription = "shuffle button"
+            val interactionSources = List(3) { rememberInteractionSource() }
+            val shuffleColor by animateColorAsState(
+                if (musicState.shuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
             )
-        }
-        ToggleButton(
-            checked = musicState.repeatMode != Player.REPEAT_MODE_OFF,
-            onCheckedChange = { onHandlePlayerActions(PlayerActions.ChangeRepeatMode) },
-            interactionSource = interactionSources[3],
-            colors = ToggleButtonDefaults.toggleButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .animateWidth(interactionSources[3])
-        ) {
 
-            val icon = when (musicState.repeatMode) {
-                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
-                else -> R.drawable.repeat_one
+            val rateColor by animateColorAsState(
+                if (musicState.speed != 1.0f || musicState.pitch != 1.0f) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
+            )
+
+            val repeatColor by animateColorAsState(
+                if (musicState.repeatMode == Player.REPEAT_MODE_ONE || musicState.repeatMode == Player.REPEAT_MODE_ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
+            )
+
+            val repeatShape by animateDpAsState(
+                if (musicState.repeatMode == Player.REPEAT_MODE_ONE || musicState.repeatMode == Player.REPEAT_MODE_ALL) 50.dp else 4.dp
+            )
+
+            val shuffleEnd by animateDpAsState(
+                if (musicState.shuffle) 50.dp else 4.dp
+            )
+
+            val rateStart by animateDpAsState(
+                if (musicState.speed != 1.0f || musicState.pitch != 1.0f) 50.dp else 4.dp
+            )
+
+
+            IconButton(
+                onClick = { onHandlePlayerActions(PlayerActions.Shuffle) },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = shuffleColor,
+                    contentColor = contentColorFor(shuffleColor)
+                ),
+                interactionSource = interactionSources[0],
+                shape = RoundedCornerShape(topStart = 50.dp, topEnd = shuffleEnd, bottomStart = 50.dp, bottomEnd = shuffleEnd),
+                modifier = Modifier
+                    .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                    .animateWidth(interactionSources[0])
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.shuffle),
+                    contentDescription = null
+                )
             }
+            IconButton(
+                onClick = { onHandlePlayerActions(PlayerActions.ChangeRepeatMode) },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = repeatColor,
+                    contentColor = contentColorFor(repeatColor)
+                ),
+                interactionSource = interactionSources[1],
+                shape = RoundedCornerShape(repeatShape),
+                modifier = Modifier
+                    .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                    .animateWidth(interactionSources[1])
+            ) {
+                val icon = if (musicState.repeatMode == Player.REPEAT_MODE_ONE) R.drawable.repeat_one else R.drawable.repeat
 
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null
+                )
+            }
+            IconButton(
+                onClick = onShowSpeedCard,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = rateColor,
+                    contentColor = contentColorFor(rateColor)
+                ),
+                interactionSource = interactionSources[2],
+                shape = RoundedCornerShape(topStart = rateStart, topEnd = 50.dp, bottomStart = rateStart, bottomEnd = 50.dp),
+                modifier = Modifier
+                    .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                    .animateWidth(interactionSources[2])
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.speed_filled),
+                    contentDescription = null
+                )
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+        val timerColor by animateColorAsState(
+            if (musicState.sleepTimerRemainingDuration > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
+        )
+
+        Button(
+            onClick = { showTimePicker = true },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = timerColor,
+                contentColor = contentColorFor(timerColor)
+            ),
+            shapes = ButtonDefaults.shapes()
+        ) {
+            val icon = if (musicState.sleepTimerRemainingDuration > 0) R.drawable.sleep_timer_active_filled else R.drawable.sleep_timer_filled
             Icon(
                 painter = painterResource(icon),
-                contentDescription = "repeat mode"
-            )
-        }
-        IconButton(
-            onClick = { onNavigate(Screen.Queue) },
-            interactionSource = interactionSources[4],
-            modifier = Modifier
-                .animateWidth(interactionSources[4])
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.queue),
                 contentDescription = null
             )
-        }
-        IconButton(
-            onClick = { showTimePicker = true },
-            interactionSource = interactionSources[5],
-            modifier = Modifier
-                .animateWidth(interactionSources[5])
-        ) {
-            Icon(
-                painter = painterResource(
-                    if (musicState.sleepTimerRemainingDuration != 0L) {
-                        R.drawable.sleep_timer_active_filled
-                    } else {
-                        R.drawable.sleep_timer_filled
-                    }
-                ),
-                contentDescription = null
-            )
+            AnimatedVisibility(visible = musicState.sleepTimerRemainingDuration > 0) {
+                Text(
+                    text = musicState.sleepTimerRemainingDuration.formatToReadableTime(),
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            }
         }
     }
+
 }

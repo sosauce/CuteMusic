@@ -12,6 +12,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,13 +25,16 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -66,10 +70,12 @@ import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPic
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
+import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
 import com.sosauce.chocola.utils.CuteTheme
+import com.sosauce.chocola.utils.barsContentTransform
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.chocola.utils.toPaletteStyle
@@ -120,7 +126,8 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                 contentWindowInsets = WindowInsets.safeDrawing,
                 bottomBar = {
                     AnimatedContent(
-                        targetState = multiSelectState.isInSelectionMode
+                        targetState = multiSelectState.isInSelectionMode,
+                        transitionSpec = { barsContentTransform }
                     ) {
                         if (it) {
                             TracksSelectedBar(
@@ -136,41 +143,47 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 showSearchField = false,
                                 onNavigate = onNavigate,
                                 onNavigateUp = onNavigateUp,
-                                modifier = Modifier.selfAlignHorizontally()
+                                modifier = Modifier.selfAlignHorizontally(),
+                                fab = {
+                                    FloatingActionButton(
+                                        onClick = {
+                                            onHandlePlayerAction(
+                                                PlayerActions.Play(
+                                                    index = 0,
+                                                    tracks = state.tracks,
+                                                    random = true
+                                                )
+                                            )
+                                        },
+                                        shape = MaterialShapes.Cookie9Sided.toShape()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.shuffle),
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
                             )
                         }
                     }
                 }
             ) { paddingValues ->
                 LazyColumn(
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    contentPadding = paddingValues,
+                    contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
                     state = listState
                 ) {
                     if (state.tracks.isEmpty()) {
-                        item(
-                            "EmptyHeader"
-                        ) {
-                            EmptyPlaylist(state.playlist.emoji)
-                        }
+                        item("empty header") { EmptyPlaylist(state.playlist.emoji) }
                     } else {
-                        item(
-                            "Header"
-                        ) {
-                            if (isLandscape) {
-                                PlaylistHeaderLandscape(
-                                    playlist = state.playlist,
-                                    tracks = state.tracks,
-                                    onHandlePlayerActions = onHandlePlayerAction
-                                )
-                            } else {
-                                PlaylistHeader(
-                                    playlist = state.playlist,
-                                    tracks = state.tracks,
-                                    onHandlePlayerActions = onHandlePlayerAction
-                                )
-                            }
-                            Spacer(Modifier.height(10.dp))
+                        item("header") {
+                            PlaylistHeader(
+                                playlist = state.playlist,
+                                tracks = state.tracks,
+                                onHandlePlayerActions = onHandlePlayerAction
+                            )
+                        }
+
+                        item("track number") {
                             NumberOfTracks(
                                 size = state.tracks.size,
                                 sortMenu = {

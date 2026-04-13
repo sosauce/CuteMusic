@@ -20,8 +20,8 @@ android {
         applicationId = "com.sosauce.cutemusic" // Do not change to chocola, will require people who installed it as CuteMusic to re-install the app, and we'd have to create a new F-droid app page etc...
         minSdk = 26
         targetSdk = 36
-        versionCode = 50000
-        versionName = "4.0.0"
+        versionCode = 50001
+        versionName = "4.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -148,6 +148,7 @@ android {
         implementation(libs.sweetselect.compose)
         implementation(libs.squircle.shape)
         implementation(libs.cloudy)
+
 
     }
 }

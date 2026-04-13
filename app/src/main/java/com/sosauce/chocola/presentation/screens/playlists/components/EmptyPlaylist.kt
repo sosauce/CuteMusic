@@ -2,11 +2,16 @@
 
 package com.sosauce.chocola.presentation.screens.playlists.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +31,15 @@ import com.sosauce.chocola.R
 fun EmptyPlaylist(emoji: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .statusBarsPadding()
+            .padding(10.dp)
+//            .background(
+//                color = MaterialTheme.colorScheme.surfaceContainer,
+//                shape = RoundedCornerShape(24.dp)
+//            )
+            .fillMaxWidth()
+            .padding(10.dp)
     ) {
         if (emoji.isEmpty()) {
             Icon(

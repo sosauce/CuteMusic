@@ -7,8 +7,12 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,8 +21,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -35,51 +42,64 @@ import sv.lib.squircleshape.SquircleShape
 @Composable
 fun SharedTransitionScope.AlbumCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(24.dp),
     album: Album,
     onClick: () -> Unit
 ) {
 
     val context = LocalContext.current
 
-    Column(
+
+    Box(
         modifier = modifier
-            .padding(1.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 5.dp, vertical = 13.dp)
+            .aspectRatio(1f)
+            .clip(SquircleShape(percent = 30, smoothing = CornerSmoothing.Full))
             .clickable(onClick = onClick)
-            .padding(15.dp)
     ) {
         AsyncImage(
-            model = ImageUtils.imageRequester(
-                ImageUtils.getAlbumArt(album.id)
-                    ?: androidx.media3.session.R.drawable.media3_icon_album,
-                context
-            ),
+            model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id), context),
             contentDescription = stringResource(id = R.string.artwork),
             modifier = Modifier
-                .size(160.dp)
-                .sharedElement(
+                .fillMaxSize()
+                .sharedBounds(
                     sharedContentState = rememberSharedContentState(key = album.id),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-                )
-                .clip(SquircleShape(percent = 50, smoothing = CornerSmoothing.Full)),
+                ),
             contentScale = ContentScale.Crop
         )
-        Spacer(Modifier.height(10.dp))
-        Column {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(Color.Transparent, MaterialTheme.colorScheme.background)
+                    )
+                )
+                .padding(15.dp)
+        ) {
             Text(
                 text = album.name,
                 maxLines = 1,
                 style = MaterialTheme.typography.titleMediumEmphasized,
-                modifier = Modifier.basicMarquee()
+                modifier = Modifier
+                    .sharedBounds(
+                        sharedContentState = rememberSharedContentState(album.name + album.id),
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                    )
+                    .basicMarquee()
             )
             Text(
                 text = album.artist,
-                style = MaterialTheme.typography.bodyLargeEmphasized.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-                modifier = Modifier.basicMarquee()
+                style = MaterialTheme.typography.bodyLargeEmphasized,
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(album.artist + album.id),
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                    )
+                    .basicMarquee()
+
             )
         }
     }

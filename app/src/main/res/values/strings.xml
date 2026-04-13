@@ -74,7 +74,7 @@
     <string name="speed">Speed</string>
     <string name="pitch">Pitch</string>
     <string name="rate">Rate</string>
-    <string name="snap">Snap speed and pitch</string>
+    <string name="snap">Snap speed &amp; pitch</string>
     <string name="share">Share</string>
     <string name="show_close_button">Show close button</string>
     <string name="duration">Duration</string>
@@ -195,6 +195,19 @@
     <string name="no_saf_tracks">No S.A.F tracks!</string>
     <string name="playback">Playback</string>
     <string name="seek_buttons_duration">Seek buttons duration</string>
+    <string name="centered_title">Centered title</string>
+    <string name="ongoing_sleep_timer">You have an ongoing sleep timer</string>
+    <string name="timer_will_end_in">Current timer will end in:</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="enable_equalizer">Enable equalizer</string>
+    <string name="path">Path</string>
+    <string name="channels">Channels</string>
+    <string name="no">No</string>
+    <string name="about_track">About track</string>
+    <string name="about_file">About file</string>
+    <string name="name_and_emoji">Name &amp; emoji</string>
+    <string name="load">Load</string>
+    <string name="not_a_lyric_file">Not a lyric file!</string>
 
 
 

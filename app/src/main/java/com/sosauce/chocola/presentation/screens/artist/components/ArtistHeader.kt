@@ -4,24 +4,34 @@ package com.sosauce.chocola.presentation.screens.artist.components
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,95 +56,51 @@ fun SharedTransitionScope.ArtistHeader(
 ) {
 
     val context = LocalContext.current
-    val interactionSources = List(2) { rememberInteractionSource() }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .height(300.dp)
     ) {
         AsyncImage(
             model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(artist.albumId), context),
-            contentDescription = stringResource(R.string.artwork),
+            contentDescription = null,
             modifier = Modifier
-                .size(220.dp)
-                .sharedElement(
-                    sharedContentState = rememberSharedContentState(key = artist.id),
-                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-                )
-                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
+                .fillMaxSize(),
+//                .sharedElement(
+//                    sharedContentState = rememberSharedContentState(key = artist.id),
+//                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+//                ),
             contentScale = ContentScale.Crop
         )
-        Spacer(Modifier.height(10.dp))
-        Text(
-            text = artist.name,
-            style = MaterialTheme.typography.headlineMediumEmphasized,
+        Row(
             modifier = Modifier
-                .basicMarquee()
-                .sharedElement(
-                    sharedContentState = rememberSharedContentState(key = artist.name + artist.id),
-                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-                )
-        )
-//        Text(
-//            text = album.artist,
-//            style = MaterialTheme.typography.bodyLargeEmphasized,
-//            color = MaterialTheme.colorScheme.onSurfaceVariant,
-//            modifier = Modifier
-//                .basicMarquee()
-//                .sharedElement(
-//                    sharedContentState = rememberSharedContentState(key = album.artist + album.id),
-//                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-//                )
-//
-//        )
-        Spacer(Modifier.height(15.dp))
-
-        ButtonGroup(
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(
-                        PlayerActions.Play(
-                            index = 0,
-                            tracks = tracks
-                        )
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background)
                     )
-                },
-                shapes = IconButtonDefaults.shapes(),
-                colors = IconButtonDefaults.filledIconButtonColors(),
-                interactionSource = interactionSources[0],
+                )
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = artist.name,
+                style = MaterialTheme.typography.headlineLargeEmphasized,
                 modifier = Modifier
+                    .sharedBounds(
+                        sharedContentState = rememberSharedContentState(artist.name + artist.id),
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current
+                    )
                     .weight(1f)
-                    .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
-                    .animateWidth(interactionSources[0])
+                    .basicMarquee()
+            )
+            MediumFloatingActionButton(
+                onClick = { onHandlePlayerActions(PlayerActions.Play(0, tracks)) },
+                shape = MaterialShapes.Cookie9Sided.toShape()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.widget_play),
-                    contentDescription = null
-                )
-            }
-            IconButton(
-                onClick = {
-                    onHandlePlayerActions(
-                        PlayerActions.Play(
-                            index = 0,
-                            tracks = tracks,
-                            random = true
-                        )
-                    )
-                },
-                shapes = IconButtonDefaults.shapes(),
-                colors = IconButtonDefaults.filledIconButtonColors(),
-                interactionSource = interactionSources[1],
-                modifier = Modifier
-                    .weight(1f)
-                    .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
-                    .animateWidth(interactionSources[1])
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.shuffle),
                     contentDescription = null
                 )
             }

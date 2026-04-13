@@ -16,11 +16,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +31,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +48,7 @@ import com.sosauce.chocola.R
 import com.sosauce.chocola.data.models.CuteTrack
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
+import com.sosauce.chocola.utils.rememberInteractionSource
 import com.sosauce.chocola.utils.rememberSearchbarMaxFloatValue
 import com.sosauce.chocola.utils.rememberSearchbarRightPadding
 import com.sosauce.sweetselect.SweetSelectState
@@ -63,19 +68,23 @@ fun <T> SelectedBarSurface(
             .navigationBarsPadding()
             .fillMaxWidth(rememberSearchbarMaxFloatValue())
             .padding(end = rememberSearchbarRightPadding())
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(24.dp)
-            )
+//            .background(
+//                color = MaterialTheme.colorScheme.surfaceContainer,
+//                shape = RoundedCornerShape(24.dp)
+//            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            TextButton(
+            Button(
                 onClick = multiSelectState::clearSelected,
-                shapes = ButtonDefaults.shapes()
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                )
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),
@@ -84,7 +93,7 @@ fun <T> SelectedBarSurface(
                 Spacer(Modifier.width(5.dp))
                 Text("${multiSelectState.selectedItems.size}")
             }
-            TextButton(
+            Button(
                 onClick = {
                     if (multiSelectState.selectedItems.size == items.size) {
                         multiSelectState.clearSelected()
@@ -92,7 +101,11 @@ fun <T> SelectedBarSurface(
                         multiSelectState.toggleAll(items)
                     }
                 },
-                shapes = ButtonDefaults.shapes()
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                )
 
             ) {
 
@@ -111,10 +124,11 @@ fun <T> SelectedBarSurface(
                 Text(stringResource(text))
             }
         }
+        Spacer(Modifier.height(5.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) { actions() }
     }
@@ -130,6 +144,7 @@ fun TracksSelectedBar(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val interactionSources = List(3) { rememberInteractionSource() }
 
     SelectedBarSurface(
         modifier = modifier,
@@ -148,69 +163,91 @@ fun TracksSelectedBar(
             )
         }
 
-
-        IconButton(
-            onClick = { showPlaylistDialog = true },
-            shapes = IconButtonDefaults.shapes()
+        ButtonGroup(
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.playlist_add),
-                contentDescription = null
-            )
-        }
-        IconButton(
-            onClick = {
-                onHandlePlayerActions(PlayerActions.AddToQueue(multiSelectState.selectedItems.toList()))
-                multiSelectState.clearSelected()
-            },
-            shapes = IconButtonDefaults.shapes()
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.add_to_queue),
-                contentDescription = null
-            )
-        }
-        IconButton(
-            onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val intentSender = MediaStore.createDeleteRequest(
-                        context.contentResolver,
-                        multiSelectState.selectedItems.map { it.uri }
-                    ).intentSender
+            Button(
+                onClick = { showPlaylistDialog = true },
+                interactionSource = interactionSources[0],
+                shape = RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp, topEnd = 4.dp, bottomEnd = 4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                ),
+                modifier = Modifier
+                    .animateWidth(interactionSources[0])
+                    .weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.playlist_add),
+                    contentDescription = null
+                )
+            }
+            Button(
+                onClick = {
+                    onHandlePlayerActions(PlayerActions.AddToQueue(multiSelectState.selectedItems.toList()))
+                    multiSelectState.clearSelected()
+                },
+                interactionSource = interactionSources[1],
+                shape = RoundedCornerShape(4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                ),
+                modifier = Modifier
+                    .animateWidth(interactionSources[1])
+                    .weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.add_to_queue),
+                    contentDescription = null
+                )
+            }
+            Button(
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val intentSender = MediaStore.createDeleteRequest(
+                            context.contentResolver,
+                            multiSelectState.selectedItems.map { it.uri }
+                        ).intentSender
 
-                    deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-                } else {
-                    scope.launch(Dispatchers.IO) {
-                        val ops = arrayListOf<ContentProviderOperation>()
+                        deleteSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                    } else {
+                        scope.launch(Dispatchers.IO) {
+                            val ops = arrayListOf<ContentProviderOperation>()
 
-                        multiSelectState.selectedItems.forEach { item ->
-                            ops.add(
-                                ContentProviderOperation.newDelete(item.uri).build()
-                            )
-                        }
+                            multiSelectState.selectedItems.forEach { item ->
+                                ops.add(
+                                    ContentProviderOperation.newDelete(item.uri).build()
+                                )
+                            }
 
-                        runCatching {
-                            context.contentResolver.applyBatch(MediaStore.AUTHORITY, ops)
-                        }.onFailure {
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+                            runCatching {
+                                context.contentResolver.applyBatch(MediaStore.AUTHORITY, ops)
+                            }.onFailure {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }
-                }
-            },
-            shapes = IconButtonDefaults.shapes(),
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.trash_rounded_filled),
-                contentDescription = null
-            )
+                },
+                interactionSource = interactionSources[2],
+                shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 50.dp, bottomEnd = 50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                ),
+                modifier = Modifier
+                    .animateWidth(interactionSources[2])
+                    .weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.trash_rounded_filled),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
-
-
-
 }

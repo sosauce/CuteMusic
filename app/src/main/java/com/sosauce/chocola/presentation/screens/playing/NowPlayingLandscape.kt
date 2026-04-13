@@ -122,8 +122,7 @@ fun NowPlayingLandscape(
                 QuickActionsRow(
                     musicState = musicState,
                     onShowSpeedCard = { showSpeedCard = true },
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigate = onNavigate
+                    onHandlePlayerActions = onHandlePlayerActions
                 )
             }
 

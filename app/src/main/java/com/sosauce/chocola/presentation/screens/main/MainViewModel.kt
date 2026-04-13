@@ -2,8 +2,13 @@
 
 package com.sosauce.chocola.presentation.screens.main
 
+import android.app.Application
+import android.media.MediaScannerConnection
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosauce.chocola.data.AbstractTracksScanner
@@ -22,9 +27,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainViewModel(
+    private val application: Application,
     private val abstractTracksScanner: AbstractTracksScanner,
     private val userPreferences: UserPreferences
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     val textFieldState = TextFieldState()
     private val userQuery = snapshotFlow { textFieldState.text }.debounce(250)

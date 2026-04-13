@@ -8,11 +8,16 @@ package com.sosauce.chocola.presentation.screens.artist
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,13 +31,16 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,7 +48,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -63,9 +74,11 @@ import com.sosauce.chocola.presentation.screens.artist.components.ArtistHeaderLa
 import com.sosauce.chocola.presentation.screens.artist.components.NumberOfAlbums
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
+import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
 import com.sosauce.chocola.utils.ImageUtils
+import com.sosauce.chocola.utils.barsContentTransform
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
 
@@ -98,7 +111,8 @@ fun SharedTransitionScope.ArtistDetailsScreen(
             contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
                 AnimatedContent(
-                    targetState = multiSelectState.isInSelectionMode
+                    targetState = multiSelectState.isInSelectionMode,
+                    transitionSpec = { barsContentTransform }
                 ) {
                     if (it) {
                         TracksSelectedBar(
@@ -114,7 +128,26 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             onHandlePlayerActions = onHandlePlayerAction,
                             showSearchField = false,
                             onNavigate = onNavigate,
-                            onNavigateUp = onNavigateUp
+                            onNavigateUp = onNavigateUp,
+                            fab = {
+                                FloatingActionButton(
+                                    onClick = {
+                                        onHandlePlayerAction(
+                                            PlayerActions.Play(
+                                                index = 0,
+                                                tracks = state.tracks,
+                                                random = true
+                                            )
+                                        )
+                                    },
+                                    shape = MaterialShapes.Cookie9Sided.toShape()
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.shuffle),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
                         )
                     }
                 }
@@ -123,27 +156,17 @@ fun SharedTransitionScope.ArtistDetailsScreen(
 
             LazyColumn(
                 state = lazyState,
-                contentPadding = paddingValues,
-                modifier = Modifier.padding(horizontal = 5.dp)
+                contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
             ) {
 
                 item(
                     key = "Header"
                 ) {
-                    if (isLandscape) {
-                        ArtistHeaderLandscape(
-                            artist = state.artist,
-                            tracks = state.tracks,
-                            onHandlePlayerActions = onHandlePlayerAction
-                        )
-                    } else {
-                        ArtistHeader(
-                            artist = state.artist,
-                            tracks = state.tracks,
-                            onHandlePlayerActions = onHandlePlayerAction
-                        )
-                    }
-                    Spacer(Modifier.height(10.dp))
+                    ArtistHeader(
+                        artist = state.artist,
+                        tracks = state.tracks,
+                        onHandlePlayerActions = onHandlePlayerAction
+                    )
                 }
 
                 if (state.albums.isNotEmpty()) {
@@ -169,39 +192,36 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                                         sharedContentState = rememberSharedContentState(key = album.id),
                                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                                     )
-                                    .maskClip(MaterialTheme.shapes.extraLarge)
+                                    .clip(MaterialTheme.shapes.extraLarge)
                                     .clickable { onNavigate(Screen.AlbumsDetails(album.name)) },
-                                contentAlignment = Alignment.BottomCenter
+                                contentAlignment = Alignment.BottomStart
                             ) {
                                 AsyncImage(
-                                    model = ImageUtils.imageRequester(
-                                        ImageUtils.getAlbumArt(album.id)
-                                            ?: androidx.media3.session.R.drawable.media3_icon_album,
-                                        context
-                                    ),
+                                    model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id), context),
                                     contentDescription = stringResource(R.string.artwork),
+                                    modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
                                 Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background)
+                                            )
+                                        )
+                                        .padding(10.dp),
+                                    verticalArrangement = Arrangement.Bottom
                                 ) {
                                     Text(
                                         text = album.name,
-                                        style = MaterialTheme.typography.headlineSmallEmphasized,
-                                        modifier = Modifier.dropShadow(
-                                            shape = RoundedCornerShape(10.dp),
-                                            shadow = Shadow(20.dp)
-                                        )
+                                        style = MaterialTheme.typography.titleMediumEmphasized,
+                                        modifier = Modifier.basicMarquee()
                                     )
                                     Text(
                                         text = album.artist,
-                                        style = MaterialTheme.typography.bodyMediumEmphasized.copy(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        ),
-                                        modifier = Modifier.dropShadow(
-                                            shape = RoundedCornerShape(10.dp),
-                                            shadow = Shadow(20.dp)
-                                        )
+                                        style = MaterialTheme.typography.bodyMediumEmphasized,
+                                        modifier = Modifier.basicMarquee()
                                     )
                                 }
                             }
@@ -280,6 +300,14 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                             onNavigate = onNavigate,
                             isSelected = isSelected,
                             onHandlePlayerActions = onHandlePlayerAction
+                        )
+                    }
+                } else {
+                    item {
+                        NoXFound(
+                            headlineText = R.string.no_music_title,
+                            bodyText = R.string.better_luck_next_time,
+                            icon = R.drawable.music_note_rounded
                         )
                     }
                 }

@@ -2,8 +2,12 @@
 
 package com.sosauce.chocola.presentation.screens.playlists
 
+import android.content.ContentProviderOperation
+import android.os.Build
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -16,6 +20,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -59,8 +67,12 @@ import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
+import com.sosauce.chocola.utils.barsContentTransform
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -112,27 +124,34 @@ fun SharedTransitionScope.PlaylistsScreen(
         Scaffold(
             contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
-                AnimatedContent(multiSelectState.isInSelectionMode) {
+                AnimatedContent(
+                    targetState = multiSelectState.isInSelectionMode,
+                    transitionSpec = { barsContentTransform }
+                ) {
                     if (it) {
                         SelectedBarSurface(
                             modifier = Modifier.selfAlignHorizontally(),
                             items = state.playlists,
                             multiSelectState = multiSelectState
                         ) {
-                            IconButton(
+                            Button(
                                 onClick = {
                                     multiSelectState.selectedItems.forEach { playlist ->
                                         onHandlePlaylistAction(PlaylistActions.DeletePlaylist(playlist))
                                     }
+                                    multiSelectState.clearSelected()
                                 },
-                                shapes = IconButtonDefaults.shapes(),
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                )
+                                shape = RoundedCornerShape(50.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+                                ),
+                                modifier = Modifier.weight(1f)
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.trash_rounded_filled),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
                                 )
                             }
                         }

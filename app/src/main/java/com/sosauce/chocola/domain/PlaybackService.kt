@@ -1,3 +1,5 @@
+@file:OptIn(DelicateCoroutinesApi::class)
+
 package com.sosauce.chocola.domain
 
 import android.annotation.SuppressLint
@@ -5,8 +7,12 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.audiofx.Equalizer
 import android.os.Build
 import android.os.Bundle
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -22,19 +28,35 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.ListenableFuture
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.datastore.UserPreferences
+import com.sosauce.chocola.data.models.EqualizerBand
+import com.sosauce.chocola.data.models.EqualizerPreset
+import com.sosauce.chocola.domain.receivers.EqualizerBroadcastReceiver
 import com.sosauce.chocola.presentation.MainActivity
+import com.sosauce.chocola.presentation.screens.settings.EqualizerCallback
 import com.sosauce.chocola.presentation.widgets.WidgetBroadcastReceiver
 import com.sosauce.chocola.presentation.widgets.WidgetCallback
 import com.sosauce.chocola.utils.CUTE_MUSIC_ID
 import com.sosauce.chocola.utils.PACKAGE
 import com.sosauce.chocola.utils.WIDGET_NEW_DATA
 import com.sosauce.chocola.utils.WIDGET_NEW_IS_PLAYING
+import com.sosauce.chocola.utils.copyMutate
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.definition.indexKey
 
 
 class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Player.Listener,
-    WidgetCallback {
+    WidgetCallback, KoinComponent, EqualizerCallback {
+
 
     private var mediaLibrarySession: MediaLibrarySession? = null
+
+    private val userPreferences by inject<UserPreferences>()
     private val audioAttributes = AudioAttributes
         .Builder()
         .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
@@ -42,6 +64,11 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
         .build()
 
     private val widgetReceiver = WidgetBroadcastReceiver()
+    private val equalizerReceiver = EqualizerBroadcastReceiver()
+
+
+    private var equalizer: Equalizer? = null
+
 
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -71,11 +98,75 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
     @SuppressLint("UnsafeOptInUsageError")
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
         super.onAudioSessionIdChanged(audioSessionId)
-        println("Testing, service audiosession = $audioSessionId")
         mediaLibrarySession?.sessionExtras = Bundle().apply {
             putInt("audioSessionId", audioSessionId)
         }
+        cleanupEqualizer()
+        equalizer = Equalizer(0, audioSessionId).apply {
+            lifecycleScope.launch(Dispatchers.IO) {
+
+                val bands = userPreferences.getEqualizerBands()
+                val presets = userPreferences.getEqualizerPresets()
+                val isEnabled = userPreferences.getIsEqualizerEnabled()
+
+
+                if (bands.isEmpty()) {
+                    setupEqualizerBands(this@apply)
+                }
+                if (presets.isEmpty()) {
+                    val presets = (0 until numberOfPresets).map { band ->
+                        EqualizerPreset(
+                            name = getPresetName(band.toShort()),
+                            band = band.toShort()
+                        )
+                    }
+                    userPreferences.saveEqualizerPresets(presets)
+
+                }
+                bands.fastForEach { (centerFrequencyMilli, millibel) ->
+
+                    try {
+                        val bandIndex = getBand(centerFrequencyMilli)
+
+                        val minLevel = bandLevelRange[0]
+                        val maxLevel = bandLevelRange[1]
+
+                        val levelMilliBel = millibel.coerceIn(minLevel, maxLevel)
+
+                        setBandLevel(bandIndex, levelMilliBel)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                enabled = isEnabled
+            }
+
+        }
     }
+
+    private fun cleanupEqualizer() {
+        equalizer?.release()
+        equalizer = null
+    }
+
+    private suspend fun setupEqualizerBands(equalizer: Equalizer) {
+        val tempEqBands = mutableListOf<EqualizerBand>()
+
+
+        (0 until equalizer.numberOfBands).forEach { index ->
+            val band = index.toShort()
+            val centerFreq = equalizer.getCenterFreq(band) // millihertz
+            val decibel = equalizer.getBandLevel(band) // millibels
+
+            tempEqBands.add(
+                EqualizerBand(centerFreq, decibel)
+            )
+        }
+
+        println("am I cute ? $tempEqBands")
+        userPreferences.saveEqualizerBands(tempEqBands)
+        }
 
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
@@ -90,9 +181,6 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()
-            .apply {
-                pauseAtEndOfMediaItems = true
-            }
         mediaLibrarySession = MediaLibrarySession
             .Builder(this, player, this)
             .setId(CUTE_MUSIC_ID)
@@ -117,11 +205,19 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
                     it,
                     RECEIVER_EXPORTED
                 )
+                registerReceiver(
+                    equalizerReceiver,
+                    it,
+                    RECEIVER_EXPORTED
+                )
+
             } else {
                 registerReceiver(widgetReceiver, it)
+                registerReceiver(equalizerReceiver, it)
             }
         }
         widgetReceiver.startCallback(this)
+        equalizerReceiver.startCallback(this)
 
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this).build().apply {
@@ -140,15 +236,15 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
             release()
             mediaLibrarySession = null
         }
-        stopSelf()
-        try {
-            widgetReceiver.also {
-                it.stopCallback()
-                unregisterReceiver(it)
-            }
-        } catch (e: IllegalArgumentException) {
-            super.onDestroy()
+        widgetReceiver.also {
+            it.stopCallback()
+            unregisterReceiver(it)
         }
+        equalizerReceiver.also {
+            it.stopCallback()
+            unregisterReceiver(it)
+        }
+        stopSelf()
         super.onDestroy()
     }
 
@@ -211,5 +307,40 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
 
     override fun skipToPrevious() {
         mediaLibrarySession?.player?.seekToPrevious()
+    }
+
+    override fun toggle(enable: Boolean) = equalizer?.enabled = enable
+
+    override fun setBandGain(centerFrequencyMilliHertz: Int, gainMilliBel: Short) {
+
+
+        val band = equalizer?.getBand(centerFrequencyMilliHertz) ?: return
+        println("hello cutie: $centerFrequencyMilliHertz, $gainMilliBel, $band")
+
+
+        equalizer?.setBandLevel(band, gainMilliBel)
+
+        lifecycleScope.launch {
+            val currentBands = userPreferences.getEqualizerBands()
+
+            val updatedBands = currentBands.fastMap { bandItem ->
+                if (bandItem.centerFrequencyMilliHertz == centerFrequencyMilliHertz) {
+                    bandItem.copy(millibelsLevel = gainMilliBel)
+                } else {
+                    bandItem
+                }
+            }
+
+            userPreferences.saveEqualizerBands(updatedBands)
+        }
+    }
+
+    override fun usePreset(presetBand: Short) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            equalizer?.run {
+                usePreset(presetBand)
+                setupEqualizerBands(this)
+            }
+        }
     }
 }

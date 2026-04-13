@@ -2,19 +2,24 @@
 
 package com.sosauce.chocola.presentation.shared_components
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.database.ContentObserver
 import android.media.AudioManager
 import android.os.CountDownTimer
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Metadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
@@ -30,7 +35,9 @@ import com.sosauce.chocola.utils.changeRepeatMode
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.playOrPause
 import com.sosauce.chocola.utils.playRandom
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,18 +132,7 @@ class MusicViewModel(
                                 isPlayerReady = false
                             )
                         }
-
-//                        viewModelScope.launch {
-//                            saveSavedPosition(application, musicState.value.position)
-//                            saveSavedMediaId(application, musicState.value.track.mediaId)
-//                        }
-
-                        _musicState.update {
-                            it.copy(track = CuteTrack())
-                        }
                     }
-
-
                     Player.STATE_READY -> {
                         _musicState.update {
                             it.copy(
@@ -144,7 +140,6 @@ class MusicViewModel(
                             )
                         }
                     }
-
                     else -> {
                         _musicState.update {
                             it.copy(
@@ -163,7 +158,7 @@ class MusicViewModel(
                 super.onPositionDiscontinuity(oldPosition, newPosition, reason)
                 _musicState.update {
                     it.copy(
-                        position = newPosition.positionMs
+                        position = newPosition.positionMs.coerceIn(0, musicState.value.track.durationMs)
                     )
                 }
             }
@@ -181,7 +176,6 @@ class MusicViewModel(
                     }
                 }
             }
-
         }
 
     init {
@@ -224,21 +218,25 @@ class MusicViewModel(
 
             val savedMusicState = userPreferences.getSavedMusicState()
 
-            mediaController!!.changeRepeatMode(savedMusicState.repeatMode)
-            mediaController!!.applyShuffle(savedMusicState.shuffle)
-            mediaController!!.applyPlaybackSpeed(savedMusicState.speed)
-            mediaController!!.applyPlaybackPitch(savedMusicState.pitch)
-
-            if (savedMusicState.loadedMedias.isNotEmpty()) {
-                mediaController!!.setMediaItems(
-                    savedMusicState.loadedMedias.fastMap {
-                        MediaItem.Builder().setUri(it.uri).setMediaId(it.mediaId).build()
-                    },
-                    savedMusicState.mediaIndex,
-                    savedMusicState.position
-                )
-                mediaController!!.prepare()
-                _musicState.update { it.copy(track = savedMusicState.track, loadedMedias = savedMusicState.loadedMedias) }
+            mediaController?.run {
+                changeRepeatMode(savedMusicState.repeatMode)
+                applyShuffle(savedMusicState.shuffle)
+                applyPlaybackSpeed(savedMusicState.speed)
+                applyPlaybackPitch(savedMusicState.pitch)
+                val mediaItems = savedMusicState.loadedMedias.fastMap {
+                    MediaItem.fromUri(it.uri).buildUpon()
+                        .setMediaId(it.mediaId)
+                        .build()
+                }
+                if (savedMusicState.loadedMedias.isNotEmpty()) {
+                    setMediaItems(
+                        mediaItems,
+                        savedMusicState.mediaIndex,
+                        savedMusicState.position
+                    )
+                    prepare()
+                    _musicState.update { it.copy(track = savedMusicState.track, loadedMedias = savedMusicState.loadedMedias) }
+                }
             }
         }
     }
@@ -281,12 +279,33 @@ class MusicViewModel(
             is PlayerActions.SeekTo -> mediaController!!.seekTo(mediaController!!.currentPosition + action.position)
             is PlayerActions.SeekToSlider -> mediaController!!.seekTo(action.position)
             is PlayerActions.RewindTo -> mediaController!!.seekTo(mediaController!!.currentPosition - action.position)
-            is PlayerActions.StopPlayback -> mediaController!!.stop()
+            is PlayerActions.StopPlayback -> {
+                mediaController?.run {
+                    stop()
+                    clearMediaItems()
+                    seekTo(0)
+                }
+
+                _musicState.update {
+                    it.copy(
+                        loadedMedias = emptyList()
+                    )
+                }
+            }
             is PlayerActions.SeekToMusicIndex -> mediaController!!.seekTo(action.index, 0)
             is PlayerActions.Shuffle -> mediaController!!.applyShuffle(!musicState.value.shuffle)
             is PlayerActions.ChangeRepeatMode -> mediaController!!.changeRepeatMode()
             is PlayerActions.SetSpeed -> mediaController!!.applyPlaybackSpeed(action.speed)
             is PlayerActions.SetPitch -> mediaController!!.applyPlaybackPitch(action.pitch)
+            is PlayerActions.CancelSleepTimer -> {
+                sleepCountdownTimer?.cancel()
+                sleepCountdownTimer = null
+                _musicState.update {
+                    it.copy(
+                        sleepTimerRemainingDuration = 0
+                    )
+                }
+            }
             is PlayerActions.Play -> {
                 val mediaItemsToPlay = action.tracks.fastMap { it.mediaItem }
 
@@ -342,6 +361,8 @@ class MusicViewModel(
                             )
                         }
                     }
+
+
                 }
                 sleepCountdownTimer?.start()
             }
@@ -379,11 +400,14 @@ class MusicViewModel(
             }
 
             is PlayerActions.AddToQueue -> {
-                val mediaItems = action.cuteTracks.fastMap { MediaItem.fromUri(it.uri) }
+
+
+                val uniqueTracks = action.cuteTracks.fastFilter { it !in musicState.value.loadedMedias }
+                val mediaItems = uniqueTracks.fastMap { MediaItem.fromUri(it.uri) }
                 mediaController!!.addMediaItems(mediaItems)
 
                 val loadedMedias = musicState.value.loadedMedias.copyMutate {
-                    addAll(action.cuteTracks)
+                    addAll(uniqueTracks)
                 }
                 _musicState.update {
                     it.copy(

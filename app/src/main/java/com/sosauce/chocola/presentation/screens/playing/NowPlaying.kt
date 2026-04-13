@@ -6,18 +6,35 @@
 package com.sosauce.chocola.presentation.screens.playing
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -28,14 +45,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import com.sosauce.chocola.R
+import com.sosauce.chocola.data.LyricsParser
 import com.sosauce.chocola.data.datastore.rememberIsLandscape
 import com.sosauce.chocola.data.datastore.rememberSnapSpeedAndPitch
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
+import com.sosauce.chocola.presentation.screens.lyrics.LyricsScreen
 import com.sosauce.chocola.presentation.screens.playing.components.ActionButtonsRow
 import com.sosauce.chocola.presentation.screens.playing.components.Artwork
 import com.sosauce.chocola.presentation.screens.playing.components.CuteSlider
@@ -45,6 +68,10 @@ import com.sosauce.chocola.presentation.screens.playing.components.SpeedCard
 import com.sosauce.chocola.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.presentation.shared_components.MusicDetailsDialog
+import com.sosauce.chocola.utils.ICON_TEXT_SPACING
+import com.sosauce.chocola.utils.bouncySpec
+import com.sosauce.chocola.utils.rememberInteractionSource
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun NowPlaying(
@@ -82,6 +109,7 @@ private fun NowPlayingContent(
     onNavigate: (Screen) -> Unit,
     onShrinkToSearchbar: () -> Unit
 ) {
+    val context = LocalContext.current
     var snap by rememberSnapSpeedAndPitch()
     var showSpeedCard by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
@@ -128,8 +156,7 @@ private fun NowPlayingContent(
                 QuickActionsRow(
                     musicState = musicState,
                     onShowSpeedCard = { showSpeedCard = true },
-                    onHandlePlayerActions = onHandlePlayerActions,
-                    onNavigate = onNavigate
+                    onHandlePlayerActions = onHandlePlayerActions
                 )
             }
         }
@@ -186,3 +213,4 @@ private fun NowPlayingContent(
 
 
 }
+

@@ -18,7 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.skydoves.cloudy.cloudy
+import com.sosauce.chocola.data.datastore.rememberCenterTitle
 import com.sosauce.chocola.data.datastore.rememberShowAlbumName
 import com.sosauce.chocola.data.states.MusicState
 
@@ -30,10 +32,11 @@ fun TitleAndArtist(
 ) {
 
     val showAlbumName by rememberShowAlbumName()
+    val centerTitle by rememberCenterTitle()
+    val textAlignment = if (centerTitle) TextAlign.Center else TextAlign.Start
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.Start,
+        modifier = Modifier.fillMaxWidth()
     ) {
         AnimatedContent(
             modifier = Modifier.fillMaxWidth(),
@@ -45,9 +48,11 @@ fun TitleAndArtist(
             )
             Text(
                 text = it,
-                color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.headlineMediumEmphasized,
-                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.headlineMediumEmphasized.copy(
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = textAlignment
+                ),
                 modifier = titleModifier
                     .fillMaxWidth()
                     .cloudy(radius)
@@ -70,8 +75,10 @@ fun TitleAndArtist(
                         append(album)
                     }
                 },
-                color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleLargeEmphasized,
+                style = MaterialTheme.typography.titleLargeEmphasized.copy(
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = textAlignment
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .cloudy(radius)

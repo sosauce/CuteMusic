@@ -29,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +56,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.models.Playlist
 import com.sosauce.chocola.domain.actions.PlaylistActions
+import com.sosauce.chocola.presentation.shared_components.CuteListItem
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.PlaylistDeletionDialog
 import com.sosauce.chocola.presentation.shared_components.SelectedItemLogo
@@ -76,7 +78,7 @@ fun PlaylistItem(
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 0.9f else 1f
+        targetValue = if (isSelected) 0.95f else 1f
     )
     val exportPlaylistLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
@@ -125,29 +127,21 @@ fun PlaylistItem(
         )
     }
 
-    Box(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .padding(3.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .combinedClickable(
-                onClick = onClickPlaylist,
-                onLongClick = onLongClick
-            )
+
+    CompositionLocalProvider(
+        LocalContentColor provides if (enabled) LocalContentColor.current else MaterialTheme.colorScheme.onSurface.copy(
+            0.38f
+        )
     ) {
-        CompositionLocalProvider(
-            LocalContentColor provides if (enabled) LocalContentColor.current else MaterialTheme.colorScheme.onSurface.copy(
-                0.38f
-            )
-        ) {
-            Row(
-                modifier = modifier
-                    .padding(vertical = 15.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        CuteListItem(
+            modifier = modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
+            onClick = onClickPlaylist,
+            onLongClick = onLongClick,
+            leadingContent = {
                 AnimatedContent(
                     targetState = isSelected,
                     transitionSpec = { scaleIn() togetherWith scaleOut() },
@@ -158,110 +152,106 @@ fun PlaylistItem(
                     } else {
                         Box(
                             modifier = Modifier
-                                .size(45.dp)
-                                .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
+                                .size(50.dp)
+                                .clip(SquircleShape(smoothing = CornerSmoothing.Full))
+                                .background(MaterialTheme.colorScheme.surfaceContainer),
                             contentAlignment = Alignment.Center
                         ) {
                             if (playlist.emoji.isNotBlank()) {
                                 Text(
                                     text = playlist.emoji,
-                                    fontSize = 20.sp
+                                    fontSize = 25.sp
                                 )
                             } else {
                                 Icon(
                                     painter = painterResource(R.drawable.queue_music_rounded),
                                     contentDescription = null,
-                                    modifier = Modifier.size(30.dp)
+                                    modifier = Modifier.size(25.dp)
                                 )
                             }
                         }
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .weight(1f)
-                ) {
-                    Text(
-                        text = playlist.name,
-                        maxLines = 1,
-                        modifier = Modifier.basicMarquee()
-                    )
-
-                    val bottomText = if (enabled) {
-                        pluralStringResource(
-                            R.plurals.tracks,
-                            playlist.musics.size,
-                            playlist.musics.size
-                        )
-                    } else {
-                        stringResource(R.string.already_in_playlist)
-                    }
-
-                    Text(
-                        text = bottomText,
-                        maxLines = 1,
-                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(
-                            0.38f
-                        )
+            },
+            trailingContent = {
+                if (playlist.color != -1) {
+                    Box(
+                        modifier = Modifier
+                            .size(15.dp)
+                            .background(
+                                color = Color(playlist.color),
+                                shape = MaterialShapes.Circle.toShape()
+                            )
                     )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                IconButton(
+                    onClick = { isDropdownExpanded = true },
+                    shapes = IconButtonDefaults.shapes(),
+                    enabled = enabled
                 ) {
-                    if (playlist.color != -1) {
-                        Box(
-                            modifier = Modifier
-                                .size(15.dp)
-                                .background(
-                                    color = Color(playlist.color),
-                                    shape = MaterialShapes.Circle.toShape()
-                                )
-                        )
-                    }
-                    IconButton(
-                        onClick = { isDropdownExpanded = true }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = null
+                    )
+                }
 
-                    DropdownMenuPopup(
-                        expanded = isDropdownExpanded,
-                        onDismissRequest = { isDropdownExpanded = false }
+                DropdownMenuPopup(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { isDropdownExpanded = false }
+                ) {
+                    DropdownMenuGroup(
+                        shapes = MenuDefaults.groupShapes()
                     ) {
-                        DropdownMenuGroup(
-                            shapes = MenuDefaults.groupShapes()
-                        ) {
-                            playlistOptions.fastForEachIndexed { index, option ->
-                                DropdownMenuItem(
-                                    onClick = option.onClick,
-                                    shape = when (index) {
-                                        0 -> MenuDefaults.leadingItemShape
-                                        playlistOptions.lastIndex -> MenuDefaults.trailingItemShape
-                                        else -> MenuDefaults.middleItemShape
-                                    },
-                                    text = {
-                                        Text(
-                                            text = option.text(),
-                                            color = option.tint ?: LocalContentColor.current
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            painter = painterResource(option.icon),
-                                            contentDescription = null,
-                                            tint = option.tint ?: LocalContentColor.current
-                                        )
-                                    }
-                                )
-                            }
+                        playlistOptions.fastForEachIndexed { index, option ->
+                            DropdownMenuItem(
+                                onClick = option.onClick,
+                                shape = when (index) {
+                                    0 -> MenuDefaults.leadingItemShape
+                                    playlistOptions.lastIndex -> MenuDefaults.trailingItemShape
+                                    else -> MenuDefaults.middleItemShape
+                                },
+                                text = {
+                                    Text(
+                                        text = option.text(),
+                                        color = option.tint ?: LocalContentColor.current
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(option.icon),
+                                        contentDescription = null,
+                                        tint = option.tint ?: LocalContentColor.current
+                                    )
+                                }
+                            )
                         }
                     }
                 }
             }
+        ) {
+            Text(
+                text = playlist.name,
+                maxLines = 1,
+                modifier = Modifier.basicMarquee()
+            )
+
+            val bottomText = if (enabled) {
+                pluralStringResource(
+                    R.plurals.tracks,
+                    playlist.musics.size,
+                    playlist.musics.size
+                )
+            } else {
+                stringResource(R.string.already_in_playlist)
+            }
+
+            Text(
+                text = bottomText,
+                maxLines = 1,
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(
+                    0.38f
+                )
+            )
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -65,9 +67,11 @@ import coil3.compose.AsyncImage
 import com.kyant.taglib.Picture
 import com.sosauce.chocola.R
 import com.sosauce.chocola.domain.actions.MetadataActions
-import com.sosauce.chocola.presentation.shared_components.CuteActionButton
+import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.shared_components.ThreadDivider
 import com.sosauce.chocola.utils.ImageUtils
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun MetadataEditor(
@@ -81,14 +85,6 @@ fun MetadataEditor(
 
     val context = LocalContext.current
     val resources = LocalResources.current
-    val photoPickerLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-            metadataViewModel.onHandleMetadataActions(
-                MetadataActions.UpdateAudioArt(
-                    it ?: Uri.EMPTY
-                )
-            )
-        }
 
     val editSongLauncher =
         rememberLauncherForActivityResult(
@@ -127,15 +123,21 @@ fun MetadataEditor(
                         contentDescription = null
                     )
                 }
-                CuteActionButton(
-                    modifier = Modifier.padding(end = 15.dp),
-                    icon = R.drawable.check
+                FloatingActionButton(
+                    onClick = {
+                        val intentSender = MediaStore.createWriteRequest(
+                            context.contentResolver,
+                            listOf(trackUri)
+                        ).intentSender
+                        editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                    },
+                    shape = MaterialShapes.Cookie9Sided.toShape(),
+                    modifier = Modifier.padding(end = 15.dp)
                 ) {
-                    val intentSender = MediaStore.createWriteRequest(
-                        context.contentResolver,
-                        listOf(trackUri)
-                    ).intentSender
-                    editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                    Icon(
+                        painter = painterResource(R.drawable.check),
+                        contentDescription = null
+                    )
                 }
             }
         }
@@ -145,6 +147,7 @@ fun MetadataEditor(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
+                .padding(horizontal = 5.dp)
                 .imePadding()
         ) {
             MetadataArt(
@@ -172,25 +175,26 @@ fun MetadataEditor(
                     metadataState.mutablePropertiesMap["TITLE"] = title
                 }
                 Row(
-                    modifier = Modifier.padding(start = 20.dp),
+                    modifier = Modifier.padding(start = 20.dp, top = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ThreadDivider(
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${stringResource(R.string.file_name)}: $fileName",
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(start = 5.dp),
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                        text = "${stringResource(R.string.file_name)}: ${fileName.substringBeforeLast(".")}",
+                        style = MaterialTheme.typography.labelMediumEmphasized.copy(
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        modifier = Modifier
+                            .padding(start = 5.dp)
+                            .basicMarquee()
+
                     )
                 }
 
                 EditTextField(
                     initialValue = metadataState.mutablePropertiesMap["ARTIST"],
-                    verticalPadding = 0.dp,
                     label = {
                         Text(
                             text = stringResource(R.string.artist)
@@ -221,7 +225,7 @@ fun MetadataEditor(
                 ) { album ->
                     metadataState.mutablePropertiesMap["ALBUM"] = album
                 }
-                Spacer(Modifier.height(25.dp))
+                Spacer(Modifier.height(20.dp))
 
                 Row {
                     EditTextField(
@@ -298,7 +302,6 @@ fun MetadataEditor(
 private fun EditTextField(
     modifier: Modifier = Modifier,
     initialValue: String?,
-    verticalPadding: Dp = 5.dp,
     label: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Done,
     keyboardType: KeyboardType = KeyboardType.Unspecified,
@@ -316,9 +319,10 @@ private fun EditTextField(
             keyboardType = keyboardType
         ),
         leadingIcon = leadingIcon,
+        shape = RoundedCornerShape(12.dp),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = verticalPadding)
+            .padding(horizontal = 5.dp, vertical = 1.dp)
     )
 }
 
@@ -346,7 +350,7 @@ private fun MetadataArt(
                 contentDescription = stringResource(id = R.string.artwork),
                 modifier = Modifier
                     .size(230.dp)
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(SquircleShape(percent = 30,smoothing = CornerSmoothing.Full))
                     .clickable {
                         photoPickerLauncher.launch(
                             PickVisualMediaRequest(
@@ -354,13 +358,12 @@ private fun MetadataArt(
                             )
                         )
                     },
-                contentScale = ContentScale.Crop,
-
+                contentScale = ContentScale.Crop
             )
         } else {
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(SquircleShape(percent = 30,smoothing = CornerSmoothing.Full))
                     .background(MaterialTheme.colorScheme.surfaceContainer)
                     .clickable {
                         photoPickerLauncher.launch(
@@ -387,7 +390,8 @@ private fun MetadataArt(
                 .offset(x = 10.dp, y = (-20).dp)
         ) {
             FilledIconButton(
-                onClick = { onHandleMetadataActions(MetadataActions.RemoveArtwork) }
+                onClick = { onHandleMetadataActions(MetadataActions.RemoveArtwork) },
+                shapes = IconButtonDefaults.shapes()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),
