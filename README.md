@@ -41,6 +41,7 @@
 
 - Play any song from anywhere just by sharing the audio file to the app without downloading it!
 - Easy search across all your music/albums/artists!
+- Built-in equalizer!
 - Very fast and snappy!
 - No unnecessary permissions needed!
 - Material 3 Expressive design!
