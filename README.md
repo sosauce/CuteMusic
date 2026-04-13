@@ -39,12 +39,12 @@
   
 <h1>👀 Overview</h1>
 
+- Material 3 Expressive design!
 - Play any song from anywhere just by sharing the audio file to the app without downloading it!
 - Easy search across all your music/albums/artists!
 - Built-in equalizer!
 - Very fast and snappy!
 - No unnecessary permissions needed!
-- Material 3 Expressive design!
 - Blacklist Folders!
 - Beautiful landscape UI!
 - Tag Editor!
