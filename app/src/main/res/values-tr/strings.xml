@@ -25,7 +25,7 @@
     <string name="close">Kapat</string>
     <string name="more">Daha Fazla</string>
     <string name="hi_there">Merhaba!</string>
-    <string name="permission_needed">Görünüşe göre CuteMusic, parçalarınıza erişim iznine sahip değil! Aşağıdan izin verebilirsiniz!</string>
+    <string name="permission_needed">Görünüşe göre Chocola, parçalarınıza erişim iznine sahip değil! Aşağıdan izin verebilirsin!</string>
     <string name="request_permission">İzin iste</string>
     <string name="no_music_title">Parça bulunamadı!</string>
     <string name="error_deleting_song">Şarkı silinirken bir hata oluştu.</string>
@@ -192,4 +192,14 @@
     <string name="rate_error">Oran %1$.1f ile %2$d arasında olmalıdır.</string>
     <string name="hide_from_tracklist">Şarkı listesinden gizle</string>
     <string name="hidden_tracks">Gizli şarkılar</string>
+    <string name="show_album_name">Albüm ismini göster</string>
+    <string name="alignment">Hizalama</string>
+    <string name="font_size">Yazı tipi boyutu</string>
+    <string name="select_all">Hepsini seç</string>
+    <string name="unselect_all">Hiçbirini seçme</string>
+    <string name="palette">Palet</string>
+    <string name="no_hidden_tracks">Hiç gizli parça yok!</string>
+    <string name="no_saf_tracks">Hiç S.A.F parça yok!</string>
+    <string name="playback">Oynatma</string>
+    <string name="seek_buttons_duration">Atlama butonlarının süresi</string>
 </resources>
