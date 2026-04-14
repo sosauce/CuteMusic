@@ -7,8 +7,10 @@ package com.sosauce.chocola.presentation.shared_components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
@@ -18,6 +20,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,11 +37,13 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,7 +76,7 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.LocalScreen
-import com.sosauce.chocola.utils.bouncySpecDp
+import com.sosauce.chocola.utils.bouncySpec
 import com.sosauce.chocola.utils.copyMutate
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
@@ -81,8 +86,6 @@ fun MusicListItem(
     modifier: Modifier = Modifier,
     track: CuteTrack,
     musicState: MusicState,
-    backgroundColor: Color = Color.Transparent,
-    shape: Shape = CuteListItemDefaults.defaultShape,
     onShortClick: (mediaId: String) -> Unit,
     onLongClick: (() -> Unit)? = null,
     onNavigate: (Screen) -> Unit,
@@ -100,22 +103,17 @@ fun MusicListItem(
 ) {
 
     val context = LocalContext.current
-    val image = rememberAsyncImagePainter(ImageUtils.imageRequester(track.artUri, context))
-    val imageState by image.state.collectAsStateWithLifecycle()
-    val bgColor = if (musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady) {
-        MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
-    } else {
-        //MaterialTheme.colorScheme.surfaceContainer
-        backgroundColor
-    }
-    val cornerRadius by animateDpAsState(
-        targetValue = if (musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady) {
-            24.dp
-        } else 4.dp,
-        animationSpec = bouncySpecDp
+    val isCurrentlyPlaying = musicState.track.uri.toString() == track.uri.toString() && musicState.isPlayerReady
+    val bgColor by animateColorAsState(
+        if (isCurrentlyPlaying) {
+            MaterialTheme.colorScheme.primaryContainer.copy(0.1f)
+        } else {
+            Color.Transparent
+        },
+        animationSpec = bouncySpec()
     )
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 0.9f else 1f
+        targetValue = if (isSelected) 0.95f else 1f
     )
 //    var showTrackCard by remember { mutableStateOf(false) }
 //
@@ -165,15 +163,13 @@ fun MusicListItem(
 //        }
 //    }
 
-
     CuteListItem(
-         modifier = modifier
-             .graphicsLayer {
-                 scaleX = scale
-                 scaleY = scale
-             },
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
         backgroundColor = bgColor,
-        shape = shape,
         onClick = { onShortClick(track.mediaId) },
         onLongClick = onLongClick,
         leadingContent = {
@@ -185,37 +181,27 @@ fun MusicListItem(
                 if (it) {
                     SelectedItemLogo()
                 } else {
-                    when (imageState) {
-                        is AsyncImagePainter.State.Error -> {
-                            Box(
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(SquircleShape(smoothing = CornerSmoothing.Full))
-                                    .background(MaterialTheme.colorScheme.surfaceContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.music_note_rounded),
-                                    contentDescription = null,
-                                    tint = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
-
-                                )
-                            }
-                        }
-
-                        else -> {
-                            AsyncImage(
-                                model = ImageUtils.imageRequester(track.artUri, context),
-                                contentDescription = stringResource(R.string.artwork),
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
-//                                    .clickable {
-//                                        showTrackCard = true
-//                                    },
-                                contentScale = ContentScale.Crop
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(SquircleShape(smoothing = CornerSmoothing.Full))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music_note_rounded),
+                                contentDescription = null
                             )
                         }
+                        AsyncImage(
+                            model = ImageUtils.imageRequester(track.artUri, context),
+                            contentDescription = stringResource(R.string.artwork),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
             }
@@ -494,19 +480,3 @@ data class MoreOptions(
     val enabled: Boolean = true,
     val disabledText: (@Composable () -> String)? = null,
 )
-
-
-object CuteListItemDefaults {
-    val leadingItemShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomEnd = 4.dp, bottomStart = 4.dp)
-    val trailingItemShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomEnd = 24.dp, bottomStart = 24.dp)
-    val middleItemShape = RoundedCornerShape(4.dp)
-    val defaultShape = RoundedCornerShape(24.dp)
-
-    fun getItemShape(index: Int, lastIndex: Int): Shape {
-        return when(index) {
-            0 -> leadingItemShape
-            lastIndex -> trailingItemShape
-            else -> middleItemShape
-        }
-    }
-}

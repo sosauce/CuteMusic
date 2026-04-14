@@ -3,6 +3,7 @@
 package com.sosauce.chocola.presentation.screens.main.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,8 +50,10 @@ fun FolderHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 5.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .clickable { onToggleVisibility() },
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(12.dp)
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
@@ -78,11 +81,16 @@ fun FolderHeader(
                 text = File(category.name).name,
                 modifier = Modifier.weight(1f)
             )
-            Icon(
-                painter = painterResource(R.drawable.arrow_right),
-                contentDescription = null,
-                modifier = Modifier.rotate(iconRotation)
-            )
+            IconButton(
+                onClick = onToggleVisibility,
+                shapes = IconButtonDefaults.shapes()
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_right),
+                    contentDescription = null,
+                    modifier = Modifier.rotate(iconRotation)
+                )
+            }
         }
     }
 }

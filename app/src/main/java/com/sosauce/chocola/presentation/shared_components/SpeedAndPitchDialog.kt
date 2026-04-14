@@ -2,41 +2,66 @@
 
 package com.sosauce.chocola.presentation.shared_components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Modifier.Companion
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.screens.playing.components.SpeedCardContent
+import com.sosauce.chocola.presentation.screens.playing.components.WavySlider
+import com.sosauce.chocola.presentation.screens.settings.compenents.SliderSettingsCards
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedSlider
 
 @Composable
@@ -48,16 +73,7 @@ fun SpeedAndPitchDialog(
     onChangeSnap: () -> Unit,
     onSetSpeedContent: (SpeedCardContent) -> Unit
 ) {
-    val speed by animateFloatAsState(musicState.speed)
-    val pitch by animateFloatAsState(musicState.pitch)
-    val speedTint by animateColorAsState(
-        targetValue = if (speed != 1.0f) LocalContentColor.current else Color.Transparent,
-        animationSpec = tween(500)
-    )
-    val pitchTint by animateColorAsState(
-        targetValue = if (pitch != 1.0f) LocalContentColor.current else Color.Transparent,
-        animationSpec = tween(500)
-    )
+
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -80,164 +96,61 @@ fun SpeedAndPitchDialog(
         text = {
             Column {
                 if (!shouldSnap) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(
-                                    MaterialTheme.colorScheme.primary.copy(
-                                        alpha = 0.1f
-                                    )
-                                )
-                                .clickable { onSetSpeedContent(SpeedCardContent.SPEED) }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "${stringResource(id = R.string.speed)}: " + "%.2f".format(
-                                    speed
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 15.sp
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                onHandlePlayerAction(
-                                    PlayerActions.SetSpeed(
-                                        1.0f
-                                    )
-                                )
-                            },
-                            enabled = speed != 1.0f
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.reset),
-                                contentDescription = null,
-                                tint = speedTint
-                            )
-                        }
-                    }
-                    AnimatedSlider(
-                        value = speed,
-                        onValueChange = {
-                            onHandlePlayerAction(
-                                PlayerActions.SetSpeed(
-                                    it
-                                )
-                            )
-                        },
-                        valueRange = 0.5f..3f
+                    RateSliderCard(
+                        value = musicState.speed,
+                        onValueChange = { onHandlePlayerAction(PlayerActions.SetSpeed(it)) },
+                        text = stringResource(R.string.speed),
+                        onReset = { onHandlePlayerAction(PlayerActions.SetSpeed(1.0f)) },
+                        onOpenManualEdit = { onSetSpeedContent(SpeedCardContent.SPEED) }
                     )
-                    //
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(
-                                    MaterialTheme.colorScheme.primary.copy(
-                                        alpha = 0.1f
-                                    )
-                                )
-                                .clickable { onSetSpeedContent(SpeedCardContent.PITCH) }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "${stringResource(id = R.string.pitch)}: " + "%.2f".format(
-                                    pitch
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 15.sp
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                onHandlePlayerAction(
-                                    PlayerActions.SetPitch(
-                                        1.0f
-                                    )
-                                )
-                            },
-                            enabled = pitch != 1.0f
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.reset),
-                                contentDescription = null,
-                                tint = pitchTint
-                            )
-                        }
-                    }
-                    AnimatedSlider(
-                        value = pitch,
-                        onValueChange = {
-                            onHandlePlayerAction(
-                                PlayerActions.SetPitch(
-                                    it
-                                )
-                            )
-                        },
-                        valueRange = 0.5f..3f
+                    Spacer(Modifier.height(10.dp))
+                    RateSliderCard(
+                        value = musicState.pitch,
+                        onValueChange = { onHandlePlayerAction(PlayerActions.SetPitch(it)) },
+                        text = stringResource(R.string.pitch),
+                        onReset = { onHandlePlayerAction(PlayerActions.SetPitch(1.0f)) },
+                        onOpenManualEdit = { onSetSpeedContent(SpeedCardContent.PITCH) }
                     )
                 } else {
-                    // Snapped rate
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(11.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.primary.copy(
-                                            alpha = 0.1f
-                                        )
-                                    )
-                                    .clickable { onSetSpeedContent(SpeedCardContent.RATE) }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                            ) {
-                                Text(
-                                    text = "${stringResource(id = R.string.rate)}: " + "%.2f".format(
-                                        speed
-                                    ),
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    onHandlePlayerAction(PlayerActions.SetSpeed(1.0f))
-                                    onHandlePlayerAction(PlayerActions.SetPitch(1.0f))
-                                },
-                                enabled = speed != 1.0f
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.reset),
-                                    contentDescription = null,
-                                    tint = speedTint
-                                )
-                            }
-                        }
-                        AnimatedSlider(
-                            value = speed,
-                            onValueChange = {
-                                onHandlePlayerAction(PlayerActions.SetSpeed(it))
-                                onHandlePlayerAction(PlayerActions.SetPitch(it))
-                            },
-                            valueRange = 0.5f..3f
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    RoundedCheckbox(
-                        checked = shouldSnap,
-                        onCheckedChange = { onChangeSnap() }
+                    RateSliderCard(
+                        value = musicState.speed,
+                        onValueChange = {
+                            onHandlePlayerAction(PlayerActions.SetSpeed(it))
+                            onHandlePlayerAction(PlayerActions.SetPitch(it))
+                        },
+                        text = stringResource(R.string.rate),
+                        onReset = {
+                            onHandlePlayerAction(PlayerActions.SetSpeed(1.0f))
+                            onHandlePlayerAction(PlayerActions.SetPitch(1.0f))
+                        },
+                        onOpenManualEdit = { onSetSpeedContent(SpeedCardContent.RATE) }
                     )
+                }
+
+                val snapColor by animateColorAsState(
+                    if (shouldSnap) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest
+                )
+                val snapRadius by animateDpAsState(
+                    if (shouldSnap) 50.dp else 12.dp
+                )
+
+                Spacer(Modifier.height(10.dp))
+                Button(
+                    onClick = onChangeSnap,
+                    modifier = Modifier.align(Alignment.End),
+                    shape = RoundedCornerShape(snapRadius),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = snapColor,
+                        contentColor = contentColorFor(snapColor)
+                    )
+                ) {
+                    AnimatedVisibility(shouldSnap) {
+                        Icon(
+                            painter = painterResource(R.drawable.check),
+                            contentDescription = null
+                        )
+                        Spacer(Modifier.width(5.dp))
+                    }
                     Text(
                         text = stringResource(id = R.string.snap)
                     )
@@ -245,4 +158,86 @@ fun SpeedAndPitchDialog(
             }
         }
     )
+}
+
+@Composable
+private fun RateSliderCard(
+    value: Float,
+    text: String,
+    onValueChange: (Float) -> Unit,
+    onReset: () -> Unit,
+    onOpenManualEdit: () -> Unit
+) {
+
+    val animatedValue by animateFloatAsState(value)
+    val sliderState = rememberSliderState(
+        value = animatedValue,
+        valueRange = 0.5f..3.0f,
+    )
+    sliderState.onValueChange = { onValueChange(it) }
+
+    LaunchedEffect(animatedValue) {
+        sliderState.value = animatedValue
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHighest),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(15.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Text(text)
+                }
+                Text(text = "%.2f".format(animatedValue))
+            }
+            WavySlider(state = sliderState)
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = onOpenManualEdit,
+                    shapes = ButtonDefaults.shapes(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.edit_filled),
+                        contentDescription = null
+                    )
+                }
+                AnimatedVisibility(
+                    visible = value != 1.0f,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Button(
+                        onClick = onReset,
+                        shapes = ButtonDefaults.shapes(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.reset),
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

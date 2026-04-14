@@ -10,6 +10,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import androidx.core.net.toUri
 
 @Serializable
 data class CuteTrack(
@@ -44,7 +45,7 @@ object UriSerializer : KSerializer<Uri> {
         value: Uri
     ) = encoder.encodeString(value.toString())
 
-    override fun deserialize(decoder: Decoder): Uri = Uri.parse(decoder.decodeString())
+    override fun deserialize(decoder: Decoder): Uri = decoder.decodeString().toUri()
 }
 
 

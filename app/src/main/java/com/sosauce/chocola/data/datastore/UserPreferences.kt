@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import com.sosauce.chocola.data.datastore.PreferencesKeys.ALBUM_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.ARTIST_SORT
+import com.sosauce.chocola.data.datastore.PreferencesKeys.EQUALIZER_BANDS
+import com.sosauce.chocola.data.datastore.PreferencesKeys.EQUALIZER_ENABLED
+import com.sosauce.chocola.data.datastore.PreferencesKeys.EQUALIZER_PRESETS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HIDDEN_TRACKS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.LAST_MUSIC_STATE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.MIN_TRACK_DURATION
@@ -16,14 +19,18 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_PLAYLISTS_ASCENDI
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_TRACKS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.TRACK_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
+import com.sosauce.chocola.data.models.EqualizerBand
+import com.sosauce.chocola.data.models.EqualizerPreset
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.utils.AlbumSort
 import com.sosauce.chocola.utils.ArtistSort
 import com.sosauce.chocola.utils.PlaylistSort
 import com.sosauce.chocola.utils.TrackSort
 import com.sosauce.chocola.utils.copyMutate
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 class UserPreferences(
@@ -93,7 +100,10 @@ class UserPreferences(
     }
 
     suspend fun saveSavedMusicState(musicState: MusicState) =
-        context.dataStore.edit { it[LAST_MUSIC_STATE] = Json.encodeToString(musicState) }
+        context.dataStore.edit {
+            println("Hello Nekopara: $musicState")
+            it[LAST_MUSIC_STATE] = Json.encodeToString(musicState)
+        }
 
 
     suspend fun unhideTrack(mediaId: String) {
@@ -102,5 +112,38 @@ class UserPreferences(
             it[HIDDEN_TRACKS] = alreadyHidden.copyMutate { remove(mediaId) }
         }
     }
+
+    suspend fun saveEqualizerBands(bands: List<EqualizerBand>) {
+        context.dataStore.edit { it[EQUALIZER_BANDS] = Json.encodeToString(bands) }
+    }
+
+    suspend fun saveEqualizerPresets(presets: List<EqualizerPreset>) {
+        context.dataStore.edit { it[EQUALIZER_PRESETS] = Json.encodeToString(presets) }
+    }
+
+    suspend fun getEqualizerBands(): List<EqualizerBand> {
+        return context.dataStore.data.map {
+            val string = it[EQUALIZER_BANDS] ?: "[]"
+            Json.decodeFromString<List<EqualizerBand>>(string)
+        }.first()
+    }
+
+    suspend fun getEqualizerPresets(): List<EqualizerPreset> {
+        return context.dataStore.data.map {
+            val string = it[EQUALIZER_PRESETS] ?: "[]"
+            Json.decodeFromString<List<EqualizerPreset>>(string)
+        }.first()
+    }
+
+    fun getEqualizerBandsFlow(): Flow<List<EqualizerBand>> {
+        return context.dataStore.data.map {
+            val string = it[EQUALIZER_BANDS] ?: "[]"
+            Json.decodeFromString<List<EqualizerBand>>(string)
+        }
+    }
+
+    suspend fun getIsEqualizerEnabled() = context.dataStore.data.map {
+        it[EQUALIZER_ENABLED] ?: false
+    }.first()
 
 }

@@ -11,6 +11,7 @@ sealed interface PlayerActions {
     data object StopPlayback : PlayerActions
     data object Shuffle : PlayerActions
     data object ChangeRepeatMode : PlayerActions
+    data object CancelSleepTimer : PlayerActions
     data class SeekTo(val position: Long) : PlayerActions
     data class SeekToSlider(val position: Long) : PlayerActions
     data class RewindTo(val position: Long) : PlayerActions

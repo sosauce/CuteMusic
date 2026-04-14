@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
 package com.sosauce.chocola.presentation.screens.playlists.components
 
@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -34,6 +39,7 @@ import com.sosauce.chocola.domain.actions.PlaylistActions
 import com.sosauce.chocola.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.chocola.utils.ICON_TEXT_SPACING
 import com.sosauce.chocola.utils.copyMutate
+import com.sosauce.chocola.utils.selfAlignHorizontally
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -54,15 +60,15 @@ fun PlaylistPicker(
     }
 
     ModalBottomSheet(
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.secondary) }
     ) {
         LazyColumn {
             item {
-                OutlinedButton(
+                Button(
                     onClick = { showPlaylistCreatorDialog = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth()
+                    modifier = Modifier.selfAlignHorizontally(),
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -91,12 +97,6 @@ fun PlaylistPicker(
                                         mediaId.fastForEach { id ->
                                             if (!contains(id)) {
                                                 add(id)
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    context.getString(R.string.alrdy_in_playlist),
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
                                             }
                                         }
                                     }

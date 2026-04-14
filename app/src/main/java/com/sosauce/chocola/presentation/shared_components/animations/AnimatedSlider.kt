@@ -14,6 +14,7 @@ import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -36,7 +37,7 @@ fun AnimatedSlider(
     val animatedValue by animateFloatAsState(value)
 
     Slider(
-        value = animatedValue,
+        value = value,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished,
         modifier = modifier,
@@ -50,17 +51,17 @@ fun AnimatedSlider(
             )
         },
         thumb = {
-            val height by animateDpAsState(
-                targetValue = if (hideThumb) 0.dp else 30.dp
+            val animatedHeight by animateDpAsState(
+                if (it.isDragging) 40.dp else 35.dp
             )
 
-            val width by animateDpAsState(
-                targetValue = if (isDragging) 8.dp else 4.dp
+            val animatedWidth by animateDpAsState(
+                if (it.isDragging) 10.dp else 6.dp
             )
 
             SliderDefaults.Thumb(
                 interactionSource = rememberInteractionSource(),
-                thumbSize = DpSize(width = width, height = height)
+                thumbSize = DpSize(animatedWidth, animatedHeight)
             )
         },
         valueRange = valueRange,

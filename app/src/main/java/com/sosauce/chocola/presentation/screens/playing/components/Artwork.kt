@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -152,8 +153,6 @@ fun Artwork(
                     contentDescription = stringResource(R.string.artwork),
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .wrapContentSize()
-                        .fillMaxSize()
                         .clip(artworkShape.toShape()),
                     contentScale = ContentScale.Crop
                 )
@@ -170,10 +169,10 @@ private fun ErrorImage() {
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .wrapContentSize()
-            .fillMaxSize()
-            .clip(artworkShape.toShape())
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = artworkShape.toShape()
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(

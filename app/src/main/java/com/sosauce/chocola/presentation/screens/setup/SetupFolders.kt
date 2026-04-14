@@ -50,7 +50,7 @@ fun SetupFolders() {
                 onValueChange = { minTrackDuration = it },
                 topDp = 24.dp,
                 bottomDp = 24.dp,
-                text = R.string.min_track_length_text
+                text = stringResource(R.string.min_track_length_text)
             )
         }
     }

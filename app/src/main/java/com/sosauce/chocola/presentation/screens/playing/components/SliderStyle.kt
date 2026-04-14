@@ -7,11 +7,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,122 +24,136 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import com.sosauce.chocola.data.datastore.rememberThumblessSlider
+import com.sosauce.chocola.data.datastore.rememberThumbStyle
+import com.sosauce.chocola.data.datastore.rememberTrackStyle
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedSlider
-import com.sosauce.chocola.utils.SliderStyle
+import com.sosauce.chocola.utils.ThumbStyle
+import com.sosauce.chocola.utils.TrackStyle
 import com.sosauce.chocola.utils.rememberInteractionSource
 
 
 @Composable
-fun String.toSlider(
+fun NowPlayingSlider(
     state: CuteSliderState,
     isPlaying: Boolean = true
 ) {
-    val interactionSource = rememberInteractionSource()
-    val isDragging by interactionSource.collectIsDraggedAsState()
-    val hideThumb by rememberThumblessSlider()
-    when (this) {
-        SliderStyle.WAVY -> {
-            Slider(
-                value = state.value,
-                onValueChange = state.onValueChange,
-                onValueChangeFinished = state.onValueChangeFinished,
-                valueRange = state.valueRange,
-                enabled = state.enabled,
-                interactionSource = interactionSource,
-                track = { sliderState2 ->
+    val thumbStyle by rememberThumbStyle()
+    val trackStyle by rememberTrackStyle()
 
-                    val animatedHeight by animateDpAsState(
-                        if (sliderState2.isDragging) 7.dp else 4.dp
+
+    Slider(
+        value = state.value,
+        onValueChange = state.onValueChange,
+        onValueChangeFinished = state.onValueChangeFinished,
+        valueRange = state.valueRange,
+        enabled = state.enabled,
+        thumb = {
+            when(thumbStyle) {
+                ThumbStyle.STRAIGHT -> StraightThumb(it.isDragging)
+                ThumbStyle.BALL -> ClassicThumb(it.isDragging)
+                ThumbStyle.MORPHING -> MorphingThumb()
+            }
+        },
+        track = { trackSliderState ->
+            when(trackStyle) {
+                TrackStyle.WAVY -> {
+                    WavyTrack(
+                        isPlaying = isPlaying,
+                        sliderState = trackSliderState
                     )
-                    val trackStroke = Stroke(
-                        width =
-                            with(LocalDensity.current) {
-                                animatedHeight.toPx()
-                            },
-                        cap = StrokeCap.Round,
-                    )
-
-                    LinearWavyProgressIndicator(
-                        modifier = Modifier.fillMaxWidth(),
-                        progress = {
-                            if (state.valueRange.endInclusive > 0) {
-                                sliderState2.value / state.valueRange.endInclusive
-                            } else 0f
-                        },
-                        stopSize = 0.dp,
-                        trackStroke = trackStroke,
-                        amplitude = { if (isPlaying && !sliderState2.isDragging) 1f else 0f }
-                    )
-                },
-                thumb = {
-                    if (!hideThumb) {
-                        val animatedHeight by animateDpAsState(
-                            if (it.isDragging) 40.dp else 35.dp
-                        )
-
-                        val animatedWidth by animateDpAsState(
-                            if (it.isDragging) 10.dp else 6.dp
-                        )
-
-                        SliderDefaults.Thumb(
-                            interactionSource = remember { MutableInteractionSource() },
-                            thumbSize = DpSize(animatedWidth, animatedHeight)
-                        )
-                    }
                 }
-            )
+                TrackStyle.STRAIGHT -> StraightTrack(trackSliderState)
+            }
         }
-
-        SliderStyle.CLASSIC -> {
-            Slider(
-                value = state.value,
-                onValueChange = state.onValueChange,
-                onValueChangeFinished = state.onValueChangeFinished,
-                track = { sliderState ->
-                    SliderDefaults.Track(
-                        sliderState = sliderState,
-                        drawStopIndicator = null,
-                        thumbTrackGapSize = 0.dp,
-                        modifier = Modifier.height(4.dp)
-                    )
-                },
-                thumb = {
-                    val width by animateDpAsState(
-                        targetValue = if (isDragging) 28.dp else 20.dp
-                    )
-                    val height by animateDpAsState(
-                        targetValue = if (hideThumb) 0.dp else 20.dp
-                    )
-                    SliderDefaults.Thumb(
-                        interactionSource = rememberInteractionSource(),
-                        thumbSize = DpSize(
-                            width = width,
-                            height = height
-                        )
-                    )
-                },
-                valueRange = state.valueRange,
-                enabled = state.enabled,
-                interactionSource = interactionSource
-            )
-        }
-
-        SliderStyle.MATERIAL3 -> {
-            AnimatedSlider(
-                value = state.value,
-                onValueChange = state.onValueChange,
-                onValueChangeFinished = state.onValueChangeFinished,
-                hideThumb = hideThumb,
-                valueRange = state.valueRange,
-                enabled = state.enabled,
-                interactionSource = interactionSource
-            )
-        }
-
-        else -> Unit
-    }
+    )
 }
+
+@Composable
+fun StraightThumb(isDragging: Boolean) {
+    val animatedHeight by animateDpAsState(
+        if (isDragging) 40.dp else 35.dp
+    )
+
+    val animatedWidth by animateDpAsState(
+        if (isDragging) 10.dp else 6.dp
+    )
+
+    SliderDefaults.Thumb(
+        interactionSource = rememberInteractionSource(),
+        thumbSize = DpSize(animatedWidth, animatedHeight)
+    )
+}
+
+@Composable
+fun MorphingThumb() = LoadingIndicator(modifier = Modifier.size(35.dp))
+
+
+
+@Composable
+fun ClassicThumb(isDragging: Boolean) {
+    val width by animateDpAsState(
+        targetValue = if (isDragging) 28.dp else 20.dp
+    )
+    SliderDefaults.Thumb(
+        interactionSource = rememberInteractionSource(),
+        thumbSize = DpSize(
+            width = width,
+            height = 20.dp
+        )
+    )
+}
+
+@Composable
+fun WavySlider(
+    state: SliderState
+) {
+    Slider(
+        state = state,
+        thumb = { StraightThumb(it.isDragging) },
+        track = { WavyTrack(true, state) }
+    )
+}
+
+@Composable
+fun WavyTrack(
+    isPlaying: Boolean,
+    sliderState: SliderState
+) {
+    val animatedHeight by animateDpAsState(
+        if (sliderState.isDragging) 7.dp else 4.dp
+    )
+    val trackStroke = Stroke(
+        width =
+            with(LocalDensity.current) {
+                animatedHeight.toPx()
+            },
+        cap = StrokeCap.Round,
+    )
+
+    LinearWavyProgressIndicator(
+        modifier = Modifier.fillMaxWidth(),
+        progress = {
+            val rangeLength = sliderState.valueRange.endInclusive - sliderState.valueRange.start
+            if (rangeLength > 0f) {
+                (sliderState.value - sliderState.valueRange.start) / rangeLength
+            } else 0f
+        },
+        stopSize = 0.dp,
+        trackStroke = trackStroke,
+        amplitude = { if (isPlaying && !sliderState.isDragging) 1f else 0f }
+    )
+}
+
+@Composable
+fun StraightTrack(sliderState: SliderState) {
+    SliderDefaults.Track(
+        sliderState = sliderState,
+        drawStopIndicator = null,
+        thumbTrackGapSize = 0.dp,
+        modifier = Modifier.height(4.dp)
+    )
+}
+
 
 
 data class CuteSliderState(

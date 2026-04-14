@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -135,13 +136,12 @@ fun SharedTransitionScope.AlbumsScreen(
                     if (state.albums.isEmpty()) {
                         item { NoResult() }
                     } else {
-                        itemsIndexed(
+                        items(
                             items = state.albums,
-                            key = { _, album -> album.id }
-                        ) { index, album ->
+                            key = { it.id }
+                        ) { album ->
                             AlbumCard(
                                 modifier = Modifier.animateContentSize().animateItem(),
-                                shape = getAlbumCardShape(index, state.albums.size, numberOfAlbumGrids),
                                 album = album,
                                 onClick = { onNavigate(Screen.AlbumsDetails(album.name)) }
                             )
@@ -151,24 +151,5 @@ fun SharedTransitionScope.AlbumsScreen(
             }
         }
     }
-}
-
-@Composable
-private fun getAlbumCardShape(index: Int, totalItems: Int, columns: Int): Shape {
-    val row = index / columns
-    val col = index % columns
-    val lastRow = (totalItems - 1) / columns
-    val isLastRow = row == lastRow
-    val isLastItem = index == totalItems - 1
-
-    val cornerSize = 24.dp
-    val flat = 0.dp
-
-    return RoundedCornerShape(
-        topStart = if (row == 0 && col == 0) cornerSize else flat,
-        topEnd = if (row == 0 && (col == columns - 1 || isLastItem)) cornerSize else flat,
-        bottomStart = if (isLastRow && col == 0) cornerSize else flat,
-        bottomEnd = if (isLastItem || (isLastRow && col == columns - 1)) cornerSize else flat
-    )
 }
 

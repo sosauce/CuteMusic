@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ fun AnimatedIconButton(
 
     IconButton(
         onClick = onClick,
+        shapes = IconButtonDefaults.shapes(),
         modifier = buttonModifier,
         interactionSource = interactionSource
     ) {

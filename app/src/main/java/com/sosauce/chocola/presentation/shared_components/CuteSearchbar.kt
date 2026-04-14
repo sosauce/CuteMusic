@@ -45,10 +45,12 @@ import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.Text
@@ -61,8 +63,10 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,6 +87,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.lerp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberHasSeenTip
@@ -99,8 +104,10 @@ import com.sosauce.chocola.utils.SharedTransitionKeys
 import com.sosauce.chocola.utils.bouncySpec
 import com.sosauce.chocola.utils.rememberInteractionSource
 import com.sosauce.chocola.utils.rememberSearchbarRightPadding
+import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.chocola.utils.showBackButton
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 
 @Composable
@@ -118,7 +125,6 @@ fun SharedTransitionScope.CuteSearchbar(
 
     val currentScreen = LocalScreen.current
     val surfaceContainerHigh = MaterialTheme.colorScheme.surfaceContainerHigh
-    val showShuffleButton by rememberShowShuffleButton()
     var isInScreenSelectionMode by remember { mutableStateOf(false) }
     val screenToLeadingIcon = mapOf(
         Screen.Main to R.drawable.music_note_rounded,
@@ -144,7 +150,7 @@ fun SharedTransitionScope.CuteSearchbar(
 
             // enter in bounce
             LaunchedEffect(Unit) {
-                yTranslationPlaying.animateTo(0f, bouncySpec)
+                yTranslationPlaying.animateTo(0f, bouncySpec())
             }
 
             val playingDragState = rememberDraggableState { dragAmount ->
@@ -170,7 +176,7 @@ fun SharedTransitionScope.CuteSearchbar(
                                 showFullPlayer = false
                             } else {
                                 scope.launch {
-                                    yTranslationPlaying.animateTo(0f, bouncySpec)
+                                    yTranslationPlaying.animateTo(0f, bouncySpec())
                                 }
                             }
                         }
@@ -184,7 +190,6 @@ fun SharedTransitionScope.CuteSearchbar(
                 onShrinkToSearchbar = { showFullPlayer = false }
             )
         } else {
-
 
 
             val oneFourthOfHeight = windowInfo.containerSize.height / 4f
@@ -206,12 +211,24 @@ fun SharedTransitionScope.CuteSearchbar(
                     yTranslationSearchbar.snapTo(finalValue)
                 }
             }
+            val progress by remember {
+                derivedStateOf {
+                    if (yTranslationSearchbar.value <= 0) {
+                        (yTranslationSearchbar.value.absoluteValue / oneFourthOfHeight).coerceIn(0f, 1f)
+                    } else 0f // means we're dragging down
+                }
+            }
+
+            val searchbarWidth by animateFloatAsState(
+                targetValue = lerp(0.85f, 1f, progress),
+                animationSpec = bouncySpec()
+            )
 
 
             Column(
                 modifier = modifier
                     .navigationBarsPadding()
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(searchbarWidth)
                     .padding(end = rememberSearchbarRightPadding())
                     .imePadding()
                     .draggable(
@@ -226,11 +243,11 @@ fun SharedTransitionScope.CuteSearchbar(
                             } else if (targetValue > 0) {
                                 onHandlePlayerActions(PlayerActions.StopPlayback)
                                 scope.launch {
-                                    yTranslationSearchbar.animateTo(0f, bouncySpec)
+                                    yTranslationSearchbar.animateTo(0f, bouncySpec())
                                 }
                             } else {
                                 scope.launch {
-                                    yTranslationSearchbar.animateTo(0f, bouncySpec)
+                                    yTranslationSearchbar.animateTo(0f, bouncySpec())
                                 }
                             }
                         }
@@ -245,14 +262,21 @@ fun SharedTransitionScope.CuteSearchbar(
                         .padding(bottom = 4.dp)
                 ) {
                     if (currentScreen.showBackButton()) {
-                        CuteNavigationButton(
-                            onNavigateUp = { onNavigateUp?.invoke() }
-                        )
+                        FloatingActionButton(
+                            onClick = { onNavigateUp?.invoke() },
+                            shape = MaterialShapes.Cookie9Sided.toShape(),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.back),
+                                contentDescription = null
+                            )
+                        }
                     }
-                    if (showShuffleButton || currentScreen == Screen.Playlists) {
-                        Spacer(Modifier.weight(1f))
-                        fab?.invoke()
-                    }
+                    Spacer(Modifier.weight(1f))
+                    fab?.invoke()
+//                    if (showShuffleButton || currentScreen == Screen.Playlists) {
+//                    }
                 }
                 val animatedPosition by animateFloatAsState(musicState.position.toFloat(), tween(500))
                 Column(

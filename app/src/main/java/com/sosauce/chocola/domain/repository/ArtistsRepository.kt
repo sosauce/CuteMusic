@@ -4,10 +4,13 @@ package com.sosauce.chocola.domain.repository
 
 import android.content.Context
 import android.provider.MediaStore
+import androidx.compose.ui.util.fastDistinctBy
 import com.sosauce.chocola.data.AbstractTracksScanner
 import com.sosauce.chocola.data.models.Album
 import com.sosauce.chocola.data.models.Artist
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class ArtistsRepository(
@@ -20,7 +23,7 @@ class ArtistsRepository(
         extraSelectionArgs = arrayOf(artistName)
     )
 
-    fun fetchArtists(): List<Artist> {
+    suspend fun fetchArtists(): List<Artist> = withContext(Dispatchers.IO) {
 
         val artists = mutableListOf<Artist>()
 
@@ -63,7 +66,7 @@ class ArtistsRepository(
             }
         }
 
-        return artists.distinctBy { it.name }
+        return@withContext artists
     }
 
     fun fetchArtistDetails(artistName: String): Artist {
@@ -109,7 +112,9 @@ class ArtistsRepository(
 
         context.contentResolver.query(
             uri,
-            arrayOf(MediaStore.Audio.Artists.Albums.ALBUM_ID),
+            arrayOf(
+                MediaStore.Audio.Artists.Albums.ALBUM_ID
+            ),
             null,
             null,
             null

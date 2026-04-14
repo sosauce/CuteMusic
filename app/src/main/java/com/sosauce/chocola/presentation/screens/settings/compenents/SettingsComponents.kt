@@ -33,12 +33,15 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,14 +61,16 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAppTheme
-import com.sosauce.chocola.data.datastore.rememberSliderStyle
+import com.sosauce.chocola.presentation.screens.playing.components.WavySlider
+import com.sosauce.chocola.presentation.screens.playing.components.WavyTrack
 import com.sosauce.chocola.presentation.screens.playing.components.rememberCuteSliderState
-import com.sosauce.chocola.presentation.screens.playing.components.toSlider
 import com.sosauce.chocola.presentation.screens.settings.FontItem
 import com.sosauce.chocola.presentation.screens.settings.FontStyle
 import com.sosauce.chocola.presentation.screens.settings.ThemeItem
+import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.toPaletteStyle
+import com.sosauce.chocola.utils.toShape
 
 
 @Composable
@@ -203,17 +208,23 @@ fun SliderSettingsCards(
     value: Int,
     topDp: Dp,
     bottomDp: Dp,
-    text: Int,
+    text: String,
+    unit: String? = null,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..60f,
     onValueChange: (Int) -> Unit,
     optionalDescription: Int? = null,
 ) {
 
-    val sliderStyle by rememberSliderStyle()
-    var tempValue by remember { mutableStateOf<Int?>(null) }
-    val animatedValue by animateIntAsState(
-        targetValue = tempValue ?: value
+    val animatedValue by animateIntAsState(value)
+    val sliderState = rememberSliderState(
+        value = value.toFloat(),
+        valueRange = valueRange,
     )
+    sliderState.onValueChange = { onValueChange(it.toInt()) }
 
+    LaunchedEffect(animatedValue) {
+        sliderState.value = animatedValue.toFloat()
+    }
 
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
@@ -238,23 +249,16 @@ fun SliderSettingsCards(
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    Text(stringResource(text))
+                    Text(text)
                 }
-                Text(animatedValue.toString())
-            }
-            sliderStyle.toSlider(
-                rememberCuteSliderState(
-                    value = animatedValue.toFloat(),
-                    onValueChange = { tempValue = it.toInt() },
-                    onValueChangeFinished = {
-                        tempValue?.let {
-                            onValueChange(it)
-                        }
-                        tempValue = null
-                    },
-                    valueRange = 0f..60f
+                Text(
+                    text = buildString {
+                        append(animatedValue.toString())
+                        unit?.let { append(it) }
+                    }
                 )
-            )
+            }
+            WavySlider(state = sliderState)
             optionalDescription?.let {
                 Text(
                     text = stringResource(it),
@@ -394,7 +398,7 @@ fun PaletteSelector(
 @Composable
 fun ShapeSelector(
     onClick: () -> Unit,
-    shape: Shape,
+    shape: String,
     isSelected: Boolean
 ) {
     val borderColor by animateColorAsState(
@@ -408,11 +412,11 @@ fun ShapeSelector(
             modifier = Modifier
                 .padding(10.dp)
                 .size(50.dp)
-                .clip(shape)
+                .clip(shape.toShape())
                 .border(
                     width = 2.dp,
                     color = borderColor,
-                    shape = shape
+                    shape = shape.toShape()
                 )
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
         )
@@ -450,6 +454,44 @@ fun SliderSelector(
                 modifier = Modifier.padding(5.dp)
             ) {
                 slider()
+            }
+        }
+    }
+}
+
+@Composable
+fun SquareSelector(
+    onClick: () -> Unit,
+    isSelected: Boolean,
+    height: Dp = 50.dp,
+    width: Dp = 50.dp,
+    content: @Composable () -> Unit
+) {
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
+    )
+
+    SelectorSurface(
+        onClick = onClick
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(10.dp)
+                .height(height)
+                .width(width)
+                .clip(RoundedCornerShape(5.dp))
+                .border(
+                    width = 2.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(5.dp)
+                )
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier.padding(5.dp)
+            ) {
+                content()
             }
         }
     }

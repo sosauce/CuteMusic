@@ -146,7 +146,7 @@ class AbstractTracksScanner(
                 val size = cursor.getLong(sizeColumn)
                 val duration = cursor.getLong(durationColumn)
                 val trackNumber = cursor.getInt(trackNbColumn)
-                val dateModified = cursor.getLong(dateModifiedColumn)
+                val dateModified = cursor.getLong(dateModifiedColumn) * 1000
                 val year = cursor.getInt(yearColumn)
                 val uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,

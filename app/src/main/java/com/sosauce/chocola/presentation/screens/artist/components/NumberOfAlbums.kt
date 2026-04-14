@@ -19,6 +19,6 @@ fun NumberOfAlbums(size: Int) {
             size
         ),
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 15.dp)
+        modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp)
     )
 }

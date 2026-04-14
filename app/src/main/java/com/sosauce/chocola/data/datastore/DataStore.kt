@@ -14,6 +14,8 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.ARTIST_SORT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.ARTWORK_SHAPE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.ART_AS_BACKGROUND
 import com.sosauce.chocola.data.datastore.PreferencesKeys.CAROUSEL
+import com.sosauce.chocola.data.datastore.PreferencesKeys.CENTER_TITLE
+import com.sosauce.chocola.data.datastore.PreferencesKeys.EQUALIZER_ENABLED
 import com.sosauce.chocola.data.datastore.PreferencesKeys.GROUP_BY_FOLDERS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HAS_BEEN_THROUGH_SETUP
 import com.sosauce.chocola.data.datastore.PreferencesKeys.HAS_SEEN_TIP
@@ -30,15 +32,15 @@ import com.sosauce.chocola.data.datastore.PreferencesKeys.SAF_TRACKS
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SEEK_BUTTONS_DURATION
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_ALBUM_NAME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SHOW_SHUFFLE_BUTTON
-import com.sosauce.chocola.data.datastore.PreferencesKeys.SLIDER_STYLE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SNAP_SPEED_N_PITCH
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ALBUMS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_ARTISTS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_PLAYLISTS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.SORT_TRACKS_ASCENDING
 import com.sosauce.chocola.data.datastore.PreferencesKeys.THEME
-import com.sosauce.chocola.data.datastore.PreferencesKeys.THUMBLESS_SLIDER
+import com.sosauce.chocola.data.datastore.PreferencesKeys.THUMB_STYLE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.TRACK_SORT
+import com.sosauce.chocola.data.datastore.PreferencesKeys.TRACK_STYLE
 import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_ART_THEME
 import com.sosauce.chocola.data.datastore.PreferencesKeys.USE_SYSTEM_FONT
 import com.sosauce.chocola.data.datastore.PreferencesKeys.WHITELISTED_FOLDERS
@@ -46,7 +48,8 @@ import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.CutePaletteStyle
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.LyricsAlignment
-import com.sosauce.chocola.utils.SliderStyle
+import com.sosauce.chocola.utils.ThumbStyle
+import com.sosauce.chocola.utils.TrackStyle
 
 private const val PREFERENCES_NAME = "settings"
 
@@ -67,8 +70,6 @@ data object PreferencesKeys {
     val CAROUSEL = booleanPreferencesKey("CAROUSEL")
     val MEDIA_INDEX_TO_MEDIA_ID = stringPreferencesKey("MEDIA_INDEX_TO_MEDIA_ID")
     val NUMBER_OF_ALBUM_GRIDS = intPreferencesKey("NUMBER_OF_ALBUM_GRIDS")
-    val SLIDER_STYLE = stringPreferencesKey("SLIDER_STYLE")
-    val THUMBLESS_SLIDER = booleanPreferencesKey("THUMBLESS_SLIDER")
     val HIDDEN_FOLDERS = stringSetPreferencesKey("HIDDEN_FOLDERS")
     val ART_AS_BACKGROUND = booleanPreferencesKey("ART_AS_BACKGROUND")
     val ALBUM_SORT = intPreferencesKey("ALBUM_SORT")
@@ -91,6 +92,12 @@ data object PreferencesKeys {
     val SORT_PLAYLISTS_ASCENDING = booleanPreferencesKey("SORT_PLAYLISTS_ASCENDING")
     val PALETTE_STYLE = stringPreferencesKey("PALETTE_STYLE")
     val SEEK_BUTTONS_DURATION = intPreferencesKey("SEEK_BUTTONS_DURATION")
+    val CENTER_TITLE = booleanPreferencesKey("CENTER_TITLE")
+    val EQUALIZER_BANDS = stringPreferencesKey("EQUALIZER_BANDS")
+    val EQUALIZER_ENABLED = booleanPreferencesKey("EQUALIZER_ENABLED")
+    val THUMB_STYLE = stringPreferencesKey("THUMB_STYLE")
+    val TRACK_STYLE = stringPreferencesKey("TRACK_STYLE")
+    val EQUALIZER_PRESETS = stringPreferencesKey("EQUALIZER_PRESETS")
 
 }
 
@@ -134,14 +141,6 @@ fun rememberAlbumGrids() =
 @Composable
 fun rememberArtworkShape() =
     rememberPreference(key = ARTWORK_SHAPE, defaultValue = ArtworkShape.CLASSIC)
-
-@Composable
-fun rememberSliderStyle() =
-    rememberPreference(key = SLIDER_STYLE, defaultValue = SliderStyle.WAVY)
-
-@Composable
-fun rememberThumblessSlider() =
-    rememberPreference(key = THUMBLESS_SLIDER, defaultValue = false)
 
 @Composable
 fun rememberHiddenFolders() =
@@ -226,6 +225,23 @@ fun rememberPaletteStyle() =
 @Composable
 fun rememberSeekButtonsDuration() =
     rememberPreference(key = SEEK_BUTTONS_DURATION, defaultValue = 5)
+
+@Composable
+fun rememberCenterTitle() =
+    rememberPreference(key = CENTER_TITLE, defaultValue = false)
+
+@Composable
+fun rememberThumbStyle() =
+    rememberPreference(key = THUMB_STYLE, defaultValue = ThumbStyle.STRAIGHT)
+
+
+@Composable
+fun rememberTrackStyle() =
+    rememberPreference(key = TRACK_STYLE, defaultValue = TrackStyle.WAVY)
+
+@Composable
+fun rememberEnableEqualizer() =
+    rememberPreference(key = EQUALIZER_ENABLED, defaultValue = false)
 //
 //suspend fun getPauseOnMute(context: Context) =
 //    getPreference(key = PAUSE_ON_MUTE, defaultValue = false, context = context)

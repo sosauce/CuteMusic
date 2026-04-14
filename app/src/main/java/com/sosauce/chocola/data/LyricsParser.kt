@@ -37,7 +37,7 @@ class LyricsParser(private val context: Context) {
 
             println("KITTY KAT: $embeddedLyrics")
 
-            // Tries to load synced embedded lyrics, is embedded lyrics are unsynced, just return raw embedded lyrics
+            // Tries to load synced embedded lyrics, if embedded lyrics are unsynced, just return raw embedded lyrics
             autoParser.parse(embeddedLyrics)
                 .takeIf { it.lines.isNotEmpty() }
                 ?.lines?.fastMap { line -> (line as SyncedLine).toLyricLine() } ?: listOf(Lyrics(lineLyrics = embeddedLyrics))

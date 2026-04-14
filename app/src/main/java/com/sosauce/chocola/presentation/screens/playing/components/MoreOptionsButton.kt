@@ -10,10 +10,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
@@ -47,6 +49,7 @@ import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPic
 import com.sosauce.chocola.presentation.shared_components.DeletionDialog
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.MusicDetailsDialog
+import com.sosauce.chocola.utils.rememberInteractionSource
 
 @Composable
 fun MoreOptionsButton(
@@ -60,27 +63,28 @@ fun MoreOptionsButton(
     var showMoreDialog by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
     var showDeletionDialog by remember { mutableStateOf(false) }
+    val interactionSources = List(2) { rememberInteractionSource() }
     val activityResultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val moreOptions = listOf(
-        MoreOptions(
-            text = { stringResource(R.string.open_eq) },
-            onClick = {
-                try {
-                    val intent =
-                        Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicState.audioSessionAudio)
-                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                        }
-                    activityResultLauncher.launch(intent)
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Unable to open system equalizer", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            },
-            icon = R.drawable.eq
-        ),
+//        MoreOptions(
+//            text = { stringResource(R.string.open_eq) },
+//            onClick = {
+//                try {
+//                    val intent =
+//                        Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+//                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicState.audioSessionAudio)
+//                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+//                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+//                        }
+//                    activityResultLauncher.launch(intent)
+//                } catch (e: Exception) {
+//                    Toast.makeText(context, "Unable to open system equalizer", Toast.LENGTH_SHORT)
+//                        .show()
+//                }
+//            },
+//            icon = R.drawable.eq
+//        ),
         MoreOptions(
             text = { stringResource(R.string.edit) },
             onClick = {
@@ -142,115 +146,44 @@ fun MoreOptionsButton(
         )
     }
 
-    Column(modifier) {
+    ButtonGroup(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
         IconButton(
-            onClick = { showMoreDialog = true },
-            shapes = IconButtonDefaults.shapes(),
+            onClick = { onNavigate(Screen.Lyrics(musicState.track.path)) },
+            shape = RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp, topEnd = 4.dp, bottomEnd = 4.dp),
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
             ),
+            interactionSource = interactionSources[0],
             modifier = Modifier
                 .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                .animateWidth(interactionSources[0])
         ) {
             Icon(
-                painter = painterResource(R.drawable.more_vert),
+                painter = painterResource(R.drawable.lyrics_filled),
                 contentDescription = null
             )
         }
-        Spacer(Modifier.height(2.dp))
-
-
-        DropdownMenuPopup(
-            expanded = showMoreDialog,
-            onDismissRequest = { showMoreDialog = false }
+        IconButton(
+            onClick = { onNavigate(Screen.Queue) },
+            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 50.dp, bottomEnd = 50.dp),
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
+            ),
+            interactionSource = interactionSources[1],
+            modifier = Modifier
+                .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide))
+                .animateWidth(interactionSources[1])
         ) {
-            DropdownMenuGroup(
-                shapes = MenuDefaults.groupShapes()
-            ) {
-                moreOptions.fastForEachIndexed { index, option ->
-                    DropdownMenuItem(
-                        onClick = option.onClick,
-                        shape = when (index) {
-                            0 -> MenuDefaults.leadingItemShape
-                            moreOptions.lastIndex -> MenuDefaults.trailingItemShape
-                            else -> MenuDefaults.middleItemShape
-                        },
-                        text = {
-                            Text(option.text())
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(option.icon),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-            }
-            Spacer(Modifier.height(MenuDefaults.GroupSpacing))
-            ButtonGroup(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
-            ) {
-                FilledIconButton(
-                    onClick = { showDetailsDialog = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
-                    shape = IconButtonDefaults.mediumSquareShape,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.info_filled),
-                        contentDescription = null,
-                        modifier = Modifier.size(IconButtonDefaults.mediumIconSize)
-                    )
-                }
-                FilledIconButton(
-                    onClick = {
-                        ShareCompat.IntentBuilder(context)
-                            .setType("audio/*")
-                            .setStream(Uri.parse(musicState.track.path)) // this instead of passing the path allows to see the file name in the share sheet
-                            .setChooserTitle("Share track")
-                            .startChooser()
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
-                    shape = IconButtonDefaults.mediumSquareShape,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer)
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.share_filled),
-                        contentDescription = null,
-                        modifier = Modifier.size(IconButtonDefaults.mediumIconSize)
-                    )
-                }
-                FilledIconButton(
-                    onClick = { showDeletionDialog = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
-                    shape = IconButtonDefaults.mediumSquareShape,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.trash_rounded_filled),
-                        contentDescription = null,
-                        modifier = Modifier.size(IconButtonDefaults.mediumIconSize)
-                    )
-                }
-            }
+            Icon(
+                painter = painterResource(R.drawable.queue),
+                contentDescription = null
+            )
         }
     }
+
 }

@@ -1,4 +1,26 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.sosauce.chocola.utils
+
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.style.Style
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.sosauce.chocola.R
+import com.sosauce.chocola.presentation.screens.playing.components.ClassicThumb
+import com.sosauce.chocola.presentation.screens.playing.components.CuteSliderState
+import com.sosauce.chocola.presentation.screens.playing.components.MorphingThumb
+import com.sosauce.chocola.presentation.screens.playing.components.StraightThumb
+import com.sosauce.chocola.presentation.screens.playing.components.StraightTrack
+import com.sosauce.chocola.presentation.screens.playing.components.WavyTrack
 
 const val CUTE_MUSIC_ID = "CUTE_MUSIC_ID"
 const val PACKAGE = "com.sosauce.chocola"
@@ -7,6 +29,7 @@ const val ICON_TEXT_SPACING = 5
 const val WIDGET_NEW_DATA = "WIDGET_NEW_DATA"
 const val WIDGET_NEW_IS_PLAYING = "WIDGET_NEW_IS_PLAYING"
 const val WIDGET_ACTION_BROADCAST = "WIDGET_NEW_DATA"
+const val EQUALIZER_ACTION_BROADCAST = "EQUALIZER_ACTION_BROADCAST"
 const val GITHUB_RELEASES = "https://github.com/sosauce/Chocola/releases"
 const val SUPPORT_PAGE = "https://sosauce.github.io/support/"
 
@@ -29,13 +52,6 @@ object CuteTheme {
     const val LIGHT = "LIGHT"
     const val AMOLED = "AMOLED"
 }
-
-object SliderStyle {
-    const val WAVY = "WAVY"
-    const val CLASSIC = "CLASSIC"
-    const val MATERIAL3 = "MATERIAL3"
-}
-
 
 object ArtworkShape {
     const val CLASSIC = "classic"
@@ -65,4 +81,42 @@ object LyricsAlignment {
     const val START = "Start"
     const val CENTERED = "Centered"
     const val END = "End"
+}
+
+object ThumbStyle {
+    const val STRAIGHT = "Straight"
+    const val BALL = "Ball"
+    const val MORPHING = "Morphing"
+
+
+    @Composable
+    fun toThumb(
+        style: String,
+        isDragging: Boolean
+    ) {
+        when(style) {
+            STRAIGHT -> StraightThumb(isDragging)
+            BALL -> ClassicThumb(isDragging)
+            MORPHING -> MorphingThumb()
+        }
+    }
+}
+
+object TrackStyle {
+    const val WAVY = "Wavy"
+    const val STRAIGHT = "Straight"
+
+
+    @Composable
+    fun toTrack(
+        style: String,
+        isPlaying: Boolean,
+        sliderState: SliderState
+    ) {
+        when(style) {
+            WAVY -> WavyTrack(isPlaying, sliderState)
+            STRAIGHT -> StraightTrack(sliderState)
+        }
+    }
+
 }

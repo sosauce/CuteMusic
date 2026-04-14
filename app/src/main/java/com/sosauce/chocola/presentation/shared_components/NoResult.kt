@@ -2,11 +2,14 @@
 
 package com.sosauce.chocola.presentation.shared_components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +27,14 @@ import com.sosauce.chocola.R
 fun NoResult() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .padding(10.dp)
+//            .background(
+//                color = MaterialTheme.colorScheme.surfaceContainer,
+//                shape = RoundedCornerShape(24.dp)
+//            )
+            .fillMaxWidth()
+            .padding(10.dp)
     ) {
         Icon(
             painter = painterResource(R.drawable.search),

@@ -11,8 +11,15 @@ import android.database.ContentObserver
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import android.text.format.DateFormat
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -36,6 +43,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.util.fastFilter
@@ -58,25 +66,15 @@ import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 import java.io.File
 import java.io.FileOutputStream
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.round
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-
-
-inline fun Modifier.thenIf(condition: Boolean, modifier: Modifier.() -> Modifier): Modifier {
-    return if (condition) {
-        then(modifier(Modifier))
-    } else {
-        this
-    }
-}
-
-fun <T> List<T>.equalsIgnoreOrder(other: List<T>) =
-    this.size == other.size && this.toSet() == other.toSet()
-
 fun NavKey.showBackButton(): Boolean {
     return this is Screen.AlbumsDetails || this is Screen.ArtistsDetails || this is Screen.PlaylistDetails
 }
@@ -98,6 +96,7 @@ fun Modifier.selfAlignHorizontally(align: Alignment.Horizontal = Alignment.Cente
             .wrapContentWidth(align)
     )
 }
+
 
 
 val MediaItem.path
@@ -171,15 +170,21 @@ fun ByteArray.getUriFromByteArray(context: Context): Uri {
     }
 }
 
-fun Uri.getBitrate(context: Context): Int {
+
+/**
+ * @param metadata FOR EXAMPLE [MediaMetadataRetriever.METADATA_KEY_BITRATE]
+ */
+fun Uri.getTrackMetadata(
+    context: Context,
+    metadata: Int
+): String? {
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, this)
-        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toInt()?.div(1000)
-            ?: 0
+        retriever.extractMetadata(metadata)
     } catch (e: Exception) {
         e.stackTrace
-        0
+        null
     } finally {
         retriever.release()
     }
@@ -499,14 +504,30 @@ fun anyDarkColorScheme(): ColorScheme {
     }
 }
 
-val bouncySpec = spring<Float>(
+fun <T> bouncySpec() = spring<T>(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessLow
 )
 
-val bouncySpecDp = spring<Dp>(
-    dampingRatio = Spring.DampingRatioMediumBouncy,
-    stiffness = Spring.StiffnessLow
+
+
+val navigationBouncySpec = spring<IntOffset>(Spring.DampingRatioLowBouncy, Spring.StiffnessLow)
+
+
+val barsContentTransform = ContentTransform(
+    targetContentEnter = slideInVertically(
+        spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    ) { it } + fadeIn(),
+    initialContentExit = slideOutVertically(
+        spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    ) { it } + fadeOut(),
+    sizeTransform = SizeTransform(clip = false) // prevents the content from getting clipped during bounce
 )
 
 
@@ -550,5 +571,15 @@ fun String.toPaletteStyle(): PaletteStyle {
         CutePaletteStyle.MONOCHROME -> PaletteStyle.Monochrome
         CutePaletteStyle.FRUIT_SALAD -> PaletteStyle.FruitSalad
         else -> throw IllegalArgumentException("Not a valid palette!")
+    }
+}
+
+fun Long.formatDate(): String {
+    return if (this > 0) {
+        val date = java.util.Date(this)
+        val formatter = java.text.SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        formatter.format(date)
+    } else {
+        "Unknown"
     }
 }

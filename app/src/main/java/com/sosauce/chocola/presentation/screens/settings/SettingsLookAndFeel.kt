@@ -114,20 +114,17 @@ fun SettingsLookAndFeel() {
     )
 
     val paletteItems = listOf(
-        CutePaletteStyle.FIDELITY,
-        CutePaletteStyle.EXPRESSIVE,
         CutePaletteStyle.TONAL_SPOT,
-        CutePaletteStyle.NEUTRAL,
+        CutePaletteStyle.EXPRESSIVE,
         CutePaletteStyle.VIBRANT,
+        CutePaletteStyle.FIDELITY,
+        CutePaletteStyle.NEUTRAL,
         CutePaletteStyle.MONOCHROME,
         CutePaletteStyle.FRUIT_SALAD
     )
 
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState)
-    ) {
+    Column {
         SettingsWithTitle(
             title = R.string.theme
         ) {
