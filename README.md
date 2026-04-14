@@ -57,9 +57,7 @@
 ---
 <h1>💬 Contact Me</h1>
 
-[Discord server](https://discord.gg/c6aCu4yjbu)
-</br>
-[Email](mailto:sosauce_dev@protonmail.com)
+[Discord server](https://discord.gg/c6aCu4yjbu) | [Email](mailto:sosauce_dev@protonmail.com)
 
 ---
 <h1>❤️ Support</h1>
