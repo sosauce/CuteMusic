@@ -44,18 +44,16 @@
 <h1>👀 Overview</h1>
 
 - Material 3 Expressive design!
-- Play any song from anywhere just by sharing the audio file to the app without downloading it!
-- Easy search across all your music/albums/artists!
+- Georgeous, fluid & highly customizable UI!
 - Built-in equalizer!
-- Very fast and snappy!
-- No unnecessary permissions needed!
-- Blacklist Folders!
-- Beautiful landscape UI!
-- Tag Editor!
-- Playlists support!
-- Load and persist songs from anywhere using Android's S.A.F!
+- Embedded & synced lyrics support!
+- Metadata editor!
+- Blacklist & whitelist folders & additional scanning rules support!
+- Custom playlists with customization support!
+- Rich playback controls: Speed & pitch, repeat modes & sleep timer!
+- Offline, low storage usage (~15Mb fresh install) & no unnecessary permissions!
 - Makes you a cutie!
-   
+
 ---
 <h1>💬 Contact Me</h1>
 
