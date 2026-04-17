@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme">Tema</string>
+    <string name="settings">Configurações</string>
+    <string name="dark_mode">Escuro</string>
+    <string name="light_mode">Claro</string>
+    <string name="amoled_mode">Amoled</string>
+    <string name="version">Versão</string>
+    <string name="update">Checar por atualizações</string>
+    <string name="about">Sobre</string>
+    <string name="size">Tamanho</string>
+    <string name="type">Tipo</string>
+    <string name="previous_song">Música Anterior</string>
+    <string name="play_pause_button">Botão de Tocar/Pausa</string>
+    <string name="next_button">Próxima Música</string>
+    <string name="no_artists_found">Nenhum artista encontrado!</string>
+    <string name="artists">Artistas</string>
+    <string name="albums">Álbuns</string>
+    <string name="cm_by_sosauce">Chocola por sosauce</string>
+    <string name="app_icon">Ícone do App</string>
+    <string name="search">Procurar</string>
+    <string name="close">Fechar</string>
+    <string name="more">Mais</string>
+    <string name="hi_there">Olá!</string>
+    <string name="permission_needed">Parece que Chocola não possui permissão para acessar suas faixas! Você pode permitir abaixo!</string>
+    <string name="permission_granted">Permissão concedida, pode continuar…</string>
+</resources>
