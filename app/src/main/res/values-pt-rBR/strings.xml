@@ -170,4 +170,44 @@
     <string name="already_in_queue">Já na fila</string>
     <string name="already_in_playlist">A faixa já está na playlist</string>
     <string name="new_rate">Insira uma nova nota entre %1$.1f e %2$d</string>
+    <string name="rate_error">Nota deve estar no intervalo entre %1$.1f e %2$d.</string>
+    <string name="hide_from_tracklist">Ocultar da lista de faixas</string>
+    <string name="hidden_tracks">Faixas ocultadas</string>
+    <string name="show_album_name">Mostrar nome do álbum</string>
+    <string name="alignment">Alinhamento</string>
+    <string name="font_size">Tamanho da fonte</string>
+    <string name="select_all">Selecionar tudo</string>
+    <string name="unselect_all">Deselecionar tudo</string>
+    <string name="palette">Paleta</string>
+    <string name="no_hidden_tracks">Nenhuma faixa escondida!</string>
+    <string name="no_saf_tracks">Nenhuma faixa do S.A.F.!</string>
+    <string name="playback">Reprodução</string>
+    <string name="seek_buttons_duration">Duração do avanço/retrocesso</string>
+    <string name="centered_title">Título centralizado</string>
+    <string name="ongoing_sleep_timer">Você tem um timer para dormir ativo</string>
+    <string name="timer_will_end_in">Timer atual terminará em:</string>
+    <string name="equalizer">Equalizador</string>
+    <string name="enable_equalizer">Ativar equalizador</string>
+    <string name="path">Caminho</string>
+    <string name="channels">Canais</string>
+    <string name="no">Não</string>
+    <string name="about_track">Sobre a faixa</string>
+    <string name="about_file">Sobre o arquivo</string>
+    <string name="name_and_emoji">Nome e emoji</string>
+    <string name="load">Carregar</string>
+    <string name="not_a_lyric_file">Não é um arquivo de letra!</string>
+    <plurals name="tracks">
+        <item quantity="one">%d faixa</item>
+        <item quantity="many">%d faixas</item>
+        <item quantity="other">%d faixas</item>
+    </plurals>
+    <plurals name="albums_plural">
+        <item quantity="one">%d álbum</item>
+        <item quantity="many">%d álbuns</item>
+        <item quantity="other">%d álbuns</item>
+    </plurals>
+    <string name="support">Apoiar</string>
+    <string name="editor">Editor</string>
+    <string name="emoji">Emoji</string>
+    <string name="amoled_mode">Amoled</string>
 </resources>
