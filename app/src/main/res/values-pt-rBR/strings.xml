@@ -4,7 +4,6 @@
     <string name="settings">Configurações</string>
     <string name="dark_mode">Escuro</string>
     <string name="light_mode">Claro</string>
-    <string name="amoled_mode">Amoled</string>
     <string name="version">Versão</string>
     <string name="update">Checar por atualizações</string>
     <string name="about">Sobre</string>
@@ -24,4 +23,21 @@
     <string name="hi_there">Olá!</string>
     <string name="permission_needed">Parece que Chocola não possui permissão para acessar suas faixas! Você pode permitir abaixo!</string>
     <string name="permission_granted">Permissão concedida, pode continuar…</string>
+    <string name="music">Faixas</string>
+    <string name="request_permission">Conceder permissão</string>
+    <string name="next_step">Próximo passo</string>
+    <string name="no_music_title">Nenhuma faixa encontrada!</string>
+    <string name="no_music_desc">Então por que você baixou o app?</string>
+    <string name="no_music_tip">Dica: não esqueça de adicionar à lista branca pastas que deseja que sejam escaneadas nas configurações!</string>
+    <string name="error_deleting_song">Houve um erro ao apagar a música.</string>
+    <string name="deleting_song_OK">Música sucessivamente apagada.</string>
+    <string name="bitrate">Taxa de bits</string>
+    <string name="no_albums_found">Nenhum álbum encontrado!</string>
+    <string name="follow_sys">Seguir sistema</string>
+    <string name="system">Sistema</string>
+    <string name="ascending">Ascendente</string>
+    <string name="descending">Descendente</string>
+    <string name="playback_speed">Definir velocidade de reprodução</string>
+    <string name="yes">Sim</string>
+    <string name="initial_folder_selection">Selecione pastas que deseja adicionar, as outras serão ignoradas</string>
 </resources>
