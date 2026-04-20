@@ -192,4 +192,27 @@
     <string name="rate_error">Oran %1$.1f ile %2$d arasında olmalıdır.</string>
     <string name="hide_from_tracklist">Şarkı listesinden gizle</string>
     <string name="hidden_tracks">Gizli şarkılar</string>
+    <string name="show_album_name">Albüm ismini göster</string>
+    <string name="alignment">Konum</string>
+    <string name="font_size">Yazı tipi boyutu</string>
+    <string name="select_all">Hepsini seç</string>
+    <string name="unselect_all">Hiçbirini seçme</string>
+    <string name="palette">Palet</string>
+    <string name="no_hidden_tracks">Gizli parça yok!</string>
+    <string name="no_saf_tracks">S.A.F parça yok!</string>
+    <string name="playback">Oynatma</string>
+    <string name="seek_buttons_duration">Atlama butonlarının süresi</string>
+    <string name="centered_title">Ortalanmış başlık</string>
+    <string name="ongoing_sleep_timer">Şuanda devam eden bir uyku zamanlayıcın var</string>
+    <string name="timer_will_end_in">Şuanki zamanlayıcının bitmesine kalan:</string>
+    <string name="equalizer">Ekolayzır</string>
+    <string name="enable_equalizer">Ekolayzır\'ı aç</string>
+    <string name="path">Yol</string>
+    <string name="channels">Kanallar</string>
+    <string name="no">Hayır</string>
+    <string name="about_track">Parça hakkında</string>
+    <string name="about_file">Dosya hakkında</string>
+    <string name="name_and_emoji">İsim ve emoji</string>
+    <string name="load">Manuel ekle</string>
+    <string name="not_a_lyric_file">Geçerli bir \"lyrics\" dosyası değil!</string>
 </resources>
