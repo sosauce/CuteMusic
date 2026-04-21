@@ -1,3 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="theme">Kujundus</string>
+    <string name="settings">Seadistused</string>
+    <string name="dark_mode">Tume kujundus</string>
+    <string name="light_mode">Hele kujundus</string>
+    <string name="amoled_mode">Amoled-kujundus</string>
+    <string name="version">Versioon</string>
+    <string name="support">Kasutajatugi</string>
+    <string name="update">Kontrolli uuendusi</string>
+    <string name="about">Rakenduse teave</string>
+    <string name="size">Suurus</string>
+    <string name="type">Tüüp</string>
+    <string name="bitrate">Bitikiirus</string>
+    <string name="previous_song">Eelmine lugu</string>
+    <string name="play_pause_button">Esita/peata esitus</string>
+    <string name="next_button">Järgmine lugu</string>
+    <string name="no_artists_found">Esitajaid ei leidu!</string>
+    <string name="artwork">Kaanepildid</string>
+    <string name="artists">Esitajad</string>
+    <string name="albums">Albumid</string>
+    <string name="music">Lood</string>
+    <string name="cm_by_sosauce">Chocola, autoriks sosauce</string>
+    <string name="app_icon">Rakenduse ikoon</string>
+    <string name="search">Otsi</string>
+    <string name="close">Sulge</string>
+    <string name="more">Veel</string>
+    <string name="hi_there">Hei!</string>
 </resources>
