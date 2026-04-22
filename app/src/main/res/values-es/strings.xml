@@ -11,7 +11,7 @@
     <string name="about">Acerca de</string>
     <string name="size">Tamaño</string>
     <string name="type">Tipo</string>
-    <string name="bitrate">Tasa de bits</string>
+    <string name="bitrate">Tasa de bit</string>
     <string name="previous_song">Canción anterior</string>
     <string name="play_pause_button">Botón de reproducción/pausa</string>
     <string name="next_button">Siguiente canción</string>
@@ -73,7 +73,7 @@
     <string name="speed">Velocidad</string>
     <string name="pitch">Tono</string>
     <string name="rate">Tasa</string>
-    <string name="snap">Ajustar velocidad y tono al instante</string>
+    <string name="snap">Velocidad de chasquido y tono</string>
     <string name="share">Compartir</string>
     <string name="show_close_button">Mostrar botón de cerrar</string>
     <string name="duration">Duración</string>
@@ -182,10 +182,39 @@
     <string name="already_in_playlist">La pista ya está en la lista de reproducción</string>
     <plurals name="tracks">
         <item quantity="one">%d pista</item>
+        <item quantity="many">%d pistas</item>
         <item quantity="other">%d pistas</item>
     </plurals>
     <plurals name="albums_plural">
         <item quantity="one">%d álbum</item>
+        <item quantity="many">%d álbumes</item>
         <item quantity="other">%d álbumes</item>
     </plurals>
+    <string name="hide_from_tracklist">Ocultar desde lista de pistas</string>
+    <string name="hidden_tracks">Pistas ocultas</string>
+    <string name="show_album_name">Mostrar nombre del álbum</string>
+    <string name="alignment">Alineación</string>
+    <string name="font_size">Tamaño de fuente</string>
+    <string name="select_all">Seleccionar todo</string>
+    <string name="unselect_all">Deseleccionar todo</string>
+    <string name="palette">Paleta</string>
+    <string name="no_hidden_tracks">¡Pistas no ocultas!</string>
+    <string name="no_saf_tracks">¡Sin pistas S.A.F!</string>
+    <string name="playback">Reproducir</string>
+    <string name="centered_title">Título centrado</string>
+    <string name="ongoing_sleep_timer">Tienes un cronómetro de apagado automático</string>
+    <string name="timer_will_end_in">El cronómetro actual finalizará en:</string>
+    <string name="equalizer">Ecualizador</string>
+    <string name="enable_equalizer">Habilitar ecualizador</string>
+    <string name="path">Ruta</string>
+    <string name="channels">Canales</string>
+    <string name="no">No</string>
+    <string name="about_track">Acerca de pista</string>
+    <string name="about_file">Acerca de archivo</string>
+    <string name="name_and_emoji">Nombre y emoji</string>
+    <string name="load">Cargar</string>
+    <string name="not_a_lyric_file">¡No es un archivo lírico!</string>
+    <string name="new_rate">Ingrese una nueva tasa entre %1$.1f y %2$d</string>
+    <string name="rate_error">La tasa debe estar en el rango de %1$.1f y %2$d.</string>
+    <string name="seek_buttons_duration">Duración de los botones de búsqueda</string>
 </resources>
