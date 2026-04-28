@@ -37,6 +37,7 @@ import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.FloatingToolbarDefaults.vibrantFloatingToolbarColors
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.domain.model.Lyrics
 import com.sosauce.chocola.presentation.screens.playing.components.PlayPauseButton
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconButton
 import com.sosauce.chocola.utils.ICON_TEXT_SPACING
 import com.sosauce.chocola.utils.rememberInteractionSource
@@ -147,14 +149,11 @@ fun LyricsScreen(
                         .selfAlignHorizontally()
                         .navigationBarsPadding(),
                     floatingActionButton = {
-                        FloatingToolbarDefaults.VibrantFloatingActionButton(
-                            onClick = onNavigateBack
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.close),
-                                contentDescription = stringResource(R.string.close)
-                            )
-                        }
+                        AnimatedFab(
+                            onClick = onNavigateBack,
+                            icon = R.drawable.close,
+                            containerColor = vibrantFloatingToolbarColors().fabContainerColor
+                        )
                     }
                 ) {
                     AnimatedIconButton(

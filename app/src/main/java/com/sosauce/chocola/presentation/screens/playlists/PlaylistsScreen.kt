@@ -2,12 +2,8 @@
 
 package com.sosauce.chocola.presentation.screens.playlists
 
-import android.content.ContentProviderOperation
-import android.os.Build
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -30,14 +26,10 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleFloatingActionButton
-import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -67,12 +59,10 @@ import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
+import com.sosauce.chocola.presentation.shared_components.animations.ToggleAnimatedFab
 import com.sosauce.chocola.utils.barsContentTransform
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -202,22 +192,11 @@ fun SharedTransitionScope.PlaylistsScreen(
                                     ),
                                     expanded = fabMenuExpanded,
                                     button = {
-                                        ToggleFloatingActionButton(
+                                        ToggleAnimatedFab(
                                             checked = fabMenuExpanded,
                                             onCheckedChange = { fabMenuExpanded = !fabMenuExpanded },
-                                            containerSize = { 56.dp }
-                                        ) {
-                                            val icon by remember {
-                                                derivedStateOf {
-                                                    if (checkedProgress > 0.5f) R.drawable.close else R.drawable.add
-                                                }
-                                            }
-
-                                            Icon(
-                                                painter = painterResource(icon),
-                                                contentDescription = null,
-                                                modifier = Modifier.animateIcon({ checkedProgress })
-                                            )
+                                        ) { checkedProgress ->
+                                            if (checkedProgress > 0.5f) R.drawable.close else R.drawable.add
                                         }
                                     }
                                 ) {
