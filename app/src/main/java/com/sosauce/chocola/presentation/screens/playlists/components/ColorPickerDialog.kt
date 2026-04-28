@@ -37,7 +37,6 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
@@ -155,31 +154,29 @@ fun ColorPickerDialog(
                     },
                     initialColor = initialColor
                 )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable(
+                            indication = null,
+                            interactionSource = null,
+                            onClick = ::copyHexTextToClipboard
+                        )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(controller.selectedColor.value)
+                    )
+                    Text("#$hexCode")
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable(
-                                indication = null,
-                                interactionSource = null,
-                                onClick = ::copyHexTextToClipboard
-                            )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(controller.selectedColor.value)
-                        )
-                        Text(
-                            text = "#$hexCode",
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
                     AnimatedContent(
                         targetState = copyIconStatus,
                         transitionSpec = { barsContentTransform }
@@ -197,7 +194,6 @@ fun ColorPickerDialog(
                         )
 
                     }
-
                     AnimatedContent(
                         targetState = pastingIconStatus,
                         transitionSpec = { barsContentTransform }
