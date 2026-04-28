@@ -166,7 +166,7 @@ class PlaybackService : MediaLibraryService(), MediaLibrarySession.Callback, Pla
 
         println("am I cute ? $tempEqBands")
         userPreferences.saveEqualizerBands(tempEqBands)
-        }
+    }
 
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
