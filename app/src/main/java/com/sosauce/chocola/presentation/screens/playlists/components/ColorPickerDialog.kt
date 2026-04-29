@@ -2,7 +2,6 @@ package com.sosauce.chocola.presentation.screens.playlists.components
 
 import android.content.ClipData
 import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
@@ -42,93 +38,8 @@ import androidx.core.graphics.toColorInt
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.sosauce.chocola.R
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Default
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Error
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Success
 import com.sosauce.chocola.utils.ColorUtils
-import com.sosauce.chocola.utils.barsContentTransform
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-
-private enum class ClipboardIconStatus {
-    Default, Success, Error
-}
-
-
-private class ClipboardIcon(
-    private val scope: CoroutineScope
-) {
-    private val _status = MutableStateFlow(Default)
-    val status = _status.asStateFlow()
-
-    private var job: Job? = null
-
-    fun setError() {
-        job?.cancel()
-        job = scope.launch {
-            _status.value = Error
-            delay(500)
-            _status.value = Default
-        }
-    }
-
-    fun setSuccess() {
-        job = scope.launch {
-            _status.value = Success
-            delay(500)
-            _status.value = Default
-        }
-    }
-}
-@Composable
-private fun ClipboardIconStatus.icon(defaultIcon: Int): Painter {
-    return painterResource(
-        when (this) {
-            Default -> defaultIcon
-            Success -> R.drawable.check
-            Error -> R.drawable.close
-        }
-    )
-}
-
-
-@Composable
-private fun ClipboardIcon.Icon(
-    defaultIcon: Int,
-    onClick: () -> Unit
-) {
-    val status by this.status.collectAsState()
-
-    AnimatedContent(
-        targetState = status,
-        transitionSpec = { barsContentTransform }
-    ) { status ->
-        val painter = status.icon(defaultIcon)
-
-        Icon(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier
-                .clip(RoundedCornerShape(5.dp))
-                .clickable(onClick = onClick)
-                .padding(5.dp)
-        )
-    }
-}
-
-
-
-
-@Composable
-private fun rememberClipboardIconController(): ClipboardIcon {
-    val scope = rememberCoroutineScope()
-    return remember { ClipboardIcon(scope) }
-}
 
 
 @Composable
