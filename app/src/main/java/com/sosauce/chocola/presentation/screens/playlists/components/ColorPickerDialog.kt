@@ -20,7 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,8 +45,13 @@ import com.sosauce.chocola.R
 import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Default
 import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Error
 import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Success
+import com.sosauce.chocola.utils.ColorUtils
 import com.sosauce.chocola.utils.barsContentTransform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 
@@ -54,6 +59,32 @@ private enum class ClipboardIconStatus {
     Default, Success, Error
 }
 
+
+private class ClipboardIcon(
+    private val scope: CoroutineScope
+) {
+    private val _status = MutableStateFlow(Default)
+    val status = _status.asStateFlow()
+
+    private var job: Job? = null
+
+    fun setError() {
+        job?.cancel()
+        job = scope.launch {
+            _status.value = Error
+            delay(500)
+            _status.value = Default
+        }
+    }
+
+    fun setSuccess() {
+        job = scope.launch {
+            _status.value = Success
+            delay(500)
+            _status.value = Default
+        }
+    }
+}
 @Composable
 private fun ClipboardIconStatus.icon(defaultIcon: Int): Painter {
     return painterResource(
@@ -64,6 +95,41 @@ private fun ClipboardIconStatus.icon(defaultIcon: Int): Painter {
         }
     )
 }
+
+
+@Composable
+private fun ClipboardIcon.Icon(
+    defaultIcon: Int,
+    onClick: () -> Unit
+) {
+    val status by this.status.collectAsState()
+
+    AnimatedContent(
+        targetState = status,
+        transitionSpec = { barsContentTransform }
+    ) { status ->
+        val painter = status.icon(defaultIcon)
+
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier
+                .clip(RoundedCornerShape(5.dp))
+                .clickable(onClick = onClick)
+                .padding(5.dp)
+        )
+    }
+}
+
+
+
+
+@Composable
+private fun rememberClipboardIconController(): ClipboardIcon {
+    val scope = rememberCoroutineScope()
+    return remember { ClipboardIcon(scope) }
+}
+
 
 @Composable
 fun ColorPickerDialog(
@@ -77,21 +143,10 @@ fun ColorPickerDialog(
     val controller = rememberColorPickerController()
     var hexCode by remember { mutableStateOf("") }
 
-    var pastingIconStatus by remember { mutableStateOf(Default) }
-    LaunchedEffect(pastingIconStatus) { // Use launched effect to cancel previous jobs in case of user spamming
-        if (pastingIconStatus != Default) {
-            delay(500)
-            pastingIconStatus = Default
-        }
-    }
+    val pastingIconStatus = rememberClipboardIconController()
+    val copyIconStatus = rememberClipboardIconController()
+    val randomColorStatus = rememberClipboardIconController()
 
-    var copyIconStatus by remember { mutableStateOf(Default) }
-    LaunchedEffect(copyIconStatus) {
-        if (copyIconStatus != Default) {
-            delay(500)
-            copyIconStatus = Default
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -133,12 +188,36 @@ fun ColorPickerDialog(
                                 )
                             )
                         )
-                        copyIconStatus = Success
+                        copyIconStatus.setSuccess()
                     } catch (e: Exception) {
                         Log.e("ColorPicker", "Failed to copy hexCode (${hexCode}) to clipboard", e)
-                        copyIconStatus = Error
+                        copyIconStatus.setError()
                     }
                 }
+            }
+
+            fun pasteHaxFromClipboard() {
+                val clip = clipboardManager.nativeClipboard.primaryClip ?: return
+                if (clip.itemCount == 0) return
+                clip.getItemAt(0).coerceToText(context)?.toString()?.let { pasted ->
+                    try {
+                        if (pasted.startsWith("#") && pasted.length == 9) {
+                            controller.selectByColor(Color(pasted.toColorInt()), true)
+                            pastingIconStatus.setSuccess()
+                        } else {
+                            pastingIconStatus.setError()
+                        }
+                    } catch (_: Exception) {
+                        // Decrypt failed from clipboard, no need to log that
+                        pastingIconStatus.setError()
+                    }
+                }
+            }
+
+            fun pickRandomColor() {
+                val randomColor = ColorUtils.randomColor(minLuminance = 1f)
+                controller.selectByColor(randomColor, true)
+                randomColorStatus.setSuccess()
             }
 
             Column(
@@ -177,54 +256,9 @@ fun ColorPickerDialog(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AnimatedContent(
-                        targetState = copyIconStatus,
-                        transitionSpec = { barsContentTransform }
-                    ) { status ->
-
-                        val painter = status.icon(R.drawable.copy)
-
-                        Icon(
-                            painter = painter,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(5.dp))
-                                .clickable(onClick = ::copyHexTextToClipboard)
-                                .padding(5.dp)
-                        )
-
-                    }
-                    AnimatedContent(
-                        targetState = pastingIconStatus,
-                        transitionSpec = { barsContentTransform }
-                    ) { status ->
-                        val painter = status.icon(R.drawable.paste)
-
-                        Icon(
-                            painter = painter,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(5.dp))
-                                .clickable {
-                                    val clip = clipboardManager.nativeClipboard.primaryClip ?: return@clickable
-                                    if (clip.itemCount == 0) return@clickable
-                                    clip.getItemAt(0).coerceToText(context)?.toString()?.let { pasted ->
-                                        try {
-                                            if (pasted.startsWith("#") && pasted.length == 9) {
-                                                controller.selectByColor(Color(pasted.toColorInt()), true)
-                                                pastingIconStatus = Success
-                                            } else {
-                                                pastingIconStatus = Error
-                                            }
-                                        } catch (_: Exception) {
-                                            // Decrypt failed from clipboard, no need to log that
-                                            pastingIconStatus = Error
-                                        }
-                                    }
-                                }
-                                .padding(5.dp)
-                        )
-                    }
+                    copyIconStatus.Icon(R.drawable.copy, ::copyHexTextToClipboard)
+                    pastingIconStatus.Icon(R.drawable.paste, ::pasteHaxFromClipboard)
+                    randomColorStatus.Icon(R.drawable.shuffle, ::pickRandomColor)
                 }
             }
         }
