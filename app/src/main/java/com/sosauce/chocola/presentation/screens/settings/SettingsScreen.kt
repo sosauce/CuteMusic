@@ -3,8 +3,6 @@
 package com.sosauce.chocola.presentation.screens.settings
 
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -16,18 +14,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -44,6 +37,7 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.settings.compenents.AboutCard
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsCategoryCard
 import com.sosauce.chocola.presentation.screens.settings.compenents.SettingsScreens
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.utils.navigateBack
 import com.sosauce.chocola.utils.navigationBouncySpec
 import com.sosauce.chocola.utils.selfAlignHorizontally
@@ -97,7 +91,7 @@ fun SettingsScreen(
 
     Scaffold(
         bottomBar = {
-            FloatingActionButton(
+            AnimatedFab(
                 onClick = {
                     if (backStack.size == 1) {
                         onNavigateUp()
@@ -109,14 +103,9 @@ fun SettingsScreen(
                     .padding(start = 15.dp)
                     .navigationBarsPadding()
                     .selfAlignHorizontally(Alignment.Start),
-                shape = MaterialShapes.Cookie9Sided.toShape(),
+                icon = R.drawable.back,
                 containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.back),
-                    contentDescription = null
-                )
-            }
+            )
         }
     ) { paddingValues ->
         NavDisplay(

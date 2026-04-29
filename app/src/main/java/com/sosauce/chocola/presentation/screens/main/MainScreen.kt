@@ -7,42 +7,26 @@
 package com.sosauce.chocola.presentation.screens.main
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -55,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberGroupByFolders
 import com.sosauce.chocola.data.datastore.rememberHiddenFolders
@@ -73,10 +56,9 @@ import com.sosauce.chocola.presentation.shared_components.NoResult
 import com.sosauce.chocola.presentation.shared_components.NoXFound
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
-import com.sosauce.chocola.utils.SharedTransitionKeys
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.utils.addOrRemove
 import com.sosauce.chocola.utils.barsContentTransform
-import com.sosauce.chocola.utils.bouncySpec
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.selfAlignHorizontally
 import com.sosauce.sweetselect.rememberSweetSelectState
@@ -181,7 +163,7 @@ fun SharedTransitionScope.MainScreen(
                             onNavigate = onNavigate,
                             fab = {
                                 if (showShuffleButton) {
-                                    FloatingActionButton(
+                                    AnimatedFab(
                                         onClick = {
                                             onHandlePlayerAction(
                                                 PlayerActions.Play(
@@ -191,13 +173,8 @@ fun SharedTransitionScope.MainScreen(
                                                 )
                                             )
                                         },
-                                        shape = MaterialShapes.Cookie9Sided.toShape()
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.shuffle),
-                                            contentDescription = null
-                                        )
-                                    }
+                                        icon = R.drawable.shuffle
+                                    )
                                 }
                             }
                         )
