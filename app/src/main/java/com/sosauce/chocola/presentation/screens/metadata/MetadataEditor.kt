@@ -69,6 +69,7 @@ import com.sosauce.chocola.R
 import com.sosauce.chocola.domain.actions.MetadataActions
 import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.shared_components.ThreadDivider
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.utils.ImageUtils
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
@@ -108,22 +109,16 @@ fun MetadataEditor(
             Row(
                 modifier = Modifier
                     .navigationBarsPadding()
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                FloatingActionButton(
+                AnimatedFab(
                     onClick = onNavigateUp,
-                    modifier = Modifier
-                        .padding(start = 15.dp),
-                    shape = MaterialShapes.Cookie9Sided.toShape(),
+                    icon = R.drawable.back,
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.back),
-                        contentDescription = null
-                    )
-                }
-                FloatingActionButton(
+                )
+                AnimatedFab(
                     onClick = {
                         val intentSender = MediaStore.createWriteRequest(
                             context.contentResolver,
@@ -131,14 +126,8 @@ fun MetadataEditor(
                         ).intentSender
                         editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                     },
-                    shape = MaterialShapes.Cookie9Sided.toShape(),
-                    modifier = Modifier.padding(end = 15.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.check),
-                        contentDescription = null
-                    )
-                }
+                    icon = R.drawable.check,
+                )
             }
         }
     ) { paddingValues ->

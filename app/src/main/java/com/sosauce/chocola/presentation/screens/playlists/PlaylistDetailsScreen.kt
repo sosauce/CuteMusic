@@ -2,22 +2,14 @@
 
 package com.sosauce.chocola.presentation.screens.playlists
 
-import android.os.Build
-import android.provider.MediaStore
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,16 +17,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -48,7 +35,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicMaterialThemeState
@@ -65,15 +51,12 @@ import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.album.components.NumberOfTracks
 import com.sosauce.chocola.presentation.screens.playlists.components.EmptyPlaylist
 import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistHeader
-import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistHeaderLandscape
-import com.sosauce.chocola.presentation.screens.playlists.components.PlaylistPicker
 import com.sosauce.chocola.presentation.shared_components.CuteSearchbar
 import com.sosauce.chocola.presentation.shared_components.MoreOptions
 import com.sosauce.chocola.presentation.shared_components.MusicListItem
-import com.sosauce.chocola.presentation.shared_components.NoXFound
-import com.sosauce.chocola.presentation.shared_components.SelectedBarSurface
 import com.sosauce.chocola.presentation.shared_components.SortingDropdownMenu
 import com.sosauce.chocola.presentation.shared_components.TracksSelectedBar
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.barsContentTransform
 import com.sosauce.chocola.utils.copyMutate
@@ -145,7 +128,7 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                 onNavigateUp = onNavigateUp,
                                 modifier = Modifier.selfAlignHorizontally(),
                                 fab = {
-                                    FloatingActionButton(
+                                    AnimatedFab(
                                         onClick = {
                                             onHandlePlayerAction(
                                                 PlayerActions.Play(
@@ -155,13 +138,8 @@ fun SharedTransitionScope.PlaylistDetailsScreen(
                                                 )
                                             )
                                         },
-                                        shape = MaterialShapes.Cookie9Sided.toShape()
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.shuffle),
-                                            contentDescription = null
-                                        )
-                                    }
+                                        icon = R.drawable.shuffle
+                                    )
                                 }
                             )
                         }

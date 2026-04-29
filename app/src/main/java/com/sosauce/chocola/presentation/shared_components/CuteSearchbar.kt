@@ -97,6 +97,7 @@ import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playing.NowPlaying
 import com.sosauce.chocola.presentation.screens.playing.components.PlayPauseButton
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconButton
 import com.sosauce.chocola.presentation.theme.nunitoFontFamily
 import com.sosauce.chocola.utils.LocalScreen
@@ -262,16 +263,11 @@ fun SharedTransitionScope.CuteSearchbar(
                         .padding(bottom = 4.dp)
                 ) {
                     if (currentScreen.showBackButton()) {
-                        FloatingActionButton(
+                        AnimatedFab(
                             onClick = { onNavigateUp?.invoke() },
-                            shape = MaterialShapes.Cookie9Sided.toShape(),
+                            icon = R.drawable.back,
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.back),
-                                contentDescription = null
-                            )
-                        }
+                        )
                     }
                     Spacer(Modifier.weight(1f))
                     fab?.invoke()
