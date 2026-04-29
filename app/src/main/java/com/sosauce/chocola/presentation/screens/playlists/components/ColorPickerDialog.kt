@@ -38,6 +38,8 @@ import androidx.core.graphics.toColorInt
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.sosauce.chocola.R
+import com.sosauce.chocola.presentation.shared_components.animations.Icon
+import com.sosauce.chocola.presentation.shared_components.animations.rememberClipboardIconController
 import com.sosauce.chocola.utils.ColorUtils
 import kotlinx.coroutines.launch
 

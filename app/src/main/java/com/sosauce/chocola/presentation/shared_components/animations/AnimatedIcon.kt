@@ -1,4 +1,4 @@
-package com.sosauce.chocola.presentation.screens.playlists.components
+package com.sosauce.chocola.presentation.shared_components.animations
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
@@ -16,9 +16,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Default
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Error
-import com.sosauce.chocola.presentation.screens.playlists.components.ClipboardIconStatus.Success
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconStatus.Default
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconStatus.Error
+import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconStatus.Success
 import com.sosauce.chocola.utils.barsContentTransform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -27,12 +27,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-enum class ClipboardIconStatus {
+/**
+ * Animated icon status
+ * there are 3 possible states for this component:
+ *  [Default], [Success] and [Error]
+ */
+enum class AnimatedIconStatus {
     Default, Success, Error
 }
 
 
-class ClipboardIcon(
+/**
+ * Controller for animated icon status transitions.
+ *
+ * Manages state changes with automatic reset after delays.
+ * Cancels previous jobs if new state is triggered before reset completes.
+ *
+ * @param scope CoroutineScope for launching state change animations
+ */
+class AnimatedIcon(
     private val scope: CoroutineScope
 ) {
     private val _status = MutableStateFlow(Default)
@@ -40,6 +53,13 @@ class ClipboardIcon(
 
     private var job: Job? = null
 
+
+    /**
+     * Sets icon to [AnimatedIconStatus.Error] state.
+     *
+     * Shows [AnimatedIconStatus.Error] icon for 500ms then returns to [AnimatedIconStatus.Default].
+     * Cancels any previous pending state change.
+     */
     fun setError() {
         job?.cancel()
         job = scope.launch {
@@ -49,6 +69,12 @@ class ClipboardIcon(
         }
     }
 
+    /**
+     * Sets icon to [AnimatedIconStatus.Success] state.
+     *
+     * Shows [AnimatedIconStatus.Success] icon for 500ms then returns to [AnimatedIconStatus.Default].
+     * Cancels any previous pending state change.
+     */
     fun setSuccess() {
         job = scope.launch {
             _status.value = Success
@@ -57,8 +83,16 @@ class ClipboardIcon(
         }
     }
 }
+
+
+/**
+ * Returns the appropriate painter for this status.
+ *
+ * @param defaultIcon Resource ID of the default icon
+ * @return Painter for the current status ([AnimatedIconStatus.Default], [AnimatedIconStatus.Success], or [AnimatedIconStatus.Error] icon)
+ */
 @Composable
-fun ClipboardIconStatus.icon(defaultIcon: Int): Painter {
+fun AnimatedIconStatus.icon(defaultIcon: Int): Painter {
     return painterResource(
         when (this) {
             Default -> defaultIcon
@@ -69,8 +103,17 @@ fun ClipboardIconStatus.icon(defaultIcon: Int): Painter {
 }
 
 
+/**
+ * Composable animated icon with state transitions.
+ *
+ * Displays icon that animates between [AnimatedIconStatus.Default], [AnimatedIconStatus.Success], and [AnimatedIconStatus.Error] states.
+ * Icon is clickable and resets to default after animation completes.
+ *
+ * @param defaultIcon Resource ID of the default icon to display
+ * @param onClick Callback when icon is clicked
+ */
 @Composable
-fun ClipboardIcon.Icon(
+fun AnimatedIcon.Icon(
     defaultIcon: Int,
     onClick: () -> Unit
 ) {
@@ -93,11 +136,15 @@ fun ClipboardIcon.Icon(
     }
 }
 
-
-
-
+/**
+ * Creates and remembers an [AnimatedIcon] controller.
+ *
+ * Automatically manages the lifecycle with the composition.
+ *
+ * @return [AnimatedIcon] instance tied to current composition scope
+ */
 @Composable
-fun rememberClipboardIconController(): ClipboardIcon {
+fun rememberClipboardIconController(): AnimatedIcon {
     val scope = rememberCoroutineScope()
-    return remember { ClipboardIcon(scope) }
+    return remember { AnimatedIcon(scope) }
 }

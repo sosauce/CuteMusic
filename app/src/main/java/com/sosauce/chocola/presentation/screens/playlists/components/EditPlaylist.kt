@@ -65,6 +65,8 @@ import com.sosauce.chocola.domain.actions.PlaylistActions
 import com.sosauce.chocola.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.chocola.presentation.shared_components.EmojiPicker
 import com.sosauce.chocola.presentation.shared_components.Spacer
+import com.sosauce.chocola.presentation.shared_components.animations.Icon
+import com.sosauce.chocola.presentation.shared_components.animations.rememberClipboardIconController
 import com.sosauce.chocola.utils.ColorUtils
 import com.sosauce.chocola.utils.copyMutate
 import com.sosauce.chocola.utils.rememberInteractionSource
