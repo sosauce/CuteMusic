@@ -15,13 +15,9 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
@@ -95,17 +91,26 @@ fun PlaylistItem(
     val playlistOptions = listOf(
         MoreOptions(
             text = { stringResource(R.string.edit_playlist) },
-            onClick = { showEditDialog = true },
+            onClick = {
+                isDropdownExpanded = false
+                showEditDialog = true
+            },
             icon = R.drawable.edit_rounded
         ),
         MoreOptions(
             text = { stringResource(R.string.export_playlist) },
-            onClick = { exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u") },
+            onClick = {
+                isDropdownExpanded = false
+                exportPlaylistLauncher.launch("${playlist.name.ifEmpty { "Playlist" }}.m3u")
+            },
             icon = R.drawable.export
         ),
         MoreOptions(
             text = { stringResource(R.string.delete) },
-            onClick = { showDeletionDialog = true },
+            onClick = {
+                isDropdownExpanded = false
+                showDeletionDialog = true
+            },
             icon = R.drawable.trash_rounded,
             tint = MaterialTheme.colorScheme.error
         )
