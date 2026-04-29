@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 import kotlin.math.abs
 import kotlin.random.Random
 
+// https://github.com/Elnix90/Dragon-Launcher/blob/3031fa8f86b912dbd2882df68324944bdaf24822/core/base/src/main/kotlin/org/elnix/dragonlauncher/base/ColorUtils.kt
+
 object ColorUtils {
 
     /**
