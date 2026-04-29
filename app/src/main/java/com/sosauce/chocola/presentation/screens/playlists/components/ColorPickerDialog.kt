@@ -42,6 +42,8 @@ import com.sosauce.chocola.presentation.shared_components.animations.Icon
 import com.sosauce.chocola.presentation.shared_components.animations.rememberClipboardIconController
 import com.sosauce.chocola.utils.ColorUtils
 import kotlinx.coroutines.launch
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 
 @Composable
@@ -160,7 +162,7 @@ fun ColorPickerDialog(
                     Box(
                         modifier = Modifier
                             .size(30.dp)
-                            .clip(RoundedCornerShape(5.dp))
+                            .clip(SquircleShape(smoothing = CornerSmoothing.Full))
                             .background(controller.selectedColor.value)
                     )
                     Text("#$hexCode")

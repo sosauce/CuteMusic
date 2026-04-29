@@ -43,6 +43,7 @@ object SharedTransitionKeys {
     const val SKIP_PREVIOUS_BUTTON = "SKIP_PREVIOUS_BUTTON"
     const val MUSIC_ARTWORK = "MUSIC_ARTWORK"
     const val NOW_PLAYING_SCREEN = "NOW_PLAYING_SCREEN"
+    const val SEARCHBAR = "SEARCHBAR"
 }
 
 

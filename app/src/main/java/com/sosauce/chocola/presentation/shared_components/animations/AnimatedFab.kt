@@ -47,12 +47,12 @@ private fun rememberFabAnimations(isPressed: Boolean): FabAnimation {
     val morph = remember {
         Morph(
             MaterialShapes.Cookie9Sided,
-            MaterialShapes.Cookie7Sided
+            MaterialShapes.Circle
         )
     }
 
     val animatedScale by animateFloatAsState(
-        targetValue = if (isPressed) .8f else 1f,
+        targetValue = if (isPressed) 0.8f else 1f,
         label = "scale",
         animationSpec = bouncySpec()
     )

@@ -9,7 +9,9 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -41,6 +43,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -97,6 +101,7 @@ import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.navigation.Screen
 import com.sosauce.chocola.presentation.screens.playing.NowPlaying
 import com.sosauce.chocola.presentation.screens.playing.components.PlayPauseButton
+import com.sosauce.chocola.presentation.shared_components.ScreenSelection
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedFab
 import com.sosauce.chocola.presentation.shared_components.animations.AnimatedIconButton
 import com.sosauce.chocola.presentation.theme.nunitoFontFamily
@@ -369,91 +374,99 @@ fun SharedTransitionScope.CuteSearchbar(
                                 .clip(RoundedCornerShape(24.dp))
                                 .padding(6.dp)
                         ) {
-                            AnimatedContent(
-                                targetState = isInScreenSelectionMode,
-                                transitionSpec = { slideInVertically { it } + fadeIn() togetherWith slideOutVertically { it } + fadeOut() }
-                            ) {
-                                if (it) {
-                                    ScreenSelection(
-                                        onNavigate = onNavigate,
-                                        dismiss = { isInScreenSelectionMode = false }
-                                    )
-                                } else {
-                                    TextField(
-                                        state = textFieldState,
-                                        colors = TextFieldDefaults.colors(
-                                            focusedIndicatorColor = Color.Transparent,
-                                            unfocusedIndicatorColor = Color.Transparent
-                                        ),
-                                        placeholder = {
-                                            Text(
-                                                text = stringResource(R.string.search_here),
-                                                maxLines = 1
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            var hasSeenTip by rememberHasSeenTip()
-                                            TooltipBox(
-                                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                                                    TooltipAnchorPosition.Above
+                            SharedTransitionLayout {
+                                AnimatedContent(
+                                    targetState = isInScreenSelectionMode,
+                                    //transitionSpec = { slideInVertically { it } + fadeIn() togetherWith slideOutVertically { it } + fadeOut() }
+                                ) {
+                                    if (it) {
+                                        ScreenSelection(
+                                            onNavigate = onNavigate,
+                                            dismiss = { isInScreenSelectionMode = false },
+                                            animatedVisibilityScope = this
+                                        )
+                                    } else {
+                                        TextField(
+                                            state = textFieldState,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .sharedElement(
+                                                    sharedContentState = rememberSharedContentState(SharedTransitionKeys.SEARCHBAR),
+                                                    animatedVisibilityScope = this,
                                                 ),
-                                                tooltip = {
-                                                    RichTooltip(
-                                                        caretShape = TooltipDefaults.caretShape(),
-                                                        colors = TooltipDefaults.richTooltipColors(
-                                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                                            contentColor = contentColorFor(
-                                                                MaterialTheme.colorScheme.primaryContainer
-                                                            )
-                                                        ),
-                                                    ) { Text(stringResource(R.string.click_hint)) }
-                                                },
-                                                state = rememberTooltipState(
-                                                    initialIsVisible = !hasSeenTip,
-                                                    isPersistent = !hasSeenTip
+                                            colors = TextFieldDefaults.colors(
+                                                focusedIndicatorColor = Color.Transparent,
+                                                unfocusedIndicatorColor = Color.Transparent
+                                            ),
+                                            placeholder = {
+                                                Text(
+                                                    text = stringResource(R.string.search_here),
+                                                    maxLines = 1
                                                 )
-                                            ) {
-                                                IconButton(
-                                                    onClick = {
-                                                        isInScreenSelectionMode = true
-                                                        hasSeenTip = true
+                                            },
+                                            leadingIcon = {
+                                                var hasSeenTip by rememberHasSeenTip()
+                                                TooltipBox(
+                                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                                        TooltipAnchorPosition.Above
+                                                    ),
+                                                    tooltip = {
+                                                        RichTooltip(
+                                                            caretShape = TooltipDefaults.caretShape(),
+                                                            colors = TooltipDefaults.richTooltipColors(
+                                                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                                contentColor = contentColorFor(
+                                                                    MaterialTheme.colorScheme.primaryContainer
+                                                                )
+                                                            ),
+                                                        ) { Text(stringResource(R.string.click_hint)) }
                                                     },
-                                                    shapes = IconButtonDefaults.shapes()
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(
-                                                            screenToLeadingIcon[currentScreen]
-                                                                ?: R.drawable.search
-                                                        ),
-                                                        contentDescription = null
+                                                    state = rememberTooltipState(
+                                                        initialIsVisible = !hasSeenTip,
+                                                        isPersistent = !hasSeenTip
                                                     )
-                                                }
-                                            }
-                                        },
-                                        trailingIcon = {
-                                            Row {
-                                                sortingMenu?.invoke()
-                                                IconButton(
-                                                    onClick = { onNavigate(Screen.Settings) },
-                                                    shapes = IconButtonDefaults.shapes()
                                                 ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.settings_filled),
-                                                        contentDescription = stringResource(R.string.settings)
-                                                    )
+                                                    IconButton(
+                                                        onClick = {
+                                                            isInScreenSelectionMode = true
+                                                            hasSeenTip = true
+                                                        },
+                                                        shapes = IconButtonDefaults.shapes()
+                                                    ) {
+                                                        Icon(
+                                                            painter = painterResource(
+                                                                screenToLeadingIcon[currentScreen]
+                                                                    ?: R.drawable.search
+                                                            ),
+                                                            contentDescription = null
+                                                        )
+                                                    }
                                                 }
-                                            }
-                                        },
-                                        textStyle = TextStyle.Default.copy(
-                                            fontFamily = nunitoFontFamily,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        lineLimits = TextFieldLineLimits.SingleLine,
-                                        shape = FloatingToolbarDefaults.ContainerShape,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
+                                            },
+                                            trailingIcon = {
+                                                Row {
+                                                    sortingMenu?.invoke()
+                                                    IconButton(
+                                                        onClick = { onNavigate(Screen.Settings) },
+                                                        shapes = IconButtonDefaults.shapes()
+                                                    ) {
+                                                        Icon(
+                                                            painter = painterResource(R.drawable.settings_filled),
+                                                            contentDescription = stringResource(R.string.settings)
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            textStyle = TextStyle.Default.copy(
+                                                fontFamily = nunitoFontFamily,
+                                                fontWeight = FontWeight.Bold
+                                            ),
+                                            lineLimits = TextFieldLineLimits.SingleLine,
+                                            shape = FloatingToolbarDefaults.ContainerShape
+                                        )
+                                    }
 
+                                }
                             }
                         }
                     }
@@ -465,12 +478,14 @@ fun SharedTransitionScope.CuteSearchbar(
 }
 
 @Composable
-private fun ScreenSelection(
+private fun SharedTransitionScope.ScreenSelection(
     onNavigate: (Screen) -> Unit,
-    dismiss: () -> Unit
+    dismiss: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val interactionsSources = List(4) { rememberInteractionSource() }
+    val key = rememberSharedContentState(key = SharedTransitionKeys.SEARCHBAR)
     val currentScreen = LocalScreen.current
     val screens = listOf(
         ScreenCategory(
@@ -498,43 +513,50 @@ private fun ScreenSelection(
             selectedIcon = R.drawable.queue_music_rounded
         )
     )
-
-    Column(
+    ButtonGroup(
         modifier = Modifier
-            .defaultMinSize(
-                minWidth = TextFieldDefaults.MinWidth,
-                minHeight = TextFieldDefaults.MinHeight,
-            ),
-        verticalArrangement = Arrangement.Center
+            .fillMaxWidth()
     ) {
-        ButtonGroup(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            screens.fastForEachIndexed { index, item ->
-                ToggleButton(
-                    checked = currentScreen == item.screen,
-                    onCheckedChange = {
-                        item.onClick()
-                        dismiss()
-                    },
-                    shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
-                    interactionSource = interactionsSources[index],
-                    colors = ToggleButtonDefaults.toggleButtonColors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .animateWidth(interactionsSources[index])
-                ) {
-                    val icon =
-                        if (currentScreen == item.screen) item.selectedIcon else item.unselectedIcon
+        screens.fastForEachIndexed { index, item ->
 
-                    Icon(
-                        painter = painterResource(icon),
-                        contentDescription = null
+            val isActive = currentScreen == item.screen
+
+            val containerColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent
+
+            Button(
+                onClick = {
+                    item.onClick()
+                    dismiss()
+                },
+                interactionSource = interactionsSources[index],
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = containerColor,
+                    contentColor = contentColorFor(containerColor)
+                ),
+                shapes = ButtonDefaults.shapes(),
+                modifier = Modifier
+                    .defaultMinSize(
+                        minWidth = TextFieldDefaults.MinWidth,
+                        minHeight = TextFieldDefaults.MinHeight,
                     )
-                }
+                    .weight(1f)
+                    .animateWidth(interactionsSources[index])
+                    .then(
+                        if (isActive) {
+                            Modifier.sharedElement(
+                                sharedContentState = key,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                            )
+                        } else Modifier
+                    )
+            ) {
+                val icon =
+                    if (isActive) item.selectedIcon else item.unselectedIcon
+
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null
+                )
             }
         }
     }
