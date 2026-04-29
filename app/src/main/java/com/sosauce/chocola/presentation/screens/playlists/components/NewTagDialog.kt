@@ -69,7 +69,9 @@ fun NewTagDialog(
         },
         title = { Text(stringResource(R.string.playlist_tag_add)) },
         text = {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.Center
+            ) {
                 OutlinedTextField(
                     state = textFieldState,
                     lineLimits = TextFieldLineLimits.SingleLine,
