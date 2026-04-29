@@ -240,36 +240,39 @@ fun EditPlaylist(
                 )
                 val colorCard = if (newPlaylist.color != -1) Color(newPlaylist.color) else MaterialTheme.colorScheme.surfaceContainerHighest
 
-                Card(
-                    onClick = { showColorPicker = true },
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colorCard,
-                        contentColor = if (colorCard.luminance() > 0.5f) Color.Black else Color.White
-                    )
+                Row(
+                    Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        onClick = { showColorPicker = true },
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = colorCard,
+                            contentColor = if (colorCard.luminance() > 0.5f) Color.Black else Color.White
+                        )
                     ) {
                         val icon = if (newPlaylist.color != -1) R.drawable.edit_filled else R.drawable.add
-
-                        val randomColorStatus = rememberClipboardIconController()
-
                         Icon(
                             painter = painterResource(icon),
                             contentDescription = null,
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(10.dp)
                         )
-                        Spacer(15.dp)
+                    }
 
-                        randomColorStatus.Icon(R.drawable.shuffle) {
-                            newPlaylist = newPlaylist.copy(
-                                color = ColorUtils.randomColor(1f).toArgb()
-                            )
-                            randomColorStatus.setSuccess()
-                        }
+
+                    val randomColorStatus = rememberClipboardIconController()
+                    Spacer(5.dp)
+
+                    randomColorStatus.Icon(R.drawable.shuffle) {
+                        newPlaylist = newPlaylist.copy(
+                            color = ColorUtils.randomColor(1f).toArgb()
+                        )
+                        randomColorStatus.setSuccess()
                     }
                 }
                 Text(
