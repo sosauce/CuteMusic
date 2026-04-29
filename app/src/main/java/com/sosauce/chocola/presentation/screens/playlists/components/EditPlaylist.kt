@@ -1,30 +1,23 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:Suppress("AssignedValueIsNeverRead")
 
 package com.sosauce.chocola.presentation.screens.playlists.components
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.view.ContextThemeWrapper
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
-import android.widget.TextView
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -33,7 +26,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -41,16 +33,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumFloatingActionButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,40 +50,55 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.emoji2.emojipicker.EmojiPickerView
-import androidx.emoji2.emojipicker.RecentEmojiProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.models.Playlist
 import com.sosauce.chocola.domain.actions.PlaylistActions
+import com.sosauce.chocola.presentation.screens.playlists.PlaylistViewModel
 import com.sosauce.chocola.presentation.shared_components.EmojiPicker
+import com.sosauce.chocola.presentation.shared_components.Spacer
+import com.sosauce.chocola.utils.ColorUtils
 import com.sosauce.chocola.utils.copyMutate
+import com.sosauce.chocola.utils.rememberInteractionSource
+import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 
 
 @SuppressLint("ResourceType")
 @Composable
 fun EditPlaylist(
-    playlist: Playlist,
+    playlist: Playlist?,
+    onHandlePlaylistActions: ((PlaylistActions) -> Unit)?,
     onDismissRequest: () -> Unit,
-    onHandlePlaylistActions: (PlaylistActions) -> Unit,
 ) {
+    val isCreatingPlaylist = playlist == null
 
-    var newPlaylist by remember { mutableStateOf(playlist) }
+    val playlistViewModel = koinViewModel<PlaylistViewModel>()
+    val state by playlistViewModel.state.collectAsStateWithLifecycle()
+    val localizedPlaylist = stringResource(R.string.playlist)
+
+    var newPlaylist by remember { mutableStateOf(playlist ?: Playlist()) }
     val name = rememberTextFieldState(initialText = newPlaylist.name)
     var showEmojiPicker by remember { mutableStateOf(false) }
     var showNewTagDialog by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
 
+    /**
+     *  Handles a name change:
+     *  - if the initial playlist is null (means the dialog is in create more), it uses the default name `"Playlist {playlistNumber}"`
+     *  - else: it defaults to the playlist name
+     */
     LaunchedEffect(name.text) {
         val newName = if (name.text.isEmpty()) {
-            playlist.name
+            playlist?.name ?: "$localizedPlaylist ${state.playlists.size + 1}"
         } else name.text.toString()
         newPlaylist = newPlaylist.copy(
             name = newName
@@ -139,32 +141,28 @@ fun EditPlaylist(
                 onDismiss = { showEmojiPicker = false }
             )
         }
-
-
     }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(stringResource(R.string.edit_playlist)) },
+        title = { Text(stringResource(if (isCreatingPlaylist) R.string.create_playlist else R.string.edit_playlist)) },
         confirmButton = {
             TextButton(
                 onClick = {
-                    onHandlePlaylistActions(
-                        PlaylistActions.UpsertPlaylist(newPlaylist)
-                    )
+                    if (isCreatingPlaylist) {
+                        playlistViewModel.handlePlaylistActions(PlaylistActions.CreatePlaylist(newPlaylist))
+                    } else {
+                        onHandlePlaylistActions?.invoke(
+                            PlaylistActions.UpsertPlaylist(newPlaylist)
+                        )
+                    }
                     onDismissRequest()
                 },
-                enabled = newPlaylist != playlist,
+                enabled = isCreatingPlaylist || newPlaylist != playlist,
                 shapes = ButtonDefaults.shapes()
             ) {
-                Text(stringResource(R.string.edit))
+                Text(stringResource(if (isCreatingPlaylist) R.string.create else R.string.edit))
             }
-        },
-        icon = {
-            Icon(
-                painter = painterResource(R.drawable.edit_rounded),
-                contentDescription = null
-            )
         },
         dismissButton = {
             TextButton(
@@ -173,6 +171,12 @@ fun EditPlaylist(
             ) {
                 Text(stringResource(R.string.cancel))
             }
+        },
+        icon = {
+            Icon(
+                painter = painterResource(if (isCreatingPlaylist) R.drawable.playlist_add else R.drawable.edit_rounded),
+                contentDescription = null
+            )
         },
         text = {
             Column(
@@ -242,17 +246,28 @@ fun EditPlaylist(
                         contentColor = if (colorCard.luminance() > 0.5f) Color.Black else Color.White
                     )
                 ) {
-                    Box(
+                    Row(
                         Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         val icon = if (newPlaylist.color != -1) R.drawable.edit_filled else R.drawable.add
+
+                        val randomColorStatus = rememberClipboardIconController()
 
                         Icon(
                             painter = painterResource(icon),
                             contentDescription = null,
                             modifier = Modifier.padding(10.dp)
                         )
+                        Spacer(15.dp)
+
+                        randomColorStatus.Icon(R.drawable.shuffle) {
+                            newPlaylist = newPlaylist.copy(
+                                color = ColorUtils.randomColor(1f).toArgb()
+                            )
+                            randomColorStatus.setSuccess()
+                        }
                     }
                 }
                 Text(
@@ -267,6 +282,8 @@ fun EditPlaylist(
                         contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHighest)
                     )
                 ) {
+                    val hapticFeedback = LocalHapticFeedback.current
+
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -293,24 +310,65 @@ fun EditPlaylist(
                         items(
                             items = newPlaylist.tags
                         ) { tag ->
+                            val interactionSource = rememberInteractionSource()
+                            val isPressed by interactionSource.collectIsPressedAsState()
+
+
+                            var canDelete by remember { mutableStateOf(false) }
+                            LaunchedEffect(isPressed) {
+                                if (isPressed) {
+                                    delay(250)
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    canDelete = true
+                                } else {
+                                    canDelete = false
+                                }
+                            }
+
+                            val containerColor by animateColorAsState(
+                                if (canDelete) MaterialTheme.colorScheme.errorContainer
+                                else MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+
+
                             Button(
                                 modifier = Modifier.animateItem(),
                                 onClick = {
-                                    newPlaylist = newPlaylist.copy(
-                                        tags = newPlaylist.tags.copyMutate { remove(tag) }
-                                    )
+                                    if (canDelete) {
+                                        newPlaylist = newPlaylist.copy(
+                                            tags = newPlaylist.tags.copyMutate { remove(tag) }
+                                        )
+                                    }
                                 },
+                                interactionSource = interactionSource,
                                 shapes = ButtonDefaults.shapes(),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    containerColor = containerColor,
+                                    contentColor = contentColorFor(containerColor)
                                 )
-                            ) { Text(tag) }
+                            ) {
+                                AnimatedContent(canDelete) {
+                                    if (it) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.close),
+                                            contentDescription = stringResource(R.string.delete)
+                                        )
+                                    } else {
+                                        Text(tag)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-
             }
         }
     )
+}
+
+@Composable
+fun CreatePlaylistDialog(
+    onDismissRequest: () -> Unit
+) {
+    EditPlaylist(null, null, onDismissRequest)
 }
