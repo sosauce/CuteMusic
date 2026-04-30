@@ -33,7 +33,6 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -50,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -62,13 +60,11 @@ import com.materialkolor.rememberDynamicMaterialThemeState
 import com.sosauce.chocola.R
 import com.sosauce.chocola.data.datastore.rememberAppTheme
 import com.sosauce.chocola.presentation.screens.playing.components.WavySlider
-import com.sosauce.chocola.presentation.screens.playing.components.WavyTrack
-import com.sosauce.chocola.presentation.screens.playing.components.rememberCuteSliderState
 import com.sosauce.chocola.presentation.screens.settings.FontItem
 import com.sosauce.chocola.presentation.screens.settings.FontStyle
 import com.sosauce.chocola.presentation.screens.settings.ThemeItem
-import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.CuteTheme
+import com.sosauce.chocola.utils.rememberInteractionSource
 import com.sosauce.chocola.utils.toPaletteStyle
 import com.sosauce.chocola.utils.toShape
 
@@ -83,6 +79,8 @@ fun SettingsSwitch(
     onCheckedChange: () -> Unit,
     optionalDescription: Int? = null,
 ) {
+    val interactionSource = rememberInteractionSource()
+
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier
@@ -92,7 +90,9 @@ fun SettingsSwitch(
             topEnd = topDp,
             bottomStart = bottomDp,
             bottomEnd = bottomDp
-        )
+        ),
+        interactionSource = interactionSource,
+        onClick = { onCheckedChange() }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -119,6 +119,7 @@ fun SettingsSwitch(
             }
             Switch(
                 checked = checked,
+                interactionSource = interactionSource,
                 onCheckedChange = { onCheckedChange() },
                 colors = SwitchDefaults.colors(
                     uncheckedBorderColor = Color.Transparent
