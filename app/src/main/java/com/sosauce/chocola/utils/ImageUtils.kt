@@ -17,21 +17,7 @@ import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 
 object ImageUtils {
-
-    fun imageRequester(
-        img: Any?,
-        context: Context,
-        enableCrossfade: Boolean = true
-    ): ImageRequest {
-        return ImageRequest.Builder(context)
-            .data(img)
-            .crossfade(enableCrossfade)
-            .transformations()
-            .diskCacheKey(img.toString())
-            .memoryCacheKey(img.toString())
-            .build()
-    }
-
+    
     fun getAlbumArt(albumId: Long): Any? {
         val sArtworkUri = "content://media/external/audio/albumart".toUri()
         return try {

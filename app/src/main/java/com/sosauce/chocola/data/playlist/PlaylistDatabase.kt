@@ -26,28 +26,3 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("ALTER TABLE Playlist ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
     }
 }
-
-val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        createDefaultPlaylists(db)
-    }
-}
-
-val DEFAULT_PLAYLISTS_CALLBACK = object : RoomDatabase.Callback() {
-    override fun onCreate(db: SupportSQLiteDatabase) {
-        super.onCreate(db)
-        createDefaultPlaylists(db)
-    }
-}
-
-private fun createDefaultPlaylists(db: SupportSQLiteDatabase) {
-
-    val values = ContentValues().apply {
-        put("name", "Favorites")
-        put("emoji", "❤️")
-        put("musics", "[]")
-        put("color", "-1")
-        put("tags", "[]")
-    }
-    db.insert("playlist", OnConflictStrategy.IGNORE, values)
-}

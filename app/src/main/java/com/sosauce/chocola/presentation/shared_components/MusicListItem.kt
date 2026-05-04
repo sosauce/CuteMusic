@@ -198,7 +198,7 @@ fun MusicListItem(
                             )
                         }
                         AsyncImage(
-                            model = ImageUtils.imageRequester(track.artUri, context),
+                            model = track.artUri,
                             contentDescription = stringResource(R.string.artwork),
                             contentScale = ContentScale.Crop
                         )

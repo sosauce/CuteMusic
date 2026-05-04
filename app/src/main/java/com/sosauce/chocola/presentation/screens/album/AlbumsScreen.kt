@@ -141,7 +141,7 @@ fun SharedTransitionScope.AlbumsScreen(
                             key = { it.id }
                         ) { album ->
                             AlbumCard(
-                                modifier = Modifier.animateContentSize().animateItem(),
+                                modifier = Modifier.animateItem(),
                                 album = album,
                                 onClick = { onNavigate(Screen.AlbumsDetails(album.name)) }
                             )

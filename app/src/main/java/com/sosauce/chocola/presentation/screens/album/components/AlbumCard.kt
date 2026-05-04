@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
@@ -46,9 +49,6 @@ fun SharedTransitionScope.AlbumCard(
     onClick: () -> Unit
 ) {
 
-    val context = LocalContext.current
-
-
     Box(
         modifier = modifier
             .padding(horizontal = 5.dp, vertical = 13.dp)
@@ -56,15 +56,22 @@ fun SharedTransitionScope.AlbumCard(
             .clip(SquircleShape(percent = 30, smoothing = CornerSmoothing.Full))
             .clickable(onClick = onClick)
     ) {
-        AsyncImage(
-            model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id), context),
-            contentDescription = stringResource(id = R.string.artwork),
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .sharedBounds(
-                    sharedContentState = rememberSharedContentState(key = album.id),
-                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-                ),
+                .background(MaterialTheme.colorScheme.surfaceContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.album_filled),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        AsyncImage(
+            model = ImageUtils.getAlbumArt(album.id),
+            contentDescription = stringResource(id = R.string.artwork),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
 

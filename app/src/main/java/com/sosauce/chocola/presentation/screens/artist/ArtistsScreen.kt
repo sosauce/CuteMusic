@@ -4,6 +4,7 @@ package com.sosauce.chocola.presentation.screens.artist
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -160,25 +161,33 @@ fun SharedTransitionScope.ArtistItem(
     onClick: () -> Unit
 ) {
 
-    val context = LocalContext.current
-
     CuteListItem(
         modifier = modifier,
         onClick = onClick,
         leadingContent = {
-            AsyncImage(
-                model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(artist.albumId), context),
-                contentDescription = stringResource(R.string.artwork),
+            Box(
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .size(50.dp)
-                    .sharedElement(
-                        sharedContentState = rememberSharedContentState(key = artist.id),
-                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                    .clip(SquircleShape(smoothing = CornerSmoothing.Full))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.artists_filled),
+                        contentDescription = null
                     )
-                    .clip(SquircleShape(smoothing = CornerSmoothing.Full)),
-                contentScale = ContentScale.Crop,
-            )
+                }
+                AsyncImage(
+                    model = ImageUtils.getAlbumArt(artist.albumId),
+                    contentDescription = stringResource(R.string.artwork),
+                    contentScale = ContentScale.Crop,
+                )
+            }
         }
     ) {
         Text(

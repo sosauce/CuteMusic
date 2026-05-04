@@ -188,10 +188,7 @@ fun MusicDetailsDialog(
                                     )
                                 }
                                 AsyncImage(
-                                    model = ImageUtils.imageRequester(
-                                        track.artUri,
-                                        context
-                                    ),
+                                    model = track.artUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop
                                 )

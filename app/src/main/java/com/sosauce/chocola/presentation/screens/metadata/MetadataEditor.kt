@@ -4,6 +4,7 @@ package com.sosauce.chocola.presentation.screens.metadata
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -120,11 +121,15 @@ fun MetadataEditor(
                 )
                 AnimatedFab(
                     onClick = {
-                        val intentSender = MediaStore.createWriteRequest(
-                            context.contentResolver,
-                            listOf(trackUri)
-                        ).intentSender
-                        editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            val intentSender = MediaStore.createWriteRequest(
+                                context.contentResolver,
+                                listOf(trackUri)
+                            ).intentSender
+                            editSongLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                        } else {
+                            metadataViewModel.onHandleMetadataActions(MetadataActions.SaveChanges)
+                        }
                     },
                     icon = R.drawable.check,
                 )
@@ -335,7 +340,7 @@ private fun MetadataArt(
     Box(modifier = modifier) {
         if (art != null) {
             AsyncImage(
-                model = ImageUtils.imageRequester(art.data, context),
+                model = art.data,
                 contentDescription = stringResource(id = R.string.artwork),
                 modifier = Modifier
                     .size(230.dp)

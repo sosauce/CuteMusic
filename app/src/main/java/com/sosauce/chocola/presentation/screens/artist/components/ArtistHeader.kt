@@ -39,21 +39,16 @@ fun SharedTransitionScope.ArtistHeader(
     onHandlePlayerActions: (PlayerActions) -> Unit
 ) {
 
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .height(300.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         AsyncImage(
-            model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(artist.albumId), context),
+            model = ImageUtils.getAlbumArt(artist.albumId),
             contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize(),
-//                .sharedElement(
-//                    sharedContentState = rememberSharedContentState(key = artist.id),
-//                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-//                ),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
         Row(

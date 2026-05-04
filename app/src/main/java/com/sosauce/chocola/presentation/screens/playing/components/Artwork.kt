@@ -142,7 +142,7 @@ fun Artwork(
     } else {
 
         val image =
-            rememberAsyncImagePainter(ImageUtils.imageRequester(musicState.track.artUri, context))
+            rememberAsyncImagePainter(musicState.track.artUri)
         val imageState by image.state.collectAsStateWithLifecycle()
 
         when (imageState) {

@@ -116,7 +116,7 @@ class AbstractTracksScanner(
             projection,
             selection,
             selectionArgs,
-            "${MediaStore.Audio.Media.TITLE} ASC"
+            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)

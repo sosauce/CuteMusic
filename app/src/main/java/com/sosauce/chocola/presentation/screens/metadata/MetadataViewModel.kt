@@ -102,18 +102,19 @@ class MetadataViewModel(
         try {
             val fd = getFileDescriptorFromPath(application, trackPath, "w")
 
-
-            fd?.dup()?.detachFd()?.let {
+            fd?.dup()?.detachFd()?.let { fileDescriptor ->
                 TagLib.savePropertyMap(
-                    it,
+                    fileDescriptor,
                     metadataState.value.mutablePropertiesMap.toAudioFileMetadata().toPropertyMap()
                 )
             }
 
             fd?.dup()?.detachFd()?.let {
-                if (metadataState.value.art != null) {
-                    TagLib.savePictures(it, arrayOf(metadataState.value.art!!))
-                }
+                val newPic = metadataState.value.art?.let {
+                    arrayOf(it)
+                } ?: emptyArray<Picture>()
+
+                TagLib.savePictures(it, newPic)
             }
 
             MediaScannerConnection.scanFile(
@@ -132,7 +133,6 @@ class MetadataViewModel(
         // App will crash if it tries to open an input stream on an empty uri !
         if (uri == Uri.EMPTY) return
 
-        val mimeType = application.contentResolver.getType(uri)
         val byteArray = application.contentResolver.openInputStream(uri)?.use { inputStream ->
 
             val baos = ByteArrayOutputStream()
@@ -148,7 +148,7 @@ class MetadataViewModel(
             data = byteArray ?: byteArrayOf(),
             description = "",
             pictureType = "Front Cover",
-            mimeType = mimeType ?: "image/jpeg"
+            mimeType = "image/jpeg"
         )
 
         _metadata.update {

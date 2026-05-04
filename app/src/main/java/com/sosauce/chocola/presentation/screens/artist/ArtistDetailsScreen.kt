@@ -184,7 +184,7 @@ fun SharedTransitionScope.ArtistDetailsScreen(
                                 contentAlignment = Alignment.BottomStart
                             ) {
                                 AsyncImage(
-                                    model = ImageUtils.imageRequester(ImageUtils.getAlbumArt(album.id), context),
+                                    model = ImageUtils.getAlbumArt(album.id),
                                     contentDescription = stringResource(R.string.artwork),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop

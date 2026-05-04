@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -48,12 +49,13 @@ fun DeletionDialog(
 ) {
 
     val context = LocalContext.current
+    val resources = LocalResources.current
     val deleteSongLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if (it.resultCode != Activity.RESULT_OK) {
                 Toast.makeText(
                     context,
-                    context.getString(R.string.error_deleting_song),
+                    resources.getString(R.string.error_deleting_song),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -101,7 +103,7 @@ fun DeletionDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = ImageUtils.imageRequester(track.artUri, context),
+                    model = track.artUri,
                     contentDescription = null,
                     modifier = Modifier
                         .size(100.dp)
@@ -132,19 +134,6 @@ fun PlaylistDeletionDialog(
     onDismissRequest: () -> Unit,
     onHandlePlaylistAction: (PlaylistActions) -> Unit
 ) {
-
-    val context = LocalContext.current
-    val deleteSongLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if (it.resultCode != Activity.RESULT_OK) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.error_deleting_song),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
 
     AlertDialog(
         onDismissRequest = onDismissRequest,

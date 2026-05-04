@@ -23,6 +23,7 @@ class ArtistsRepository(
         extraSelectionArgs = arrayOf(artistName)
     )
 
+
     suspend fun fetchArtists(): List<Artist> = withContext(Dispatchers.IO) {
 
         val artists = mutableListOf<Artist>()
@@ -39,7 +40,7 @@ class ArtistsRepository(
             projection,
             null,
             null,
-            "${MediaStore.Audio.Artists.ARTIST} ASC"
+            MediaStore.Audio.Artists.DEFAULT_SORT_ORDER
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
@@ -49,10 +50,13 @@ class ArtistsRepository(
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS)
 
             while (cursor.moveToNext()) {
-                val id = cursor.getLong(idColumn)
-                val artist = cursor.getString(artistColumn)
                 val numberTracks = cursor.getInt(numberTracksColumn)
                 val numberAlbums = cursor.getInt(numberAlbumsColumn)
+
+                if (numberTracks <= 0 && numberAlbums <= 0) continue
+
+                val id = cursor.getLong(idColumn)
+                val artist = cursor.getString(artistColumn)
 
                 val artistInfo = Artist(
                     id = id,
@@ -137,12 +141,16 @@ class ArtistsRepository(
             MediaStore.Audio.Albums.ALBUM,
             MediaStore.Audio.Albums.ARTIST
         )
+
+        val selection = "${MediaStore.Audio.Albums.ARTIST} = ? AND ${MediaStore.Audio.Albums.NUMBER_OF_SONGS} > ?"
+        val selectionArgs = arrayOf(artistName, "0")
+
         context.contentResolver.query(
             MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
             projection,
-            "${MediaStore.Audio.Albums.ARTIST} = ?",
-            arrayOf(artistName),
-            "${MediaStore.Audio.Albums.ALBUM} ASC",
+            selection,
+            selectionArgs,
+            MediaStore.Audio.Albums.DEFAULT_SORT_ORDER,
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)

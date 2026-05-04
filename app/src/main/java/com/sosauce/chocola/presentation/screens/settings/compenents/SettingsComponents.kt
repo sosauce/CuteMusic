@@ -77,10 +77,8 @@ fun SettingsSwitch(
     bottomDp: Dp,
     text: String,
     onCheckedChange: () -> Unit,
-    optionalDescription: Int? = null,
+    optionalDescription: Int? = null
 ) {
-    val interactionSource = rememberInteractionSource()
-
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier
@@ -91,19 +89,16 @@ fun SettingsSwitch(
             bottomStart = bottomDp,
             bottomEnd = bottomDp
         ),
-        interactionSource = interactionSource,
-        onClick = { onCheckedChange() }
+        onClick = onCheckedChange
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(15.dp)
+            modifier = Modifier.padding(15.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
             ) {
                 Column {
                     Text(text)
@@ -119,8 +114,7 @@ fun SettingsSwitch(
             }
             Switch(
                 checked = checked,
-                interactionSource = interactionSource,
-                onCheckedChange = { onCheckedChange() },
+                onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     uncheckedBorderColor = Color.Transparent
                 )
