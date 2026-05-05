@@ -215,4 +215,5 @@
     <string name="name_and_emoji">İsim ve emoji</string>
     <string name="load">Manuel ekle</string>
     <string name="not_a_lyric_file">Geçerli bir \"lyrics\" dosyası değil!</string>
+    <string name="error_pasting">Panodan yapıştırılırken hata oluştu</string>
 </resources>
