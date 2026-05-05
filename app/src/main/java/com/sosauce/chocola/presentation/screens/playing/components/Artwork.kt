@@ -45,9 +45,9 @@ import com.sosauce.chocola.data.datastore.rememberArtworkShape
 import com.sosauce.chocola.data.datastore.rememberCarousel
 import com.sosauce.chocola.data.states.MusicState
 import com.sosauce.chocola.domain.actions.PlayerActions
+import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.ImageUtils
 import com.sosauce.chocola.utils.ignoreParentPadding
-import com.sosauce.chocola.utils.toShape
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -60,7 +60,6 @@ fun Artwork(
     musicState: MusicState,
     onHandlePlayerActions: (PlayerActions) -> Unit,
 ) {
-    val context = LocalContext.current
     val useCarousel by rememberCarousel()
     var artworkShape by rememberArtworkShape()
 
@@ -153,7 +152,7 @@ fun Artwork(
                     contentDescription = stringResource(R.string.artwork),
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .clip(artworkShape.toShape()),
+                        .clip(ArtworkShape.toShape(artworkShape)),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -171,7 +170,7 @@ private fun ErrorImage() {
             .aspectRatio(1f)
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = artworkShape.toShape()
+                shape = ArtworkShape.toShape(artworkShape)
             ),
         contentAlignment = Alignment.Center
     ) {

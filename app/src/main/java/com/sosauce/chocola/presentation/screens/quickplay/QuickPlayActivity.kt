@@ -61,8 +61,8 @@ import com.sosauce.chocola.domain.actions.PlayerActions
 import com.sosauce.chocola.presentation.screens.playing.components.CuteSlider
 import com.sosauce.chocola.presentation.screens.playing.components.TitleAndArtist
 import com.sosauce.chocola.presentation.theme.CuteMusicTheme
+import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.rememberInteractionSource
-import com.sosauce.chocola.utils.toShape
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -149,7 +149,7 @@ class QuickPlayActivity : ComponentActivity() {
                                     contentDescription = stringResource(R.string.artwork),
                                     modifier = Modifier
                                         .fillMaxSize(0.9f)
-                                        .clip(artworkShape.toShape()),
+                                        .clip(ArtworkShape.toShape(artworkShape)),
                                     contentScale = ContentScale.Crop,
                                     onSuccess = { state ->
                                         artImageBitmap =

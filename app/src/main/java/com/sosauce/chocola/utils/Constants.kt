@@ -5,14 +5,18 @@ package com.sosauce.chocola.utils
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.style.Style
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.sosauce.chocola.R
 import com.sosauce.chocola.presentation.screens.playing.components.ClassicThumb
@@ -21,6 +25,8 @@ import com.sosauce.chocola.presentation.screens.playing.components.MorphingThumb
 import com.sosauce.chocola.presentation.screens.playing.components.StraightThumb
 import com.sosauce.chocola.presentation.screens.playing.components.StraightTrack
 import com.sosauce.chocola.presentation.screens.playing.components.WavyTrack
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 const val CUTE_MUSIC_ID = "CUTE_MUSIC_ID"
 const val PACKAGE = "com.sosauce.chocola"
@@ -56,6 +62,7 @@ object CuteTheme {
 
 object ArtworkShape {
     const val CLASSIC = "classic"
+    const val ROUNDED = "rounded"
     const val CIRCLE = "circle"
     const val COOKIE_4 = "cookie4"
     const val COOKIE_9 = "cookie9"
@@ -66,6 +73,23 @@ object ArtworkShape {
     const val DIAMOND = "diamond"
     const val BUN = "bun"
     const val HEART = "heart"
+
+    @Composable
+    fun toShape(shape: String): Shape = when (shape) {
+        CLASSIC -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
+        ROUNDED -> RoundedCornerShape(10)
+        CIRCLE -> MaterialShapes.Circle.toShape()
+        COOKIE_4 -> MaterialShapes.Cookie4Sided.toShape()
+        COOKIE_9 -> MaterialShapes.Cookie9Sided.toShape()
+        COOKIE_12 -> MaterialShapes.Cookie12Sided.toShape()
+        CLOVER_8 -> MaterialShapes.Clover8Leaf.toShape()
+        SUNNY -> MaterialShapes.Sunny.toShape()
+        ARROW -> MaterialShapes.Arrow.toShape()
+        DIAMOND -> MaterialShapes.Diamond.toShape()
+        BUN -> MaterialShapes.Bun.toShape()
+        HEART -> MaterialShapes.Heart.toShape()
+        else -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
+    }
 }
 
 object CutePaletteStyle {

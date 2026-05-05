@@ -404,21 +404,6 @@ fun ContentResolver.observe(uri: Uri) = callbackFlow {
 }
 
 
-@Composable
-fun String.toShape(): Shape = when (this) {
-    ArtworkShape.CLASSIC -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
-    ArtworkShape.CIRCLE -> MaterialShapes.Circle.toShape()
-    ArtworkShape.COOKIE_4 -> MaterialShapes.Cookie4Sided.toShape()
-    ArtworkShape.COOKIE_9 -> MaterialShapes.Cookie9Sided.toShape()
-    ArtworkShape.COOKIE_12 -> MaterialShapes.Cookie12Sided.toShape()
-    ArtworkShape.CLOVER_8 -> MaterialShapes.Clover8Leaf.toShape()
-    ArtworkShape.SUNNY -> MaterialShapes.Sunny.toShape()
-    ArtworkShape.ARROW -> MaterialShapes.Arrow.toShape()
-    ArtworkShape.DIAMOND -> MaterialShapes.Diamond.toShape()
-    ArtworkShape.BUN -> MaterialShapes.Bun.toShape()
-    ArtworkShape.HEART -> MaterialShapes.Heart.toShape()
-    else -> SquircleShape(percent = 30, smoothing = CornerSmoothing.Full)
-}
 
 
 val Context.appVersion

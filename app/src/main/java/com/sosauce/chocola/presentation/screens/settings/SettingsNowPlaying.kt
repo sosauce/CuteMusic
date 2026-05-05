@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -48,7 +50,6 @@ import com.sosauce.chocola.utils.LyricsAlignment
 import com.sosauce.chocola.utils.ThumbStyle
 import com.sosauce.chocola.utils.TrackStyle
 import com.sosauce.chocola.utils.getItemShape
-import com.sosauce.chocola.utils.toShape
 
 @Composable
 fun SettingsNowPlaying() {
@@ -64,6 +65,7 @@ fun SettingsNowPlaying() {
 
     val shapes = listOf(
         ArtworkShape.CLASSIC,
+        ArtworkShape.ROUNDED,
         ArtworkShape.CIRCLE,
         ArtworkShape.COOKIE_4,
         ArtworkShape.COOKIE_9,
@@ -205,12 +207,28 @@ fun SettingsNowPlaying() {
                 topDp = 24.dp,
                 bottomDp = 4.dp,
                 text = R.string.alignment
-            ) {
+            ) { onClose ->
                 lyricsAlignmentOptions.fastForEachIndexed { index, alignment ->
+                    val selected = alignment == lyricsAlignment
+
+                    val trailingIcon: @Composable (() -> Unit)? = if (selected) {
+                        {
+                            Icon(
+                                painter = painterResource(R.drawable.check),
+                                contentDescription = null
+                            )
+                        }
+                    } else null
+
                     DropdownMenuItem(
-                        onClick = { lyricsAlignment = alignment },
-                        shape = MenuDefaults.getItemShape(index, lyricsAlignmentOptions.lastIndex),
-                        text = { Text(alignment) }
+                        selected = selected,
+                        onClick = {
+                            lyricsAlignment = alignment
+                            onClose()
+                        },
+                        shapes = MenuDefaults.itemShape(index, lyricsAlignmentOptions.size),
+                        text = { Text(alignment) },
+                        trailingIcon = trailingIcon
                     )
                 }
             }
@@ -219,12 +237,28 @@ fun SettingsNowPlaying() {
                 topDp = 4.dp,
                 bottomDp = 24.dp,
                 text = R.string.font_size
-            ) {
+            ) { onClose ->
                 (20..40).forEachIndexed { index, size ->
+
+                    val selected = size == lyricsFontSize
+
+                    val trailingIcon: @Composable (() -> Unit)? = if (selected) {
+                        {
+                            Icon(
+                                painter = painterResource(R.drawable.check),
+                                contentDescription = null
+                            )
+                        }
+                    } else null
                     DropdownMenuItem(
-                        onClick = { lyricsFontSize = size },
-                        shape = MenuDefaults.getItemShape(index, 40),
-                        text = { Text(size.toString()) }
+                        selected = selected,
+                        onClick = {
+                            lyricsFontSize = size
+                            onClose()
+                        },
+                        shapes = MenuDefaults.itemShape(index, 20),
+                        text = { Text(size.toString()) },
+                        trailingIcon = trailingIcon
                     )
                 }
             }

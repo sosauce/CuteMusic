@@ -43,9 +43,6 @@ fun TitleAndArtist(
             targetState = musicState.track.title,
             transitionSpec = { fadeIn() togetherWith fadeOut() }
         ) {
-            val radius by animateIntAsState(
-                targetValue = if (transition.isRunning) 15 else 0
-            )
             Text(
                 text = it,
                 style = MaterialTheme.typography.headlineMediumEmphasized.copy(
@@ -55,7 +52,6 @@ fun TitleAndArtist(
                 ),
                 modifier = titleModifier
                     .fillMaxWidth()
-                    .cloudy(radius)
                     .basicMarquee()
             )
         }
@@ -64,9 +60,6 @@ fun TitleAndArtist(
             targetState = musicState.track.artist to musicState.track.album,
             transitionSpec = { fadeIn() togetherWith fadeOut() }
         ) { (artist, album) ->
-            val radius by animateIntAsState(
-                targetValue = if (transition.isRunning) 15 else 0
-            )
             Text(
                 text = buildString {
                     append(artist)
@@ -81,7 +74,6 @@ fun TitleAndArtist(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .cloudy(radius)
                     .basicMarquee()
             )
         }

@@ -63,10 +63,10 @@ import com.sosauce.chocola.presentation.screens.playing.components.WavySlider
 import com.sosauce.chocola.presentation.screens.settings.FontItem
 import com.sosauce.chocola.presentation.screens.settings.FontStyle
 import com.sosauce.chocola.presentation.screens.settings.ThemeItem
+import com.sosauce.chocola.utils.ArtworkShape
 import com.sosauce.chocola.utils.CuteTheme
 import com.sosauce.chocola.utils.rememberInteractionSource
 import com.sosauce.chocola.utils.toPaletteStyle
-import com.sosauce.chocola.utils.toShape
 
 
 @Composable
@@ -114,7 +114,7 @@ fun SettingsSwitch(
             }
             Switch(
                 checked = checked,
-                onCheckedChange = null,
+                onCheckedChange = { onCheckedChange() },
                 colors = SwitchDefaults.colors(
                     uncheckedBorderColor = Color.Transparent
                 )
@@ -130,7 +130,7 @@ fun <T> SettingsDropdownMenu(
     bottomDp: Dp,
     text: Int,
     optionalDescription: Int? = null,
-    dropdownContent: @Composable (ColumnScope.() -> Unit)
+    dropdownContent: @Composable (ColumnScope.(onClose: () -> Unit) -> Unit)
 ) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -191,7 +191,7 @@ fun <T> SettingsDropdownMenu(
                     DropdownMenuGroup(
                         shapes = MenuDefaults.groupShapes(),
                         modifier = Modifier.verticalScroll(rememberScrollState())
-                    ) { dropdownContent() }
+                    ) { dropdownContent { expanded = false } }
                 }
             }
         }
@@ -407,11 +407,11 @@ fun ShapeSelector(
             modifier = Modifier
                 .padding(10.dp)
                 .size(50.dp)
-                .clip(shape.toShape())
+                .clip(ArtworkShape.toShape(shape))
                 .border(
                     width = 2.dp,
                     color = borderColor,
-                    shape = shape.toShape()
+                    shape = ArtworkShape.toShape(shape)
                 )
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
         )
